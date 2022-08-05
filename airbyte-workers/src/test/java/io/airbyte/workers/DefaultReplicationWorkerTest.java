@@ -32,7 +32,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -135,11 +135,45 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
+  void testSourceNonZeroExitValue() throws Exception {
+    when(source.getExitValue()).thenReturn(1);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
+  void testDestinationNonZeroExitValue() throws Exception {
+    when(destination.getExitValue()).thenReturn(1);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
   void testLoggingInThreads() throws IOException, WorkerException {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, jobRoot);
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,

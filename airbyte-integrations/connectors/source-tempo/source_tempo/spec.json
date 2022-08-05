@@ -9,7 +9,8 @@
     "properties": {
       "api_token": {
         "type": "string",
-        "description": "Tempo API Token.",
+        "title": "API token",
+        "description": "Tempo API Token. Go to Tempo>Settings, scroll down to Data Access and select API integration.",
         "airbyte_secret": true
       }
     }

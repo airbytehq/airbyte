@@ -12,7 +12,18 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .spec import SourceTiktokMarketingSpec
-from .streams import AdGroups, Ads, Advertisers, Campaigns
+from .streams import (
+    DEFAULT_START_DATE,
+    AdGroups,
+    AdGroupsReports,
+    Ads,
+    AdsReports,
+    Advertisers,
+    AdvertisersReports,
+    Campaigns,
+    CampaignsReports,
+    ReportGranularity,
+)
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
@@ -46,7 +57,7 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
-            "start_time": config.get("start_time") or "2021-01-01",
+            "start_date": config.get("start_date") or DEFAULT_START_DATE,
             "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
             "app_id": int(config["environment"].get("app_id", 0)),
             "secret": config["environment"].get("secret"),
@@ -64,4 +75,17 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        return [Ads(**args), Advertisers(**args), AdGroups(**args), Campaigns(**args)]
+        report_granularity = config.get("report_granularity") or ReportGranularity.default()
+        report_args = dict(report_granularity=report_granularity, **args)
+        advertisers_reports = AdvertisersReports(**report_args)
+        streams = [
+            Ads(**args),
+            AdsReports(**report_args),
+            Advertisers(**args),
+            advertisers_reports if not advertisers_reports.is_sandbox else None,
+            AdGroups(**args),
+            AdGroupsReports(**report_args),
+            Campaigns(**args),
+            CampaignsReports(**report_args),
+        ]
+        return [stream for stream in streams if stream]

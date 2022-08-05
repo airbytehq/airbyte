@@ -22,8 +22,12 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -160,15 +164,36 @@ public class ArchiveHandlerTest {
         StandardSourceDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion);
+    final Notification notification = new Notification()
+        .withNotificationType(NotificationType.SLACK)
+        .withSendOnFailure(true)
+        .withSendOnSuccess(true)
+        .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook("webhook-url"));
+    final StandardWorkspace standardWorkspace = new StandardWorkspace()
+        .withWorkspaceId(UUID.randomUUID())
+        .withCustomerId(UUID.randomUUID())
+        .withName("test-workspace")
+        .withSlug("random-string")
+        .withEmail("abc@xyz.com")
+        .withInitialSetupComplete(true)
+        .withAnonymousDataCollection(true)
+        .withNews(true)
+        .withSecurityUpdates(true)
+        .withDisplaySetupWizard(true)
+        .withTombstone(false)
+        .withNotifications(Collections.singletonList(notification))
+        .withFirstCompletedSync(true)
+        .withFeedbackDone(true);
     final SourceConnection sourceConnection = new SourceConnection()
         .withSourceDefinitionId(sourceS3DefinitionId)
         .withSourceId(UUID.randomUUID())
-        .withWorkspaceId(UUID.randomUUID())
+        .withWorkspaceId(standardWorkspace.getWorkspaceId())
         .withName("Test source")
         .withConfiguration(Jsons.deserialize("{}"))
         .withTombstone(false);
 
     // Write source connection and an old source definition.
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString(), sourceConnection);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
 
@@ -244,17 +269,28 @@ public class ArchiveHandlerTest {
         .map(SourceConnection::getSourceId)
         .collect(Collectors.toList()).get(0);
 
+    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withSourceType(SourceType.API)
+        .withName("random-source-1")
+        .withDockerImageTag("tag-1")
+        .withDockerRepository("repository-1")
+        .withDocumentationUrl("documentation-url-1")
+        .withIcon("icon-1")
+        .withSpec(new ConnectorSpecification());
+
     final SourceConnection sourceConnection = new SourceConnection()
         .withWorkspaceId(secondWorkspaceId)
         .withSourceId(secondSourceId)
         .withName("Some new names")
-        .withSourceDefinitionId(UUID.randomUUID())
+        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .withTombstone(false)
         .withConfiguration(Jsons.emptyObject());
 
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
 
+    configRepository.writeStandardSourceDefinition(standardSourceDefinition);
     configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
 
     // check that first workspace is unchanged even though modifications were made to second workspace
@@ -272,10 +308,12 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(secondWorkspaceDump, configRepository.dumpConfigs());
   }
 
-  private void setupWorkspaceData(final UUID workspaceId) throws IOException {
+  private void setupWorkspaceData(final UUID workspaceId) throws IOException, JsonValidationException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withName("test-workspace")
+        .withSlug(workspaceId.toString())
+        .withInitialSetupComplete(false)
         .withTombstone(false));
   }
 

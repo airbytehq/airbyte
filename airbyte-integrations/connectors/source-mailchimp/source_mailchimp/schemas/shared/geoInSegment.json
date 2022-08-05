@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "title": "Geolocation Segment",
+  "description": "Segment by a specific geographic region.",
+  "required": ["field", "op", "value", "addr", "lat", "lng"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "IPGeoIn",
+      "enum": ["IPGeoIn"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ipgeo"],
+      "title": "Segment Field",
+      "description": "Segmenting subscribers who are within a specific location.",
+      "example": "ipgeo"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["ipgeoin", "ipgeonotin"],
+      "title": "Segment Operator",
+      "description": "Segment members who are within a specific geographic region.",
+      "example": "ipgeoin"
+    },
+    "value": {
+      "type": "integer",
+      "title": "Segment Data",
+      "description": "The radius of the target location.",
+      "example": 42
+    },
+    "addr": {
+      "type": "string",
+      "title": "Segment Location Address",
+      "description": "The address of the target location.",
+      "example": "Atlanta, GA, USA"
+    },
+    "lat": {
+      "type": "string",
+      "title": "Segment Location Latitude",
+      "description": "The latitude of the target location.",
+      "example": "33.7489954"
+    },
+    "lng": {
+      "type": "string",
+      "title": "Segment Location Longitude",
+      "description": "The longitude of the target location.",
+      "example": "-84.3879824"
+    }
+  }
+}

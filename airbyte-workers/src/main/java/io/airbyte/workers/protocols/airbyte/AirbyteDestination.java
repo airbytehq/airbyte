@@ -60,6 +60,15 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
   boolean isFinished();
 
   /**
+   * Gets the exit value of the destination process. This should only be called after the destination
+   * process has finished.
+   *
+   * @return exit code of the destination process
+   * @throws IllegalStateException if the destination process has not exited
+   */
+  int getExitValue();
+
+  /**
    * Attempts to read an AirbyteMessage from the Destination.
    *
    * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method

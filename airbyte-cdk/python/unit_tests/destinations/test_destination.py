@@ -172,7 +172,7 @@ class TestRun:
         # Affirm to Mypy that this is indeed a method on this mock
         destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
         # Check if config validation has been called
-        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
+        validate_mock.assert_called_with(dummy_config, spec_msg)
 
         # verify output was correct
         assert _wrapped(expected_check_result) == returned_check_result
@@ -224,7 +224,7 @@ class TestRun:
             input_messages=OrderedIterableMatcher(mocked_input),
         )
         # Check if config validation has been called
-        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
+        validate_mock.assert_called_with(dummy_config, spec_msg)
 
         # verify output was correct
         assert expected_write_result == returned_write_result

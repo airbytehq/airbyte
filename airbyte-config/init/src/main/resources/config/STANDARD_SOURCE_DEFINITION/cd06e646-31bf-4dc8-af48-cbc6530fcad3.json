@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "cd06e646-31bf-4dc8-af48-cbc6530fcad3",
+  "name": "Kustomer",
+  "dockerRepository": "airbyte/source-kustomer-singer",
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/kustomer"
+}

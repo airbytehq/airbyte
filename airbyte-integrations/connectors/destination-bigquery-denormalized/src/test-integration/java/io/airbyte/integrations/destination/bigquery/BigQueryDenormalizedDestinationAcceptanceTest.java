@@ -183,7 +183,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
 
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
@@ -191,7 +191,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
+        .put(CONFIG_CREDS, credentialsJson.toString())
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());

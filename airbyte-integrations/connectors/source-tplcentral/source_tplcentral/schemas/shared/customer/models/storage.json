@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "FuelSurcharge": {
+      "description": "positive int percentage 0-100",
+      "type": "number"
+    },
+    "SetInvoiceDateToXactionConfirmDate": {
+      "type": "boolean"
+    },
+    "AccountingCustomerName": {
+      "type": "string"
+    },
+    "AutoFillChargesOnConfirm": {
+      "type": "boolean"
+    }
+  }
+}

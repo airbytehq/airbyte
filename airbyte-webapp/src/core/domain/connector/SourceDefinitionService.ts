@@ -1,5 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { SourceDefinition } from "core/resources/SourceDefinition";
+import { SourceDefinition } from "./types";
 
 class SourceDefinitionService extends AirbyteRequestService {
   get url(): string {

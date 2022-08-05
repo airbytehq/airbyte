@@ -37,7 +37,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
       LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace());
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
 
@@ -49,7 +49,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
     }
 
     if (format == S3Format.CSV) {
-      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+      return new S3CsvWriter.Builder(config, s3Client, configuredStream, uploadTimestamp).build();
     }
 
     if (format == S3Format.JSONL) {

@@ -3,6 +3,7 @@
 set -e
 
 . tools/lib/lib.sh
+. tools/lib/databricks.sh
 
 # runs integration tests for an integration name
 
@@ -10,6 +11,7 @@ connector="$1"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
+  _get_databricks_jdbc_driver
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
   ./gradlew --no-daemon --scan integrationTest
 else
@@ -34,6 +36,10 @@ else
     integrationTestCommand=":airbyte-integrations:connectors:$connector:integrationTest"
   fi
   if [ -n "$selected_integration_test" ] ; then
+    if [[ "$selected_integration_test" == *"databricks"* ]] ; then
+      _get_databricks_jdbc_driver
+    fi
+
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
     ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
@@ -41,6 +47,21 @@ else
     return 1
   fi
 fi
+}
+
+show_skipped_failed_info() {
+   skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
+   if ! test -z "$skipped_failed_info"
+      then
+         echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
+         echo "Python short test summary info:" >> $GITHUB_ENV
+         echo '```' >> $GITHUB_ENV
+         echo "$skipped_failed_info" >> $GITHUB_ENV
+         echo '```' >> $GITHUB_ENV
+         echo "EOF" >> $GITHUB_ENV
+   else
+      echo "PYTHON_SHORT_TEST_SUMMARY_INFO=No skipped/failed tests"
+   fi
 }
 
 # Copy command output to extract gradle scan link.
@@ -55,8 +76,11 @@ test $run_status == "0" || {
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> $GITHUB_ENV
+   show_skipped_failed_info
    exit $run_status
 }
+
+show_skipped_failed_info
 
 # Build successed
 coverage_report=`sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out`

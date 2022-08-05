@@ -33,10 +33,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
-    } else if (isInternalStaging(config)) {
-      return DestinationType.INTERNAL_STAGING;
     } else {
-      return DestinationType.INSERT;
+      return DestinationType.INTERNAL_STAGING;
     }
   }
 

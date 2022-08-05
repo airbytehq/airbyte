@@ -18,7 +18,7 @@ public class AvroRecordHelper {
 
   public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
+    schemaConverter.getAvroSchema(streamSchema, streamName, namespace);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
   }
 

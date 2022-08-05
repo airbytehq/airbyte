@@ -1,6 +1,7 @@
 import React from "react";
 import userEvent from "@testing-library/user-event";
-import { findByText, screen, waitFor } from "@testing-library/react";
+import { getByTestId, screen, waitFor } from "@testing-library/react";
+import selectEvent from "react-select-event";
 
 import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
@@ -15,6 +16,8 @@ jest.mock(
       return <>{children}</>;
     }
 );
+
+jest.setTimeout(10000);
 
 const schema: AirbyteJSONSchema = {
   type: "object",
@@ -200,7 +203,7 @@ describe("Service Form", () => {
     });
   });
 
-  describe.skip("filling service form", () => {
+  describe("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
     beforeEach(() => {
@@ -209,9 +212,9 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          specifications={{
+          selectedConnector={{
             connectionSpecification: schema,
-            sourceDefinitionId: "1",
+            sourceDefinitionId: "test-service-type",
             documentationUrl: "",
           }}
           availableServices={[]}
@@ -243,12 +246,11 @@ describe("Service Form", () => {
       const workTime = container.querySelector(
         "div[name='connectionConfiguration.workTime']"
       );
-      const priceList = container.querySelector(
-        "div[data-testid='connectionConfiguration.priceList']"
+      const priceList = getByTestId(
+        container,
+        "connectionConfiguration.priceList"
       );
-      const addButton = priceList?.querySelector(
-        "button[data-testid='addItemButton']"
-      );
+      const addButton = getByTestId(priceList, "addItemButton");
 
       userEvent.type(name!, "{selectall}{del}name");
       userEvent.type(host!, "test-host");
@@ -259,19 +261,17 @@ describe("Service Form", () => {
       userEvent.type(emails!, "test@test.com{enter}");
       userEvent.type(workTime!.querySelector("input")!, "day{enter}");
 
-      await waitFor(() => userEvent.click(addButton!));
+      await waitFor(() => userEvent.click(addButton));
       const listName = container.querySelector(
         "input[name='connectionConfiguration.priceList.0.name']"
       );
       const listPrice = container.querySelector(
         "input[name='connectionConfiguration.priceList.0.price']"
       );
-      const done = priceList?.querySelector(
-        "button[data-testid='done-button']"
-      );
+      const done = getByTestId(container, "done-button");
       userEvent.type(listName!, "test-price-list-name");
       userEvent.type(listPrice!, "1");
-      await waitFor(() => userEvent.click(done!));
+      await waitFor(() => userEvent.click(done));
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
@@ -331,16 +331,18 @@ describe("Service Form", () => {
         "connectionConfiguration.credentials"
       );
 
-      userEvent.click(credentials);
+      const selectContainer = getByTestId(
+        container,
+        "connectionConfiguration.credentials"
+      );
 
-      const oauth = await findByText(credentials, "oauth");
-
-      userEvent.click(oauth);
+      await selectEvent.select(selectContainer, "oauth", {
+        container: document.body,
+      });
 
       const credentialsValue = credentials.querySelector(
         "input[value='oauth']"
       );
-
       const uri = container.querySelector(
         "input[name='connectionConfiguration.credentials.redirect_uri']"
       );
@@ -354,11 +356,14 @@ describe("Service Form", () => {
         "connectionConfiguration.credentials"
       );
 
-      userEvent.click(credentials);
+      const selectContainer = getByTestId(
+        container,
+        "connectionConfiguration.credentials"
+      );
 
-      const oauth = await findByText(credentials, "oauth");
-
-      userEvent.click(oauth);
+      await selectEvent.select(selectContainer, "oauth", {
+        container: document.body,
+      });
 
       const uri = container.querySelector(
         "input[name='connectionConfiguration.credentials.redirect_uri']"

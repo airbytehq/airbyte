@@ -5,14 +5,12 @@
 
 import json
 import re
-from copy import deepcopy
 from typing import Union
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-# TikTok Initial release date is September 2016
-DEFAULT_START_DATE = "01-09-2016"
+from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
 class SandboxEnvSpec(BaseModel):
@@ -35,28 +33,41 @@ class ProductionEnvSpec(BaseModel):
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(
-        description="The App id applied by the developer.",
+        description="The App ID applied by the developer.",
     )
-    secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
+    secret: str = Field(description="The private key of the developer application.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
+    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, order=2)
 
-    access_token: str = Field(description="Long-term Authorized Access Token.", airbyte_secret=True)
+    access_token: str = Field(description="The Long-term Authorized Access Token.", order=1, airbyte_secret=True)
 
     start_date: str = Field(
-        description="Start Date in format: YYYY-MM-DD.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
+        default=DEFAULT_START_DATE,
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        order=3,
+    )
+
+    report_granularity: str = Field(
+        description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
+        "This option is used for reports' streams only.",
+        default=ReportGranularity.default().value,
+        enum=[g.value for g in ReportGranularity],
+        order=4,
     )
 
     @staticmethod
     def change_format_to_oneOf(schema: dict, field_name: str) -> dict:
-        schema["properties"][field_name]["oneOf"] = deepcopy(schema["properties"][field_name]["anyOf"])
+
         schema["properties"][field_name]["type"] = "object"
-        del schema["properties"][field_name]["anyOf"]
+        if "oneOf" not in schema["properties"][field_name]:
+            schema["properties"][field_name]["oneOf"] = schema["properties"][field_name].pop("anyOf")
+
         return schema
 
     @staticmethod

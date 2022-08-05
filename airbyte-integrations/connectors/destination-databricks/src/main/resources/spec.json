@@ -24,28 +24,28 @@
         "default": false
       },
       "databricks_server_hostname": {
-        "title": "Databricks Cluster Server Hostname",
+        "title": "Server Hostname",
         "type": "string",
-        "description": "",
+        "description": "Databricks Cluster Server Hostname.",
         "examples": ["abc-12345678-wxyz.cloud.databricks.com"]
       },
       "databricks_http_path": {
-        "title": "Databricks Cluster HTTP Path",
+        "title": "HTTP Path",
         "type": "string",
-        "description": "",
+        "description": "Databricks Cluster HTTP Path.",
         "examples": ["sql/protocolvx/o/1234567489/0000-1111111-abcd90"]
       },
       "databricks_port": {
-        "title": "Databricks Cluster Port",
+        "title": "Port",
         "type": "string",
-        "description": "",
+        "description": "Databricks Cluster Port.",
         "default": "443",
         "examples": ["443"]
       },
       "databricks_personal_access_token": {
-        "title": "Databricks Personal Access Token",
+        "title": "Access Token",
         "type": "string",
-        "description": "",
+        "description": "Databricks Personal Access Token for making authenticated requests.",
         "examples": ["dapi0123456789abcdefghij0123456789AB"],
         "airbyte_secret": true
       },
@@ -59,7 +59,7 @@
       "data_source": {
         "title": "Data Source",
         "type": "object",
-        "description": "Storage on which the delta lake is built",
+        "description": "Storage on which the delta lake is built.",
         "oneOf": [
           {
             "title": "Amazon S3",
@@ -126,12 +126,12 @@
               "s3_access_key_id": {
                 "type": "string",
                 "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
-                "title": "S3 Key Id",
+                "title": "S3 Access Key ID",
                 "examples": ["A012345678910EXAMPLE"],
                 "airbyte_secret": true
               },
               "s3_secret_access_key": {
-                "title": "S3 Access Key",
+                "title": "S3 Secret Access Key",
                 "type": "string",
                 "description": "The corresponding secret to the above access key id.",
                 "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],

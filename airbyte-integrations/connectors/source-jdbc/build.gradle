@@ -47,7 +47,7 @@ dependencies {
     testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-    testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+    testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

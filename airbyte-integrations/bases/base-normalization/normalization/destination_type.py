@@ -8,6 +8,7 @@ from enum import Enum
 
 class DestinationType(Enum):
     BIGQUERY = "bigquery"
+    CLICKHOUSE = "clickhouse"
     MSSQL = "mssql"
     MYSQL = "mysql"
     ORACLE = "oracle"

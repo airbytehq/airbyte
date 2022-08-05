@@ -9,6 +9,7 @@
     "properties": {
       "domain": {
         "type": "string",
+        "title": "Domain",
         "examples": [
           "domainname.looker.com",
           "looker.clientname.com",

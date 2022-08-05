@@ -3,67 +3,67 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "object": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "interval_unit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "interval_length": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "trial_unit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "trial_length": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "trial_requires_billing_info": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "total_billing_cycles": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "auto_renew": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "accounting_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "revenue_schedule_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "setup_fee_revenue_schedule_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "setup_fee_accounting_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "avalara_transaction_type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "avalara_service_type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "tax_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tax_exempt": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "currencies": {
       "type": "array"
@@ -72,30 +72,33 @@
       "type": "object",
       "properties": {
         "success_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cancel_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bypass_confirmation": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "display_quantity": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         }
       }
     },
     "allow_any_item_on_subscriptions": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "dunning_campaign_id": {
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

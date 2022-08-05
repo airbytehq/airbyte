@@ -5,10 +5,13 @@
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from requests.exceptions import HTTPError
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
+from .utils import filter_streams
 
 STRING_TYPES = [
     "byte",
@@ -168,6 +171,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
+    logger = AirbyteLogger()
     version = "v52.0"
 
     def __init__(
@@ -208,31 +212,36 @@ class Salesforce:
             return False
         return True
 
-    def get_validated_streams(self, catalog: ConfiguredAirbyteCatalog = None):
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
-        validated_streams = []
+        stream_names = [stream_object["name"] for stream_object in salesforce_objects]
         if catalog:
-            streams_for_read = [configured_stream.stream.name for configured_stream in catalog.streams]
+            return [configured_stream.stream.name for configured_stream in catalog.streams]
 
-        for stream_object in salesforce_objects:
-            stream_name = stream_object["name"]
-            if catalog and stream_name not in streams_for_read:
-                continue
-            if self.filter_streams(stream_name):
-                validated_streams.append(stream_name)
+        if config.get("streams_criteria"):
+            filtered_stream_list = []
+            for stream_criteria in config["streams_criteria"]:
+                filtered_stream_list += filter_streams(
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                )
+            stream_names = list(set(filtered_stream_list))
 
+        validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return validated_streams
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
-        if http_method == "GET":
-            resp = self.session.get(url, headers=headers, stream=stream, params=params)
-        elif http_method == "POST":
-            resp = self.session.post(url, headers=headers, data=body)
-        resp.raise_for_status()
-
+        try:
+            if http_method == "GET":
+                resp = self.session.get(url, headers=headers, stream=stream, params=params)
+            elif http_method == "POST":
+                resp = self.session.post(url, headers=headers, data=body)
+            resp.raise_for_status()
+        except HTTPError as err:
+            self.logger.warn(f"http error body: {err.response.text}")
+            raise
         return resp
 
     def login(self):

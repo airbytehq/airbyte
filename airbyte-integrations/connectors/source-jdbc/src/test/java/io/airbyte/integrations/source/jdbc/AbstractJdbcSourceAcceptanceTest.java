@@ -9,11 +9,13 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.sql.JDBCType;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,7 +67,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new PostgresTestSource();
   }
 
@@ -84,14 +86,14 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     PSQL_DB.close();
   }
 
-  private static class PostgresTestSource extends AbstractJdbcSource implements Source {
+  private static class PostgresTestSource extends AbstractJdbcSource<JDBCType> implements Source {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
     static final String DRIVER_CLASS = "org.postgresql.Driver";
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override

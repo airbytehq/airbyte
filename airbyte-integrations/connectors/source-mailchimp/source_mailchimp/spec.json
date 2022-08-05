@@ -9,12 +9,14 @@
     "properties": {
       "username": {
         "type": "string",
-        "description": "The Username or email you use to sign into Mailchimp"
+        "title": "Username",
+        "description": "The Username or email you use to sign into Mailchimp."
       },
       "apikey": {
         "type": "string",
         "airbyte_secret": true,
-        "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key."
+        "title": "API Key",
+        "description": "Mailchimp API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key."
       }
     }
   }

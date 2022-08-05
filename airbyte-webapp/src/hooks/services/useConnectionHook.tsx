@@ -14,10 +14,7 @@ import ConnectionResource, {
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { Source } from "core/resources/Source";
-import { Routes } from "pages/routes";
-import { Destination } from "core/resources/Destination";
+import { RoutePaths } from "pages/routes";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
@@ -26,6 +23,7 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
+import { Destination, Source, SourceDefinition } from "core/domain/connector";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -198,7 +196,7 @@ const useConnection = (): {
 
     await updateConnectionsStore({ workspaceId: workspace.workspaceId });
 
-    push(Routes.Connections);
+    push(RoutePaths.Connections);
   };
 
   const updateConnection = async ({

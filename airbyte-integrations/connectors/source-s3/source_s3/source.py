@@ -3,7 +3,7 @@
 #
 
 
-from typing import Optional
+from typing import Any, Mapping, Optional
 
 from pydantic import BaseModel, Field
 
@@ -47,3 +47,9 @@ class SourceS3(SourceFilesAbstract):
     stream_class = IncrementalFileStreamS3
     spec_class = SourceS3Spec
     documentation_url = "https://docs.airbyte.io/integrations/sources/s3"
+
+    def read_config(self, config_path: str) -> Mapping[str, Any]:
+        config = super().read_config(config_path)
+        if config.get("format", {}).get("delimiter") == r"\t":
+            config["format"]["delimiter"] = "\t"
+        return config

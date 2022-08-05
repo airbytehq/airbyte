@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "enum": [0, 1, 2],
+  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+}

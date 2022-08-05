@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import SourcesTable from "./components/SourcesTable";
@@ -19,7 +19,7 @@ const AllSourcesPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);
+  const onCreateSource = () => push(`${RoutePaths.SourceNew}`);
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}

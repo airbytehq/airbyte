@@ -6,7 +6,7 @@
   "supportsNormalization": false,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Destination Kvdb",
+    "title": "Destination KVdb",
     "type": "object",
     "required": ["bucket_id", "secret_key"],
     "additionalProperties": false,
@@ -14,13 +14,13 @@
       "bucket_id": {
         "title": "Bucket ID",
         "type": "string",
-        "description": "The ID of your KVDB bucket",
+        "description": "The ID of your KVdb bucket.",
         "order": 1
       },
       "secret_key": {
         "title": "Secret Key",
         "type": "string",
-        "description": "Your bucket's secret key",
+        "description": "Your bucket Secret Key.",
         "order": 2
       }
     }

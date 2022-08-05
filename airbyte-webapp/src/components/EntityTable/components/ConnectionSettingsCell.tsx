@@ -2,8 +2,10 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
+
 import useRouter from "hooks/useRouter";
-import { Routes } from "../../../pages/routes";
+import { RoutePaths } from "pages/routes";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 type IProps = {
   id: string;
@@ -28,10 +30,14 @@ const Icon = styled(FontAwesomeIcon)`
 
 const ConnectorCell: React.FC<IProps> = ({ id }) => {
   const { push } = useRouter();
+  const { workspaceId } = useCurrentWorkspace();
 
   const openSettings = (event: React.MouseEvent) => {
     event.stopPropagation();
-    push(`${Routes.Connections}/${id}${Routes.Settings}`);
+    // TODO: Replace with link instead of push
+    push(
+      `/${workspaceId}/${RoutePaths.Connections}/${id}/${RoutePaths.Settings}`
+    );
   };
 
   return (

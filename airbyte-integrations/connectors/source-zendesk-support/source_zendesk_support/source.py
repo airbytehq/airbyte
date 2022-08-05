@@ -11,11 +11,14 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
+    Brands,
+    CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
     Organizations,
     SatisfactionRatings,
+    Schedules,
     SlaPolicies,
     SourceZendeskException,
     Tags,
@@ -108,4 +111,7 @@ class SourceZendeskSupport(AbstractSource):
             TicketMetricEvents(**args),
             Tickets(**args),
             Users(**args),
+            Brands(**args),
+            CustomRoles(**args),
+            Schedules(**args),
         ]

@@ -1,3 +1,4 @@
+---
 {{- if .Values.webapp.ingress.enabled -}}
 {{- $fullName := include "airbyte.fullname" . -}}
 {{- $svcPort := .Values.webapp.service.port -}}

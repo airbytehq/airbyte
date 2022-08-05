@@ -95,6 +95,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
+    range_of_days = 3
 
     def path(
         self,
@@ -123,7 +124,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         for site_url in self._site_urls:
             for search_type in self.search_types:
-                yield {"site_url": site_url, "search_type": search_type}
+                start_date = self._get_start_date(stream_state, site_url, search_type)
+                end_date = self._get_end_date()
+
+                if start_date > end_date:
+                    start_date = end_date
+
+                next_start = start_date
+                period = pendulum.Duration(days=self.range_of_days - 1)
+                while next_start <= end_date:
+                    next_end = min(next_start + period, end_date)
+                    yield {
+                        "site_url": site_url,
+                        "search_type": search_type,
+                        "start_date": next_start.to_date_string(),
+                        "end_date": next_end.to_date_string(),
+                    }
+                    # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
+                    next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
         """
@@ -159,11 +177,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
-        start_date = self._get_start_data(stream_state, stream_slice)
-
         data = {
-            "startDate": start_date,
-            "endDate": self._end_date,
+            "startDate": stream_slice["start_date"],
+            "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
             "searchType": stream_slice.get("search_type"),
             "aggregationType": "auto",
@@ -172,23 +188,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         }
         return data
 
-    def _get_start_data(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-    ) -> str:
-        start_date = self._start_date
+    def _get_end_date(self) -> pendulum.date:
+        end_date = pendulum.parse(self._end_date).date()
+        # limit `end_date` value with current date
+        return min(end_date, pendulum.now().date())
+
+    def _get_start_date(self, stream_state: Mapping[str, Any] = None, site_url: str = None, search_type: str = None) -> pendulum.date:
+        start_date = pendulum.parse(self._start_date)
 
         if start_date and stream_state:
-            if stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"]):
-                stream_state_value = stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"])
+            if stream_state.get(unquote_plus(site_url), {}).get(search_type):
+                stream_state_value = stream_state.get(unquote_plus(site_url), {}).get(search_type)
 
                 start_date = max(
                     pendulum.parse(stream_state_value[self.cursor_field]),
-                    pendulum.parse(start_date),
-                ).to_date_string()
+                    start_date,
+                )
 
-        return start_date
+        return start_date.date()
 
     def parse_response(
         self,
@@ -219,6 +236,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         """
         With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
         and `searchType`. This functionality is placed in `get_update_state`.
+
+        {
+          "stream": {
+            "http://domain1.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "http://domain2.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "date": "2022-01-03",
+          }
+        }
         """
 
         latest_benchmark = latest_record[self.cursor_field]
@@ -226,16 +261,10 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         site_url = latest_record.get("site_url")
         search_type = latest_record.get("search_type")
 
-        if current_stream_state.get(site_url, {}).get(search_type):
-            current_stream_state[site_url][search_type] = {
-                self.cursor_field: max(latest_benchmark, current_stream_state[site_url][search_type][self.cursor_field])
-            }
-
-        elif current_stream_state.get(site_url):
-            current_stream_state[site_url][search_type] = {self.cursor_field: latest_benchmark}
-
-        else:
-            current_stream_state = {site_url: {search_type: {self.cursor_field: latest_benchmark}}}
+        value = current_stream_state.get(site_url, {}).get(search_type, {}).get(self.cursor_field)
+        if value:
+            latest_benchmark = max(latest_benchmark, value)
+        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
 
         # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
         # support that

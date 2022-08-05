@@ -13,7 +13,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 public class SpecActivityImpl implements SpecActivity {
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
@@ -33,7 +34,8 @@ public class SpecActivityImpl implements SpecActivity {
   private final String databaseUrl;
   private final String airbyteVersion;
 
-  public SpecActivityImpl(final ProcessFactory processFactory,
+  public SpecActivityImpl(final WorkerConfigs workerConfigs,
+                          final ProcessFactory processFactory,
                           final Path workspaceRoot,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
@@ -41,6 +43,7 @@ public class SpecActivityImpl implements SpecActivity {
                           final String databasePassword,
                           final String databaseUrl,
                           final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
@@ -74,9 +77,9 @@ public class SpecActivityImpl implements SpecActivity {
           launcherConfig.getAttemptId().intValue(),
           launcherConfig.getDockerImage(),
           processFactory,
-          WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+          workerConfigs.getResourceRequirements());
 
-      return new DefaultGetSpecWorker(integrationLauncher);
+      return new DefaultGetSpecWorker(workerConfigs, integrationLauncher);
     };
   }
 

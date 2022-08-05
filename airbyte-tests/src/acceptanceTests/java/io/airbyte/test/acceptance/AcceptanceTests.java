@@ -28,6 +28,7 @@ import io.airbyte.api.client.model.AirbyteStream;
 import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.AirbyteStreamConfiguration;
 import io.airbyte.api.client.model.AttemptInfoRead;
+import io.airbyte.api.client.model.AttemptStatus;
 import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
@@ -86,6 +87,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,6 +104,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -130,8 +133,8 @@ public class AcceptanceTests {
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
-  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
-  private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
+  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+  private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
@@ -719,7 +722,7 @@ public class AcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
+        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -857,6 +860,77 @@ public class AcceptanceTests {
             String.format("Expected %s but got: %s", expectedMessageNumber, logLine));
         expectedMessageNumber++;
       }
+    }
+  }
+
+  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
+  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
+  @Test
+  @Order(17)
+  @Disabled
+  public void testFailureTimeout() throws Exception {
+    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+
+    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
+        .createDestinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com")));
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("max_records", 1000)
+            .put("message_interval", 100)
+            .build()));
+
+    // Destination fails after processing 5 messages, so the job should fail after the graceful close
+    // timeout of 1 minute
+    final DestinationRead destination = createDestination(
+        "E2E Test Destination -" + UUID.randomUUID(),
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "FAILING")
+            .put("num_messages", 5)
+            .build()));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = destination.getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+            .getConnectionId();
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of pending.
+    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+
+    // wait for job for max of 3 minutes, by which time the job attempt should have failed
+    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+
+    final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
+    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
+    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
+
+    // assert that the job attempt failed, and cancel the job regardless of status to prevent retries
+    try {
+      assertEquals(AttemptStatus.FAILED, attemptInfoRead.getAttempt().getStatus());
+    } finally {
+      apiClient.getJobsApi().cancelJob(jobId);
     }
   }
 
@@ -1199,14 +1273,23 @@ public class AcceptanceTests {
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
-  @SuppressWarnings("BusyWait")
   private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
+    return waitForJob(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
+  }
+
+  @SuppressWarnings("BusyWait")
+  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses, final Duration maxWaitTime)
+      throws InterruptedException, ApiException {
     JobRead job = originalJob;
-    int count = 0;
-    while (count < 400 && jobStatuses.contains(job.getStatus())) {
+
+    final Instant waitStart = Instant.now();
+    while (jobStatuses.contains(job.getStatus())) {
+      if (Duration.between(waitStart, Instant.now()).compareTo(maxWaitTime) > 0) {
+        LOGGER.info("Max wait time of {} has been reached. Stopping wait.", maxWaitTime);
+        break;
+      }
       sleep(1000);
-      count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());

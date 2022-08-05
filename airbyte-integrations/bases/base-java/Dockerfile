@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 

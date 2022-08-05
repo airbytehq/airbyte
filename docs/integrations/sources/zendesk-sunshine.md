@@ -47,13 +47,16 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Requirements
 
-* Zendesk Sunshine Access Token
+* Zendesk Sunshine API Token
+
+OR
+* Zendesk Sunshine oauth2.0 application (client_id, client_secret, access_token)
 
 ### Setup guide
 
 Please follow this [guide](https://developer.zendesk.com/documentation/custom-data/custom-objects/getting-started-with-custom-objects/#enabling-custom-objects)
 
-Generate a Access Token as described in [here](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication)
+Generate an API Token or oauth2.0 Access token as described in [here](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
@@ -61,5 +64,6 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-11-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976) | Add oauth2.0 support |
 | 0.1.0 | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359) | Initial Release |
 

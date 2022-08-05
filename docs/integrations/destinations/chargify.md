@@ -7,13 +7,13 @@ description: >-
 
 ## Overview
 
-The Airbyte Keen destination allows you to stream data from any Airbyte Source into [Keen](https://keen.io?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for storage, analysis, and visualization. Keen is a flexible, fully managed event streaming and analytics platform that empowers anyone to ship custom, embeddable dashboards in minutes, not months.
+The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.io/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
 
 ### Sync overview
 
 #### Output schema
 
-Each replicated stream from Airbyte will output data into a corresponding event collection in Keen. Event collections store data in JSON format. Each collection will inherit the name from the stream with all non-alphanumeric characters removed, except for `.’, ‘-’, ‘_’,` and whitespace characters. When possible, the connector will try to infer the timestamp value for the record and override the special field `keen.timestamp` with it.
+Each replicated stream from Airbyte will output data into a corresponding event collection in Chargify. Event collections store data in JSON format. Each collection will inherit the name from the stream with all non-alphanumeric characters removed, except for `.’, ‘-’, ‘_’,` and whitespace characters. When possible, the connector will try to infer the timestamp value for the record and override the special field `chargify.timestamp` with it.
 
 #### Features
 
@@ -28,56 +28,52 @@ Each replicated stream from Airbyte will output data into a corresponding event 
 
 ### Requirements
 
-To use the Keen destination, you'll first need to create a [Keen account](https://keen.io/users/signup?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) (if you don’t already have one).
+To use the Chargify destination, you'll first need to create a [Chargify account](https://go.chargify.com/free-trial/) (if you don’t already have one).
 
-Once you have a Keen account, you can use the following credentials to set up the connector
+Once you have a Chargify account, you can use the following credentials to set up the connector
 
-* A Keen Project ID
-* A Keen Master API key associated with the project
+* A Project ID associated with the site
+* A Master API key associated with the site
+
+You can reach out to [support@chargify.com](mailto:support@chargify.com) to request your Project ID and Master API key for the Airbyte destination connector.
 
 See the setup guide for more information about how to get started.
 
 ### Setup guide
 
-#### Keen Project
+#### Chargify
 
-If you haven’t set up a project to stream your data to:
+If [Business Intelligence](http://chargify.com/business-intelligence/) and [Events-Based Billing](http://chargify.com/events-based-billing) have not been enabled, please contact [support@chargify.com](mailto:support@chargify.com).
 
-Login to the [Keen application](https://keen.io/) and add a new project. To do this, click the ‘Add New’ link next to the Projects label on the left-hand, side ribbon. Then, give the project a name.
+Login to the Chargify application and identify which sites you want to stream data to for Events-Based Billing and Chargify Business Intelligence.
 
-You can think of a project as a data silo. The data in a project is completely separate from data in other projects. We recommend that you create separate projects for each of your applications and separate projects for Dev and Prod environments.
+Chargify sites are simply containers for your Products, Customers, and Subscriptions. You can use Chargify with just one Site, although most customers will want two sites at a minimum – one for testing and one for production.
 
-Now, head to the ‘Access’ section and grab your Project ID and Master API Key.
-
-If you already have a project set up:
-
-Head to the ‘Access’ tab and grab your Project ID and Master API Key
+Reach out to [support@chargify.com](mailto:support@chargify.com) to obtain your Site Project ID and Site Master API key. Note: You will need keys for each site you plan to stream data to.
 
 #### API Key and Project ID
 
-The Keen Connector uses the [Keen Kafka Inbound Cluster](https://keen.io/docs/streams/kafka-streaming/kafka-inbound-cluster/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) to stream  data. It requires your `Project ID` and `Master Key` for  authentication. To get them, navigate to the `Access` tab from the left-hand, side panel and check the `Project Details` section.
-**Important**: This destination requires the Project's **Master** Key.
+The Chargify Connector requires your `Project ID` and `Master Key` for authentication. To get them, please reach out to [support@chargify.com](mailto:support@chargify.com).
 
 #### Timestamp Inference
 
-The `Infer Timestamp` field lets you specify if you want the connector to infer the [keen.timestamp](https://keen.io/docs/streams/overview/data-modeling-guide/#timestamp-data-type) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Keen's time series analytics. By default, this property is set to `true`. If toggled off, `keen.timestamp` will be set to the datetime when the data was recorded by Keen.
+The `Infer Timestamp` field lets you specify if you want the connector to infer the [chargify.timestamp](https://help.chargify.com/events/getting-data-in-guide.html#event-timestamps) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Chargify's time series analytics. By default, this property is set to true. If toggled off, chargify.timestamp will be set to the datetime when the data was recorded by Chargify.
 
-### Setup the Keen destination in Airbyte
+### Setup the Chargify destination in Airbyte
 
-Now, you should have all the parameters needed to configure Keen destination.
+Now, you should have all the parameters needed to configure Chargify destination.
 
 * **Project ID**
 * **Master API Key**
 * **Infer Timestamp**
 
-Connect your first source and then head to the Keen application. You can seamlessly run [custom analysis](https://keen.io/docs/compute/data-explorer-guide/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) on your data and [build interactive dashboards](https://keen.io/docs/visualize/dashboard-creator/dashboard-edition/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for key stakeholders.
+Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](http://chargify.com/events-based-billing/).
 
-If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
+If you have any questions or want to get started, [please reach out to a billing expert](https://go.chargify.com/contact/).
 
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 0.2.0 | 2021-09-10 | [\#5973](https://github.com/airbytehq/airbyte/pull/5973) | Fix timestamp inference for complex schemas |
-| 0.1.0 | 2021-08-18 | [\#5339](https://github.com/airbytehq/airbyte/pull/5339) | Keen Destination Release! |
-
+| 0.1.0 | 2021-08-18 | [\#5339](https://github.com/airbytehq/airbyte/pull/5339) | Chargify Destination Release! |

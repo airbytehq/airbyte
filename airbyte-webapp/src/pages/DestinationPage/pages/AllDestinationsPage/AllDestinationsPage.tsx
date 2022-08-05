@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { Routes } from "../../../routes";
+import { RoutePaths } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import DestinationsTable from "./components/DestinationsTable";
@@ -19,8 +19,7 @@ const AllDestinationsPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const onCreateDestination = () =>
-    push(`${Routes.Destination}${Routes.DestinationNew}`);
+  const onCreateDestination = () => push(`${RoutePaths.DestinationNew}`);
 
   return (
     <MainPageWithScroll

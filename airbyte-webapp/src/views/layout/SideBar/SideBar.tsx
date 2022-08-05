@@ -5,9 +5,9 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import { useConfig } from "config";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import { Link } from "components";
 import Version from "components/Version";
@@ -91,7 +91,7 @@ const HelpIcon = styled(FontAwesomeIcon)`
 
 const SideBar: React.FC = () => {
   const config = useConfig();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
 
   return (
     <Bar>
@@ -99,8 +99,8 @@ const SideBar: React.FC = () => {
         <Link
           to={
             workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
+              ? RoutePaths.Onboarding
+              : RoutePaths.Connections
           }
         >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
@@ -108,7 +108,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={Routes.Onboarding} activeClassName="active">
+              <MenuItem to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -117,7 +117,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <MenuItem to={Routes.Connections} activeClassName="active">
+            <MenuItem to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -125,7 +125,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Source} activeClassName="active">
+            <MenuItem to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -133,7 +133,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Destination} activeClassName="active">
+            <MenuItem to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -156,7 +156,6 @@ const SideBar: React.FC = () => {
             options={[
               { value: "docs" },
               { value: "slack" },
-              { value: "status" },
               { value: "recipes" },
             ]}
           >
@@ -173,11 +172,10 @@ const SideBar: React.FC = () => {
 
         <li>
           <MenuItem
-            to={`${Routes.Settings}${Routes.Account}`}
-            activeClassName="active"
-            isActive={(_, location) =>
-              location.pathname.startsWith(Routes.Settings)
-            }
+            to={RoutePaths.Settings}
+            // isActive={(_, location) =>
+            //   location.pathname.startsWith(RoutePaths.Settings)
+            // }
           >
             <React.Suspense fallback={null}>
               <NotificationIndicator />

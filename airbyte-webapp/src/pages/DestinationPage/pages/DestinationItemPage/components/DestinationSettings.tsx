@@ -3,20 +3,19 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import { ContentCard } from "components";
-import { JobsLogItem } from "components/JobItem";
 import DeleteBlock from "components/DeleteBlock";
-
-import ServiceForm from "views/Connector/ServiceForm";
-import { Destination } from "core/resources/Destination";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import useDestination from "hooks/services/useDestinationHook";
+import useDestination, {
+  useDestinationDefinitionSpecificationLoadAsync,
+} from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { Destination } from "core/domain/connector";
 
 const Content = styled.div`
   width: 100%;
@@ -39,11 +38,8 @@ const DestinationsSettings: React.FC<IProps> = ({
     response: JobInfo;
   } | null>(null);
 
-  const destinationSpecification = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId: currentDestination.destinationDefinitionId,
-    }
+  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
+    currentDestination.destinationDefinitionId
   );
 
   const destinationDefinition = useResource(
@@ -107,25 +103,22 @@ const DestinationsSettings: React.FC<IProps> = ({
 
   return (
     <Content>
-      <ContentCard
+      <ConnectorCard
+        onRetest={onRetest}
+        isEditMode
+        onSubmit={onSubmitForm}
+        formType="destination"
+        availableServices={[destinationDefinition]}
+        formValues={{
+          ...currentDestination,
+          serviceType: currentDestination.destinationDefinitionId,
+        }}
+        selectedConnector={destinationSpecification}
+        successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+        errorMessage={errorStatusRequest?.statusMessage}
         title={<FormattedMessage id="destination.destinationSettings" />}
-      >
-        <ServiceForm
-          onRetest={onRetest}
-          isEditMode
-          onSubmit={onSubmitForm}
-          formType="destination"
-          availableServices={[destinationDefinition]}
-          formValues={{
-            ...currentDestination,
-            serviceType: currentDestination.destinationDefinitionId,
-          }}
-          selectedConnector={destinationSpecification}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          errorMessage={errorStatusRequest?.statusMessage}
-        />
-        <JobsLogItem jobInfo={errorStatusRequest?.response} />
-      </ContentCard>
+        jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
+      />
       <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>
   );

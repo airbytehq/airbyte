@@ -1,4 +1,4 @@
-import isEqual from "lodash.isequal";
+import isEqual from "lodash/isEqual";
 
 export function equal(o1?: unknown, o2?: unknown): boolean {
   return isEqual(o1, o2);

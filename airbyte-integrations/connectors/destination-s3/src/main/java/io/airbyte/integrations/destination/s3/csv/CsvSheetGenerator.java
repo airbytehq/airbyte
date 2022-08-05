@@ -20,6 +20,8 @@ public interface CsvSheetGenerator {
 
   List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
 
+  List<Object> getDataRow(JsonNode formattedData);
+
   final class Factory {
 
     public static CsvSheetGenerator create(final JsonNode jsonSchema, final S3CsvFormatConfig formatConfig) {

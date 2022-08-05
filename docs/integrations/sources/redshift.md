@@ -53,6 +53,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.5   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.3.4   | 2021-10-21 | [7234](https://github.com/airbytehq/airbyte/pull/7234) | Allow SSL traffic only |
 | 0.3.3   | 2021-10-12 | [6965](https://github.com/airbytehq/airbyte/pull/6965) | Added SSL Support |
 | 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |

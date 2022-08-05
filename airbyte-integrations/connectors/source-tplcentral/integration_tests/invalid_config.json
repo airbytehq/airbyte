@@ -1,0 +1,10 @@
+{
+  "url_base": "https://secure-wms.com/",
+  "client_id": "",
+  "client_secret": "",
+  "user_login_id": 0,
+  "tpl_key": "{00000000-0000-0000-0000-000000000000}",
+  "customer_id": 0,
+  "facility_id": 0,
+  "start_date": "2021-10-01"
+}

@@ -23,6 +23,7 @@ class DelightedStream(HttpStream, ABC):
 
     # Page size
     limit = 100
+    page = 1
 
     # Define primary key to all streams as primary key
     primary_key = "id"
@@ -32,12 +33,10 @@ class DelightedStream(HttpStream, ABC):
         self.since = since
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Getting next page link
-        next_page = response.links.get("next", None)
-        if next_page:
-            return dict(parse_qsl(urlparse(next_page.get("url")).query))
-        else:
-            return None
+        response_data = response.json()
+        if len(response_data) == self.limit:
+            self.page += 1
+            return {"page": self.page}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -49,8 +48,7 @@ class DelightedStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json()
-        yield from records
+        yield from response.json()
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
@@ -77,19 +75,21 @@ class IncrementalDelightedStream(DelightedStream, ABC):
 
 
 class People(IncrementalDelightedStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "people.json"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # Getting next page link
+        next_page = response.links.get("next", None)
+        if next_page:
+            return {"page_info": dict(parse_qsl(urlparse(next_page.get("url")).query)).get("page_info")}
 
 
 class Unsubscribes(IncrementalDelightedStream):
     cursor_field = "unsubscribed_at"
     primary_key = "person_id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "unsubscribes.json"
 
 
@@ -97,18 +97,14 @@ class Bounces(IncrementalDelightedStream):
     cursor_field = "bounced_at"
     primary_key = "person_id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "bounces.json"
 
 
 class SurveyResponses(IncrementalDelightedStream):
     cursor_field = "updated_at"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "survey_responses.json"
 
     def request_params(self, stream_state=None, **kwargs):
@@ -148,4 +144,9 @@ class SourceDelighted(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
         args = {"authenticator": auth, "since": config["since"]}
-        return [People(**args), Unsubscribes(**args), Bounces(**args), SurveyResponses(**args)]
+        return [
+            Bounces(**args),
+            People(**args),
+            SurveyResponses(**args),
+            Unsubscribes(**args),
+        ]

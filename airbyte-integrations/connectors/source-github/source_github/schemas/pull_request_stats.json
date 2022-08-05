@@ -49,6 +49,10 @@
     },
     "changed_files": {
       "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

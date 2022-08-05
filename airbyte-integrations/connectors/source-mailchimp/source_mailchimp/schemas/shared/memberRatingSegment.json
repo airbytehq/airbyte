@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Member Rating Segment",
+  "description": "Segment by member rating.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "MemberRating",
+      "enum": ["MemberRating"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["rating"],
+      "title": "Segment Field",
+      "description": "Segment by member rating.",
+      "example": "rating"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not", "greater", "less"],
+      "title": "Segment Operator",
+      "description": "Members who have have a rating that is/not exactly a given number or members who have a rating greater/less than a given number.",
+      "example": "greater"
+    },
+    "value": {
+      "type": "number",
+      "title": "Segment Operator",
+      "description": "The star rating number to segment against.",
+      "example": 4
+    }
+  }
+}

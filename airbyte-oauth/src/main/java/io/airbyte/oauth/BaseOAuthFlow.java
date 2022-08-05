@@ -92,7 +92,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     return getConfigValueUnsafe(oauthConfig, "client_secret");
   }
 
-  private static String getConfigValueUnsafe(final JsonNode oauthConfig, final String fieldName) {
+  protected static String getConfigValueUnsafe(final JsonNode oauthConfig, final String fieldName) {
     if (oauthConfig.get(fieldName) != null) {
       return oauthConfig.get(fieldName).asText();
     } else {

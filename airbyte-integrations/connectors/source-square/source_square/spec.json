@@ -9,25 +9,29 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "The API key for a Square application",
+        "description": "The API key for a Square application.",
+        "title": "API Key",
         "airbyte_secret": true
       },
       "is_sandbox": {
         "type": "boolean",
-        "description": "Determines the sandbox (true) or production (false) API version",
+        "description": "Determines whether to use the sandbox or production environment.",
+        "title": "Sandbox",
         "examples": [true, false],
         "default": true
       },
       "start_date": {
         "type": "string",
-        "description": "The start date to sync data. Leave blank for full sync. Format: YYYY-MM-DD.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. If not set, all data will be replicated.",
+        "title": "Start Date",
         "examples": ["2021-01-01"],
         "default": "1970-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "include_deleted_objects": {
         "type": "boolean",
-        "description": "In some streams there is and option to include deleted objects (Items, Categories, Discounts, Taxes)",
+        "description": "In some streams there is an option to include deleted objects (Items, Categories, Discounts, Taxes)",
+        "title": "Include Deleded Objects",
         "examples": [true, false],
         "default": false
       }

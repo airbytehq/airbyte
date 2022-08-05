@@ -24,8 +24,8 @@
       },
       {
         "title": "Infinite Feed",
-        "required": ["type", "max_records", "message_interval"],
-        "additionalProperties": false,
+        "required": ["type", "max_records"],
+        "additionalProperties": true,
         "properties": {
           "type": {
             "type": "string",

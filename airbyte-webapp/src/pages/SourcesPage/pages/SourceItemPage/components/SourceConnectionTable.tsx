@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { Connection } from "core/resources/Connection";
 import useSyncActions from "components/EntityTable/hooks";
@@ -68,7 +68,7 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
   );
 
   const clickRow = (source: ITableDataItem) =>
-    push(`${Routes.Connections}/${source.connectionId}`);
+    push(`../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

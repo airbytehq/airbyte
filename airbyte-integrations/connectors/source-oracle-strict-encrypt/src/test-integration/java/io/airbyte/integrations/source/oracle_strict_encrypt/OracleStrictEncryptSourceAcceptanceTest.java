@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -36,7 +35,10 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid();;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()

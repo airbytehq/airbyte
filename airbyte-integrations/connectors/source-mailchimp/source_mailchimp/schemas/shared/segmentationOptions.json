@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "title": "Segment Options",
+  "description": "An object representing all segmentation options. This object should contain a `saved_segment_id` to use an existing segment, or you can create a new segment by including both `match` and `conditions` options.",
+  "properties": {
+    "saved_segment_id": {
+      "type": "integer",
+      "title": "Saved Segment ID",
+      "description": "The id for an existing saved segment."
+    },
+    "prebuilt_segment_id": {
+      "type": "string",
+      "title": "Prebuilt Segment Id",
+      "description": "The prebuilt segment id, if a prebuilt segment has been designated for this campaign.",
+      "example": "subscribers-female"
+    },
+    "match": {
+      "type": "string",
+      "title": "Match Type",
+      "description": "Segment match type.",
+      "enum": ["any", "all"]
+    },
+    "conditions": {
+      "$ref": "segmentCondition.json"
+    }
+  }
+}

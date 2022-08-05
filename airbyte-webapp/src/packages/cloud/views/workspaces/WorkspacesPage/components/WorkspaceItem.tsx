@@ -20,13 +20,11 @@ const Arrow = styled(FontAwesomeIcon)`
 
 const WorkspaceItem: React.FC<{ onClick: (id: string) => void; id: string }> = (
   props
-) => {
-  return (
-    <Item onClick={() => props.onClick(props.id)}>
-      <H5 bold>{props.children}</H5>
-      <Arrow icon={faChevronRight} />
-    </Item>
-  );
-};
+) => (
+  <Item onClick={() => props.onClick(props.id)}>
+    <H5 bold>{props.children}</H5>
+    <Arrow icon={faChevronRight} />
+  </Item>
+);
 
 export default WorkspaceItem;

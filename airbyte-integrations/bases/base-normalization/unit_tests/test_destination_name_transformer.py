@@ -121,7 +121,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("100x2003", "Snowflake", "100x2003", "{{ adapter.quote('100x2003') }}"),
         ("100x2004", "Redshift", "100x2004", "{{ adapter.quote('100x2004') }}"),
         ("100x2005", "MySQL", "100x2005", "{{ adapter.quote('100x2005') }}"),
-        ("100x2006", "MSSQL", "100x2006", "{{ adapter.quote('100x2006') }}"),
+        ("100x2006", "MSSQL", "_100x2006", "{{ adapter.quote('100x2006') }}"),
         # Reserved Keywords in BQ and MySQL
         ("Groups", "Postgres", "groups", "groups"),
         ("Groups", "BigQuery", "Groups", "{{ adapter.quote('Groups') }}"),

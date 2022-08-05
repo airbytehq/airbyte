@@ -23,10 +23,10 @@
   "custom_collections": {
     "updated_at": "2024-07-19T07:01:37-07:00"
   },
-  "orders_refunds": {
+  "order_refunds": {
     "created_at": "2024-07-19T06:41:47-07:00"
   },
-  "orders_risks": {
+  "order_risks": {
     "id": 9991307599038
   },
   "transactions": {

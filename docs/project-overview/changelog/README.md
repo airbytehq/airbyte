@@ -1,5 +1,30 @@
 # Changelog
 
+## 11/25/2021 Summary
+Hey Airbyte Community! Let's go over all the changes from v.32.5 and prior!
+
+🎃 **Hacktoberfest Submissions** 🎃
+* New Source: Airtable (contributed by Tuan Nguyen).
+* New Source: Notion (contributed by Bo Lu).
+* New Source: Pardot (contributed by Tuan Nguyen).
+
+* New Source: Youtube analytics.
+
+* ✨ Source Exchange Rates: add ignore_weekends option.
+* ✨ Source Facebook: add the videos stream.
+* ✨ Source Freshdesk: removed the limitation in streams pagination.
+* ✨ Source Jira: add option to render fields in HTML format.
+* ✨ Source MongoDB v2: improve read performance.
+* ✨ Source Pipedrive: specify schema for "persons" stream.
+* ✨ Source PostgreSQL: exclude tables on which user doesn't have select privileges.
+* ✨ Source SurveyMonkey: improve connection check.
+
+* 🐛 Source Salesforce:  improve resiliency of async bulk jobs.
+* 🐛 Source Zendesk Support: fix missing ticket_id in ticket_comments stream.
+* 🐛 Normalization: optimize incremental normalization runtime with Snowflake.
+
+As usual, thank you so much to our wonderful contributors this week that have made Airbyte into what it is today: Madison Swain-Bowden, Tuan Nguyen, Bo Lu, Adam Dobrawy, Christopher Wu, Luis Gomez, Ivica Taseski, Mario Molina, Ping Yee, Koji Matsumoto, Sujit Sagar, Shadab, Juozas V.([Labanoras Tech](http://labanoras.io)) and Serhii Chvaliuk!
+
 ## 11/17/2021 Summary
 
 Hey Airbyte Community! Let's go over all the changes from v.32.1 and prior! But first, there's an important announcement I need to make about upgrading Airbyte to v.32.1.
@@ -15,7 +40,7 @@ Keep in mind that this upgrade requires your all of your connector Specs to be r
 
 * New Destination: ScyllaDB (contributed by Ivica Taseski)
 * New Source: Azure Table Storage (contributed by geekwhocodes)
-* New Source: Linnworks (contributed by Juozas)
+* New Source: Linnworks (contributed by Juozas V.([Labanoras Tech](http://labanoras.io)))
 
 * ✨ Source MySQL: Now has basic performance tests.
 * ✨ Source Salesforce: We now automatically transform and handle incorrect data for the anyType and calculated types.
@@ -190,7 +215,7 @@ We're going over the changes from 0.29.17 and before... and there's a lot of big
 
 **New Source**: Facebook Pages **New Destination**: MongoDB **New Destination**: DynamoDB
 
-* 🎉 You can now send notifications via webhook for successes and failures on Airbyte syncs. \(This is a massive contribution by @Pras, thank you\) :tada:
+* 🎉 You can now send notifications via webhook for successes and failures on Airbyte syncs. \(This is a massive contribution by @Pras, thank you\) 🎉
 * 🎉 Scheduling jobs and worker jobs are now separated, allowing for workers to be scaled horizontally.
 * 🎉 When developing a connector, you can now preview what your spec looks like in real time with this process.
 * 🎉 Oracle destination: Now has basic normalization.
@@ -201,7 +226,7 @@ We're going over the changes from 0.29.17 and before... and there's a lot of big
 * ✨ BigQuery destination: Added GCS upload option.
 * ✨ Salesforce source: Now Airbyte native.
 * ✨ Redshift destination: Optimized for performance.
-* 🏗 CDK: :tada: We’ve released a tool to generate JSON Schemas from OpenAPI specs. This should make specifying schemas for API connectors a breeze! :tada:
+* 🏗 CDK: 🎉 We’ve released a tool to generate JSON Schemas from OpenAPI specs. This should make specifying schemas for API connectors a breeze! 🎉
 * 🏗 CDK: Source Acceptance Tests now verify that connectors correctly format strings which are declared as using date-time and date formats.
 * 🏗 CDK: Add private options to help in testing: \_limit and \_page\_size are now accepted by any CDK connector to minimze your output size for quick iteration while testing.
 * 🐛 Fixed a bug that made it possible for connector definitions to be duplicated, violating uniqueness.

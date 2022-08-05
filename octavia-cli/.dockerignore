@@ -1,0 +1,3 @@
+build
+.venv
+octavia_cli.egg-info

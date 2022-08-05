@@ -25,6 +25,8 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
             testClassesDirs += project.sourceSets.performanceTestJava.output.classesDirs
             classpath += project.sourceSets.performanceTestJava.runtimeClasspath
 
+            systemProperty "cpuLimit", System.getProperty("cpuLimit")
+            systemProperty "memoryLimit", System.getProperty("memoryLimit")
             useJUnitPlatform()
             testLogging() {
                 events "passed", "failed"

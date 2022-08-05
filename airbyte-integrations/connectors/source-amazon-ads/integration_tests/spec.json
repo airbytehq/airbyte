@@ -40,7 +40,7 @@
         "type": "string"
       },
       "region": {
-        "description": "Region to pull data from (EU/NA/FE/SANDBOX)",
+        "description": "An enumeration.",
         "default": "NA",
         "name": "Region",
         "title": "AmazonAdsRegion",

@@ -3,6 +3,7 @@
 #
 
 import csv
+import json
 import urllib.parse as urlparse
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
@@ -183,19 +184,19 @@ class EmailUnsubscribe(IterableExportStreamAdjustableRange):
 
 class Events(IterableStream):
     """
-    https://api.iterable.com/api/docs#events_User_events
+    https://api.iterable.com/api/docs#export_exportUserEvents
     """
 
     primary_key = None
     data_field = "events"
-    page_size = EVENT_ROWS_LIMIT
+    common_fields = ("itblInternal", "_type", "createdAt", "email")
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"events/{stream_slice['email']}"
+    def path(self, **kwargs) -> str:
+        return "export/userEvents"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["limit"] = self.page_size
+        params.update({"email": stream_slice["email"], "includeCustomEvents": "true"})
 
         return params
 
@@ -208,8 +209,20 @@ class Events(IterableStream):
                 yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            yield {"data": record}
+        """
+        Parse jsonl response body.
+        Put common event fields at the top level.
+        Put the rest of the fields in the `data` subobject.
+        """
+
+        jsonl_records = StringIO(response.text)
+        for record in jsonl_records:
+            record_dict = json.loads(record)
+            record_dict_common_fields = {}
+            for field in self.common_fields:
+                record_dict_common_fields[field] = record_dict.pop(field, None)
+
+            yield {**record_dict_common_fields, "data": record_dict}
 
 
 class MessageTypes(IterableStream):

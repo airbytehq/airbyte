@@ -32,12 +32,6 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
   private Connection connection;
 
-  private final String schemaDumpFile;
-
-  protected FlywayMigrationDatabase(final String schemaDumpFile) {
-    this.schemaDumpFile = schemaDumpFile;
-  }
-
   protected abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
 
   protected abstract DatabaseMigrator getDatabaseMigrator(Database database);

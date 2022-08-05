@@ -131,7 +131,7 @@ public abstract class JdbcSourceAcceptanceTest {
    *
    * @return abstract jdbc source
    */
-  public abstract AbstractJdbcSource getJdbcSource();
+  public abstract AbstractJdbcSource<?> getJdbcSource();
 
   /**
    * In some cases the Source that is being tested may be an AbstractJdbcSource, but because it is

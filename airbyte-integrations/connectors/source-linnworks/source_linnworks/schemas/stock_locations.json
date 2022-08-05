@@ -24,7 +24,7 @@
       "description": "Location tag"
     },
     "BinRack": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Bin rack"
     },
     "IsWarehouseManaged": {

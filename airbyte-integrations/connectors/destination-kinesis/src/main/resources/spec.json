@@ -13,39 +13,39 @@
     "properties": {
       "endpoint": {
         "title": "Endpoint",
-        "description": "Aws Kinesis endpoint.",
+        "description": "AWS Kinesis endpoint.",
         "type": "string",
         "order": 0
       },
       "region": {
         "title": "Region",
-        "description": "Aws region.",
+        "description": "AWS region. Your account determines the Regions that are available to you.",
         "type": "string",
         "order": 1
       },
       "shardCount": {
-        "title": "shardCount",
+        "title": "Shard Count",
         "description": "Number of shards to which the data should be streamed.",
         "type": "integer",
         "default": 5,
         "order": 2
       },
       "accessKey": {
-        "title": "accessKey",
-        "description": "Aws access key.",
+        "title": "Access Key",
+        "description": "Generate the AWS Access Key for current user.",
         "airbyte_secret": true,
         "type": "string",
         "order": 3
       },
       "privateKey": {
-        "title": "privateKey",
-        "description": "Aws private key.",
+        "title": "Private Key",
+        "description": "The AWS Private Key - a string of numbers and letters that are unique for each account, also known as a \"recovery phrase\".",
         "airbyte_secret": true,
         "type": "string",
         "order": 4
       },
       "bufferSize": {
-        "title": "bufferSize",
+        "title": "Buffer Size",
         "description": "Buffer size for storing kinesis records before being batch streamed.",
         "type": "integer",
         "minimum": 1,

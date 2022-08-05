@@ -23,6 +23,7 @@ public class BigQueryConsts {
   public static final String FORMAT = "format";
   public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
+  public static final String PART_SIZE = "part_size_mb";
 
   // tests
   public static final String BIGQUERY_BASIC_CONFIG = "basic_bigquery_config";

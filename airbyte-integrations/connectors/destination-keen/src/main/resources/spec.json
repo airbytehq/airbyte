@@ -12,20 +12,21 @@
     "additionalProperties": false,
     "properties": {
       "project_id": {
-        "description": "Keen Project ID",
+        "description": "To get Keen Project ID, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
+        "title": "Project ID",
         "type": "string",
         "examples": ["58b4acc22ba938934e888322e"]
       },
       "api_key": {
         "title": "API Key",
-        "description": "Keen Master API key",
+        "description": "To get Keen Master API Key, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
         "type": "string",
         "examples": ["ABCDEFGHIJKLMNOPRSTUWXYZ"],
         "airbyte_secret": true
       },
       "infer_timestamp": {
         "title": "Infer Timestamp",
-        "description": "Allow connector to guess keen.timestamp value based on the streamed data",
+        "description": "Allow connector to guess keen.timestamp value based on the streamed data.",
         "type": "boolean",
         "default": true
       }

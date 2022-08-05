@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -27,7 +28,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OracleSource extends AbstractJdbcSource implements Source {
+public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
@@ -44,7 +45,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
   }
 
   public static Source sshWrappedSource() {

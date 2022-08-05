@@ -8,6 +8,13 @@ services:
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   db:
     image: airbyte/db:${VERSION}
     build:

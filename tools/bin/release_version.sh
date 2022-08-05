@@ -21,7 +21,7 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
+PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 
 [[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
 
@@ -31,7 +31,7 @@ PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
 pip install bumpversion
 bumpversion "$PART_TO_BUMP"
 
-NEW_VERSION=$(grep VERSION .env | cut -d"=" -f2)
+NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
 

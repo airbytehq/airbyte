@@ -26,7 +26,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -103,7 +103,7 @@ public class JobHistoryHandlerTest {
         CREATED_AT);
 
     jobPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfigs.EMPTY);
   }
 
   @Nested

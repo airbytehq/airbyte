@@ -21,6 +21,127 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 
 @pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    [
+        (
+            {
+                "connectionSpecification": {
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                        "$ref": None,
+                    },
+                }
+            },
+            True,
+        ),
+        (
+            {
+                "advanced_auth": {
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "Client",
+                    "oauth_config_specification": {
+                        "complete_oauth_output_specification": {
+                            "type": "object",
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
+                        }
+                    },
+                }
+            },
+            True,
+        ),
+        (
+            {
+                "advanced_auth": {
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "Client",
+                    "oauth_config_specification": {
+                        "complete_oauth_server_input_specification": {
+                            "type": "object",
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
+                        }
+                    },
+                }
+            },
+            True,
+        ),
+        (
+            {
+                "advanced_auth": {
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "Client",
+                    "oauth_config_specification": {
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
+                        }
+                    },
+                }
+            },
+            True,
+        ),
+        (
+            {
+                "connectionSpecification": {
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                    },
+                }
+            },
+            False,
+        ),
+        (
+            {
+                "connectionSpecification": {
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                    },
+                },
+                "advanced_auth": {
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "Client",
+                    "oauth_config_specification": {
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {"refresh_token": {"type": "string"}},
+                        }
+                    },
+                },
+            },
+            False,
+        ),
+        ({"$ref": None}, True),
+        ({"properties": {"user": {"$ref": None}}}, True),
+        ({"properties": {"user": {"$ref": "user.json"}}}, True),
+        ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
+        ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),
+    ],
+)
+def test_ref_in_spec_schemas(connector_spec, should_fail):
+    t = _TestSpec()
+    if should_fail is True:
+        with pytest.raises(AssertionError):
+            t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
+    else:
+        t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
+
+
+@pytest.mark.parametrize(
     "schema, cursors, should_fail",
     [
         ({}, ["created"], True),

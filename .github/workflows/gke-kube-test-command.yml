@@ -46,11 +46,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |

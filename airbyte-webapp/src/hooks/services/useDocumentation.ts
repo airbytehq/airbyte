@@ -15,8 +15,16 @@ const useDocumentation = (documentationUrl: string): UseDocumentationResult => {
   const { integrationUrl } = useConfig();
   const url = documentationUrl.replace(DOCS_URL, integrationUrl) + ".md";
 
-  return useQuery(documentationKeys.text(documentationUrl), () =>
-    fetchDocumentation(url)
+  return useQuery(
+    documentationKeys.text(documentationUrl),
+    () => fetchDocumentation(url),
+    {
+      enabled: !!documentationUrl,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      retry: false,
+      suspense: false,
+    }
   );
 };
 

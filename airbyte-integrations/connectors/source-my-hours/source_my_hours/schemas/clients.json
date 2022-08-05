@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["number"]
+    },
+    "contactName": {
+      "type": ["null", "string"]
+    },
+    "contactEmail": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "dateArchived": {
+      "type": ["null", "string"]
+    }
+  }
+}

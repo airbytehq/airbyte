@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "site_id": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "canonical_name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "survey_url": {
+      "type": "string"
+    }
+  }
+}

@@ -15,9 +15,8 @@ import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 import useConnection from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   connection: Connection;

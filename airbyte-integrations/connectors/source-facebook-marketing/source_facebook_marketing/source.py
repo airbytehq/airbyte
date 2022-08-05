@@ -3,10 +3,8 @@
 #
 
 import logging
-from datetime import datetime
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, MutableMapping, Tuple, Type
 
-import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -21,9 +19,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from jsonschema import RefResolver
-from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
-from source_facebook_marketing.common import SourceFacebookMarketingConfig
+from source_facebook_marketing.common import ConnectorConfig
 from source_facebook_marketing.streams import (
     AdCreatives,
     Ads,
@@ -41,7 +38,6 @@ from source_facebook_marketing.streams import (
 
 logger = logging.getLogger("airbyte")
 
-
 class SourceFacebookMarketing(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -54,15 +50,14 @@ class SourceFacebookMarketing(AbstractSource):
         error_msg = None
 
         try:
-            config = SourceFacebookMarketingConfig(config)
+            config = ConnectorConfig(**config)
             api = API(config)
             account_ids = {str(account["account_id"]) for account in api.accounts}
 
             if config.account_selection_strategy_is_subset:
-                config_account_ids = set(config.account_ids)
+                config_account_ids = set(config.accounts.ids)
                 if not config_account_ids.issubset(account_ids):
-                    raise Exception(
-                        f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
+                    raise Exception(f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
             elif config.account_selection_strategy_is_all:
                 if not account_ids:
                     raise Exception("You don't have accounts assigned to this user.")
@@ -80,7 +75,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = SourceFacebookMarketingConfig(config)
+        config: ConnectorConfig = ConnectorConfig(**config)
         api = API(config)
 
         insights_args = dict(
@@ -95,7 +90,7 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api),
+            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
@@ -121,6 +116,25 @@ class SourceFacebookMarketing(AbstractSource):
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
+    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+        """
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        required to run this integration.
+        """
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.append],
+            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
+            authSpecification=AuthSpecification(
+                auth_type="oauth2.0",
+                oauth2Specification=OAuth2Specification(
+                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+                ),
+            ),
+        )
+
     def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
         """Update method, if insights have values returns streams replacing the
         default insights streams else returns streams
@@ -132,10 +146,10 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args["name"] = f"Custom{insight['name']}"
-            args["fields"] = list(set(insight["fields"]))
-            args["breakdowns"] = list(set(insight["breakdowns"]))
-            args["action_breakdowns"] = list(set(insight["action_breakdowns"]))
+            args["name"] = f"Custom{insight.name}"
+            args["fields"] = list(set(insight.fields))
+            args["breakdowns"] = list(set(insight.breakdowns))
+            args["action_breakdowns"] = list(set(insight.action_breakdowns))
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 
@@ -143,13 +157,10 @@ class SourceFacebookMarketing(AbstractSource):
 
     def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
 
-        default_fields = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys()
-        )
-        default_breakdowns = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys()
-        )
-        default_actions_breakdowns = [e for e in default_breakdowns if "action_" in e]
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
+        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
+        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
 
         for insight in insights:
             if insight.get("fields"):
@@ -163,7 +174,7 @@ class SourceFacebookMarketing(AbstractSource):
                     message = f"{value} is not a valid breakdown name"
                     raise Exception("Config validation error: " + message) from None
             if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_actions_breakdowns, insight.get("action_breakdowns"))
+                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
                 if not value_checked:
                     message = f"{value} is not a valid action_breakdown name"
                     raise Exception("Config validation error: " + message) from None

@@ -8,6 +8,7 @@ import com.google.cloud.storage.Storage;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -23,8 +24,10 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
                                   final JdbcDatabase db,
                                   final GcsConfig gcsConfig,
                                   final ExtendedNameTransformer nameTransformer,
-                                  final SqlOperations sqlOperations) {
+                                  final SqlOperations sqlOperations,
+                                  final StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, storageClient, db, gcsConfig, nameTransformer, sqlOperations);
+    this.filenameGenerator = stagingFilenameGenerator;
   }
 
   @Override

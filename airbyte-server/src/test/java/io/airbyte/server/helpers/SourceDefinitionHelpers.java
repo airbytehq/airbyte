@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class SourceDefinitionHelpers {
 
-  public static StandardSourceDefinition generateSource() {
+  public static StandardSourceDefinition generateSourceDefinition() {
     return new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("marketo")

@@ -9,6 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "pytest-mock",
     "source-acceptance-test",
 ]
 
