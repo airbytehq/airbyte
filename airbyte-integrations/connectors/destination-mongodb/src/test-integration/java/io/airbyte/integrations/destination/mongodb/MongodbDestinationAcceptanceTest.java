@@ -106,8 +106,8 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Test
   void testCheckIncorrectPasswordFailure() {
     final JsonNode invalidConfig = getFailCheckConfig();
-    ((ObjectNode) invalidConfig).put(DATABASE, DATABASE_NAME);
-    ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put("password", "fake");
+    ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
+    ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put(JdbcUtils.PASSWORD_KEY, "fake");
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -117,8 +117,8 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Test
   public void testCheckIncorrectUsernameFailure() {
     final JsonNode invalidConfig = getFailCheckConfig();
-    ((ObjectNode) invalidConfig).put(DATABASE, DATABASE_NAME);
-    ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put("username", "fakeusername");
+    ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
+    ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put(JdbcUtils.USERNAME_KEY, "fakeusername");
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -128,7 +128,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
     final JsonNode invalidConfig = getFailCheckConfig();
-    ((ObjectNode) invalidConfig).put(DATABASE, DATABASE_FAIL_NAME);
+    ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME);
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -138,7 +138,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Test
   public void testCheckIncorrectHost() {
     final JsonNode invalidConfig = getConfig();
-    ((ObjectNode) invalidConfig).put(HOST, "localhost2");
+    ((ObjectNode) invalidConfig).put(JdbcUtils.HOST_KEY, "localhost2");
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -148,7 +148,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Test
   public void testCheckIncorrectPort() {
     final JsonNode invalidConfig = getConfig();
-    ((ObjectNode) invalidConfig).put(PORT, 1234);
+    ((ObjectNode) invalidConfig).put(JdbcUtils.PORT_KEY, 1234);
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
