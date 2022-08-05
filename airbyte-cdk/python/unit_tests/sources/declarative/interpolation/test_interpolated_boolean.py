@@ -19,7 +19,6 @@ config = {
 @pytest.mark.parametrize(
     "test_name, template, expected_result",
     [
-        ("test_static_condition", True, True),
         ("test_interpolated_true_value", "{{ config['parent']['key_with_true'] }}", True),
         ("test_interpolated_true_comparison", "{{ config['string_key'] == \"compare_me\" }}", True),
         ("test_interpolated_false_condition", "{{ config['string_key'] == \"witness_me\" }}", False),
@@ -34,8 +33,9 @@ config = {
         ("test_True", "{{ True }}", True),
         ("test_value_in_array", "{{ 1 in config['non_empty_array'] }}", True),
         ("test_value_not_in_array", "{{ 2 in config['non_empty_array'] }}", False),
+        ("test_interpolation_using_options", "{{ options['from_options'] == \"come_find_me\" }}", True),
     ],
 )
 def test_interpolated_boolean(test_name, template, expected_result):
-    interpolated_bool = InterpolatedBoolean(template)
+    interpolated_bool = InterpolatedBoolean(condition=template, options={"from_options": "come_find_me"})
     assert interpolated_bool.eval(config) == expected_result
