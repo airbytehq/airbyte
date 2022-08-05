@@ -205,7 +205,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
-        "INFORMATION_SCHEMA",
         "sys",
         "spt_fallback_db",
         "spt_monitor",
