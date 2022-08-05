@@ -5,8 +5,10 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
@@ -30,7 +32,7 @@ class ConnectionSchedulerHelperTest {
     final StandardSync actual = new StandardSync();
     ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(actual,
         ConnectionScheduleType.MANUAL, null);
-    assertNull(actual.getManual());
+    assertTrue(actual.getManual());
     assertEquals(ScheduleType.MANUAL, actual.getScheduleType());
     assertNull(actual.getSchedule());
     assertNull(actual.getScheduleData());
@@ -44,7 +46,7 @@ class ConnectionSchedulerHelperTest {
             .basicSchedule(new ConnectionScheduleDataBasicSchedule()
                 .timeUnit(TimeUnitEnum.HOURS)
                 .units(1L)));
-    assertNull(actual.getManual());
+    assertFalse(actual.getManual());
     assertEquals(ScheduleType.BASIC_SCHEDULE, actual.getScheduleType());
     assertEquals(TimeUnit.HOURS, actual.getScheduleData().getBasicSchedule().getTimeUnit());
     assertEquals(1L, actual.getScheduleData().getBasicSchedule().getUnits());

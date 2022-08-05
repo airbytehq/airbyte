@@ -25,6 +25,10 @@ from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStr
 from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
 from airbyte_api_client.model.connection_read import ConnectionRead
 from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_schedule_data import ConnectionScheduleData
+from airbyte_api_client.model.connection_schedule_data_basic_schedule import ConnectionScheduleDataBasicSchedule
+from airbyte_api_client.model.connection_schedule_data_cron import ConnectionScheduleDataCron
+from airbyte_api_client.model.connection_schedule_type import ConnectionScheduleType
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.destination_create import DestinationCreate
 from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
@@ -597,6 +601,16 @@ class Connection(BaseResource):
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
         if "schedule" in configuration:
             configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
+        if "schedule_type" in configuration:
+            # Note: these must both be supplied.
+            configuration["schedule_type"] = ConnectionScheduleType(configuration["schedule_type"])
+            if "basic_schedule" in configuration["schedule_data"]:
+                basic_schedule = ConnectionScheduleDataBasicSchedule(**configuration["schedule_data"]["basic_schedule"])
+                configuration["schedule_data"]["basic_schedule"] = basic_schedule
+            if "cron" in configuration["schedule_data"]:
+                cron = ConnectionScheduleDataCron(**configuration["schedule_data"]["cron"])
+                configuration["schedule_data"]["cron"] = cron
+            configuration["schedule_data"] = ConnectionScheduleData(**configuration["schedule_data"])
         if "resource_requirements" in configuration:
             configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
         configuration["status"] = ConnectionStatus(configuration["status"])

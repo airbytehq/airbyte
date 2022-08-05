@@ -32,7 +32,8 @@ public class ConnectionScheduleHelper {
       throw new JsonValidationException("schedule data must be populated if schedule type is populated");
     }
     switch (scheduleType) {
-      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL);
+      // NOTE: the `manual` column is marked required, so we populate it until it's removed.
+      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL).withManual(true);
       case BASIC -> {
         if (scheduleData.getBasicSchedule() == null) {
           throw new JsonValidationException("if schedule type is basic, then scheduleData.basic must be populated");
@@ -41,7 +42,8 @@ public class ConnectionScheduleHelper {
             .withScheduleType(ScheduleType.BASIC_SCHEDULE)
             .withScheduleData(new ScheduleData().withBasicSchedule(
                 new BasicSchedule().withTimeUnit(ApiPojoConverters.toBasicScheduleTimeUnit(scheduleData.getBasicSchedule().getTimeUnit()))
-                    .withUnits(scheduleData.getBasicSchedule().getUnits())));
+                    .withUnits(scheduleData.getBasicSchedule().getUnits())))
+            .withManual(false);
       }
       case CRON -> {
         if (scheduleData.getCron() == null) {
@@ -69,7 +71,8 @@ public class ConnectionScheduleHelper {
             .withScheduleType(ScheduleType.CRON)
             .withScheduleData(new ScheduleData().withCron(new Cron()
                 .withCronExpression(cronExpression)
-                .withCronTimeZone(cronTimeZone)));
+                .withCronTimeZone(cronTimeZone)))
+            .withManual(false);
       }
     }
   }
