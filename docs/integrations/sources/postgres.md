@@ -102,13 +102,15 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
     These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Postgres database.
 
+    The connector now supports `connectTimeout` and defaults to 60 seconds. Setting connectTimeout to 0 seconds will set the timeout to the longest time available.
+
     **Note:** Do not use the following keys in JDBC URL Params field as they will be overwritten by Airbyte:
     `currentSchema`, `user`, `password`, `ssl`, and `sslmode`.
 
     :::warning
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
-
+    
 9. For Airbyte OSS, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
 10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
 11. For SSH Tunnel Method, select:
@@ -238,7 +240,22 @@ Also, the publication should include all the tables and only the tables that nee
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 5: Set up the Postgres source connector
+#### Step 5: [Optional] Set up initial waiting time
+
+:::warning
+This is an advanced feature. Use it if absolutely necessary.
+:::
+
+The Postgres connector may need some time to start processing the data in the CDC mode in the following scenarios:
+
+- When the connection is set up for the first time and a snapshot is needed
+- When the connector has a lot of change logs to process
+
+The connector waits for the default initial wait time of 5 minutes (300 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 120 seconds to 1200 seconds.
+
+If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
+
+#### Step 6: Set up the Postgres source connector
 
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
@@ -353,13 +370,15 @@ Possible solutions include:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
+| :--- | :--- | :--- | :--- |
+| 0.4.44  | 2022-08-05 | [15342](https://github.com/airbytehq/airbyte/pull/15342) | Adjust titles and descriptions in spec.json                                                 |
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                 |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                     |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                     | 
 |         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently                                                                               |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                              |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                          |
-| 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiply log bindings                                                                                         |
+| 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                         |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                              |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                       |
 | 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)    |
