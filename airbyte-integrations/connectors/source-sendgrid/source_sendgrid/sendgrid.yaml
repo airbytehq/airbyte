@@ -1,122 +1,123 @@
-page_size: 50
+definitions:
+  page_size: 50
 
-schema_loader:
-  type: JsonSchema
-  file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
-result_selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "_.result"
-results_selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "_.results"
-selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "_"
-requester:
-  type: HttpRequester
-  name: "{{ options['name'] }}"
-  url_base: "https://api.sendgrid.com"
-  http_method: "GET"
-  authenticator:
-    type: "BearerAuthenticator"
-    token: "{{ config.apikey }}"
-cursor_paginator:
-  type: LimitPaginator
-  url_base: "*ref(requester.url_base)"
-  page_size: "*ref(page_size)"
-  limit_option:
-    inject_into: "request_parameter"
-    field_name: "page_size"
-  page_token_option:
-    inject_into: "path"
-  pagination_strategy:
-    type: "CursorPagination"
-    cursor_value: "{{ response._metadata.next }}"
-offset_paginator:
-  type: LimitPaginator
-  $options:
-    url_base: "*ref(requester.url_base)"
-    page_size: "*ref(page_size)"
-  limit_option:
-    inject_into: "request_parameter"
-    field_name: "limit"
-  page_token_option:
-    inject_into: "request_parameter"
-    field_name: "offset"
-  pagination_strategy:
-    type: "OffsetIncrement"
-retriever:
-  type: SimpleRetriever
-  name: "{{ options['name'] }}"
-  primary_key: "{{ options['primary_key'] }}"
-stream_slicer:
-  type: "DatetimeStreamSlicer"
-  start_datetime:
-    datetime: "2017-01-01T00:00:00.0Z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-  end_datetime:
-    datetime: "2022-08-01T00:00:00.0Z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-  step: "10000d"
-  cursor_field: "{{ options.cursor_field }}"
-  start_time_option:
-    field_name: "start_time"
-    inject_into: "request_parameter"
-  end_time_option:
-    field_name: "end_time"
-    inject_into: "request_parameter"
-  datetime_format: "timestamp"
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+  result_selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "_.result"
+  results_selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "_.results"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "_"
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://api.sendgrid.com"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      token: "{{ config.apikey }}"
+  cursor_paginator:
+    type: LimitPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: "page_size"
+    page_token_option:
+      inject_into: "path"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._metadata.next }}"
+  offset_paginator:
+    type: LimitPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "offset"
+    pagination_strategy:
+      type: "OffsetIncrement"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "2017-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    end_datetime:
+      datetime: "2022-08-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    step: "10000d"
+    cursor_field: "{{ options.cursor_field }}"
+    start_time_option:
+      field_name: "start_time"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "end_time"
+      inject_into: "request_parameter"
+    datetime_format: "timestamp"
 lists_stream:
   type: DeclarativeStream
   $options:
     name: "lists"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(result_selector)"
+      $ref: "*ref(definitions.result_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/lists"
     paginator:
-      $ref: "*ref(cursor_paginator)"
+      $ref: "*ref(definitions.cursor_paginator)"
 campaigns_stream:
   type: DeclarativeStream
   $options:
     name: "campaigns"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(result_selector)"
+      $ref: "*ref(definitions.result_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/campaigns"
     paginator:
-      $ref: "*ref(cursor_paginator)"
+      $ref: "*ref(definitions.cursor_paginator)"
 contacts_stream:
   type: DeclarativeStream
   $options:
     name: "contacts"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(result_selector)"
+      $ref: "*ref(definitions.result_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/contacts"
     paginator:
       type: "NoPagination"
@@ -127,29 +128,29 @@ stats_automations_stream:
     name: "stats_automations"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(results_selector)"
+      $ref: "*ref(definitions.results_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/stats/automations"
     paginator:
-      $ref: "*ref(cursor_paginator)"
+      $ref: "*ref(definitions.cursor_paginator)"
 segments_stream:
   type: DeclarativeStream
   $options:
     name: "segments"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(results_selector)"
+      $ref: "*ref(definitions.results_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/segments"
     paginator:
       type: "NoPagination"
@@ -159,71 +160,71 @@ single_sends_stream:
     name: "single_sends"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(results_selector)"
+      $ref: "*ref(definitions.results_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/marketing/stats/singlesends"
     paginator:
-      $ref: "*ref(cursor_paginator)"
+      $ref: "*ref(definitions.cursor_paginator)"
 templates_stream:
   type: DeclarativeStream
   $options:
     name: "templates"
   primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(result_selector)"
+      $ref: "*ref(definitions.result_selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/templates"
       request_options_provider:
         request_parameters:
           generations: "legacy,dynamic"
     paginator:
-      $ref: "*ref(cursor_paginator)"
+      $ref: "*ref(definitions.cursor_paginator)"
 global_suppressions_stream:
   type: DeclarativeStream
   $options:
     name: "global_suppressions"
     primary_key: "email"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/suppression/unsubscribes"
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 blocks_stream:
   type: DeclarativeStream
   $options:
     name: "blocks"
     primary_key: "email"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/suppression/blocks"
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 
 suppression_groups_stream:
   type: DeclarativeStream
@@ -231,13 +232,13 @@ suppression_groups_stream:
     name: "suppression_groups"
     primary_key: "id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/asm/groups"
     paginator:
       type: "NoPagination"
@@ -247,16 +248,16 @@ suppression_group_members_stream:
     name: "suppression_group_members"
     primary_key: "group_id"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/asm/suppressions"
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
 bounces_stream:
   type: DeclarativeStream
   $options:
@@ -264,18 +265,18 @@ bounces_stream:
     primary_key: "email"
     cursor_field: "created"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/suppression/bounces"
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 invalid_emails_stream:
   type: DeclarativeStream
   $options:
@@ -283,18 +284,18 @@ invalid_emails_stream:
     primary_key: "email"
     cursor_field: "created"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/suppression/invalid_emails"
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 spam_reports_stream:
   type: DeclarativeStream
   $options:
@@ -302,19 +303,19 @@ spam_reports_stream:
     primary_key: "email"
     cursor_field: "created"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/suppression/spam_reports"
 
     paginator:
-      $ref: "*ref(offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 messages_stream:
   type: DeclarativeStream
   $options:
@@ -322,20 +323,20 @@ messages_stream:
     primary_key: "msg_id"
     cursor_field: "last_event_time"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    $ref: "*ref(definitions.schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "*ref(definitions.retriever)"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "*ref(definitions.requester)"
       path: "/v3/messages"
       request_options_provider:
         request_parameters:
           limit: 1000
           query: "last_event_time BETWEEN TIMESTAMP {{stream_slice.start_date}} AND TIMESTAMP {{stream_slice.end_date}}"
     stream_slicer:
-      $ref: "*ref(stream_slicer)"
+      $ref: "*ref(definitions.stream_slicer)"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
