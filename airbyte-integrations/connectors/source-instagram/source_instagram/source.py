@@ -47,6 +47,7 @@ class SourceInstagram(AbstractSource):
         """
         ok = False
         error_msg = None
+        logger.info(f"access token received after OAuth: {config.access_token}")
 
         try:
             config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK

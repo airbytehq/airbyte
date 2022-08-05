@@ -80,6 +80,7 @@ class InstagramAPI:
             accounts = fb_user.User(fbid="me").get_accounts()
             for account in accounts:
                 page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
+                logger.info(f"received page: {page}")
                 if page.get("instagram_business_account"):
                     instagram_business_accounts.append(
                         {
@@ -87,6 +88,7 @@ class InstagramAPI:
                             "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
                         }
                     )
+            logger.info(f"found instagram business acconuts: {instagram_business_accounts}"})
         except FacebookRequestError as exc:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
