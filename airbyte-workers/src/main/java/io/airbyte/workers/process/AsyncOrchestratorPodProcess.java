@@ -297,6 +297,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, metricClient, null));
     envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, datadogHost, null));
     envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, datadogPort, null));
+    envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
     LOGGER.info("added env var");
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);

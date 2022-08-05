@@ -76,6 +76,7 @@ public class DogStatsDMetricClient implements MetricClient {
   @Override
   public void count(final MetricsRegistry metric, final long amt, final MetricAttribute... attributes) {
     if (instancePublish) {
+      log.info("instance publish is true");
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
         log.warn("singleton not initialized, count {} not emitted", metric);
