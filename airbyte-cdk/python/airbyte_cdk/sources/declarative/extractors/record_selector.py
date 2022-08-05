@@ -35,6 +35,7 @@ class RecordSelector(HttpSelector):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         all_records = self._extractor.extract_records(response)
+        # Some exchanges don't wrap single records in a list
         if not isinstance(all_records, list):
             all_records = [all_records]
         if self._record_filter:
