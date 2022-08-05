@@ -55,11 +55,12 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
   const [isOpen, setIsOpen] = useState(linkedJobId === getJobId(job));
   const scrollAnchor = useRef<HTMLDivElement>(null);
+
+  const didSucceed = didJobSucceed(job);
+
   const onExpand = () => {
     setIsOpen(!isOpen);
   };
-
-  const didSucceed = didJobSucceed(job);
 
   useEffectOnce(() => {
     if (linkedJobId) {
