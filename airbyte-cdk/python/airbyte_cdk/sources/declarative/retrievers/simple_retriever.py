@@ -342,6 +342,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     ) -> Iterable[Mapping[str, Any]]:
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
+        self.paginator.reset()
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
             self.stream_slicer.update_cursor(stream_slice, last_record=r)

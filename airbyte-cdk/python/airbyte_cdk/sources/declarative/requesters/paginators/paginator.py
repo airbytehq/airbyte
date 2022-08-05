@@ -20,6 +20,12 @@ class Paginator(RequestOptionsProvider):
     """
 
     @abstractmethod
+    def reset(self):
+        """
+        Reset the pagination's inner state
+        """
+
+    @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Returns the next_page_token to use to fetch the next page of records.
