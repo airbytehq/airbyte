@@ -53,7 +53,7 @@ export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) => ("
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
-  const [isOpen, setIsOpen] = useState(linkedJobId === String(getJobId(job)));
+  const [isOpen, setIsOpen] = useState(() => linkedJobId === String(getJobId(job)));
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
   const didSucceed = didJobSucceed(job);
