@@ -29,8 +29,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, DynamodbWriter> streamNameAndNamespaceToWriters;
 
-  private AirbyteMessage lastStateMessage = null;
-
   public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
                           final ConfiguredAirbyteCatalog configuredCatalog,
                           final Consumer<AirbyteMessage> outputRecordCollector) {

@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.dynamodb;
 
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
-
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -41,4 +44,5 @@ class DynamodbConsumerTest extends PerStreamStateMessageTest {
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
+
 }
