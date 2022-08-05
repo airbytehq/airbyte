@@ -292,8 +292,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final String metricClient = envConfigs.getMetricClient();
     LOGGER.info("metric client in async orchestrator pod process");
     LOGGER.info(metricClient);
-
+    final String datadogHost = envConfigs.getDDAgentHost();
+    final String datadogPort = envConfigs.getDDDogStatsDPort();
     envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, metricClient, null));
+    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, datadogHost, null));
+    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, datadogPort, null));
     LOGGER.info("added env var");
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
