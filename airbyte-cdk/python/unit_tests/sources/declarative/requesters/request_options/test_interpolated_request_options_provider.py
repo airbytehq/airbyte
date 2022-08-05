@@ -32,7 +32,7 @@ config = {"option": "OPTION"}
 def test_interpolated_request_params(test_name, input_request_params, expected_request_params):
     provider = InterpolatedRequestOptionsProvider(config=config, request_parameters=input_request_params)
 
-    actual_request_params = provider.request_params(state, stream_slice, next_page_token)
+    actual_request_params = provider.request_params(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     assert actual_request_params == expected_request_params
 
@@ -56,7 +56,7 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
 def test_interpolated_request_json(test_name, input_request_json, expected_request_json):
     provider = InterpolatedRequestOptionsProvider(config=config, request_body_json=input_request_json)
 
-    actual_request_json = provider.request_body_json(state, stream_slice, next_page_token)
+    actual_request_json = provider.request_body_json(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     assert actual_request_json == expected_request_json
 
@@ -74,7 +74,7 @@ def test_interpolated_request_json(test_name, input_request_json, expected_reque
 def test_interpolated_request_data(test_name, input_request_data, expected_request_data):
     provider = InterpolatedRequestOptionsProvider(config=config, request_body_data=input_request_data)
 
-    actual_request_data = provider.request_body_data(state, stream_slice, next_page_token)
+    actual_request_data = provider.request_body_data(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     assert actual_request_data == expected_request_data
 
