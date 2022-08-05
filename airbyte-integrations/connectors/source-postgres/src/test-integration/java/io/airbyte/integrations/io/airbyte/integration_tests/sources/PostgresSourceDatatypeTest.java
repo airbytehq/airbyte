@@ -554,7 +554,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaType.ARRAY_WITH_STRING_ITEMS)
+            .airbyteType(JsonSchemaType.ARRAY)
             .addInsertValues("'{10001, 10002, 10003, 10004}'", "null")
             .addExpectedValues("[\"10001\",\"10002\",\"10003\",\"10004\"]", null)
             .build());
