@@ -39,6 +39,7 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         all_records = self.extractor.extract_records(response)
+        # Some APIs don't wrap single records in a list
         if not isinstance(all_records, list):
             all_records = [all_records]
         if self.record_filter:
