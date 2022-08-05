@@ -14,16 +14,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .utils import initialize_authenticator, get_api_endpoint, get_start_date, delete_milliseconds
+from .utils import initialize_authenticator, get_api_endpoint, get_start_date, delete_milliseconds, datetime_to_string
 
 
 class OktaStream(HttpStream, ABC):
     page_size = 200
 
-    def __init__(self, url_base: str, *args, **kwargs):
+    def __init__(self, url_base: str, start_date: pendulum.datetime, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
         self._url_base = url_base.rstrip("/") + "/"
+        self.start_date = start_date
 
     @property
     def url_base(self) -> str:
@@ -99,9 +100,10 @@ class IncrementalOktaStream(OktaStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field) if stream_state else None
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else datetime_to_string(self.start_date)
         filter_param = {"filter": f'{self.cursor_field} gt "{latest_entry}"'}
-        return {**params, **filter_param} if latest_entry else params
+        params.update(filter_param)
+        return params
 
 
 class Groups(IncrementalOktaStream):
@@ -119,7 +121,7 @@ class GroupMembers(IncrementalOktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
 
@@ -133,10 +135,12 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
-            params["after"] = latest_entry
+        # Filter param should be ignored SCIM filter expressions can't use the published
+        # attribute since it may conflict with the logic of the since, after, and until query params.
+        # Docs: https://developer.okta.com/docs/reference/api/system-log/#expression-filter
+        params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_user_id
+        params["after"] = latest_entry
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -153,7 +157,7 @@ class GroupRoleAssignments(OktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
 
@@ -167,10 +171,8 @@ class Logs(IncrementalOktaStream):
     cursor_field = "published"
     primary_key = "uuid"
 
-    def __init__(self, url_base, start_date: pendulum.datetime, **kwargs):
+    def __init__(self, url_base, **kwargs):
         super().__init__(url_base=url_base, **kwargs)
-        self.start_date = start_date
-
         self._raise_on_http_errors: bool = True
 
     @property
@@ -268,7 +270,7 @@ class UserRoleAssignments(OktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base)
+        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for user in user_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
@@ -290,7 +292,7 @@ class Permissions(OktaStream):
         yield from response.json()["permissions"]
 
     def stream_slices(self, **kwargs):
-        custom_roles = CustomRoles(authenticator=self.authenticator, url_base=self.url_base)
+        custom_roles = CustomRoles(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for role in custom_roles.read_records(sync_mode=SyncMode.full_refresh):
             yield {"role_id": role["id"]}
 
@@ -326,16 +328,13 @@ class SourceOkta(AbstractSource):
 
         initialization_params = {
             "authenticator": auth,
-            "url_base": api_endpoint
-        }
-        initialization_params_with_start_date = {
-            **initialization_params,
+            "url_base": api_endpoint,
             "start_date": start_date
         }
 
         return [
             Groups(**initialization_params),
-            Logs(**initialization_params_with_start_date),
+            Logs(**initialization_params),
             Users(**initialization_params),
             GroupMembers(**initialization_params),
             CustomRoles(**initialization_params),

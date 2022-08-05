@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import datetime
 import logging
 from typing import Any, Mapping
 from urllib import parse
@@ -73,3 +73,7 @@ def get_start_date(config: Mapping[str, Any]) -> pendulum.datetime:
 
 def delete_milliseconds(date: str) -> str:
     return pendulum.parse(date).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def datetime_to_string(date: datetime.datetime) -> str:
+    return date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
