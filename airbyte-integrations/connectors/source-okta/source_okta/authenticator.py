@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Any, Mapping, Tuple
+
 import requests
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from typing import Any, Mapping, Tuple
 
 
 class OktaOauth2Authenticator(Oauth2Authenticator):

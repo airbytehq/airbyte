@@ -1,14 +1,16 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 import logging
 from typing import Any, Mapping
 from urllib import parse
+
 import pendulum
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from .authenticator import OktaOauth2Authenticator
 
+from .authenticator import OktaOauth2Authenticator
 
 logger = logging.getLogger("airbyte")
 

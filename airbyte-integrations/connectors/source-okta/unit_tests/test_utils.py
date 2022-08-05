@@ -18,16 +18,14 @@ from source_okta.utils import get_start_date
         (
             {"start_date": "3033-07-22T00:00:00Z"},
             pendulum.now().subtract(days=7).replace(microsecond=0),
-            [
-                "The start date cannot be in the future. Set the start date to default 7 days prior current date."
-            ],
+            ["The start date cannot be in the future. Set the start date to default 7 days prior current date."],
         ),
         (
             {},
             pendulum.now().subtract(days=7).replace(microsecond=0),
             ["Set the start date to default 7 days prior current date."],
         ),
-    ]
+    ],
 )
 def test_get_start_date(caplog, config, expected_date, expected_messages):
     assert get_start_date(config) == expected_date

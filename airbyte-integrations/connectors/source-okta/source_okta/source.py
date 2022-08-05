@@ -14,7 +14,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .utils import initialize_authenticator, get_api_endpoint, get_start_date, delete_milliseconds, datetime_to_string
+from .utils import datetime_to_string, delete_milliseconds, get_api_endpoint, get_start_date, initialize_authenticator
 
 
 class OktaStream(HttpStream, ABC):
@@ -326,11 +326,7 @@ class SourceOkta(AbstractSource):
         api_endpoint = get_api_endpoint(config)
         start_date = get_start_date(config)
 
-        initialization_params = {
-            "authenticator": auth,
-            "url_base": api_endpoint,
-            "start_date": start_date
-        }
+        initialization_params = {"authenticator": auth, "url_base": api_endpoint, "start_date": start_date}
 
         return [
             Groups(**initialization_params),
