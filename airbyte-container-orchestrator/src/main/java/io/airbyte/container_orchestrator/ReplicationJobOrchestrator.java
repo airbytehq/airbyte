@@ -35,13 +35,9 @@ import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationJobOrchestrator.class);
 
   private final ProcessFactory processFactory;
   private final WorkerConfigs workerConfigs;
@@ -106,7 +102,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
-    LOGGER.info("metric client inside replication job orchestrator:" + metricClient);
     final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");

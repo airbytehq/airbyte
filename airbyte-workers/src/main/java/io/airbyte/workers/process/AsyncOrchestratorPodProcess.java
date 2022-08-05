@@ -35,8 +35,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This process allows creating and managing a pod outside the lifecycle of the launching
@@ -52,8 +50,6 @@ import org.slf4j.LoggerFactory;
  */
 @Slf4j
 public class AsyncOrchestratorPodProcess implements KubePod {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(AsyncOrchestratorPodProcess.class);
 
   public static final String KUBE_POD_INFO = "KUBE_POD_INFO";
   public static final String NO_OP = "NO_OP";
@@ -287,18 +283,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
-    LOGGER.info("getting metric client env var in async orchestrator pod process");
     final EnvConfigs envConfigs = new EnvConfigs();
-    final String metricClient = envConfigs.getMetricClient();
-    LOGGER.info("metric client in async orchestrator pod process");
-    LOGGER.info(metricClient);
-    final String datadogHost = envConfigs.getDDAgentHost();
-    final String datadogPort = envConfigs.getDDDogStatsDPort();
-    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, metricClient, null));
-    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, datadogHost, null));
-    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, datadogPort, null));
+    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, envConfigs.getMetricClient(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, envConfigs.getDDAgentHost(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, envConfigs.getDDDogStatsDPort(), null));
     envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
-    LOGGER.info("added env var");
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));

@@ -39,8 +39,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import sun.misc.Signal;
 
 /**
@@ -57,7 +55,6 @@ import sun.misc.Signal;
 @Slf4j
 public class ContainerOrchestratorApp {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
 
   private final String application;
@@ -83,16 +80,8 @@ public class ContainerOrchestratorApp {
 
   private void configureLogging() {
     for (final String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
-      LOGGER.info("checking env var: " + envVar);
       if (envMap.containsKey(envVar)) {
-        LOGGER.info("setting property env var: " + envVar);
         System.setProperty(envVar, envMap.get(envVar));
-        final String getEnvResult = System.getenv(envVar);
-        LOGGER.info("getting env " + envVar);
-        LOGGER.info(getEnvResult);
-        final String getPropertiesResult = System.getProperty(envVar);
-        LOGGER.info("getting property " + envVar);
-        LOGGER.info(getPropertiesResult);
       }
     }
 

@@ -217,8 +217,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
-      LOGGER.info("getting metric client in replication activity impl; metric client is:");
-      LOGGER.info(String.valueOf(metricClient));
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),

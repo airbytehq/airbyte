@@ -60,8 +60,6 @@ public class MetricClientFactory {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
-    LOGGER.info("getting metric client in initialize; metric client is:");
-    LOGGER.info(configs.getMetricClient());
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
       if (configs.getDDAgentHost() == null || configs.getDDDogStatsDPort() == null) {
         throw new RuntimeException("DD_AGENT_HOST is null or DD_DOGSTATSD_PORT is null. Both are required to use the DataDog Metric Client");
