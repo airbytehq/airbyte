@@ -25,6 +25,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
 
   public static final String AIRBYTE_DATE_FORMAT = "yyyy-MM-dd";
   public static final String AIRBYTE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+  public static final String AIRBYTE_DATETIME_PARSED_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
   public static final String AIRBYTE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
 
   @Override
