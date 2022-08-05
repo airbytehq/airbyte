@@ -210,7 +210,7 @@
 - name: Pulsar
   destinationDefinitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
   dockerRepository: airbyte/destination-pulsar
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
   icon: pulsar.svg
   releaseStage: alpha
