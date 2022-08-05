@@ -27,9 +27,9 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         * updates the request path with  "{{ response._metadata.next }}"
           paginator:
             type: "LimitPaginator"
-            limit_value: 10
+            page_size: 10
             limit_option:
-              option_type: request_parameter
+              inject_into: request_parameter
               field_name: page_size
             page_token_option:
               option_type: path
@@ -44,9 +44,9 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         `
           paginator:
             type: "LimitPaginator"
-            limit_value: 5
+            page_size: 5
             limit_option:
-              option_type: header
+              inject_into: header
               field_name: page_size
             pagination_strategy:
               type: "OffsetIncrement"
@@ -61,9 +61,9 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         `
           paginator:
             type: "LimitPaginator"
-            limit_value: 5
+            page_size: 5
             limit_option:
-              option_type: request_parameter
+              inject_into: request_parameter
               field_name: page_size
             pagination_strategy:
               type: "PageIncrement"

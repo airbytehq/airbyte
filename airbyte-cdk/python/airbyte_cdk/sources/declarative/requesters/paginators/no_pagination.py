@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
@@ -14,6 +14,8 @@ class NoPagination(Paginator):
     """
     Pagination implementation that never returns a next page.
     """
+
+    options: InitVar[Mapping[str, Any]]
 
     def path(self) -> Optional[str]:
         return None
