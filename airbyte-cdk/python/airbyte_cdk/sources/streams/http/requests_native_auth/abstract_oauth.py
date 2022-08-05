@@ -24,9 +24,9 @@ class AbstractOauth2Authenticator(AuthBase):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         """HTTP header to set on the requests"""
-        return {"Authorization": f"Bearer {self.retrieve_access_token()}"}
+        return {"Authorization": f"Bearer {self.get_access_token()}"}
 
-    def retrieve_access_token(self) -> str:
+    def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
             t0 = pendulum.now()
