@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_incre
     ],
 )
 def test_page_increment_paginator_strategy(test_name, page_size, expected_next_page_token, expected_offset):
-    paginator_strategy = PageIncrement(page_size)
+    paginator_strategy = PageIncrement(page_size, options={})
     assert paginator_strategy._offset == 0
 
     response = requests.Response()

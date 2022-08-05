@@ -3,14 +3,17 @@
 #
 
 import base64
-from typing import Any, Mapping, Optional, Union
+from dataclasses import InitVar, dataclass
+from typing import Any, Mapping, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
+@dataclass
+class ApiKeyAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 
@@ -22,50 +25,51 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
     will result in the following header set on the HTTP request
     `"Authorization": "Bearer hello"`
 
+    Attributes:
+        header (Union[InterpolatedString, str]): Header key to set on the HTTP requests
+        api_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests
+        config (Config): The user-provided configuration as specified by the source's spec
+        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    def __init__(
-        self,
-        header: Union[InterpolatedString, str],
-        token: Union[InterpolatedString, str],
-        config: Config,
-        **options: Optional[Mapping[str, Any]],
-    ):
-        """
-        :param header: Header key to set on the HTTP requests
-        :param token: Header value to set on the HTTP requests
-        :param config: The user-provided configuration as specified by the source's spec
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self._header = InterpolatedString.create(header, options=options)
-        self._token = InterpolatedString.create(token, options=options)
-        self._config = config
+    header: Union[InterpolatedString, str]
+    api_token: Union[InterpolatedString, str]
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._header = InterpolatedString.create(self.header, options=options)
+        self._token = InterpolatedString.create(self.api_token, options=options)
 
     @property
     def auth_header(self) -> str:
-        return self._header.eval(self._config)
+        return self._header.eval(self.config)
 
     @property
     def token(self) -> str:
-        return self._token.eval(self._config)
+        return self._token.eval(self.config)
 
 
-class BearerAuthenticator(AbstractHeaderAuthenticator):
+@dataclass
+class BearerAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
 
     The header is of the form:
     `"Authorization": "Bearer <token>"`
+
+    Attributes:
+        api_token (Union[InterpolatedString, str]): The bearer token
+        config (Config): The user-provided configuration as specified by the source's spec
+        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    def __init__(self, token: Union[InterpolatedString, str], config: Config, **options: Optional[Mapping[str, Any]]):
-        """
-        :param token: The bearer token
-        :param config: The user-provided configuration as specified by the source's spec
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self._token = InterpolatedString.create(token, options=options)
-        self._config = config
+    api_token: Union[InterpolatedString, str]
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._token = InterpolatedString.create(self.api_token, options=options)
 
     @property
     def auth_header(self) -> str:
@@ -73,9 +77,10 @@ class BearerAuthenticator(AbstractHeaderAuthenticator):
 
     @property
     def token(self) -> str:
-        return f"Bearer {self._token.eval(self._config)}"
+        return f"Bearer {self._token.eval(self.config)}"
 
 
+@dataclass
 class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
@@ -83,24 +88,22 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
 
     The header is of the form
     `"Authorization": "Basic <encoded_credentials>"`
+
+    Attributes:
+        username (Union[InterpolatedString, str]): The username
+        config (Config): The user-provided configuration as specified by the source's spec
+        password (Union[InterpolatedString, str]): The password
+        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    def __init__(
-        self,
-        username: Union[InterpolatedString, str],
-        config: Config,
-        password: Union[InterpolatedString, str] = "",
-        **options: Optional[Mapping[str, Any]],
-    ):
-        """
-        :param username: The username
-        :param config: The user-provided configuration as specified by the source's spec
-        :param password: The password
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self._username = InterpolatedString.create(username, options=options)
-        self._password = InterpolatedString.create(password, options=options)
-        self._config = config
+    username: Union[InterpolatedString, str]
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+    password: Union[InterpolatedString, str] = ""
+
+    def __post_init__(self, options):
+        self._username = InterpolatedString.create(self.username, options=options)
+        self._password = InterpolatedString.create(self.password, options=options)
 
     @property
     def auth_header(self) -> str:
@@ -108,6 +111,6 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
 
     @property
     def token(self) -> str:
-        auth_string = f"{self._username.eval(self._config)}:{self._password.eval(self._config)}".encode("utf8")
+        auth_string = f"{self._username.eval(self.config)}:{self._password.eval(self.config)}".encode("utf8")
         b64_encoded = base64.b64encode(auth_string).decode("utf8")
         return f"Basic {b64_encoded}"
