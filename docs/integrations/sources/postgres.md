@@ -147,6 +147,8 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 The command produces the private key in PEM format and the public key remains in the standard format used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen to allow it to log into the bastion server.
 
+<a name="replication-plugin"/>
+
 ## Configuring Postgres connector with Change Data Capture (CDC)
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/)
@@ -195,9 +197,13 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
+<a name="replication-plugin"></a>
+
 #### Step 2: Select a replication plugin​
 
 We recommend using a [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres). If the replication table contains multiple JSON blobs and the table size exceeds 1 GB, we recommend using a [wal2json](https://github.com/eulerto/wal2json) instead. Note that wal2json may require additional installation for Bare Metal, VMs (EC2/GCE/etc), Docker, etc. For more information read the [wal2json documentation](https://github.com/eulerto/wal2json).
+
+<a name="replication-slot"></a>
 
 #### Step 3: Create replication slot​
 
@@ -212,6 +218,8 @@ To create a replication slot called `airbyte_slot` using wal2json, run:
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 ```
+
+<a name="publications-replication"></a>
 
 #### Step 4: Create publications and replication identities for tables​
 
@@ -239,6 +247,8 @@ Also, the publication should include all the tables and only the tables that nee
 :::warning
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
+
+<a name="initial-waiting-time"></a>
 
 #### Step 5: [Optional] Set up initial waiting time
 
