@@ -30,10 +30,11 @@ connectionSpecification:
             const: Service
         service_account_info:
             type: string
-            title: Service Account Information.
+            title: Service Account JSON.
             description: >-
                 The JSON key of the service account to use for authorization.
                 See this setup guide for more details https://go.estuary.dev/RP7TxO
             airbyte_secret: true
+            multiline: true
             examples:
               - "{ \"type\": \"service_account\" \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
