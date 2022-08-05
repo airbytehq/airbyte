@@ -11,11 +11,11 @@ from source_okta.source import (
     GroupRoleAssignments,
     Groups,
     Logs,
-    OktaOauth2Authenticator,
     SourceOkta,
     UserRoleAssignments,
     Users,
 )
+from source_okta.authenticator import OktaOauth2Authenticator
 
 
 class TestAuthentication:
@@ -66,7 +66,7 @@ class TestAuthentication:
         assert source_okta.check_connection(logger=MagicMock(), config=oauth_config) == (False, {})
 
     def test_check_connection_error_with_exception(
-        self, requests_mock, oauth_config, api_url, error_failed_to_authorize_with_provided_credentials
+            self, requests_mock, oauth_config, api_url, error_failed_to_authorize_with_provided_credentials
     ):
         source_okta = SourceOkta()
         oauth_authentication_instance = source_okta.initialize_authenticator(config=oauth_config)
