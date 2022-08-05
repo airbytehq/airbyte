@@ -2296,7 +2296,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kinesis:0.1.3"
+- dockerImage: "airbyte/destination-kinesis:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
     connectionSpecification:
