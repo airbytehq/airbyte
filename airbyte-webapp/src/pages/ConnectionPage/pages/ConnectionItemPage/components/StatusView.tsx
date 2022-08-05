@@ -5,6 +5,7 @@ import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
+import { RotateIcon } from "components/icons/RotateIcon";
 import ToolTip from "components/ToolTip";
 
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -14,7 +15,6 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
-import { RotateIcon } from "../../../../../components/icons/RotateIcon";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
@@ -135,7 +135,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
                 {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
                 {activeJob?.action && activeJob.isCanceling && (
                   <ToolTip control={cancelJobBtn} cursor="not-allowed">
-                    <FormattedMessage id="form.canceling" />
+                    <FormattedMessage id="connection.canceling" />
                   </ToolTip>
                 )}
               </div>

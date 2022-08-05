@@ -346,6 +346,7 @@
   "connection.connectionDeletedView": "This connection has been deleted. You can’t make any changes or run syncs.",
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
+  "connection.canceling": "Canceling...",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
