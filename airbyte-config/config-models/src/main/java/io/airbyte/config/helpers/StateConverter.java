@@ -69,8 +69,8 @@ public class StateConverter {
   }
 
   /**
-   * Convert to API representation of state type. API has an additional type (NOT_SET). This represents the case where no state is saved so we do not
-   * know the state type.
+   * Convert to API representation of state type. API has an additional type (NOT_SET). This
+   * represents the case where no state is saved so we do not know the state type.
    *
    * @param stateWrapper state to convert
    * @return api representation of state type
@@ -84,8 +84,8 @@ public class StateConverter {
   }
 
   /**
-   * Convert to client representation of state type. The client model has an additional type (NOT_SET). This represents the case where no state is saved so we do not
-   * know the state type.
+   * Convert to client representation of state type. The client model has an additional type
+   * (NOT_SET). This represents the case where no state is saved so we do not know the state type.
    *
    * @param stateWrapper state to convert
    * @return client representation of state type
@@ -113,10 +113,12 @@ public class StateConverter {
   }
 
   /**
-   * If wrapper is of type global state, returns API representation of global state. Otherwise, empty optional.
+   * If wrapper is of type global state, returns API representation of global state. Otherwise, empty
+   * optional.
    *
    * @param stateWrapper state wrapper to extract from
-   * @return api representation of global state if state wrapper is type global. Otherwise, empty optional.
+   * @return api representation of global state if state wrapper is type global. Otherwise, empty
+   *         optional.
    */
   private static Optional<GlobalState> globalStateToApi(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper != null
@@ -135,10 +137,12 @@ public class StateConverter {
   }
 
   /**
-   * If wrapper is of type global state, returns client representation of global state. Otherwise, empty optional.
+   * If wrapper is of type global state, returns client representation of global state. Otherwise,
+   * empty optional.
    *
    * @param stateWrapper state wrapper to extract from
-   * @return client representation of global state if state wrapper is type global. Otherwise, empty optional.
+   * @return client representation of global state if state wrapper is type global. Otherwise, empty
+   *         optional.
    */
   private static Optional<io.airbyte.api.client.model.generated.GlobalState> globalStateToClient(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper != null
@@ -157,7 +161,8 @@ public class StateConverter {
   }
 
   /**
-   * If API state is of type global, returns internal representation of global state. Otherwise, empty optional.
+   * If API state is of type global, returns internal representation of global state. Otherwise, empty
+   * optional.
    *
    * @param connectionState API state representation to extract from
    * @return global state message if API state is of type global. Otherwise, empty optional.
@@ -179,10 +184,12 @@ public class StateConverter {
   }
 
   /**
-   * If wrapper is of type stream state, returns API representation of stream state. Otherwise, empty optional.
+   * If wrapper is of type stream state, returns API representation of stream state. Otherwise, empty
+   * optional.
    *
    * @param stateWrapper state wrapper to extract from
-   * @return api representation of stream state if state wrapper is type stream. Otherwise, empty optional.
+   * @return api representation of stream state if state wrapper is type stream. Otherwise, empty
+   *         optional.
    */
   private static Optional<List<StreamState>> streamStateToApi(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper != null && stateWrapper.getStateType() == StateType.STREAM && stateWrapper.getStateMessages() != null) {
@@ -197,10 +204,12 @@ public class StateConverter {
   }
 
   /**
-   * If wrapper is of type stream state, returns client representation of stream state. Otherwise, empty optional.
+   * If wrapper is of type stream state, returns client representation of stream state. Otherwise,
+   * empty optional.
    *
    * @param stateWrapper state wrapper to extract from
-   * @return client representation of stream state if state wrapper is type stream. Otherwise, empty optional.
+   * @return client representation of stream state if state wrapper is type stream. Otherwise, empty
+   *         optional.
    */
   private static Optional<List<io.airbyte.api.client.model.generated.StreamState>> streamStateToClient(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper != null && stateWrapper.getStateType() == StateType.STREAM && stateWrapper.getStateMessages() != null) {
@@ -215,10 +224,12 @@ public class StateConverter {
   }
 
   /**
-   * If API state is of type stream, returns internal representation of stream state. Otherwise, empty optional.
+   * If API state is of type stream, returns internal representation of stream state. Otherwise, empty
+   * optional.
    *
    * @param connectionState API representation of state to extract from
-   * @return internal representation of stream state if API state representation is of type stream. Otherwise, empty optional.
+   * @return internal representation of stream state if API state representation is of type stream.
+   *         Otherwise, empty optional.
    */
   private static Optional<List<AirbyteStateMessage>> streamStateToInternal(final @Nullable ConnectionState connectionState) {
     if (connectionState != null && connectionState.getStateType() == ConnectionStateType.STREAM && connectionState.getStreamState() != null) {
