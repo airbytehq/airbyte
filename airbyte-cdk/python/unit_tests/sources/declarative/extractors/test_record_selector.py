@@ -36,6 +36,13 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
             {"data": [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}]},
             [{"id": 3, "created_at": "06-08-21"}],
         ),
+        (
+            "test_read_single_record",
+            "_.data",
+            None,
+            {"data": {"id": 1, "created_at": "06-06-21"}},
+            [{"id": 1, "created_at": "06-06-21"}],
+        ),
     ],
 )
 def test_record_filter(test_name, transform_template, filter_template, body, expected_records):
