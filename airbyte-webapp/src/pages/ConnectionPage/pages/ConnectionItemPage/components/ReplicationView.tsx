@@ -18,6 +18,7 @@ import {
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
+import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
@@ -87,7 +88,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [saved, setSaved] = useState(false);
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
   const connectionService = useConnectionService();
-
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
@@ -177,7 +177,16 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const onRefreshSourceSchema = async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
-    await refreshCatalog();
+    const { catalogDiff, syncCatalog } = await refreshCatalog();
+    if (catalogDiff?.transforms && catalogDiff.transforms.length > 0) {
+      await openModal<void>({
+        title: formatMessage({ id: "connection.updateSchema.completed" }),
+        preventCancel: true,
+        content: ({ onClose }) => (
+          <CatalogDiffModal catalogDiff={catalogDiff} catalog={syncCatalog} onClose={onClose} />
+        ),
+      });
+    }
   };
 
   const onCancelConnectionFormEdit = () => {

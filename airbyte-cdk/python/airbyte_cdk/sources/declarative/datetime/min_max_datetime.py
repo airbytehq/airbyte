@@ -48,19 +48,19 @@ class MinMaxDatetime:
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = dt.datetime.strptime(self._datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
+        time = dt.datetime.strptime(str(self._datetime_interpolator.eval(config, **additional_options)), datetime_format).replace(
             tzinfo=self._timezone
         )
 
         if self._min_datetime_interpolator:
-            min_time = dt.datetime.strptime(self._min_datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
-                tzinfo=self._timezone
-            )
+            min_time = dt.datetime.strptime(
+                str(self._min_datetime_interpolator.eval(config, **additional_options)), datetime_format
+            ).replace(tzinfo=self._timezone)
             time = max(time, min_time)
         if self._max_datetime_interpolator:
-            max_time = dt.datetime.strptime(self._max_datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
-                tzinfo=self._timezone
-            )
+            max_time = dt.datetime.strptime(
+                str(self._max_datetime_interpolator.eval(config, **additional_options)), datetime_format
+            ).replace(tzinfo=self._timezone)
             time = min(time, max_time)
         return time
 

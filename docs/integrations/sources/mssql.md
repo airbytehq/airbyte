@@ -306,8 +306,10 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
-| 0.4.11   | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
-| 0.4.10   | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
+| 0.4.13  | 2022-08-04 | [15268](https://github.com/airbytehq/airbyte/pull/15268) | Added [] enclosing to escape special character in the database name|
+| 0.4.12  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiply log bindings |
+| 0.4.11  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
+| 0.4.10  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.4.9   | 2022-07-05 | [14379](https://github.com/airbytehq/airbyte/pull/14379) | Aligned Normal and CDC migration + added some fixes for datatypes processing                         |
 | 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) | Omit using 'USE' keyword on Azure SQL with CDC                                                       |
 | 0.4.5   | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management                                                                         |
