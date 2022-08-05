@@ -12,25 +12,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.InternalApi;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.workers.Worker;
 import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
-import javax.sql.DataSource;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,8 +41,6 @@ class TemporalAttemptExecutionTest {
 
   private static PostgreSQLContainer<?> container;
   private static Configs configs;
-  private static DataSource dataSource;
-  private static DSLContext dslContext;
 
   private Path jobRoot;
 
@@ -65,17 +56,14 @@ class TemporalAttemptExecutionTest {
         .withPassword(SOURCE_PASSWORD);
     container.start();
     configs = mock(Configs.class);
-
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
   }
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException, DatabaseInitializationException {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
-    final Database jobDatabase = databaseProviders.createNewJobsDatabase();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
+    final InternalApi internalApi = mock(InternalApi.class);
+    when(airbyteApiClient.getInternalApi()).thenReturn(internalApi);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
@@ -90,7 +78,7 @@ class TemporalAttemptExecutionTest {
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        jobPersistence,
+        airbyteApiClient,
         () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 

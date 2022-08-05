@@ -37,7 +37,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobHistoryHandler {
 
   private final ConnectionsHandler connectionsHandler;
@@ -92,6 +94,7 @@ public class JobHistoryHandler {
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    log.warn("Made it into JobHistoryHandler.getJobInfo with request {}", jobIdRequestBody);
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
   }

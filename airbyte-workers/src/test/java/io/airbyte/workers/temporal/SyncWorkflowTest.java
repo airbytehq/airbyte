@@ -26,6 +26,8 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivity;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivity;
@@ -42,6 +44,7 @@ import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,12 +55,16 @@ class SyncWorkflowTest {
   // TEMPORAL
 
   private TestWorkflowEnvironment testEnv;
-  private Worker syncWorker;
+  private Worker syncControlPlaneWorker;
+  private Worker syncDataPlaneWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
   private PersistStateActivityImpl persistStateActivity;
+  private DecideDataPlaneTaskQueueActivityImpl decideDataPlaneTaskQueueActivity;
+
+  private static final String DATA_PLANE_TASK_QUEUE = "SYNC_DATA_PLANE";
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
@@ -87,8 +94,10 @@ class SyncWorkflowTest {
   @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    syncControlPlaneWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+    syncControlPlaneWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+
+    syncDataPlaneWorker = testEnv.newWorker(DATA_PLANE_TASK_QUEUE);
 
     client = testEnv.getWorkflowClient();
 
@@ -111,11 +120,15 @@ class SyncWorkflowTest {
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
+    decideDataPlaneTaskQueueActivity = mock(DecideDataPlaneTaskQueueActivityImpl.class);
+    doReturn(DATA_PLANE_TASK_QUEUE).when(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(sync.getConnectionId());
   }
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncControlPlaneWorker.registerActivitiesImplementations(decideDataPlaneTaskQueueActivity);
+    syncDataPlaneWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
+        persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
@@ -138,6 +151,7 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
+    verifyDecideDataPlaneTaskQueue(decideDataPlaneTaskQueueActivity, sync.getConnectionId());
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -240,6 +254,11 @@ class SyncWorkflowTest {
         .build();
 
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
+  }
+
+  private static void verifyDecideDataPlaneTaskQueue(final DecideDataPlaneTaskQueueActivity decideDataPlaneTaskQueueActivity,
+                                                     final UUID connectionId) {
+    verify(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(connectionId);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
