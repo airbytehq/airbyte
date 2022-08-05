@@ -2301,6 +2301,25 @@ paths:
                 $ref: "#/components/schemas/ImportRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/internal/set_temporal_workflow_in_attempt:
+    post:
+      tags:
+        - internal
+      summary: For worker to register the temporal workflow id in attempt.
+      operationId: setTemporalWorkflowInAttempt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetTemporalWorkflowInAttemptRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
 components:
   securitySchemes:
     bearerAuth:
@@ -4729,6 +4748,32 @@ components:
           $ref: "#/components/schemas/ResourceId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    AttemptId:
+      type: integer
+      format: int32
+    TemporalWorkflowId:
+      type: string
+      format: uuid
+    SetTemporalWorkflowInAttemptRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptId
+        - temporalWorkflowId
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptId:
+          $ref: "#/components/schemas/AttemptId"
+        temporalWorkflowId:
+          $ref: "#/components/schemas/TemporalWorkflowId"
+    InternalOperationResult:
+      type: object
+      required:
+        - done
+      properties:
+        done:
+          type: boolean
     InvalidInputProperty:
       type: object
       required:
