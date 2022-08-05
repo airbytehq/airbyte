@@ -6,6 +6,7 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
+import { CreditsIcon } from "components/icons/CreditsIcon";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -21,7 +22,6 @@ import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
-import { CreditsIcon } from "../../../../../components/icons/CreditsIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import { useCalculateSidebarStyles, getPopoutStyles } from "views/layout/SideBar/SideBar";
 
