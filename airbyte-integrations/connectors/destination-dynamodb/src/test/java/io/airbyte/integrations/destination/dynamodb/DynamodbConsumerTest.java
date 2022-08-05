@@ -2,30 +2,38 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.destination.dynamodb;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.Map;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
+class DynamodbConsumerTest extends PerStreamStateMessageTest {
 
-  @Mock
-  private Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   @Mock
   private Consumer<AirbyteMessage> outputRecordCollector;
 
   @InjectMocks
-  private BigQueryRecordConsumer bigQueryRecordConsumer;
+  private DynamodbConsumer consumer;
+
+  @Mock
+  private DynamodbDestinationConfig destinationConfig;
+
+  @Mock
+  private ConfiguredAirbyteCatalog catalog;
+
+  @BeforeEach
+  private void init() {
+    consumer = new DynamodbConsumer(destinationConfig, catalog, outputRecordCollector);
+  }
 
   @Override
   protected Consumer<AirbyteMessage> getMockedConsumer() {
@@ -34,7 +42,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
 
   @Override
   protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
-    return bigQueryRecordConsumer;
+    return consumer;
   }
 
 }
