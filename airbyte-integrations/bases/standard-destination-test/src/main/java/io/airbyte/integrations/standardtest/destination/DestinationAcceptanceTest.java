@@ -1012,6 +1012,53 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * Verify that destination doesn't fail if new fields arrive in the data after initial schema
+   * discovery and sync.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testNewFields() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
+
+    // Run second sync with new fields on the message
+    final List<AirbyteMessage> secondSyncMessagesWithNewFields = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
+                    .put("currency", "USD")
+                    .put("date", "2020-03-31T00:00:00Z")
+                    .put("newFieldString", "Value for new field")
+                    .put("newFieldNumber", 3)
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+
+    runSyncAndVerifyStateOutput(config, secondSyncMessagesWithNewFields, configuredCatalog, false);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessagesWithNewFields, defaultSchema);
+  }
+
+  /**
    * Whether the destination should be tested against different namespaces.
    */
   protected boolean supportNamespaceTest() {
