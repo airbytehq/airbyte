@@ -283,6 +283,10 @@ font-style: italic;
   <ul>
   <li><a href="#getHealthCheck"><code><span class="http-method">get</span> /v1/health</code></a></li>
   </ul>
+  <h4><a href="#Internal">Internal</a></h4>
+  <ul>
+  <li><a href="#setTemporalWorkflowInAttempt"><code><span class="http-method">post</span> /v1/internal/set_temporal_workflow_in_attempt</code></a></li>
+  </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
   <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
@@ -4113,6 +4117,59 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#HealthCheckRead">HealthCheckRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Internal">Internal</a></h1>
+  <div class="method"><a name="setTemporalWorkflowInAttempt"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/internal/set_temporal_workflow_in_attempt</code></pre></div>
+    <div class="method-summary">For worker to register the temporal workflow id in attempt. (<span class="nickname">setTemporalWorkflowInAttempt</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetTemporalWorkflowInAttemptRequestBody <a href="#SetTemporalWorkflowInAttemptRequestBody">SetTemporalWorkflowInAttemptRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "done" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
@@ -10751,6 +10808,7 @@ font-style: italic;
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
+    <li><a href="#InternalOperationResult"><code>InternalOperationResult</code> - </a></li>
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
@@ -10796,6 +10854,7 @@ font-style: italic;
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
+    <li><a href="#SetTemporalWorkflowInAttemptRequestBody"><code>SetTemporalWorkflowInAttemptRequestBody</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a></li>
@@ -11519,6 +11578,13 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="InternalOperationResult"><code>InternalOperationResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">done </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11891,6 +11957,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SetTemporalWorkflowInAttemptRequestBody"><code>SetTemporalWorkflowInAttemptRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">attemptId </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">temporalWorkflowId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
