@@ -52,7 +52,7 @@ def get_api_endpoint(config: Mapping[str, Any]) -> str:
 def get_start_date(config: Mapping[str, Any]) -> pendulum.datetime:
     # Set start date to default 7 days prior current date if not in config or set in future.
     # Docs: https://developer.okta.com/docs/reference/api/system-log/#request-parameters
-    default_start_date = pendulum.now().subtract(days=7)
+    default_start_date = pendulum.now().subtract(days=7).replace(microsecond=0)
 
     if "start_date" in config:
         start_date = pendulum.parse(config["start_date"])
@@ -68,4 +68,8 @@ def get_start_date(config: Mapping[str, Any]) -> pendulum.datetime:
         logger.warning(message)
         return default_start_date
 
-    return pendulum.parse(start_date) if isinstance(start_date, str) else start_date
+    return start_date.replace(microsecond=0)
+
+
+def delete_milliseconds(date: str) -> str:
+    return pendulum.parse(date).strftime("%Y-%m-%dT%H:%M:%SZ")

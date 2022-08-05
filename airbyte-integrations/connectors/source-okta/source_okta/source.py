@@ -14,7 +14,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .utils import initialize_authenticator, get_api_endpoint, get_start_date
+from .utils import initialize_authenticator, get_api_endpoint, get_start_date, delete_milliseconds
 
 
 class OktaStream(HttpStream, ABC):
@@ -168,8 +168,28 @@ class Logs(IncrementalOktaStream):
     primary_key = "uuid"
 
     def __init__(self, url_base, start_date: pendulum.datetime, **kwargs):
-        self.start_date = start_date
         super().__init__(url_base=url_base, **kwargs)
+        self.start_date = start_date
+
+        self._raise_on_http_errors: bool = True
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return self._raise_on_http_errors
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        When the connector gets abnormal state API retrun errror with 400 status code
+        and internal error code E0000001. The connector ignores an error with 400 code
+        to finish successfully sync and inform the user about an error in logs with an
+        error message.
+        """
+
+        if response.status_code == 400 and response.json().get("errorCode") == "E0000001":
+            self.logger.info(f"{response.json()['errorSummary']}")
+            self._raise_on_http_errors = False
+            return False
+        return HttpStream.should_retry(self, response)
 
     def path(self, **kwargs) -> str:
         return "logs"
@@ -189,6 +209,17 @@ class Logs(IncrementalOktaStream):
         latest_entry = stream_state.get(self.cursor_field) if stream_state else self.start_date
         params["since"] = latest_entry
         return params
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        data = response.json() if isinstance(response.json(), list) else []
+
+        for record in data:
+            record[self.cursor_field] = delete_milliseconds(record[self.cursor_field])
+            yield record
 
 
 class Users(IncrementalOktaStream):
@@ -271,8 +302,8 @@ class Permissions(OktaStream):
 class SourceOkta(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = self.initialize_authenticator(config)
-            api_endpoint = self.get_api_endpoint(config)
+            auth = initialize_authenticator(config)
+            api_endpoint = get_api_endpoint(config)
             url = parse.urljoin(api_endpoint, "users")
 
             response = requests.get(
