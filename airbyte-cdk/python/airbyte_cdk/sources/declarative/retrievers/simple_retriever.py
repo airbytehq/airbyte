@@ -131,11 +131,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         :param paginator_method:
         :return:
         """
-        requester_mapping = requester_method(self.state, stream_slice, next_page_token)
+
+        requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
-        paginator_mapping = paginator_method(self.state, stream_slice, next_page_token)
+        paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         paginator_mapping_keys = set(paginator_mapping.keys())
-        stream_slicer_mapping = stream_slicer_method(stream_slice)
+        stream_slicer_mapping = stream_slicer_method(stream_slice=stream_slice)
         stream_slicer_mapping_keys = set(stream_slicer_mapping.keys())
 
         intersection = (
