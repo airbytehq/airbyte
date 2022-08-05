@@ -8,19 +8,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 
 import io.airbyte.api.model.generated.SetTemporalWorkflowInAttemptRequestBody;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.UUID;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-public class InternalWorkerHandlerTest {
+class InternalWorkerHandlerTest {
 
   JobPersistence jobPersistence;
   InternalWorkerHandler handler;
@@ -38,8 +39,6 @@ public class InternalWorkerHandlerTest {
   void testInternalWorkerHandlerSetsTemporalWorkflowId() throws Exception {
     UUID workflowId = UUID.randomUUID();
 
-    doNothing().when(jobPersistence).setAttemptTemporalWorkflowId(any(), any(), any());
-
     final ArgumentCaptor<Integer> attemptIdCapture = ArgumentCaptor.forClass(Integer.class);
     final ArgumentCaptor<Long> jobIdCapture = ArgumentCaptor.forClass(Long.class);
     final ArgumentCaptor<String> workflowIdCapture = ArgumentCaptor.forClass(String.class);
@@ -53,14 +52,15 @@ public class InternalWorkerHandlerTest {
 
     assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
-    assertEquals(workflowId, workflowIdCapture.getValue());
+    assertEquals(workflowId.toString(), workflowIdCapture.getValue());
   }
 
   @Test
   void testInternalWorkerHandlerSetsTemporalWorkflowIdThrows() throws Exception {
     UUID workflowId = UUID.randomUUID();
 
-    doThrow(IOException.class).when(jobPersistence).setAttemptTemporalWorkflowId(any(), any(), any());
+    doThrow(IOException.class).when(jobPersistence).setAttemptTemporalWorkflowId(anyLong(), anyInt(),
+        any());
 
     final ArgumentCaptor<Integer> attemptIdCapture = ArgumentCaptor.forClass(Integer.class);
     final ArgumentCaptor<Long> jobIdCapture = ArgumentCaptor.forClass(Long.class);
@@ -75,7 +75,7 @@ public class InternalWorkerHandlerTest {
 
     assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
-    assertEquals(workflowId, workflowIdCapture.getValue());
+    assertEquals(workflowId.toString(), workflowIdCapture.getValue());
   }
 
 }
