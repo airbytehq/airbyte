@@ -239,7 +239,7 @@ jobs:
         if: always()
         with:
           name: Connectors Base Test Report
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml, /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
 
   # In case of self-hosted EC2 errors, remove this block.
@@ -514,7 +514,7 @@ jobs:
         if: always()    # run this step even if previous step failed
         with:
           name: Platform Test Report with Docker E2E Test
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml, /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
 
   # In case of self-hosted EC2 errors, remove this block.
@@ -653,7 +653,7 @@ jobs:
         if: always()    # run this step even if previous step failed
         with:
           name: Platform Kubernetes E2E Test Report
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/acceptanceTests/*.xml'
           reporter: java-junit
 
       - uses: actions/upload-artifact@v2
