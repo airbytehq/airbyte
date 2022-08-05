@@ -1,0 +1,93 @@
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_greenhouse/schemas/{{ options['name'] }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://harvest.greenhouse.io/v1/"
+  http_method: "GET"
+  authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['api_key'] }}"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  record_selector:
+    $ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
+applications_stream:
+  type: DeclarativeStream
+  $options:
+    name: "applications"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "applications"
+candidates_stream:
+  type: DeclarativeStream
+  $options:
+    name: "candidates"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "candidates"
+close_reasons_stream:
+  type: DeclarativeStream
+  $options:
+    name: "close_reasons"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "close_reasons"
+degrees_stream:
+  type: DeclarativeStream
+  $options:
+    name: "degrees"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "degrees"
+departments_stream:
+  type: DeclarativeStream
+  $options:
+    name: "departments"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "departments"
+streams:
+  - "*ref(applications_stream)"
+  - "*ref(candidates_stream)"
+  - "*ref(close_reasons_stream)"
+  - "*ref(degrees_stream)"
+  - "*ref(departments_stream)"
+check:
+  type: CheckStream
+  stream_names: ["applications_stream"]
