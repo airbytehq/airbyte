@@ -53,14 +53,14 @@
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/cassandra
   icon: cassandra.svg
   releaseStage: alpha
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   dockerRepository: airbyte/destination-keen
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
   releaseStage: alpha
@@ -133,7 +133,7 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
   releaseStage: alpha
@@ -182,7 +182,7 @@
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
   icon: mongodb.svg
   releaseStage: alpha
