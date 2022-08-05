@@ -258,25 +258,7 @@ suppression_group_members_stream:
       path: "/v3/asm/suppressions"
     paginator:
       $ref: "*ref(definitions.offset_paginator)"
-bounces_stream:
-  type: DeclarativeStream
-  $options:
-    name: "bounces"
-    primary_key: "email"
-    cursor_field: "created"
-  schema_loader:
-    $ref: "*ref(definitions.schema_loader)"
-  retriever:
-    $ref: "*ref(definitions.retriever)"
-    record_selector:
-      $ref: "*ref(definitions.selector)"
-    requester:
-      $ref: "*ref(definitions.requester)"
-      path: "/v3/suppression/bounces"
-    paginator:
-      $ref: "*ref(definitions.offset_paginator)"
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+
 invalid_emails_stream:
   type: DeclarativeStream
   $options:
@@ -338,21 +320,24 @@ messages_stream:
     stream_slicer:
       $ref: "*ref(definitions.stream_slicer)"
 streams:
-  - "*ref(lists_stream)"
-  - "*ref(campaigns_stream)"
-  - "*ref(contacts_stream)"
-  - "*ref(stats_automations_stream)"
-  - "*ref(segments_stream)"
-  - "*ref(single_sends_stream)"
-  - "*ref(templates_stream)"
-  - "*ref(global_suppressions_stream)"
-  - "*ref(suppression_groups_stream)"
-  - "*ref(suppression_group_members_stream)"
-  - "*ref(blocks_stream)"
-  - "*ref(bounces_stream)"
-  - "*ref(invalid_emails_stream)"
-  - "*ref(spam_reports_stream)"
-  - "*ref(messages_stream)"
+  - type: DeclarativeStream
+    $options:
+      name: "bounces"
+      primary_key: "email"
+      cursor_field: "created"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/v3/suppression/bounces"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
 check:
   type: CheckStream
   stream_names: ["lists"]
