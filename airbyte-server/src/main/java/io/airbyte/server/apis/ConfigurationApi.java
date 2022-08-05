@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
@@ -711,6 +712,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public OperationRead createOperation(final OperationCreate operationCreate) {
     return execute(() -> operationsHandler.createOperation(operationCreate));
+  }
+
+  @Override
+  public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
+    return execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Override

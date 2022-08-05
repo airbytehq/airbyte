@@ -222,6 +222,7 @@ font-style: italic;
   <h4><a href="#Connection">Connection</a></h4>
   <ul>
   <li><a href="#createConnection"><code><span class="http-method">post</span> /v1/connections/create</code></a></li>
+  <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#deleteConnection"><code><span class="http-method">post</span> /v1/connections/delete</code></a></li>
   <li><a href="#getConnection"><code><span class="http-method">post</span> /v1/connections/get</code></a></li>
   <li><a href="#getState"><code><span class="http-method">post</span> /v1/state/get</code></a></li>
@@ -285,6 +286,7 @@ font-style: italic;
   </ul>
   <h4><a href="#Internal">Internal</a></h4>
   <ul>
+  <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#setTemporalWorkflowInAttempt"><code><span class="http-method">post</span> /v1/internal/set_temporal_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
@@ -416,7 +418,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionRead">ConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -503,6 +505,88 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="createOrUpdateState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/create_or_update</code></pre></div>
+    <div class="method-summary">Create or update the state for a connection. INTERNAL-ONLY. (<span class="nickname">createOrUpdateState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionStateCreateOrUpdate <a href="#ConnectionStateCreateOrUpdate">ConnectionStateCreateOrUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionState">ConnectionState</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "globalState" : {
+    "streamStates" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "streamState" : [ {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  }, {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="deleteConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -579,7 +663,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionRead">ConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -697,7 +781,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionState">ConnectionState</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -779,7 +863,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionStateType">ConnectionStateType</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -835,7 +919,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionReadList">ConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1017,7 +1101,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionReadList">ConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1199,7 +1283,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobInfoRead">JobInfoRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1374,7 +1458,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionReadList">ConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1553,7 +1637,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobInfoRead">JobInfoRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1728,7 +1812,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ConnectionRead">ConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1844,7 +1928,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DbMigrationExecutionRead">DbMigrationExecutionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1918,7 +2002,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DbMigrationReadList">DbMigrationReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -1978,7 +2062,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       File
     </div>
 
@@ -2025,7 +2109,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       File
     </div>
 
@@ -2073,7 +2157,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ImportRead">ImportRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2126,7 +2210,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#ImportRead">ImportRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2182,7 +2266,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#UploadRead">UploadRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2236,7 +2320,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2305,7 +2389,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2374,7 +2458,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationRead">DestinationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2439,7 +2523,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationRead">DestinationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2549,7 +2633,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationRead">DestinationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2614,7 +2698,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationReadList">DestinationReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2690,7 +2774,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationReadList">DestinationReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2763,7 +2847,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationRead">DestinationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2826,7 +2910,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -2910,7 +2994,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3090,7 +3174,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3177,7 +3261,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3264,7 +3348,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#PrivateDestinationDefinitionRead">PrivateDestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3342,7 +3426,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3456,7 +3540,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3558,7 +3642,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3672,7 +3756,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#PrivateDestinationDefinitionReadList">PrivateDestinationDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3840,7 +3924,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -3927,7 +4011,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4015,7 +4099,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#DestinationDefinitionSpecificationRead">DestinationDefinitionSpecificationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4095,7 +4179,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#HealthCheckRead">HealthCheckRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4120,6 +4204,88 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="Internal">Internal</a></h1>
+  <div class="method"><a name="createOrUpdateState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/create_or_update</code></pre></div>
+    <div class="method-summary">Create or update the state for a connection. INTERNAL-ONLY. (<span class="nickname">createOrUpdateState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionStateCreateOrUpdate <a href="#ConnectionStateCreateOrUpdate">ConnectionStateCreateOrUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionState">ConnectionState</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "globalState" : {
+    "streamStates" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "streamState" : [ {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  }, {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setTemporalWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4148,7 +4314,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#InternalOperationResult">InternalOperationResult</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4201,7 +4367,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobInfoRead">JobInfoRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4376,7 +4542,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobDebugInfoRead">JobDebugInfoRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4606,7 +4772,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobInfoRead">JobInfoRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -4781,7 +4947,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#JobReadList">JobReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5057,7 +5223,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       File
     </div>
 
@@ -5113,7 +5279,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#NotificationRead">NotificationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5172,7 +5338,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       map[String, Object]
     </div>
 
@@ -5225,7 +5391,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       map[String, Object]
     </div>
 
@@ -5279,7 +5445,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OAuthConsentRead">OAuthConsentRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5337,7 +5503,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OAuthConsentRead">OAuthConsentRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5479,7 +5645,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      
+
       File
     </div>
 
@@ -5528,7 +5694,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckOperationRead">CheckOperationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5584,7 +5750,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OperationRead">OperationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5700,7 +5866,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OperationRead">OperationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5771,7 +5937,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OperationReadList">OperationReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5859,7 +6025,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#OperationRead">OperationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5928,7 +6094,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5994,7 +6160,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6060,7 +6226,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6159,7 +6325,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6228,7 +6394,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#CheckConnectionRead">CheckConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6297,7 +6463,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceRead">SourceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6362,7 +6528,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceRead">SourceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6472,7 +6638,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6573,7 +6739,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceRead">SourceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6638,7 +6804,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceReadList">SourceReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6714,7 +6880,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceReadList">SourceReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6787,7 +6953,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceRead">SourceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6853,7 +7019,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -6938,7 +7104,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7119,7 +7285,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7207,7 +7373,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7295,7 +7461,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#PrivateSourceDefinitionRead">PrivateSourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7374,7 +7540,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7490,7 +7656,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#PrivateSourceDefinitionReadList">PrivateSourceDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7600,7 +7766,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7716,7 +7882,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7880,7 +8046,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -7968,7 +8134,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8057,7 +8223,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#SourceDefinitionSpecificationRead">SourceDefinitionSpecificationRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8146,7 +8312,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8355,7 +8521,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8567,7 +8733,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendWorkspaceStateResult">WebBackendWorkspaceStateResult</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8627,7 +8793,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -8997,7 +9163,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -9367,7 +9533,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -9734,7 +9900,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -9943,7 +10109,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10153,7 +10319,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceRead">WorkspaceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10282,7 +10448,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceRead">WorkspaceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10366,7 +10532,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceRead">WorkspaceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10438,7 +10604,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceReadList">WorkspaceReadList</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10546,7 +10712,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceRead">WorkspaceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10675,7 +10841,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WorkspaceRead">WorkspaceRead</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -10769,6 +10935,7 @@ font-style: italic;
     <li><a href="#ConnectionScheduleType"><code>ConnectionScheduleType</code> - </a></li>
     <li><a href="#ConnectionSearch"><code>ConnectionSearch</code> - </a></li>
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
+    <li><a href="#ConnectionStateCreateOrUpdate"><code>ConnectionStateCreateOrUpdate</code> - </a></li>
     <li><a href="#ConnectionStateType"><code>ConnectionStateType</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
@@ -11226,6 +11393,14 @@ font-style: italic;
 <div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#StateBlob">StateBlob</a></span>  </div>
 <div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
 <div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#GlobalState">GlobalState</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionStateCreateOrUpdate"><code>ConnectionStateCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionState </div><div class="param-desc"><span class="param-type"><a href="#ConnectionState">ConnectionState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
