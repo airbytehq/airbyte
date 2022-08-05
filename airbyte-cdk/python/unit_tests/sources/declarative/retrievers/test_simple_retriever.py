@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
@@ -15,13 +15,15 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
 config = {}
 
 
-def test_simple_retriever_full():
+@patch.object(HttpStream, "read_records", return_value=[])
+def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.get_request_params.return_value = request_params
@@ -53,6 +55,9 @@ def test_simple_retriever_full():
     backoff_time = 60
     should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
+    request_body_json = {"body": "json"}
+    requester.request_body_json.return_value = request_body_json
+
     request_body_data = {"body": "data"}
     requester.get_request_body_data.return_value = request_body_data
     request_body_json = {"body": "json"}
@@ -92,11 +97,13 @@ def test_simple_retriever_full():
     assert not retriever.raise_on_http_errors
     assert retriever.should_retry(requests.Response())
     assert retriever.backoff_time(requests.Response()) == backoff_time
-    assert retriever.request_body_data(None, None, None) == request_body_data
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache
+
+    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    paginator.reset.assert_called()
 
 
 @pytest.mark.parametrize(
