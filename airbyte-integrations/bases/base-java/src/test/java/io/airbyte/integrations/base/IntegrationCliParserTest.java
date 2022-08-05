@@ -22,7 +22,6 @@ class IntegrationCliParserTest {
     final String[] args = new String[] {"--spec"};
     final IntegrationConfig actual = new IntegrationCliParser().parse(args);
     assertEquals(IntegrationConfig.spec(), actual);
-    assertTrue(false);
   }
 
   @Test

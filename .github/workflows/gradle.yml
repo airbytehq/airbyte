@@ -239,6 +239,7 @@ jobs:
         if: always()
         with:
           name: Connectors Base Test Report
+          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
 
@@ -514,6 +515,7 @@ jobs:
         if: always()    # run this step even if previous step failed
         with:
           name: Platform Test Report with Docker E2E Test
+          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
 

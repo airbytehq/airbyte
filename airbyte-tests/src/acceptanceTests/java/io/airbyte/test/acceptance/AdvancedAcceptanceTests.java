@@ -144,7 +144,6 @@ class AdvancedAcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     testHarness.assertSourceAndDestinationDbInSync(false);
-    assertTrue(false);
   }
 
   @RetryingTest(3)
