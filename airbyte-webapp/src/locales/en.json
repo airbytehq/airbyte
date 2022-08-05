@@ -250,7 +250,6 @@
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync History",
   "sources.syncNow": "Sync now",
-  "sources.syncingNow": "Syncing now!",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
@@ -356,6 +355,9 @@
   "connection.linkCopied": "Link copied!",
   "connection.copyLogLink": "Copy link to log",
   "connection.connectionDeletedView": "This connection has been deleted. You can’t make any changes or run syncs.",
+  "connection.cancelSync": "Cancel Sync",
+  "connection.cancelReset": "Cancel Reset",
+  "connection.canceling": "Canceling...",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
