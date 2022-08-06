@@ -270,7 +270,7 @@ public class WorkerApp {
   }
 
   private ReplicationActivityImpl getReplicationActivityImpl(final WorkerConfigs workerConfigs,
-                                                             final ProcessFactory jobProcessFactory) {
+      final ProcessFactory jobProcessFactory) {
 
     return new ReplicationActivityImpl(
         containerOrchestratorConfig,
@@ -286,7 +286,7 @@ public class WorkerApp {
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
-                                                                 final ProcessFactory jobProcessFactory) {
+      final ProcessFactory jobProcessFactory) {
 
     return new NormalizationActivityImpl(
         containerOrchestratorConfig,
@@ -301,7 +301,7 @@ public class WorkerApp {
   }
 
   private DbtTransformationActivityImpl getDbtActivityImpl(final WorkerConfigs workerConfigs,
-                                                           final ProcessFactory jobProcessFactory) {
+      final ProcessFactory jobProcessFactory) {
 
     return new DbtTransformationActivityImpl(
         containerOrchestratorConfig,
@@ -351,14 +351,17 @@ public class WorkerApp {
         .build();
   }
 
-  public record ContainerOrchestratorConfig(
-                                            String namespace,
-                                            DocumentStoreClient documentStoreClient,
-                                            KubernetesClient kubernetesClient,
-                                            String secretName,
-                                            String secretMountPath,
-                                            String containerOrchestratorImage,
-                                            String googleApplicationCredentials) {}
+  public static record ContainerOrchestratorConfig(
+      String namespace,
+      DocumentStoreClient documentStoreClient,
+      KubernetesClient kubernetesClient,
+      String secretName,
+      String secretMountPath,
+      String containerOrchestratorImage,
+      String containerOrchestratorImagePullPolicy,
+      String googleApplicationCredentials) {
+
+  }
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
