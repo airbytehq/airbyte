@@ -21,7 +21,6 @@ class YamlDeclarativeSource(DeclarativeSource):
         :param path_to_yaml: Path to the yaml file describing the source
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
-        self.logger.setLevel(logging.DEBUG)
         self._factory = DeclarativeComponentFactory()
         self._path_to_yaml = path_to_yaml
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
