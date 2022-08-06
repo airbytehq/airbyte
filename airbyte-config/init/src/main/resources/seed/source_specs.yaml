@@ -2255,14 +2255,14 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.14"
+- dockerImage: "airbyte/source-file:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "File Source Spec"
       type: "object"
-      additionalProperties: false
+      additionalProperties: true
       required:
       - "dataset_name"
       - "format"
