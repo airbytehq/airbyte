@@ -28,5 +28,5 @@ from source_okta.utils import get_start_date
     ],
 )
 def test_get_start_date(caplog, config, expected_date, expected_messages):
-    assert get_start_date(config) == expected_date
+    assert get_start_date(config).date() == expected_date.date()
     assert caplog.messages == expected_messages
