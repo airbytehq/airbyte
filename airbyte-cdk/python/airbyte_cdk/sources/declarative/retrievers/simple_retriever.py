@@ -155,13 +155,14 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
-        return self._get_request_options(
+        headers = self._get_request_options(
             stream_slice,
             next_page_token,
             self.requester.get_request_headers,
             self.paginator.get_request_headers,
             self.stream_slicer.get_request_headers,
         )
+        return {str(k): str(v) for k, v in headers.items()}
 
     def request_params(
         self,
