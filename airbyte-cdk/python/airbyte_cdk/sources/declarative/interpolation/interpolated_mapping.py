@@ -2,23 +2,30 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+
+from dataclasses import InitVar, dataclass
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class InterpolatedMapping:
-    """Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated."""
+@dataclass
+class InterpolatedMapping(JsonSchemaMixin):
+    """
+    Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
 
-    def __init__(self, mapping: Mapping[str, Any], options: Mapping[str, Any]):
-        """
-        :param mapping: Mapping[str, str] to be evaluated
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self._mapping = mapping
-        self._options = options
+    Attributes:
+        mapping (Mapping[str, str]): to be evaluated
+    """
+
+    mapping: Mapping[str, str]
+    options: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, options: Optional[Mapping[str, Any]]):
         self._interpolation = JinjaInterpolation()
+        self._options = options
 
     def eval(self, config: Config, **additional_options):
         """
@@ -32,7 +39,7 @@ class InterpolatedMapping:
             self._interpolation.eval(name, config, options=self._options, **additional_options): self._eval(
                 value, config, **additional_options
             )
-            for name, value in self._mapping.items()
+            for name, value in self.mapping.items()
         }
         return interpolated_values
 

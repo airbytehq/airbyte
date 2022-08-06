@@ -18,15 +18,19 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_token_from_config", "{{ config.config_key }}", None, "config_value"),
         ("test_token_from_last_record", "{{ last_records[-1].id }}", None, 1),
         ("test_token_from_response", "{{ response._metadata.content }}", None, "content_value"),
+        ("test_token_from_options", "{{ options.key }}", None, "value"),
         ("test_token_not_found", "{{ response.invalid_key }}", None, None),
-        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}"), "token"),
-        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}"), None),
+        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean(condition="{{False}}", options={}), "token"),
+        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean(condition="{{True}}", options={}), None),
     ],
 )
 def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token):
-    decoder = JsonDecoder()
+    decoder = JsonDecoder(options={})
     config = {"config_key": "config_value"}
-    strategy = CursorPaginationStrategy(template_string, config, stop_condition, decoder)
+    options = {"key": "value"}
+    strategy = CursorPaginationStrategy(
+        cursor_value=template_string, config=config, stop_condition=stop_condition, decoder=decoder, options=options
+    )
 
     response = requests.Response()
     response.headers = {"has_more": True}
