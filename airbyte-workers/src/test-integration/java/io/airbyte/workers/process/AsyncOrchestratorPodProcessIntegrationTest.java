@@ -98,14 +98,15 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
 
   @Test
   public void test() throws InterruptedException {
-    final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
-    // make kubepodinfo
-    final var kubePodInfo = new KubePodInfo("default", podName);
 
     final var pullPolicies = List.of("IfNotPresent", "Always");
-    // another activity issues the request to create the pod process -> here we'll just create it
-    for (String pullPolicy : pullPolicies) {
+    for (final String pullPolicy : pullPolicies) {
+
+      final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+      // make kubepodinfo
+      final var kubePodInfo = new KubePodInfo("default", podName);
+
+      // another activity issues the request to create the pod process -> here we'll just create it
       final var asyncProcess = new AsyncOrchestratorPodProcess(
           kubePodInfo,
           documentStoreClient,
@@ -148,7 +149,6 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   public static void teardown() {
     try {
       portForwardProcess.destroyForcibly();
-    } catch (final Exception e) {
     } catch (final Exception e) {
       e.printStackTrace();
     }
