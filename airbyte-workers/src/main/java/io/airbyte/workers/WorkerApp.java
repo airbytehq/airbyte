@@ -375,6 +375,7 @@ public class WorkerApp {
           configs.getContainerOrchestratorSecretName(),
           configs.getContainerOrchestratorSecretMountPath(),
           configs.getContainerOrchestratorImage(),
+          configs.getJobKubeMainContainerImagePullPolicy(),
           configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();

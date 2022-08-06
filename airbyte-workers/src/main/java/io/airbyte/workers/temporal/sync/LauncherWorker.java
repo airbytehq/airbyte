@@ -126,6 +126,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.containerOrchestratorPullPolicy(),
             containerOrchestratorConfig.googleApplicationCredentials(),
             featureFlag.useStreamCapableState());
 

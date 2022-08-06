@@ -24,6 +24,7 @@ import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -102,47 +103,52 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     // make kubepodinfo
     final var kubePodInfo = new KubePodInfo("default", podName);
 
+    final var pullPolicies = List.of("IfNotPresent", "Always");
     // another activity issues the request to create the pod process -> here we'll just create it
-    final var asyncProcess = new AsyncOrchestratorPodProcess(
-        kubePodInfo,
-        documentStoreClient,
-        kubernetesClient,
-        null,
-        null,
-        "airbyte/container-orchestrator:dev",
-        null,
-        true);
+    for (String pullPolicy : pullPolicies) {
+      final var asyncProcess = new AsyncOrchestratorPodProcess(
+          kubePodInfo,
+          documentStoreClient,
+          kubernetesClient,
+          null,
+          null,
+          "airbyte/container-orchestrator:dev",
+          pullPolicy,
+          null,
+          true);
 
-    final Map<Integer, Integer> portMap = Map.of(
-        WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-        OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
-        OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
-        OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
-        OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
+      final Map<Integer, Integer> portMap = Map.of(
+          WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+          OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+          OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+          OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+          OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
-    final Map<String, String> envMap = System.getenv().entrySet().stream()
-        .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      final Map<String, String> envMap = System.getenv().entrySet().stream()
+          .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
-        OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
-        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
+      asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
+          OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
+          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
 
-    // a final activity waits until there is output from the kube pod process
-    asyncProcess.waitFor(10, TimeUnit.SECONDS);
+      // a final activity waits until there is output from the kube pod process
+      asyncProcess.waitFor(10, TimeUnit.SECONDS);
 
-    final var exitValue = asyncProcess.exitValue();
-    final var output = asyncProcess.getOutput();
+      final var exitValue = asyncProcess.exitValue();
+      final var output = asyncProcess.getOutput();
 
-    assertEquals(0, exitValue);
-    assertTrue(output.isPresent());
-    assertEquals("expected output", output.get());
+      assertEquals(0, exitValue);
+      assertTrue(output.isPresent());
+      assertEquals("expected output", output.get());
+    }
   }
 
   @AfterAll
   public static void teardown() {
     try {
       portForwardProcess.destroyForcibly();
+    } catch (final Exception e) {
     } catch (final Exception e) {
       e.printStackTrace();
     }
