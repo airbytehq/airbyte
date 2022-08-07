@@ -49,17 +49,4 @@ class S3DestinationConfigTest {
     assertEquals(newSecret, credentialConfig.getSecretAccessKey());
   }
 
-  @Test
-  public void testBucketNameWithDash() {
-    final String testBucketName = "test/dash/bucket";
-
-    final S3DestinationConfig modifiedConfig = S3DestinationConfig.create(testBucketName, "test-path", "test-region")
-            .withEndpoint("test-endpoint")
-            .withPathFormat("${STREAM_NAME}/${NAMESPACE}")
-            .withAccessKeyCredential("test-key", "test-secret")
-            .get();
-
-    assertEquals(modifiedConfig.getBucketName(), "test-dash-bucket");
-  }
-
 }
