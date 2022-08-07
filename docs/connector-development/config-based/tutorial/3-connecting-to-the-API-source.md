@@ -4,6 +4,8 @@ We're now ready to start implementing the connector.
 
 The code generator already created a boilerplate connector definition in  `source-exchange-rates-tutorial/source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
+More details on the connector definition file can be found in the [overview](../overview.md) and [connection definition](../connector-definition.md) sections.
+
 ```
 schema_loader:
   type: JsonSchema
@@ -51,13 +53,14 @@ check:
 
 Let's fill this out these TODOs with the information found in the [Exchange Rates API docs](https://exchangeratesapi.io/documentation/)
 
-1. First, let's rename the stream from `customers` to `rates.
+1. First, let's rename the stream from `customers` to `rates`, and update the primary key to `date`
 
 ```
 rates_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "rates"
+    primary_key: "date"
 ```
 
 and update the references in the streams list and check block
@@ -78,7 +81,7 @@ check:
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/"
+  url_base: "https://api.exchangeratesapi.io/v1/" # Only change the url_base field
 ```
 
 3. We can fetch the latest data by submitting a request to "/latest". This path is specific to the stream, so we'll set within the `rates_stream` definition.
@@ -88,7 +91,7 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-  primary_key: "id"
+    primary_key: "date"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
@@ -99,7 +102,7 @@ rates_stream:
 ```
 
 4. Next, we'll set up the authentication.
-   The Exchange Rates API requires an access key, which we'll need to make accessible to our connector.
+   The Exchange Rates API requires an access key to be passed as request parameter. We'll need to make this access key accessible to our connector, and pass it as a request_parameter in the `request_parameters` field of the `request_options_provider`
    We'll configure the connector to use this access key by setting the access key in a request parameter and pointing to a field in the config, which we'll populate in the next step:
 
 ```
@@ -112,6 +115,8 @@ requester:
     request_parameters:
       access_key: "{{ config.access_key }}"
 ```
+
+Since the access key is set directly as a request parameter, we can remove the `authentication` field from the `requester`.
 
 5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter:
 
@@ -154,7 +159,7 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-  primary_key: "id"
+    primary_key: "date"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:

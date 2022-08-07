@@ -1,4 +1,4 @@
-# Step  1: Create the Source
+# Step  1: Generate the source connector project locally
 
 Let's start by cloning the Airbyte repository
 
@@ -20,7 +20,7 @@ Configuration Based Source
 Source name: exchange-rates-tutorial
 ```
 
-For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`. The complete source code for this tutorial can be found here <FIXME: there should be a link to the complete tutorial?
+For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`.
 
 ## Next steps
 

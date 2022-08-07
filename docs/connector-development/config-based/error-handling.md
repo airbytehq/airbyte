@@ -74,7 +74,7 @@ requester:
 
 ## Backoff Strategies
 
-The error handle supports a few backoff strategies, which are described in the following sections.
+The error handler supports a few backoff strategies, which are described in the following sections.
 
 ### Exponential backoff
 

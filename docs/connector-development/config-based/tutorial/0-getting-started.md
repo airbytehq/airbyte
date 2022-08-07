@@ -2,7 +2,7 @@
 
 ## Summary
 
-Throughout this tutorial, we'll walk you through the creation an Airbyte source to read data from an HTTP API.
+Throughout this tutorial, we'll walk you through the creation an Airbyte source to read and extract data from an HTTP API.
 
 We'll build a connector reading data from the Exchange Rates API, but the steps will apply to other HTTP APIs you might be interested in integrating with.
 
@@ -33,6 +33,7 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 
 ## Requirements
 
+- An Exchange Rates API key
 - Python >= 3.9
 - Docker
 - NodeJS

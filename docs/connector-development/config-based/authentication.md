@@ -34,12 +34,6 @@ More information on bearer authentication can be found [here](https://swagger.io
 The `BasicHttpAuthenticator` set the "Authorization" header with a (USER ID/password) pair, encoded using base64 as per [RFC 7617](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme).
 The following definition will set the header "Authorization" with a value "Basic <encoded credentials>"
 
-The encoding scheme is:
-
-1. concatenate the username and the password with `":"` in between
-2. Encode the resulting string in base 64
-3. Decode the result in utf8
-
 ```
 authenticator:
   type: "BasicHttpAuthenticator"
@@ -61,10 +55,19 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 
 - token_refresh_endpoint: The endpoint to refresh the access token
 - client_id: The client id
-- client_secret: Client secret
+- client_secret: The client secret
 - refresh_token: The token used to refresh the access token
-- scopes: The scopes to request
-- token_expiry_date: The access token expiration date
-- access_token_name: THe field to extract access token from in the response
-- expires_in_name:The field to extract expires_in from in the response
-- refresh_request_body: The request body to send in the refresh request
+- scopes (Optional): The scopes to request. Default: Empty list
+- token_expiry_date (Optional): The access token expiration date formatted as RFC-3339 ("%Y-%m-%dT%H:%M:%S.%f%z")
+- access_token_name (Optional): The field to extract access token from in the response. Default: "access_token".
+- expires_in_name (Optional): The field to extract expires_in from in the response. Default: "expires_in"
+- refresh_request_body (Optional): The request body to send in the refresh request. Default: None
+
+```
+authenticator:
+  type: "OAuthAuthenticator"
+  token_refresh_endpoint: "https://api.searchmetrics.com/v4/token"
+  client_id: "{{ config.api_key }}"
+  client_secret: "{{ config.client_secret }}"
+  refresh_token: ""
+```

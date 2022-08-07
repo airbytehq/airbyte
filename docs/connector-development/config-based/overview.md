@@ -23,33 +23,34 @@ A source is defined by 2 components:
 ## Stream
 
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
-A stream generally corresponds to a resource within the API. They are analogous to tables for a RDMS source.
+A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
 
 A stream is defined by:
 
 1. A name
-2. A primary key: used to uniquely identify records, enabling deduplication
-3. A schema: describes the data to sync
-4. A data retriever: describes how to retrieve the data from the API
-5. A cursor field: used to identify the stream's state from a record
-6. A set of transformations to be applied on the records read from the source before emitting them to the destination
-7. A checkpoint interval: defines when to checkpoint syncs.
+2. Primary key (Optional): Used to uniquely identify records, enabling deduplication. Can be a string for single primary keys, a list of strings for composite primary keys, or a list of list of strings for composite primary keys consisting of nested fields.
+3. Schema: describes the data to sync
+4. [Data retriever](overview.md#data-retriever): Describes how to retrieve the data from the API
+5. [Cursor field](../cdk-python/incremental-stream.md) (Optional): Field to use used as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.
+6. Transformations (Optional): A set of transformations to be applied on the records read from the source before emitting them to the destination
+7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval at which incremental syncs should be checkpointed.
 
 More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
-More details on cursor fields, and checkpointing can be found in the [incremental-stream section](../cdk-python/incremental-stream.md)
 
 ## Data retriever
 
-The data retriever defines how to read the data from an API source, and acts as an orchestrator for the data retrieval flow.
+The data retriever defines how to read the data for a Stream, and acts as an orchestrator for the data retrieval flow.
 There is currently only one implementation, the `SimpleRetriever`, which is defined by
 
-1. Requester: describes how to submit requests to the API source
-2. Paginator <sup>1</sup>: describes how to navigate through the API's pages
+1. Requester: Describes how to submit requests to the API source
+2. Paginator: describes how to navigate through the API's pages
 3. Record selector: describes how to select records from an HTTP response
 4. Stream Slicer: describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integrations they are building against.
+
+Since the `Retriever` is defined as part of the Stream configuration, different Streams for a given Source can use different `Retriever` definitions if needed.
 
 ### Data flow
 
@@ -72,12 +73,12 @@ More details on the paginator can be found in the [pagination section](paginatio
 The `Requester` defines how to prepare HTTP requests to send to the source API <sup>2</sup>.
 There currently is only one implementation, the `HttpRequester`, which is defined by
 
-1. A base url: the root of the API source
-2. A path: the specific endpoint to fetch data from for a resource
+1. A base url: The root of the API source
+2. A path: The specific endpoint to fetch data from for a resource
 3. The HTTP method: the HTTP method to use (GET or POST)
-4. A request options provider: defines the request parameters and headers to set on outgoing HTTP requests
-5. An authenticator: defines how to authenticate to the source
-6. An error handler: defines how to handle errors
+4. A request options provider: Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. An authenticator: Defines how to authenticate to the source
+6. An error handler: Defines how to handle errors
 
 More details on authentication can be found in the [authentication section](authentication.md).
 More details on error handling can be found in the [error handling section](error-handling.md)
@@ -87,9 +88,3 @@ More details on error handling can be found in the [error handling section](erro
 The `ConnectionChecker` defines how to test the connection to the integration.
 
 The only implementation as of now is `CheckStream`, which tries to read a record from a specified list of streams and fails if no records could be read.
-
-# Footnotes
-
-1. The paginator is conceptually more related to the requester than the data retriever, but is part of the `SimpleRetriever` because it inherits from `HttpStream` to increase code reusability.
-
-2. As of today, the requester acts as a config object and is not directly responsible for preparing the HTTP requests. This is done in the `SimpleRetriever`'s parent class `HttpStream`.

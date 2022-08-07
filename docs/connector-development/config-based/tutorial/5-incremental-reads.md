@@ -44,12 +44,19 @@ connectionSpecification:
         - USD
 ```
 
-Then we'll set the `start_date` to last week our connection config in `secrets/config.json`.
-The following `echo` command will update your config with a start date set at 7 days prior to today.
+Then we'll set the `start_date` to last week in our connection config in `secrets/config.json`.
+Let's add a start_date field to `secrets/config.json`.
+The file should look like
 
 ```
-echo "{\"access_key\": \"<your_access_key>\", \"start_date\": \"$(date -v -7d '+%Y-%m-%d')\", \"base\": \"USD\"}"  > secrets/config.json
+{
+  "access_key": "<your_access_key>",
+  "start_date": "2022-07-26",
+  "base": "USD"
+}
 ```
+
+where the start date should be 7 days in the past.
 
 And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/latest`:
@@ -57,13 +64,14 @@ Note that we are setting a default value because the `check` operation does not 
 ```
 retriever:
   requester:
-      path:
-        type: "InterpolatedString"
-        string: "{{ config.start_date }}"
-        default: "/latest"
+    $ref: "*ref(requester)"
+    path:
+      type: "InterpolatedString"
+      string: "/{{ config.start_date }}"
+      default: "/latest"
 ```
 
-You can test the connector by executing the `read` operation:
+You can test these changes by executing the `read` operation:
 
 ```python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json```
 
@@ -92,21 +100,24 @@ stream_slicer:
   datetime_format: "%Y-%m-%d"
 ```
 
-and refer to it in the stream's retriever. Note that we're also setting the `cursor_field` in the stream's `options` because it is used both by the `Stream` and the `StreamSlicer`:
+and refer to it in the stream's retriever.
+This will generate slices from the start date until the current date, where each slice is exactly one day.
+
+Note that we're also setting the `cursor_field` in the stream's `options` because it is used both by the `Stream` and the `StreamSlicer`:
 
 ```
 rates_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "rates"
     cursor_field: "date
   primary_key: "date"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     stream_slicer:
-      ref: "*ref(stream_slicer)"
+      $ref: "*ref(stream_slicer)"
 ```
 
 And we'll update the path to point to the `stream_slice`'s start_date

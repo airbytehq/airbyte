@@ -4,7 +4,7 @@
 
 It can be thought of as an iterator over the stream's data, where a `StreamSlice` is the retriever's unit of work.
 
-When a stream is read incrementally, a state message will be output by the connector after reading every slice, which enable checkpointing.
+When a stream is read incrementally, a state message will be output by the connector after reading every slice, which allows for [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing).
 
 At the beginning of a `read` operation, the `StreamSlicer` will compute the slices to sync given the connection config and the stream's current state,
 As the `Retriever` reads data from the `Source`, the `StreamSlicer` keeps track of the `Stream`'s state, which will be emitted after reading each stream slice.
@@ -18,6 +18,8 @@ This section gives an overview of the stream slicers currently implemented.
 ### Datetime
 
 The `DatetimeStreamSlicer` iterates over a datetime range by partitioning it into time windows.
+This is done by slicing the stream on the records' cursor value, defined by the Stream's `cursor_field`.
+
 Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
 For instance,
 
@@ -59,7 +61,7 @@ When reading data from the source, the cursor value will be updated to the max d
 - the current cursor value
   This ensures that the cursor will be updated even if a stream slice does not contain any data.
 
-#### Specifying query start and end time
+#### Stream slicer on dates
 
 If an API supports filtering data based on the cursor field, the `start_time_option` and `end_time_option` parameters can be used to configure this filtering.
 For instance, if the API supports filtering using the request parameters `created[gte]` and `created[lte]`, then the stream slicer can specify the request parameters as
@@ -76,7 +78,7 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-### List
+### List stream slicer
 
 `ListStreamSlicer` iterates over values from a given list.
 It is defined by
@@ -99,7 +101,7 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-### Cartesian Product
+### Cartesian Product stream slicer
 
 `CartesianProductStreamSlicer` iterates over the cartesian product of its underlying stream slicers.
 
@@ -117,14 +119,14 @@ the resulting stream slices are
 ]
 ```
 
-### Substream
+### Substream slicer
 
 `SubstreamSlicer` iterates over the parent's stream slices.
 This is useful for defining sub-resources.
 
 We might for instance want to read all the commits for a given repository (parent resource).
 
-For each parent stream, the slicer needs to know
+For each stream, the slicer needs to know
 
 - what the parent stream is
 - what is the key of the records in the parent stream

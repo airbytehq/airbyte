@@ -1,6 +1,6 @@
 # Request Options
 
-There are a few ways request parameters, headers, and body can be set on ongoing HTTP requests.
+There are a few ways to set request parameters, headers, and body on ongoing HTTP requests.
 
 ## Request Options Provider
 

@@ -1,4 +1,4 @@
-# Step 3: Reading data
+# Step 4: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
 Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
@@ -39,7 +39,7 @@ rm source_exchange_rates_tutorial/schemas/customers.json
 rm source_exchange_rates_tutorial/schemas/employees.json
 ```
 
-Next, we'll update the record selection to wrap the single record returned by the source in an array.
+Next, we'll update the record selection to wrap the single record returned by the source in an array in `source_exchange_rates_tutorial/exchange_rates_tutorial.yamlsource_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
 ```
 selector:
@@ -50,16 +50,6 @@ selector:
 ```
 
 The transform is defined using the `Jello` syntax, which is a Python-based JQ alternative. More details on Jello can be found [here](https://github.com/kellyjonbrazil/jello).
-
-We'll also set the primary key to `date`.
-
-```
-rates_stream:
-  type: DeclarativeStream
-  options:
-    name: "rates"
-  primary_key: "date"
-```
 
 Here is the complete connector definition for convenience:
 

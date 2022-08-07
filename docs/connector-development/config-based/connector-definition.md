@@ -43,7 +43,7 @@ an object of type "class_name" will be instantiated by passing the mapping's oth
 will result in
 
 ```
-fully_qualified.class_name(a_parameter=3, another_parameter="helo"
+fully_qualified.class_name(a_parameter=3, another_parameter="hello"
 ```
 
 If the component definition is a mapping with a "type" field,
@@ -104,11 +104,11 @@ outer:
    k2: "MyKey is {{ options.MyKey }}"
 ```
 
-In this example, outer.inner.k2 will evaluate to "MyValue"
+In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 
 ## References
 
-Strings can contain references to values previously defined.
+Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete ConnectionDefinition
 
 References can be defined using a *ref(<arg>) string.
@@ -204,7 +204,7 @@ nested.path: "uh oh"
 value: "uh oh"
 ```
 
-to resolve the ambiguity, we try looking for the reference key at the top level, and then traverse the structs downward
+To resolve the ambiguity, we try looking for the reference key at the top level, and then traverse the structs downward
 until we find a key with the given path, or until there is nothing to traverse.
 
 More details on referencing values can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=yamlparser#airbyte_cdk.sources.declarative.parsers.yaml_parser.YamlParser).
@@ -213,12 +213,10 @@ More details on referencing values can be found [here](https://airbyte-cdk.readt
 
 String values can be evaluated as Jinja2 templates.
 
-Interpolation strategy using the Jinja2 template engine.
-
 If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
-The engine will evaluate the content passed within {{}}, interpolating the keys from context-specific arguments.
+The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
 the "options" keyword [see ($options)](connector-definition.md#object-instantiation) can be referenced.
 
 For example, inner_object.key will evaluate to "Hello airbyte" at runtime.

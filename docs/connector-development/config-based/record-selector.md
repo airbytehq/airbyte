@@ -1,9 +1,8 @@
 # Record selector
 
-The record selector is responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
-records based on a heuristic.
+The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
 
-The current record selector implementation uses Jello to select record sfrom the json-decoded HTTP response.
+The current record selector implementation uses Jello to select records from the json-decoded HTTP response.
 More information on Jello can be found at https://github.com/kellyjonbrazil/jello
 
 ## Common recipes:
@@ -44,6 +43,18 @@ stream:
       fields:
         - path: ["field1"]
           value: "static_value"
+```
+
+This example adds a top-level field "start_date", whose value is evaluated from the stream slice:
+
+```
+stream:
+  <...>
+  transformations:
+    - type: AddFields
+      fields:
+        - path: ["start_date"]
+          value: {{ stream_slice.start_date }}
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.

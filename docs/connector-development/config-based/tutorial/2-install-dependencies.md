@@ -13,7 +13,7 @@ cd airbyte-integrations/connectors/source-exchange-rates-tutorial
 source .venv/bin/activate
 ```
 
-These steps create an initial python environment, and install the dependencies required to run an API Source connector.
+These steps create an initial python environment (using `python -m venv`), and install the dependencies required to run an API Source connector (using `pip install`).
 
 Let's verify everything works as expected by running the Airbyte `spec` operation:
 
@@ -28,7 +28,8 @@ You should see an output similar to the one below:
 {"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "additionalProperties": false, "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
 ```
 
-More details on the `spec` operation can be found in [Basic Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts) and [Defining Stream Schemas](https://docs.airbyte.com/connector-development/cdk-python/schemas), but this is a simple sanity check to make sure everything is wired up correctly.
+This is a simple sanity check to make sure everything is wired up correctly.
+More details on the `spec` operation can be found in [Basic Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts) and [Defining Stream Schemas](https://docs.airbyte.com/connector-development/cdk-python/schemas).
 
 For now, note that the `main.py` file is a convenience wrapper to help run the connector.
 Its invocation format is `python main.py <command> [args]`.
@@ -36,7 +37,7 @@ The module's generated `README.md` contains more details on the supported comman
 
 ## Next steps
 
-Next, we'll [connect to the API source](3-connecting.md)
+Next, we'll [connect to the API source](3-connecting-to-the-API-source.md)
 
 ## More readings
 
