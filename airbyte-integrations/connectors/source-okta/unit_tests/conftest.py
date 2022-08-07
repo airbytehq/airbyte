@@ -144,6 +144,24 @@ def custom_role_instance(api_url):
 
 
 @pytest.fixture()
+def permission_instance(api_url):
+    """
+    Custom Role instance object response
+    """
+    _role_id = "test_role_id"
+    _id = "okta.users.read"
+    return {
+        "label": _id,
+        "created": "2022-07-09T20:54:54.000Z",
+        "lastUpdated": "2022-07-09T20:54:54.000Z",
+        "_links": {
+            "role": {"href": f"{api_url}/api/v1/iam/roles/{_role_id}"},
+            "self": {"href": f"{api_url}/api/v1/iam/roles/{_role_id}/permissions/{_id}"},
+        },
+    }
+
+
+@pytest.fixture()
 def groups_instance(api_url):
     """
     Groups instance object response

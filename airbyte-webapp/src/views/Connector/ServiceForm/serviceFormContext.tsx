@@ -1,5 +1,6 @@
 import { getIn, useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
+import { AnySchema } from "yup";
 
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
@@ -23,6 +24,7 @@ interface ServiceFormContext {
   isEditMode?: boolean;
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
+  validationSchema: AnySchema;
 }
 
 const serviceFormContext = React.createContext<ServiceFormContext | null>(null);
@@ -45,6 +47,7 @@ interface ServiceFormContextProviderProps {
   availableServices: ConnectorDefinition[];
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   selectedConnector?: ConnectorDefinitionSpecification;
+  validationSchema: AnySchema;
 }
 
 export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProps> = ({
@@ -57,6 +60,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   getValues,
   formType,
   isLoadingSchema,
+  validationSchema,
   isEditMode,
 }) => {
   const { values, resetForm } = useFormikContext<ServiceFormValues>();
@@ -97,6 +101,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
       selectedConnector,
       formType,
       isLoadingSchema,
+      validationSchema,
       isEditMode,
       unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
@@ -124,6 +129,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
     selectedConnector,
     formType,
     isLoadingSchema,
+    validationSchema,
     isEditMode,
     resetForm,
     resetUiWidgetsInfo,
