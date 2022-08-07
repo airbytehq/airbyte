@@ -36,7 +36,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
-    Full list of accepted format codes: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
         start_datetime (MinMaxDatetime): the datetime that determines the earliest record that should be synced
@@ -131,7 +131,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
-        end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
+        end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=self._timezone))
         lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "0d")
         start_datetime = self.start_datetime.get_datetime(self.config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
@@ -151,7 +151,13 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
-        return dt.strftime(self.datetime_format)
+        # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
+        # It's safer to use the timestamp() method than the %s directive
+        # See https://stackoverflow.com/a/4974930
+        if self.datetime_format == "%s":
+            return str(int(dt.timestamp()))
+        else:
+            return dt.strftime(self.datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         start_field = self.stream_slice_field_start.eval(self.config)

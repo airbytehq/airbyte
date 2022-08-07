@@ -19,7 +19,7 @@ class MinMaxDatetime(JsonSchemaMixin):
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
-    Full list of accepted format codes: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
         datetime (Union[InterpolatedString, str]): InterpolatedString or string representing the datetime in the format specified by `datetime_format`

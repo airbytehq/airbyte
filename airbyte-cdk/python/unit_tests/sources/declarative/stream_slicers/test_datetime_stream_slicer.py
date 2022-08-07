@@ -481,7 +481,7 @@ def test_parse_date(test_name, input_date, date_format, expected_output_date):
 @pytest.mark.parametrize(
     "test_name, input_dt, datetimeformat, expected_output",
     [
-        ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "1609488000"),
+        ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "1609459200"),
         ("test_format_string", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y-%m-%d", "2021-01-01"),
     ],
 )
@@ -498,8 +498,6 @@ def test_format_datetime(test_name, input_dt, datetimeformat, expected_output):
     )
 
     output_date = slicer._format_datetime(input_dt)
-    print(f"expected: {expected_output}")
-    print(f"actualoutput: {expected_output}")
     assert expected_output == output_date
 
 
