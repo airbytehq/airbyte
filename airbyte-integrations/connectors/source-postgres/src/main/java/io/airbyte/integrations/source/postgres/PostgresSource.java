@@ -34,6 +34,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -72,15 +73,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String DATABASE_KEY = "database";
-  public static final String HOST_KEY = "host";
-  public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String PASSWORD_KEY = "password";
-  public static final String PORT_KEY = "port";
-  public static final String SCHEMAS_KEY = "schemas";
-  public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -93,7 +87,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
   }
@@ -218,6 +211,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
   }
 
+  private List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
+    try {
+      return database.queryJsons(connection -> {
+        final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
+        final PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, config.get("replication_method").get("replication_slot").asText());
+        ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
+        ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
+
+        LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
+
+        return ps;
+      }, sourceOperations::rowToJson);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
@@ -226,17 +237,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (PostgresUtils.isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.queryJsons(connection -> {
-          final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
-          final PreparedStatement ps = connection.prepareStatement(sql);
-          ps.setString(1, config.get("replication_method").get("replication_slot").asText());
-          ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
-          ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
-
-          LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
-
-          return ps;
-        }, sourceOperations::rowToJson);
+        final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
           throw new RuntimeException(
@@ -260,6 +261,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                   + ". Please read the docs and add a publication to your database.");
         }
 
+      });
+
+      checkOperations.add(database -> {
+        PostgresUtils.checkFirstRecordWaitTime(config);
       });
     }
 
@@ -293,17 +298,36 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
 
+      final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+      final JsonNode state =
+          (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
+              : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
+          Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
+          catalog,
+          state,
+          // We can assume that there will be only 1 replication slot cause before the sync starts for
+          // Postgres CDC,
+          // we run all the check operations and one of the check validates that the replication slot exists
+          // and has only 1 entry
+          getReplicationSlot(database, sourceConfig).get(0),
+          sourceConfig);
+
+      if (!savedOffsetAfterReplicationSlotLSN) {
+        LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
+      }
+
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcSavedInfoFetcher(savedOffsetAfterReplicationSlotLSN ? stateManager.getCdcStateManager().getCdcState() : null),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
           emittedAt);
-      if (streamsToSnapshot.isEmpty()) {
+      if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
@@ -415,6 +439,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       return AirbyteStateType.LEGACY;
     }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  }
+
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

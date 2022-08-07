@@ -7,9 +7,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 
 
 class AClass:
-    def __init__(self, parameter, another_param):
+    def __init__(self, parameter, another_param, options):
         self.parameter = parameter
         self.another_param = another_param
+        self.options = options
 
 
 class OuterClass:
@@ -42,12 +43,20 @@ def test_string_interpolation():
     s = "{{ next_page_token['next_page_url'] }}"
     partial = create(InterpolatedString, string=s)
     interpolated_string = partial()
-    assert interpolated_string._string == s
+    assert interpolated_string.string == s
 
 
 def test_string_interpolation_through_kwargs():
     s = "{{ options['name'] }}"
     options = {"name": "airbyte"}
-    partial = create(InterpolatedString, string=s, options=options)
+    partial = create(InterpolatedString, string=s, **options)
+    interpolated_string = partial()
+    assert interpolated_string.eval({}) == "airbyte"
+
+
+def test_string_interpolation_through_options_keyword():
+    s = "{{ options['name'] }}"
+    options = {"$options": {"name": "airbyte"}}
+    partial = create(InterpolatedString, string=s, **options)
     interpolated_string = partial()
     assert interpolated_string.eval({}) == "airbyte"
