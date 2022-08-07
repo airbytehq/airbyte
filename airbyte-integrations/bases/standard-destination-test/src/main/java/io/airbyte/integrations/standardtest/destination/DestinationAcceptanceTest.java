@@ -1040,20 +1040,20 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
   }
 
   protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
           workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
     } catch (final Exception e) {
       LOGGER.error("Failed to check connection:" + e.getMessage());

@@ -1,6 +1,6 @@
 # Configuration for airbyte/destination-postgres
 # Documentation about this connector can be found at https://docs.airbyte.io/integrations/destinations/postgres
-resource_name: my_postgres_destination
+resource_name: "my_postgres_destination"
 definition_type: destination
 definition_id: foobar
 definition_image: airbyte/destination-postgres

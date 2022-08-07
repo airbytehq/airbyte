@@ -24,12 +24,13 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
+from deepdiff import DeepDiff
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.common import find_key_inside_schema, find_keyword_schema
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -38,21 +39,37 @@ def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
 
 
-@pytest.fixture(name="actual_connector_spec")
-def actual_connector_spec_fixture(request: BaseTest, docker_runner):
-    if not request.instance.spec_cache:
-        output = docker_runner.call_spec()
-        spec_messages = filter_output(output, Type.SPEC)
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
-        spec = spec_messages[0].spec
-        request.spec_cache = spec
-    return request.spec_cache
-
-
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
+    previous_spec_cache: ConnectorSpecification = None
+
+    @staticmethod
+    def compute_spec_diff(actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
+        return DeepDiff(previous_connector_spec.dict(), actual_connector_spec.dict(), view="tree", ignore_order=True)
+
+    @pytest.fixture(name="skip_backward_compatibility_tests")
+    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+        if previous_connector_docker_runner is None:
+            pytest.skip("The previous connector image could not be retrieved.")
+
+        # Get the real connector version in case 'latest' is used in the config:
+        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
+
+        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
+            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
+    @pytest.fixture(name="spec_diff")
+    def spec_diff_fixture(
+        self,
+        skip_backward_compatibility_tests: bool,
+        actual_connector_spec: ConnectorSpecification,
+        previous_connector_spec: ConnectorSpecification,
+    ) -> DeepDiff:
+        assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
+        return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
@@ -135,8 +152,7 @@ class TestSpec(BaseTest):
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
-        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
-
+        check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
@@ -163,6 +179,121 @@ class TestSpec(BaseTest):
 
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_new_required_field_declaration(self, spec_diff: DeepDiff):
+        """Check if a 'required' field was added to the spec."""
+        added_required_fields = [
+            addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
+        ]
+        assert len(added_required_fields) == 0, f"The current spec has a new required field: {spec_diff.pretty()}"
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_new_required_property(self, spec_diff: DeepDiff):
+        """Check if a a new property was added to the 'required' field."""
+        added_required_properties = [
+            addition for addition in spec_diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
+        ]
+        assert len(added_required_properties) == 0, f"The current spec has a new required property: {spec_diff.pretty()}"
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_field_type_changed(self, spec_diff: DeepDiff):
+        """Check if the current spec is changing the types of properties."""
+
+        common_error_message = f"The current spec changed the value of a 'type' field:  {spec_diff.pretty()}"
+        # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
+        type_values_changed = [change for change in spec_diff.get("values_changed", []) if change.path(output_format="list")[-1] == "type"]
+
+        # Detect type value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
+        type_values_changed_in_list = [
+            change for change in spec_diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
+        ]
+
+        assert len(type_values_changed_in_list) == 0 and len(type_values_changed) == 0, common_error_message
+
+        # Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"]):
+        # It works because we compute the diff with 'ignore_order=True'
+        new_values_in_type_list = [  # noqa: F841
+            change
+            for change in spec_diff.get("iterable_item_added", [])
+            if change.path(output_format="list")[-2] == "type"
+            if change.t2 != "null"
+        ]
+        # enable the assertion below if we want to disallow type expansion:
+        # assert len(new_values_in_type_list) == 0, common_error_message
+
+        # Detect the change of type of a type field
+        # e.g:
+        # - "str" -> ["str"] VALID
+        # - "str" -> ["str", "null"] VALID
+        # - "str" -> ["str", "int"] VALID
+        # - "str" -> 1 INVALID
+        # - ["str"] -> "str" VALID
+        # - ["str"] -> "int" INVALID
+        # - ["str"] -> 1 INVALID
+        type_changes = [change for change in spec_diff.get("type_changes", []) if change.path(output_format="list")[-1] == "type"]
+        for change in type_changes:
+            # We only accept change on the type field if the new type for this field is list or string
+            # This might be something already guaranteed by JSON schema validation.
+            if isinstance(change.t1, str):
+                assert isinstance(
+                    change.t2, list
+                ), f"The current spec change a type field from string to an invalid value: {spec_diff.pretty()}"
+                assert (
+                    0 < len(change.t2) <= 2
+                ), f"The current spec change a type field from string to an invalid value. The type list length should not be empty and have a maximum of two items {spec_diff.pretty()}."
+                # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
+                # We want to raise an error otherwise.
+                t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
+                assert (
+                    len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1
+                ), "The current spec change a type field to a list with multiple invalid values."
+            if isinstance(change.t1, list):
+                assert isinstance(
+                    change.t2, str
+                ), f"The current spec change a type field from list to an invalid value:  {spec_diff.pretty()}"
+                assert len(change.t1) == 1 and change.t2 == change.t1[0], f"The current spec narrowed a field type: {spec_diff.pretty()}"
+
+        # Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]
+        removed_nullable = [
+            change for change in spec_diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"
+        ]
+        assert len(removed_nullable) == 0, f"The current spec narrowed a field type: {spec_diff.pretty()}"
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_enum_field_has_narrowed(self, spec_diff: DeepDiff):
+        """Check if the list of values in a enum was shortened in a spec."""
+        removals = [
+            removal for removal in spec_diff.get("iterable_item_removed", []) if removal.up.path(output_format="list")[-1] == "enum"
+        ]
+        assert len(removals) == 0, f"The current spec narrowed a field enum: {spec_diff.pretty()}"
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_new_enum_field_declaration(self, spec_diff: DeepDiff):
+        """Check if an 'enum' field was added to the spec."""
+        added_enum_fields = [
+            addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "enum"
+        ]
+        assert len(added_enum_fields) == 0, f"An 'enum' field was declared on an existing property of the spec: {spec_diff.pretty()}"
+
+    def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
+        """Check that value of the "additionalProperties" field is always true.
+        A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        additional_properties_values = find_all_values_for_key_in_schema(
+            actual_connector_spec.connectionSpecification, "additionalProperties"
+        )
+        if additional_properties_values:
+            assert all(
+                [additional_properties_value is True for additional_properties_value in additional_properties_values]
+            ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 @pytest.mark.default_timeout(30)
@@ -217,8 +348,8 @@ class TestDiscovery(BaseTest):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
-            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
-            if check_result is not None:
+            check_result = list(find_all_values_for_key_in_schema(stream.json_schema, "$ref"))
+            if check_result:
                 schemas_errors.append({stream_name: check_result})
 
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
@@ -242,6 +373,25 @@ class TestDiscovery(BaseTest):
                 pk_path = "/properties/".join(pk)
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
+
+    def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
+        """Checking that the supported_sync_modes is a not empty field in streams of the catalog."""
+        for _, stream in discovered_catalog.items():
+            assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
+            assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
+
+    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+        """Check that value of the "additionalProperties" field is always true.
+        A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        for stream in discovered_catalog.values():
+            additional_properties_values = list(find_all_values_for_key_in_schema(stream.json_schema, "additionalProperties"))
+            if additional_properties_values:
+                assert all(
+                    [additional_properties_value is True for additional_properties_value in additional_properties_values]
+                ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 def primary_keys_for_records(streams, records):

@@ -3,6 +3,7 @@ import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
 
+import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
@@ -35,7 +36,7 @@ export type AuthChangeEmail = (email: string, password: string) => Promise<void>
 
 export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
-export type AuthLogout = () => void;
+export type AuthLogout = () => Promise<void>;
 
 interface AuthContextApi {
   user: User | null;
@@ -108,6 +109,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         }
       },
       async logout(): Promise<void> {
+        await userService.revokeUserSession();
         await authService.signOut();
         queryClient.removeQueries();
         loggedOut();
@@ -178,7 +180,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         // Send verification mail via firebase
         await authService.sendEmailVerifiedLink();
 
-        analytics.track("Airbyte.UI.User.Created", {
+        analytics.track(Namespace.USER, Action.CREATE, {
+          actionDescription: "New user registered",
           user_id: fbUser.uid,
           name: user.name,
           email: user.email,

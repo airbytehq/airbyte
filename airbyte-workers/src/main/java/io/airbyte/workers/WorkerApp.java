@@ -41,6 +41,7 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WebUrlHelper;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
@@ -232,8 +233,10 @@ public class WorkerApp {
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+
   }
 
   private void registerDiscover(final WorkerFactory factory) {
@@ -426,6 +429,7 @@ public class WorkerApp {
         new OAuthConfigSupplier(configRepository, trackingClient));
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+
     final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
@@ -446,8 +450,10 @@ public class WorkerApp {
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
+    final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
+
     final JobNotifier jobNotifier = new JobNotifier(
-        configs.getWebappUrl(),
+        webUrlHelper,
         configRepository,
         workspaceHelper,
         TrackingClientSingleton.get());
@@ -456,7 +462,12 @@ public class WorkerApp {
 
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
     final JobErrorReporter jobErrorReporter =
-        new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
+        new JobErrorReporter(
+            configRepository,
+            configs.getDeploymentMode(),
+            configs.getAirbyteVersionOrWarning(),
+            webUrlHelper,
+            jobErrorReportingClient);
 
     new WorkerApp(
         workspaceRoot,

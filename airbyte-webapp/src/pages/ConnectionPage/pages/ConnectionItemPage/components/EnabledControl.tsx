@@ -5,8 +5,9 @@ import styled from "styled-components";
 
 import { Switch } from "components";
 
+import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
@@ -46,11 +47,13 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       })
     );
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
+    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
+
+    analyticsService.track(Namespace.CONNECTION, trackableAction, {
+      actionDescription: `${trackableAction} connection`,
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,
     });

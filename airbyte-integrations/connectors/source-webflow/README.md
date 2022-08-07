@@ -3,6 +3,10 @@
 This is the repository for the Webflow source connector, written in Python.
 For information about how to use this connector within Airbyte, see [Webflow source documentation](https://docs.airbyte.io/integrations/sources/webflow).
 
+## Related tutorial
+
+A detailed tutorial has been written about this implementation. See: [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)
+
 ## Local development
 
 ### Prerequisites

@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class SentryJobErrorReportingClientTest {
+class SentryJobErrorReportingClientTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "My Workspace";
@@ -98,6 +98,27 @@ public class SentryJobErrorReportingClientTest {
     assertNotNull(sentryUser);
     assertEquals(WORKSPACE_ID.toString(), sentryUser.getId());
     assertEquals(WORKSPACE_NAME, sentryUser.getUsername());
+
+    final Message message = actualEvent.getMessage();
+    assertNotNull(message);
+    assertEquals("RuntimeError: Something went wrong", message.getFormatted());
+  }
+
+  @Test
+  void testReportJobFailureReasonWithNoWorkspace() {
+    final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+
+    final FailureReason failureReason = new FailureReason()
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR)
+        .withInternalMessage("RuntimeError: Something went wrong");
+
+    sentryErrorReportingClient.reportJobFailureReason(null, failureReason, DOCKER_IMAGE, Map.of());
+
+    verify(mockSentryHub).captureEvent(eventCaptor.capture());
+    final SentryEvent actualEvent = eventCaptor.getValue();
+    final User sentryUser = actualEvent.getUser();
+    assertNull(sentryUser);
 
     final Message message = actualEvent.getMessage();
     assertNotNull(message);
