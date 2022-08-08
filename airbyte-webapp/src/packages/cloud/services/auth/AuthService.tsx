@@ -8,7 +8,7 @@ import { Action, Namespace } from "core/analytics";
 import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { AuthProviders, OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
@@ -49,7 +49,7 @@ interface AuthContextApi {
   isLoading: boolean;
   loggedOut: boolean;
   login: AuthLogin;
-  loginWithOAuth: (provider: "google" | "github") => Observable<OAuthLoginState>;
+  loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;

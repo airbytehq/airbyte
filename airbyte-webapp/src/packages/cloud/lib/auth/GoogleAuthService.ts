@@ -1,3 +1,5 @@
+import type { OAuthProviders } from "./AuthProviders";
+
 import {
   Auth,
   User,
@@ -35,7 +37,7 @@ export class GoogleAuthService {
     return this.auth.currentUser;
   }
 
-  async loginWithOAuth(provider: "google" | "github") {
+  async loginWithOAuth(provider: OAuthProviders) {
     await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
   }
 
