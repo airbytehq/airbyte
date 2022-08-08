@@ -23,7 +23,11 @@ def test_transactions_transform_function():
     transformer = stream.transformer
     input_data = {"transaction_amount": "123.45", "transaction_id": "111", "transaction_status": "done"}
     schema = stream.get_json_schema()
-    schema['properties'] = {"transaction_amount": {"type": "number"}, "transaction_id": {"type": "integer"}, "transaction_status": {"type": "string"}}
+    schema["properties"] = {
+        "transaction_amount": {"type": "number"},
+        "transaction_id": {"type": "integer"},
+        "transaction_status": {"type": "string"},
+    }
     transformer.transform(input_data, schema)
     expected_data = {"transaction_amount": 123.45, "transaction_id": 111, "transaction_status": "done"}
     assert input_data == expected_data
@@ -327,7 +331,7 @@ def test_unnest_field():
 def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):
     stream = Balances(authenticator=NoAuth(), **prod_config)
     requests_mock.post(f"{api_endpoint}/v1/oauth2/token", json={"access_token": "test_access_token", "expires_in": 12345})
-    url = f'{api_endpoint}/v1/reporting/balances' + '?as_of_time=2021-07-01T00%3A00%3A00%2B00%3A00'
+    url = f"{api_endpoint}/v1/reporting/balances" + "?as_of_time=2021-07-01T00%3A00%3A00%2B00%3A00"
     requests_mock.get(url, json={})
     assert not stream.get_last_refreshed_datetime(SyncMode.full_refresh)
 
