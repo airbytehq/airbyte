@@ -848,9 +848,9 @@ VALID_SPEC_TRANSITIONS = [
     ),
 ]
 
-# Checking that all transition in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
+# Checking that all transitions in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
 assert all([transition.should_fail for transition in FAILING_SPEC_TRANSITIONS])
-# Checking that all transition in VALID_SPEC_TRANSITIONS have should_fail = False to prevent typos
+# Checking that all transitions in VALID_SPEC_TRANSITIONS have should_fail = False to prevent typos
 assert not all([transition.should_fail for transition in VALID_SPEC_TRANSITIONS])
 
 
