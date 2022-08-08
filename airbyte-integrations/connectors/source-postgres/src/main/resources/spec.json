@@ -250,7 +250,7 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-plugin\">selecting replication plugins</a>.",
+                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 1
@@ -258,19 +258,19 @@
               "replication_slot": {
                 "type": "string",
                 "title": "Replication Slot",
-                "description": "A plugin logical replication slot. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-slot\">replication slots</a>.",
+                "description": "A plugin logical replication slot. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\">replication slots</a>.",
                 "order": 2
               },
               "publication": {
                 "type": "string",
                 "title": "Publication",
-                "description": "A Postgres publication used for consuming changes. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#publications-replication\">publications and replication identities</a>.",
+                "description": "A Postgres publication used for consuming changes. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\">publications and replication identities</a>.",
                 "order": 3
               },
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
                 "order": 4,
                 "min": 120,
