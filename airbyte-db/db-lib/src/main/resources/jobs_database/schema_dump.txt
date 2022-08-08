@@ -46,6 +46,7 @@ create table "public"."jobs"(
   "started_at" timestamptz(35) null,
   "created_at" timestamptz(35) null,
   "updated_at" timestamptz(35) null,
+  "expected_status" varchar(255) null,
   constraint "jobs_pkey"
     primary key ("id")
 );

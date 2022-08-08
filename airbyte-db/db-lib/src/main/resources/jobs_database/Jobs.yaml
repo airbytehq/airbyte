@@ -22,6 +22,8 @@ properties:
     type: object
   status:
     type: string
+  expected_status:
+    type: string
   created_at:
     # todo should be datetime.
     type: string
