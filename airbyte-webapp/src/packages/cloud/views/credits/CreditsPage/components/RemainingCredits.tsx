@@ -110,8 +110,8 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
-    await analytics.track(Namespace.CREDITS, Action.PROCEED_TO_CHECKOUT, {
-      actionDescription: "Proceed to Checkout",
+    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+      actionDescription: "Checkout Start",
     });
     // Forward to stripe as soon as we created a checkout session successfully
     window.location.assign(stripeUrl);
