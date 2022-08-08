@@ -182,8 +182,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String tableName,
                                                                final String cursorField,
                                                                final BsonType cursorFieldType,
-                                                               final String cursor) {
-    final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursor));
+                                                               final String cursorValue) {
+    final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursorValue));
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
