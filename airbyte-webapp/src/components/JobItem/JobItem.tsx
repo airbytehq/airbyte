@@ -68,7 +68,6 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
       // since otherwise this scroll won't really do anything.
       const timeout = window.setTimeout(() => {
         scrollAnchor.current?.scrollIntoView({
-          behavior: "smooth",
           block: "start",
         });
       }, 1000);
