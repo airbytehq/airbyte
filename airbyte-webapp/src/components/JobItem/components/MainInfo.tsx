@@ -42,7 +42,7 @@ interface MainInfoProps {
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed, shortInfo }) => {
   const jobStatus = getJobStatus(job);
-  const streamsToReset = (job as JobsWithJobs).job.resetConfig?.streamsToReset;
+  const streamsToReset = "job" in job ? job.job.resetConfig?.streamsToReset : undefined;
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const getStatusLabel = () => {
@@ -57,7 +57,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
 
   const getStatusIcon = () => {
     switch (true) {
-      case !Boolean(streamsToReset):
+      case Boolean(streamsToReset):
         return <ResetIcon />;
       case jobStatus === JobStatus.cancelled:
         return <StatusIcon />;
@@ -83,11 +83,6 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{getStatusIcon()}</div>
         <div className={styles.justification}>
           {getStatusLabel()}
-          {isPartialSuccess ? (
-            <FormattedMessage id="sources.partialSuccess" />
-          ) : (
-            <FormattedMessage id={`sources.${getJobStatus(job)}`} />
-          )}
           {shortInfo && <FormattedMessage id="sources.additionLogs" />}
           {attempts.length && !shortInfo && (
             <>

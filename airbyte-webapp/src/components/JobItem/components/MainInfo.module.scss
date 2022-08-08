@@ -6,6 +6,7 @@
   min-height: 75px;
 
   .titleCell {
+    width: 80%;
     display: flex;
     color: colors.$dark-blue;
 
@@ -27,6 +28,7 @@
     }
 
     .justification {
+      width: 80%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -64,6 +66,8 @@
     .arrow {
       transform: rotate(-0deg);
     }
+    height: unset;
+    padding: 12px 0;
   }
 
   &.failed {

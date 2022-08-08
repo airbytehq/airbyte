@@ -5,6 +5,10 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   line-height: 20px;
+
+  &.open {
+    white-space: unset;
+  }
 }
 
 .text {
@@ -14,6 +18,7 @@
   border: 1px solid #e8e8ed;
   border-radius: 4px;
   margin-right: 8px;
+  margin-bottom: 6px;
   white-space: nowrap;
   font-weight: 400;
   font-size: 12px;
