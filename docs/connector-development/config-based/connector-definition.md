@@ -93,6 +93,20 @@ outer:
 
 This the example above, if both outer and inner are types with a "MyKey" field, both of them will evaluate to "MyValue".
 
+These parameters can be overwritten by subcomponents as a form of specialization:
+
+```
+outer:
+  $options:
+    MyKey: MyValue
+  inner:
+   $options:
+     MyKey: YourValue
+   k2: v2
+```
+
+In this example, "outer.MyKey" will evaluate to "MyValue", and "inner.MyKey" will evaluate to "YourValue".
+
 The value can also be used for string interpolation:
 
 ```
