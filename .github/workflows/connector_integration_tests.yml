@@ -18,7 +18,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '17'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyYAML requests
       - name: Launch Integration Tests
-        run: ./tools/bin/ci_integration_workflow_launcher.sh
+        run: python ./tools/bin/ci_integration_workflow_launcher.py base-normalization source-acceptance-test source:beta source:GA destination:beta destination:GA
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}

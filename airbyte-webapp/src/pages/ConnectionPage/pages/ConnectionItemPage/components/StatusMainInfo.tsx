@@ -1,8 +1,7 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Link as ReactLink } from "react-router-dom";
-import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 import ConnectorCard from "components/ConnectorCard";
 
@@ -14,26 +13,7 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import EnabledControl from "./EnabledControl";
-
-const MainContainer = styled.div`
-  width: 650px;
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background-color: white;
-  border-radius: 10px;
-  align-items: center;
-`;
-
-const ConnectorsLink = styled(ReactLink)`
-  cursor: pointer;
-  text-decoration: none;
-  border-radius: 10px;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.greyColor10};
-  }
-`;
+import styles from "./StatusMainInfo.module.scss";
 
 interface StatusMainInfoProps {
   connection: WebBackendConnectionRead;
@@ -58,32 +38,36 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
 
   return (
-    <MainContainer>
-      <ConnectorsLink to={sourceConnectionPath}>
-        <ConnectorCard
-          connectionName={source.sourceName}
-          icon={sourceDefinition?.icon}
-          connectorName={source.name}
-          releaseStage={sourceDefinition?.releaseStage}
-        />
-      </ConnectorsLink>
-      <FontAwesomeIcon icon={faArrowRight} />
-      <ConnectorsLink to={destinationConnectionPath}>
-        <ConnectorCard
-          connectionName={destination.destinationName}
-          icon={destinationDefinition?.icon}
-          connectorName={destination.name}
-          releaseStage={destinationDefinition?.releaseStage}
-        />
-      </ConnectorsLink>
+    <div className={styles.container}>
+      <div className={styles.pathContainer}>
+        <Link to={sourceConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={source.sourceName}
+            icon={sourceDefinition?.icon}
+            connectorName={source.name}
+            releaseStage={sourceDefinition?.releaseStage}
+          />
+        </Link>
+        <FontAwesomeIcon icon={faArrowRight} />
+        <Link to={destinationConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={destination.destinationName}
+            icon={destinationDefinition?.icon}
+            connectorName={destination.name}
+            releaseStage={destinationDefinition?.releaseStage}
+          />
+        </Link>
+      </div>
       {connection.status !== ConnectionStatus.deprecated && (
-        <EnabledControl
-          onStatusUpdating={onStatusUpdating}
-          disabled={!allowSync}
-          connection={connection}
-          frequencyType={frequency?.type}
-        />
+        <div className={styles.enabledControlContainer}>
+          <EnabledControl
+            onStatusUpdating={onStatusUpdating}
+            disabled={!allowSync}
+            connection={connection}
+            frequencyType={frequency?.type}
+          />
+        </div>
       )}
-    </MainContainer>
+    </div>
   );
 };

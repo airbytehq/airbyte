@@ -93,6 +93,8 @@ Collection names should begin with an underscore or a letter character, and cann
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2022-08-02 | [15211](https://github.com/airbytehq/airbyte/pull/15211) | Fix standard mode |
+| 0.1.5 | 2022-07-27 | [14561](https://github.com/airbytehq/airbyte/pull/14561) | Change Airbyte Id from MD5 to SHA256 |
 | 0.1.4 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.3 | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description |
 | 0.1.2 | 2021-10-18 | [6945](https://github.com/airbytehq/airbyte/pull/6945) | Create a secure-only MongoDb destination |

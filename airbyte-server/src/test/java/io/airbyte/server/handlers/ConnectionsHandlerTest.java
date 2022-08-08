@@ -44,7 +44,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -73,10 +73,7 @@ class ConnectionsHandlerTest {
 
   private ConnectionsHandler connectionsHandler;
   private UUID workspaceId;
-  private UUID sourceDefinitionId;
   private UUID sourceId;
-  private UUID deletedSourceId;
-  private UUID destinationDefinitionId;
   private UUID destinationId;
 
   private SourceConnection source;
@@ -85,7 +82,6 @@ class ConnectionsHandlerTest {
   private StandardSync standardSyncDeleted;
   private UUID connectionId;
   private UUID operationId;
-  private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
   private EventRunner eventRunner;
@@ -95,9 +91,7 @@ class ConnectionsHandlerTest {
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
 
     workspaceId = UUID.randomUUID();
-    sourceDefinitionId = UUID.randomUUID();
     sourceId = UUID.randomUUID();
-    destinationDefinitionId = UUID.randomUUID();
     destinationId = UUID.randomUUID();
     connectionId = UUID.randomUUID();
     operationId = UUID.randomUUID();
@@ -123,6 +117,8 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
+        .withScheduleType(ScheduleType.BASIC_SCHEDULE)
+        .withScheduleData(ConnectionHelpers.generateBasicScheduleData())
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
         .withSourceCatalogId(UUID.randomUUID());
     standardSyncDeleted = new StandardSync()
@@ -140,10 +136,6 @@ class ConnectionsHandlerTest {
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
 
-    standardSyncOperation = new StandardSyncOperation()
-        .withOperationId(operationId)
-        .withWorkspaceId(workspaceId);
-
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
@@ -151,7 +143,6 @@ class ConnectionsHandlerTest {
     eventRunner = mock(EventRunner.class);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
-    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
   }
@@ -340,6 +331,7 @@ class ConnectionsHandlerTest {
           .withStatus(StandardSync.Status.INACTIVE)
           .withCatalog(configuredCatalog)
           .withManual(true)
+          .withScheduleType(ScheduleType.MANUAL)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
           .withSourceCatalogId(newSourceCatalogId);
 

@@ -120,7 +120,7 @@ public class OAuthConfigSupplier {
           for (int i = 0; i < arrayNode.size(); ++i) {
             propertyPath.add(arrayNode.get(i).asText());
           }
-          if (propertyPath.size() > 0) {
+          if (!propertyPath.isEmpty()) {
             Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
             result = true;
           } else {

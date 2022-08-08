@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -112,7 +114,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
+    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
   @Override
@@ -264,21 +266,26 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                                                final String tableName,
                                                                final String cursorField,
                                                                final Datatype cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ?",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations
-                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
+                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  quotedCursorField));
+              // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+              // field
+              if (getStateEmissionFrequency() > 0) {
+                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+              }
 
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
@@ -293,11 +300,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        getConnectionProperties(config));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
@@ -315,6 +322,48 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
     return database;
   }
+
+  /**
+   * Retrieves connection_properties from config and also validates if custom jdbc_url parameters
+   * overlap with the default properties
+   *
+   * @param config A configuration used to check Jdbc connection
+   * @return A mapping of connection properties
+   */
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
+    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  /**
+   * Validates for duplication parameters
+   *
+   * @param customParameters custom connection properties map as specified by each Jdbc source
+   * @param defaultParameters connection properties map as specified by each Jdbc source
+   * @throws IllegalArgumentException
+   */
+  protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+                                                                             final Map<String, String> defaultParameters) {
+    for (final String key : defaultParameters.keySet()) {
+      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
+      }
+    }
+  }
+
+  /**
+   * Retrieves default connection_properties from config
+   *
+   * TODO: make this method abstract and add parity features to destination connectors
+   *
+   * @param config A configuration used to check Jdbc connection
+   * @return A mapping of the default connection properties
+   */
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return JdbcUtils.parseJdbcParameters(config, "connection_properties", getJdbcParameterDelimiter());
+  };
 
   protected String getJdbcParameterDelimiter() {
     return "&";

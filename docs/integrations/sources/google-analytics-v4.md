@@ -6,7 +6,7 @@ This connector supports [Google Analytics v4](https://developers.google.com/anal
 
 ## Prerequisites
 
-* JSON credentials for the service account that has access to Google Analytics. For more details check (instructions)[https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article]
+* JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article)
 * Property ID
 * Report name
 * List of report dimensions comma separated
@@ -36,7 +36,7 @@ Use the service account email address to [add a user](https://support.google.com
 
 ### Property ID
 
-Specify the Property ID as set (here)[https://analytics.google.com/analytics/web/a54907729p153687530/admin/property/settings]
+Specify the Property ID as set [here](https://analytics.google.com/analytics/web/a54907729p153687530/admin/property/settings)
 
 ## Step 2: Set up the source connector in Airbyte
 
@@ -63,6 +63,7 @@ a new connection.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source                                                   |
+| Version | Date       | Pull Request                                             | Subject                                    |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------|
+| 0.0.2   | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl                       |
+| 0.0.1   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source |

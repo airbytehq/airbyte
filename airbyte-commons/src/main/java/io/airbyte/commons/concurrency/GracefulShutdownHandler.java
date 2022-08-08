@@ -18,7 +18,7 @@ public class GracefulShutdownHandler extends Thread {
 
   public GracefulShutdownHandler(final Duration terminateWaitDuration, final ExecutorService... threadPools) {
     this.terminateWaitDuration = terminateWaitDuration;
-    this.threadPools = threadPools;
+    this.threadPools = threadPools.clone();
   }
 
   @Override

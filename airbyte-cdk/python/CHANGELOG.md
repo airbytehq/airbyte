@@ -1,6 +1,26 @@
 # Changelog
 
-## Unreleased
+## 0.1.71
+- Refactor declarative package to dataclasses
+- Bugfix: Requester header always converted to string
+- Bugfix: Reset paginator state between stream slices
+- Bugfix: Record selector handles single records
+
+## 0.1.70
+- Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
+- Bugfix: Set stream slicer's request options in SimpleRetriever
+
+## 0.1.69
+- AbstractSource emits a state message when reading incremental even if there were no stream slices to process.
+
+## 0.1.68
+- Replace parse-time string interpolation with run-time interpolation in YAML-based sources
+
+## 0.1.67
+- Add support declarative token authenticator.
+
+## 0.1.66
+- Call init_uncaught_exception_handler from AirbyteEntrypoint.__init__ and Destination.run_cmd
 - Add the ability to remove & add records in YAML-based sources
 
 ## 0.1.65

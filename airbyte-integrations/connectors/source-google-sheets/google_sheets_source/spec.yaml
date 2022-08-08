@@ -15,6 +15,11 @@ connectionSpecification:
         Enter the link to the Google spreadsheet you want to sync
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    row_batch_size:
+      type: integer
+      title: Row Batch Size
+      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
+      default: 200
     credentials:
       type: object
       title: Authentication
