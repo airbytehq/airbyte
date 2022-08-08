@@ -45,7 +45,6 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
     return expectedDate.equals(destinationDate);
   }
 
-
   private LocalDate parseLocalDateTime(String dateTimeValue) {
     if (dateTimeValue != null) {
       return LocalDate.parse(dateTimeValue,

@@ -21,8 +21,8 @@ class YamlDeclarativeSource(DeclarativeSource):
         :param path_to_yaml: Path to the yaml file describing the source
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
-        self.logger.setLevel(logging.DEBUG)
         self._factory = DeclarativeComponentFactory()
+        self._path_to_yaml = path_to_yaml
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
     @property
@@ -33,6 +33,11 @@ class YamlDeclarativeSource(DeclarativeSource):
         return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        self.logger.debug(
+            "parsed YAML into declarative source",
+            extra={"path_to_yaml_file": self._path_to_yaml, "source_name": self.name, "parsed_config": json.dumps(self._source_config)},
+        )
+
         stream_configs = self._source_config["streams"]
         for s in stream_configs:
             if "class_name" not in s:
@@ -42,9 +47,4 @@ class YamlDeclarativeSource(DeclarativeSource):
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         with open(path_to_yaml_file, "r") as f:
             config_content = f.read()
-            parsed_config = YamlParser().parse(config_content)
-            self.logger.debug(
-                "parsed YAML into declarative source",
-                extra={"path_to_yaml_file": path_to_yaml_file, "source_name": self.name, "parsed_config": json.dumps(parsed_config)},
-            )
-            return parsed_config
+            return YamlParser().parse(config_content)
