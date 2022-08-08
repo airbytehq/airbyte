@@ -1,5 +1,4 @@
-import React, { Suspense, useRef, useState } from "react";
-import { useEffectOnce } from "react-use";
+import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
 import { Spinner } from "components";
@@ -62,26 +61,20 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
     setIsOpen(!isOpen);
   };
 
-  useEffectOnce(() => {
-    if (linkedJobId !== String(getJobId(job))) {
-      return;
-    }
-    // We need to wait here a bit, so the page has a chance to finish rendering, before starting to scroll
-    // since otherwise this scroll won't really do anything.
-    const timeout = window.setTimeout(() => {
+  const [scrolled, setScrolled] = useState(false);
+  const scrollToErrorLog = useCallback(() => {
+    if (!scrolled && linkedJobId === String(getJobId(job))) {
       scrollAnchor.current?.scrollIntoView({
         block: "start",
       });
-    }, 1000);
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  });
+      setScrolled(true);
+    }
+  }, [job, linkedJobId, scrolled]);
 
   return (
     <Item isFailed={!didSucceed} ref={scrollAnchor}>
       <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
-      <ContentWrapper isOpen={isOpen}>
+      <ContentWrapper isOpen={isOpen} openedCallback={scrollToErrorLog}>
         <div>
           <Suspense
             fallback={

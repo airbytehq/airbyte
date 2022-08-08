@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import React from "react";
 
-interface IProps {
+interface Props {
   children?: React.ReactNode;
   isOpen?: boolean;
+  openedCallback?: () => void;
 }
 
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
+const ContentWrapper: React.FC<Props> = ({ children, isOpen, openedCallback }) => {
   return (
     <motion.div
       animate={!isOpen ? "closed" : "open"}
@@ -22,6 +23,7 @@ const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
           transition: { type: "tween" },
         },
       }}
+      onAnimationComplete={() => openedCallback?.()}
     >
       {children}
     </motion.div>
