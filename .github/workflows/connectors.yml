@@ -55,7 +55,7 @@ jobs:
         id: build
         run: |
           ./gradlew :airbyte-cdk:python:build
-          pip install ./airbyte-cdk/python
+          python airbyte-cdk/python/setup.py sdist
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
           docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}

@@ -14,15 +14,15 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
-    name="airbyte-cdk",
+    name="estuary-airbyte-cdk",
     version="0.1.55",
-    description="A framework for writing Airbyte Connectors.",
+    description="A framework for writing Airbyte Connectors. Estuary's fork.",
     long_description=README,
     long_description_content_type="text/markdown",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Estuary",
+    author_email="help@estuary.dev",
     license="MIT",
-    url="https://github.com/airbytehq/airbyte",
+    url="https://github.com/estuary/airbyte",
     classifiers=[
         # This information is used when browsing on PyPi.
         # Dev Status

@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.55",
+    "estuary-airbyte-cdk==0.1.55",
     "cached_property==1.5.2",
     "facebook_business==13.0.0",
     "pendulum>=2,<3",
