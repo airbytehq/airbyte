@@ -13,7 +13,7 @@ from .conftest import does_not_raise
 
 
 @dataclass
-class Transition:
+class SpecTransition:
     """An helper class to improve readability of the test cases"""
 
     previous_connector_specification: ConnectorSpecification
@@ -26,7 +26,7 @@ class Transition:
 
 
 FAILING_TRANSITIONS = [
-    Transition(
+    SpecTransition(
         ConnectorSpecification(connectionSpecification={}),
         ConnectorSpecification(
             connectionSpecification={
@@ -36,7 +36,7 @@ FAILING_TRANSITIONS = [
         should_fail=True,
         name="Top level: declaring the required field should fail.",
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -58,7 +58,7 @@ FAILING_TRANSITIONS = [
         should_fail=True,
         name="Nested level: adding the required field should fail.",
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "required": ["a"],
@@ -72,7 +72,7 @@ FAILING_TRANSITIONS = [
         name="Top level: adding a new required property should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -103,7 +103,7 @@ FAILING_TRANSITIONS = [
         name="Nested level: adding a new required property should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -123,7 +123,7 @@ FAILING_TRANSITIONS = [
         name="Nullable: Making a field not nullable should fail (not in a list).",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -143,7 +143,7 @@ FAILING_TRANSITIONS = [
         name="Nested level: Narrowing a field type should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -163,7 +163,7 @@ FAILING_TRANSITIONS = [
         name="Nullable field: Making a field not nullable should fail",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -183,7 +183,7 @@ FAILING_TRANSITIONS = [
         name="Changing a field type should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -203,7 +203,7 @@ FAILING_TRANSITIONS = [
         name="Changing a field type from a string to a list with a different type value should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -223,7 +223,7 @@ FAILING_TRANSITIONS = [
         name="Changing a field type should fail from a list to string with different value should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -243,7 +243,7 @@ FAILING_TRANSITIONS = [
         name="Changing a field type in list should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -263,7 +263,7 @@ FAILING_TRANSITIONS = [
         name="Making a field nullable and changing type should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -283,7 +283,7 @@ FAILING_TRANSITIONS = [
         name="Making a field nullable and changing type should fail (change list order).",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -303,7 +303,7 @@ FAILING_TRANSITIONS = [
         name="Nullable field: Changing a field type should fail",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -333,7 +333,7 @@ FAILING_TRANSITIONS = [
         name="Changing a field type in oneOf should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -363,7 +363,7 @@ FAILING_TRANSITIONS = [
         name="Narrowing a field type in oneOf should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -383,7 +383,7 @@ FAILING_TRANSITIONS = [
         name="Top level: Narrowing a field enum should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -403,7 +403,7 @@ FAILING_TRANSITIONS = [
         name="Nested level: Narrowing a field enum should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -423,7 +423,7 @@ FAILING_TRANSITIONS = [
         name="Top level: Declaring a field enum should fail.",
         should_fail=True,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -446,7 +446,7 @@ FAILING_TRANSITIONS = [
 ]
 
 VALID_TRANSITIONS = [
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -468,7 +468,7 @@ VALID_TRANSITIONS = [
         name="Not changing a spec should not fail",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -491,7 +491,7 @@ VALID_TRANSITIONS = [
         name="Adding an optional field should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -518,7 +518,7 @@ VALID_TRANSITIONS = [
         name="Adding an optional object with required properties should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -538,7 +538,7 @@ VALID_TRANSITIONS = [
         name="No change should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -558,7 +558,7 @@ VALID_TRANSITIONS = [
         name="Changing a field type from a list to a string with same value should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -578,7 +578,7 @@ VALID_TRANSITIONS = [
         name="Changing a field type from a string to a list should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -598,7 +598,7 @@ VALID_TRANSITIONS = [
         name="Adding a field type in list should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -618,7 +618,7 @@ VALID_TRANSITIONS = [
         name="Making a field nullable should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -638,7 +638,7 @@ VALID_TRANSITIONS = [
         name="Making a field nullable should not fail (change list order).",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -658,7 +658,7 @@ VALID_TRANSITIONS = [
         name="Making a field nullable should not fail (from a list).",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -678,7 +678,7 @@ VALID_TRANSITIONS = [
         name="Making a field nullable should not fail (from a list, changing order).",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -698,7 +698,7 @@ VALID_TRANSITIONS = [
         name="Nullable field: Changing order should not fail",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -718,7 +718,7 @@ VALID_TRANSITIONS = [
         name="Nested level: Expanding a field type should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -748,7 +748,7 @@ VALID_TRANSITIONS = [
         name="Changing a order in oneOf should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -768,7 +768,7 @@ VALID_TRANSITIONS = [
         name="Top level: Expanding a field enum should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -788,7 +788,7 @@ VALID_TRANSITIONS = [
         name="Nested level: Expanding a field enum should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -806,7 +806,7 @@ VALID_TRANSITIONS = [
         name="Top level: Adding a new optional field with enum should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
@@ -826,7 +826,7 @@ VALID_TRANSITIONS = [
         name="Top level: Removing the field enum should not fail.",
         should_fail=False,
     ),
-    Transition(
+    SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
                 "type": "object",
