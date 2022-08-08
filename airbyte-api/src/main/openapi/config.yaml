@@ -4753,7 +4753,6 @@ components:
       format: int32
     TemporalWorkflowId:
       type: string
-      format: uuid
     SetTemporalWorkflowInAttemptRequestBody:
       type: object
       required:

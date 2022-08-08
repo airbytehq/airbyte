@@ -216,7 +216,7 @@ public class WorkerApp {
             workspaceRoot,
             workerEnvironment,
             logConfigs,
-            jobPersistence,
+            airbyteApiClient,
             airbyteVersion),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier),
         new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
@@ -250,7 +250,7 @@ public class WorkerApp {
         .registerActivitiesImplementations(
             new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
                 logConfigs,
-                jobPersistence, airbyteVersion));
+                airbyteApiClient, airbyteVersion));
   }
 
   private void registerCheckConnection(final WorkerFactory factory) {
@@ -260,14 +260,14 @@ public class WorkerApp {
     checkConnectionWorker
         .registerActivitiesImplementations(
             new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-                jobPersistence, airbyteVersion));
+                airbyteApiClient, airbyteVersion));
   }
 
   private void registerGetSpec(final WorkerFactory factory) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
-        new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
+        new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, airbyteApiClient,
             airbyteVersion));
   }
 
@@ -283,6 +283,7 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
+        airbyteApiClient,
         airbyteVersion,
         featureFlags.useStreamCapableState());
   }
@@ -299,6 +300,7 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
+        airbyteApiClient,
         airbyteVersion);
   }
 
@@ -314,6 +316,7 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
+        airbyteApiClient,
         airbyteVersion);
   }
 
