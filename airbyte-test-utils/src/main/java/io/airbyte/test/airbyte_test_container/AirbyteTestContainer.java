@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 /**
  * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from
@@ -70,7 +71,11 @@ public class AirbyteTestContainer {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void startAsync() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
-    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
+    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile)
+        .withEnv(env)
+        .withExposedService("server", 8001,
+            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(240)));
+
     // Only expose logs related to db migrations.
     serviceLogConsumer(dockerComposeContainer, "init");
     serviceLogConsumer(dockerComposeContainer, "bootloader");
@@ -126,7 +131,7 @@ public class AirbyteTestContainer {
       }
     };
 
-    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(2), condition)) {
+    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(10), Duration.ofMinutes(3), condition)) {
       throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException.get());
     }
   }
