@@ -35,7 +35,7 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 
 - An Exchange Rates API key
 - Python >= 3.9
-- Docker
+- Docker must be running
 - NodeJS
 
 ## Next Steps
