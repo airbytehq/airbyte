@@ -505,14 +505,14 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
-#      - name: Generate Test Report
-#        uses: dorny/test-reporter@v1
-#        if: always()    # run this step even if previous step failed
-#        with:
-#          name: Platform Test Report with Docker E2E Test
-#          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-#          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
-#          reporter: java-junit
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()    # run this step even if previous step failed
+        with:
+          name: Platform Test Report with Docker E2E Test
+          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          reporter: java-junit
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
