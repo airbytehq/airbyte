@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "estuary-airbyte-cdk~=0.1.33",
+    "estuary-airbyte-cdk~=0.1",
     "vcrpy==4.1.1",
 ]
 
