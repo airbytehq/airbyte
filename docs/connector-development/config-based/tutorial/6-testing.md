@@ -24,6 +24,16 @@ and `integration_tests/abnormal_state.json` with
 
 ```
 
+The `check` operation tries to read from the streams passed in the `stream_names` array:
+
+```
+check:
+  type: CheckStream
+  stream_names: ["rates"]
+```
+
+The operation will fail if the stream does not output at least one record. See the [connection checker](../overview.md#connection-checker) section for more details.
+
 You can build the connector's docker image and run the acceptance tests by running the following commands:
 
 ```
@@ -38,6 +48,7 @@ airbyte-integrations/bases/source-acceptance-test/source_acceptance_test/tests/t
 ```
 
 This test is failing because the `check` operation is succeeding even with invalid credentials.
+
 This can be confirmed by running
 
 ```
