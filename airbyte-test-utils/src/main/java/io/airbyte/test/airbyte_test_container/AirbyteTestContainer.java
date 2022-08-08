@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 /**
  * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from
