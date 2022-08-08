@@ -243,12 +243,14 @@ public interface Configs {
 
   /**
    * Define the header name used to authenticate with the Airbyte API
+   *
    * @return
    */
   String getAirbyteApiAuthHeaderName();
 
   /**
    * Define the header value used to authenticate with the Airbyte API
+   *
    * @return
    */
   String getAirbyteApiAuthHeaderValue();

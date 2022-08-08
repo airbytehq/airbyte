@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -68,6 +69,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final LogConfigs logConfigs;
 
   private final JobPersistence jobPersistence;
+
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final boolean useStreamCapableState;
 
@@ -79,10 +82,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
                                  final JobPersistence jobPersistence,
+                                 final AirbyteApiClient airbyteApiClient,
                                  final String airbyteVersion,
                                  final boolean useStreamCapableState) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), jobPersistence, airbyteVersion, useStreamCapableState);
+        new AirbyteConfigValidator(), jobPersistence, airbyteApiClient, airbyteVersion, useStreamCapableState);
   }
 
   @VisibleForTesting
@@ -95,6 +99,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
                           final JobPersistence jobPersistence,
+                          final AirbyteApiClient airbyteApiClient,
                           final String airbyteVersion,
                           final boolean useStreamCapableState) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
@@ -106,6 +111,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
     this.useStreamCapableState = useStreamCapableState;
   }
@@ -155,7 +161,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   workerFactory,
                   inputSupplier,
                   new CancellationHandler.TemporalCancellationHandler(context),
-                  jobPersistence,
+                  airbyteApiClient,
                   airbyteVersion,
                   () -> context);
 

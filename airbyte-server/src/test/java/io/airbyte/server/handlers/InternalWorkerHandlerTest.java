@@ -37,7 +37,7 @@ class InternalWorkerHandlerTest {
 
   @Test
   void testInternalWorkerHandlerSetsTemporalWorkflowId() throws Exception {
-    UUID workflowId = UUID.randomUUID();
+    String workflowId = UUID.randomUUID().toString();
 
     final ArgumentCaptor<Integer> attemptIdCapture = ArgumentCaptor.forClass(Integer.class);
     final ArgumentCaptor<Long> jobIdCapture = ArgumentCaptor.forClass(Long.class);
@@ -52,12 +52,12 @@ class InternalWorkerHandlerTest {
 
     assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
-    assertEquals(workflowId.toString(), workflowIdCapture.getValue());
+    assertEquals(workflowId, workflowIdCapture.getValue());
   }
 
   @Test
   void testInternalWorkerHandlerSetsTemporalWorkflowIdThrows() throws Exception {
-    UUID workflowId = UUID.randomUUID();
+    String workflowId = UUID.randomUUID().toString();
 
     doThrow(IOException.class).when(jobPersistence).setAttemptTemporalWorkflowId(anyLong(), anyInt(),
         any());
@@ -75,7 +75,7 @@ class InternalWorkerHandlerTest {
 
     assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
-    assertEquals(workflowId.toString(), workflowIdCapture.getValue());
+    assertEquals(workflowId, workflowIdCapture.getValue());
   }
 
 }
