@@ -244,7 +244,7 @@
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
   dockerRepository: airbyte/destination-rockset
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rockset
   releaseStage: alpha
 - name: S3
