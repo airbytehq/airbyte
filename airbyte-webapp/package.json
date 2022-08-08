@@ -114,6 +114,9 @@
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
     "storybook-addon-mock": "^2.4.1",
+    "stylelint": "^14.9.1",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-standard-scss": "^5.0.0",
     "tar": "^6.1.11",
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",
@@ -126,7 +129,8 @@
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write"
+      "prettier --write",
+      "stylelint-config-prettier-scss-check"
     ]
   },
   "browserslist": {
