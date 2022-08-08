@@ -1,6 +1,10 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
+from abc import ABC, abstractmethod
+from multiprocessing import context
+
 import jsonschema
 from airbyte_cdk.models import ConnectorSpecification
 from deepdiff import DeepDiff
@@ -9,44 +13,25 @@ from hypothesis_jsonschema import from_schema
 from source_acceptance_test.utils import SecretDict
 
 
-class NonBackwardCompatibleSpecError(Exception):
+class NonBackwardCompatibleError(Exception):
     pass
 
 
-class SpecDiffChecker:
-    """A class to perform multiple backward compatible checks on a spec diff"""
-
+class BaseDiffChecker(ABC):
     def __init__(self, diff: DeepDiff) -> None:
         self._diff = diff
 
-    def check(self):
-        self.check_if_declared_new_required_field()
-        self.check_if_added_a_new_required_property()
-        self.check_if_value_of_type_field_changed()
-        # self.check_if_new_type_was_added() We want to allow type expansion atm
-        self.check_if_type_of_type_field_changed()
-        self.check_if_field_was_made_not_nullable()
-        self.check_if_enum_was_narrowed()
-        self.check_if_declared_new_enum_field()
-
     def _raise_error(self, message: str):
-        raise NonBackwardCompatibleSpecError(f"{message}: {self._diff.pretty()}")
+        raise NonBackwardCompatibleError(f"{context} - {message}: {self._diff.pretty()}")
 
-    def check_if_declared_new_required_field(self):
-        """Check if the new spec declared a 'required' field."""
-        added_required_fields = [
-            addition for addition in self._diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
-        ]
-        if added_required_fields:
-            self._raise_error("The current spec declared a new 'required' field")
+    @property
+    @abstractmethod
+    def context(self):
+        pass
 
-    def check_if_added_a_new_required_property(self):
-        """Check if the new spec added a property to the 'required' list."""
-        added_required_properties = [
-            addition for addition in self._diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
-        ]
-        if added_required_properties:
-            self._raise_error("A new property was added to 'required'")
+    @abstractmethod
+    def check(self):
+        pass
 
     def check_if_value_of_type_field_changed(self):
         """Check if a type was changed"""
@@ -58,7 +43,7 @@ class SpecDiffChecker:
             change for change in self._diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
         ]
         if type_values_changed or type_values_changed_in_list:
-            self._raise_error("The current spec changed the value of a 'type' field")
+            self._raise_error("The value of a 'type' field was changed.")
 
     def check_if_new_type_was_added(self):
         """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
@@ -69,7 +54,7 @@ class SpecDiffChecker:
             if change.t2 != "null"
         ]
         if new_values_in_type_list:
-            self._raise_error("The current spec changed the value of a 'type' field")
+            self._raise_error("A new value was added to a 'type' field.")
 
     def check_if_type_of_type_field_changed(self):
         """
@@ -89,21 +74,53 @@ class SpecDiffChecker:
             # This might be something already guaranteed by JSON schema validation.
             if isinstance(change.t1, str):
                 if not isinstance(change.t2, list):
-                    self._raise_error("The current spec change a type field from string to an invalid value.")
+                    self._raise_error("The current {context} change a type field from string to an invalid value.")
                 if not 0 < len(change.t2) <= 2:
                     self._raise_error(
-                        "The current spec change a type field from string to an invalid value. The type list length should not be empty and have a maximum of two items."
+                        "A type field changed from string to an invalid value. The type list should not be empty and have a maximum of two items."
                     )
                 # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
                 # We want to raise an error otherwise.
                 t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
                 if not (len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1):
-                    self._raise_error("The current spec change a type field to a list with multiple invalid values.")
+                    self._raise_error("The type field changed to a list with multiple invalid values.")
             if isinstance(change.t1, list):
                 if not isinstance(change.t2, str):
-                    self._raise_error("The current spec change a type field from list to an invalid value.")
+                    self._raise_error("The type field changed from a list to an invalid value.")
                 if not (len(change.t1) == 1 and change.t2 == change.t1[0]):
-                    self._raise_error("The current spec narrowed a field type.")
+                    self._raise_error("An element was removed from the list of valid types.")
+
+
+class SpecDiffChecker(BaseDiffChecker):
+    """A class to perform backward compatibility checks on a connector specification diff"""
+
+    context = "Specification"
+
+    def check(self):
+        self.check_if_declared_new_required_field()
+        self.check_if_added_a_new_required_property()
+        self.check_if_value_of_type_field_changed()
+        # self.check_if_new_type_was_added() We want to allow type expansion atm
+        self.check_if_type_of_type_field_changed()
+        self.check_if_field_was_made_not_nullable()
+        self.check_if_enum_was_narrowed()
+        self.check_if_declared_new_enum_field()
+
+    def check_if_declared_new_required_field(self):
+        """Check if the new spec declared a 'required' field."""
+        added_required_fields = [
+            addition for addition in self._diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
+        ]
+        if added_required_fields:
+            self._raise_error(f"The current {context} declared a new 'required' field")
+
+    def check_if_added_a_new_required_property(self):
+        """Check if the new spec added a property to the 'required' list."""
+        added_required_properties = [
+            addition for addition in self._diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
+        ]
+        if added_required_properties:
+            self._raise_error("A new property was added to 'required'")
 
     def check_if_field_was_made_not_nullable(self):
         """Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]"""
@@ -111,7 +128,7 @@ class SpecDiffChecker:
             change for change in self._diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"
         ]
         if removed_nullable:
-            self._raise_error("The current spec narrowed a field type or made a field not nullable.")
+            self._raise_error("A field type was narrowed or made a field not nullable.")
 
     def check_if_enum_was_narrowed(self):
         """Check if the list of values in a enum was shortened in a spec."""
@@ -121,7 +138,7 @@ class SpecDiffChecker:
             if enum_removal.up.path(output_format="list")[-1] == "enum"
         ]
         if enum_removals:
-            self._raise_error("The current spec narrowed an enum field.")
+            self._raise_error("An enum field was narrowed.")
 
     def check_if_declared_new_enum_field(self):
         """Check if an 'enum' field was added to the spec."""
@@ -149,6 +166,26 @@ def validate_previous_configs(
         try:
             jsonschema.validate(instance=filtered_fake_previous_config, schema=actual_connector_spec.connectionSpecification)
         except jsonschema.exceptions.ValidationError as err:
-            raise NonBackwardCompatibleSpecError(err)
+            raise NonBackwardCompatibleError(err)
 
     check_fake_previous_config_against_actual_spec()
+
+
+class CatalogDiffChecker(BaseDiffChecker):
+    """A class to perform backward compatibility checks on a discoverd catalog diff"""
+
+    context = "Catalog"
+
+    def check(self):
+        self.check_if_stream_was_removed()
+        self.check_if_value_of_type_field_changed()
+        self.check_if_type_of_type_field_changed()
+
+    def check_if_stream_was_removed(self):
+        """Check if a stream was removed from the catalog."""
+        removed_streams = []
+        for removal in self._diff.get("dictionary_item_removed", []):
+            if removal.path() != "root" and removal.up.path() == "root":
+                removed_streams.append(removal.path(output_format="list")[0])
+        if removed_streams:
+            self._raise_error(f"The following streams were removed: {','.join(removed_streams)}")
