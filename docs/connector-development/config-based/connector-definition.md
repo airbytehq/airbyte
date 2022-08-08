@@ -9,7 +9,8 @@ Connectors are defined as a yaml configuration describing the connector's Source
 
 The configuration will be validated against this JSON Schema, which defines the set of valid properties.
 
-The general structure of the YAML is as follows: 
+The general structure of the YAML is as follows:
+
 ```
 <key-value pairs defining objects which will be reused in the YAML connector> 
 streams:
@@ -241,7 +242,7 @@ If the input string is a raw string, the interpolated string will be the same.
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
 the "options" keyword [see ($options)](connector-definition.md#object-instantiation) can be referenced.
 
-For example, inner_object.key will evaluate to "Hello airbyte" at runtime.
+For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 
 ```
 some_object:
@@ -253,6 +254,12 @@ some_object:
 
 Some components also pass in additional arguments to the context.
 This is the case for the [record selector](record-selector.md), which passes in an additional `response` argument.
+
+Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
+This means that both these string templates will evaluate to the same string:
+
+1. `"{{ options.name }}"`
+2. `"{{ options['name'] }}"`
 
 In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
 For example,
