@@ -15,6 +15,9 @@ from source_stripe.streams import (
     Customers,
     Disputes,
     Events,
+    ExternalAccount,
+    ExternalAccountBankAccounts,
+    ExternalAccountCards,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -166,6 +169,7 @@ def config_fixture():
         (CheckoutSessions, {}, "checkout/sessions"),
         (CheckoutSessionsLineItems, {"stream_slice": {"checkout_session_id": "CS1"}}, "checkout/sessions/CS1/line_items"),
         (PromotionCodes, {}, "promotion_codes"),
+        (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
     ],
 )
 def test_path(
@@ -188,6 +192,8 @@ def test_path(
         (BankAccounts, {"stream_state": {}, "stream_slice": {"subscription_id": "SI"}}, {"limit": 100, "object": "bank_account"}),
         (CheckoutSessions, {"stream_state": None}, {"limit": 100}),
         (CheckoutSessionsLineItems, {"stream_state": None}, {"limit": 100, "expand[]": ["data.discounts", "data.taxes"]}),
+        (ExternalAccountBankAccounts, {"stream_state": None}, {"limit": 100, "object": "bank_account"}),
+        (ExternalAccountCards, {"stream_state": None}, {"limit": 100, "object": "card"}),
     ],
 )
 def test_request_params(

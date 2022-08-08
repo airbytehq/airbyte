@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk import AirbyteEntrypoint
+from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -54,6 +55,12 @@ def spec_mock(mocker):
 @pytest.fixture
 def entrypoint() -> AirbyteEntrypoint:
     return AirbyteEntrypoint(MockSource())
+
+
+def test_airbyte_entrypoint_init(mocker):
+    mocker.patch.object(entrypoint_module, "init_uncaught_exception_handler")
+    AirbyteEntrypoint(MockSource())
+    entrypoint_module.init_uncaught_exception_handler.assert_called_once_with(entrypoint_module.logger)
 
 
 @pytest.mark.parametrize(

@@ -65,7 +65,7 @@ class OpenTelemetryMetricClientTest {
   @Test
   @DisplayName("Tags should be passed into metrics")
   void testCountWithTagSuccess() {
-    openTelemetryMetricClient.count(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1, TAG);
+    openTelemetryMetricClient.count(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1, new MetricAttribute(TAG, TAG));
 
     metricProvider.forceFlush();
     final List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
@@ -75,7 +75,7 @@ class OpenTelemetryMetricClientTest {
     assertThat(data.getDescription()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricDescription());
     assertThat(data.getLongSumData().getPoints().stream()
         .anyMatch(
-            longPointData -> longPointData.getValue() == 1L && longPointData.getAttributes().get(AttributeKey.stringKey(TAG)).equals(TAG)));
+            longPointData -> longPointData.getValue() == 1L && TAG.equals(longPointData.getAttributes().get(AttributeKey.stringKey(TAG)))));
   }
 
   @Test

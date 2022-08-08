@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -42,8 +43,8 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private static void populateDatabaseTestData() throws Exception {
     SshTunnel.sshWrap(
         config,
-        List.of("host"),
-        List.of("port"),
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -57,13 +58,13 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return new Database(
         DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.POSTGRES));
   }
 
@@ -118,7 +119,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -127,7 +128,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }

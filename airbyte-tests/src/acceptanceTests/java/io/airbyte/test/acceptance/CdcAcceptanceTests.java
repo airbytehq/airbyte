@@ -384,7 +384,7 @@ class CdcAcceptanceTests {
     // filter out color_palette stream
     final List<AirbyteStreamAndConfiguration> updatedStreams = streams
         .stream()
-        .filter(stream -> !stream.getStream().getName().equals(COLOR_PALETTE_TABLE))
+        .filter(stream -> !COLOR_PALETTE_TABLE.equals(stream.getStream().getName()))
         .toList();
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
@@ -458,7 +458,7 @@ class CdcAcceptanceTests {
   private UUID createCdcConnection() throws ApiException {
     final SourceRead sourceRead = createCdcSource();
     final UUID sourceId = sourceRead.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     operationRead = testHarness.createOperation();
     final UUID operationId = operationRead.getOperationId();
@@ -539,7 +539,7 @@ class CdcAcceptanceTests {
         return sourceRecordValuesMatch && cdcUpdatedAtMatches && cdcDeletedAtMatches;
       }).toList();
 
-      if (matchingDestRecords.size() == 0) {
+      if (matchingDestRecords.isEmpty()) {
         throw new IllegalStateException(String.format(
             "Could not find a matching CDC destination record for record matcher %s. Destination records: %s", recordMatcher, destRecords));
       }

@@ -87,7 +87,7 @@ const OnboardingPage: React.FC = () => {
   );
 
   const handleFinishOnboarding = () => {
-    finishOnboarding();
+    finishOnboarding(currentStep);
     navigate(RoutePaths.Connections);
   };
 
