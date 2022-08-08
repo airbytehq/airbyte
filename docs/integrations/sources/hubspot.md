@@ -4,7 +4,7 @@ This page guides you through setting up the HubSpot source connector.
 
 ## Prerequisite
 
-You can use OAuth or an API key to authenticate your HubSpot account. If you choose to use OAuth, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+You can use OAuth, API key, or Private App to authenticate your HubSpot account. If you choose to use OAuth or Private App, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                   |
 |:----------------------------|:---------------------------------------------------------------------------------|
