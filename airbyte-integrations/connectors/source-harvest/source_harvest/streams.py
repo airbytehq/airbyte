@@ -109,6 +109,13 @@ class HarvestSubStream(HarvestStream, ABC):
         :return: sub stream path template
         """
 
+    @property
+    @abstractmethod
+    def parent_stream(self) -> IncrementalHarvestStream:
+        """
+        :return: parent stream class
+        """
+
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         items = self.parent_stream(authenticator=self.authenticator)
         for item in items.read_records(sync_mode=SyncMode.full_refresh):
