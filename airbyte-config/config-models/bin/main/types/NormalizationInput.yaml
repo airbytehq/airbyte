@@ -1,0 +1,23 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/NormalizationInput.yaml
+title: NormalizationInput
+description: job normalization config
+type: object
+additionalProperties: false
+required:
+  - destinationConfiguration
+  - catalog
+properties:
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  catalog:
+    description: the configured airbyte catalog. this version of the catalog represents the schema of the data in json blobs in the raw tables.
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  resourceRequirements:
+    type: object
+    description: optional resource requirements to run sync workers
+    existingJavaType: io.airbyte.config.ResourceRequirements
