@@ -77,6 +77,7 @@ def test_report_base_stream(config, from_date, mock_stream):
     mock_stream("reports/expenses/clients", response={"results": [{"client_id": 1}]})
 
     invoice_payments_instance = ExpensesClients(authenticator=NoAuth(), from_date=from_date)
-    invoice_payments = invoice_payments_instance.read_records(sync_mode=None)
+    stream_slice = next(invoice_payments_instance.stream_slices(sync_mode=None))
+    invoice_payments = invoice_payments_instance.read_records(sync_mode=None, stream_slice=stream_slice)
 
     assert next(invoice_payments)
