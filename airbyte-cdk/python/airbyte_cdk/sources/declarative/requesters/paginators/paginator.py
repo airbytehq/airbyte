@@ -3,12 +3,14 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 
 
+@dataclass
 class Paginator(RequestOptionsProvider):
     """
     Defines the token to use to fetch the next page of records from the API.
@@ -16,6 +18,12 @@ class Paginator(RequestOptionsProvider):
     If needed, the Paginator will set request options to be set on the HTTP request to fetch the next page of records.
     If the next_page_token is the path to the next page of records, then it should be accessed through the `path` method
     """
+
+    @abstractmethod
+    def reset(self):
+        """
+        Reset the pagination's inner state
+        """
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:

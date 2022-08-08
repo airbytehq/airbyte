@@ -30,6 +30,8 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
+from .utils import validate_end_date, validate_start_date
+
 logger = logging.getLogger("airbyte")
 
 
@@ -58,6 +60,10 @@ class SourceFacebookMarketing(AbstractSource):
         :return: list of the stream instances
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)
+
+        config.start_date = validate_start_date(config.start_date)
+        config.end_date = validate_end_date(config.start_date, config.end_date)
+
         api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(

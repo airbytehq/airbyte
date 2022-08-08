@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.71
+- Refactor declarative package to dataclasses
+- Bugfix: Requester header always converted to string
+- Bugfix: Reset paginator state between stream slices
+- Bugfix: Record selector handles single records
+
 ## 0.1.70
 - Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
 - Bugfix: Set stream slicer's request options in SimpleRetriever
