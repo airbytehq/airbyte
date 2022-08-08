@@ -4,9 +4,13 @@ connectionSpecification:
   title: Compusense Spec
   type: object
   required:
-    - TODO
+    - client_id
+    - client_secret
+  additionalProperties: false
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    client_id:
       type: string
-      description: describe me
+      description: Client id used to retrieve data from the Compusense API.
+    client_secret:
+      type: string
+      description: Client secret used to retrieve data from the Compusense API.
