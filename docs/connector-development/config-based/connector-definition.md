@@ -33,11 +33,10 @@ If the component is a mapping with a "class_name" field,
 an object of type "class_name" will be instantiated by passing the mapping's other fields to the constructor
 
 ```
-{
-  "class_name": "fully_qualified.class_name",
-  "a_parameter: 3,
-  "another_parameter: "hello"
-}
+my_component:
+  class_name: "fully_qualified.class_name"
+  a_parameter: 3
+  another_parameter: "hello"
 ```
 
 will result in
