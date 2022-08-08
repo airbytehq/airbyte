@@ -1,15 +1,15 @@
 package io.airbyte.integrations.destination.scylla;
 
-
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("ScyllaRecordConsumer")
 @ExtendWith(MockitoExtension.class)
