@@ -21,6 +21,12 @@ connectionSpecification:
       description: >-
         Google API Credentials for connecting to Google Sheets and Google Drive
         APIs
+      discriminator:
+        propertyName: auth_type
+      required:
+        - auth_type
+      default:
+        auth_type: Client
       oneOf:
         - title: Google OAuth
           x-oauth2-provider: google
