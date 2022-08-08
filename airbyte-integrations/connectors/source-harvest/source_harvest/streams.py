@@ -24,10 +24,6 @@ class HarvestStream(HttpStream, ABC):
         """
         return self.name
 
-    @property
-    def parent_stream(self):
-        return None
-
     def backoff_time(self, response: requests.Response):
         if "Retry-After" in response.headers:
             return int(response.headers["Retry-After"])
@@ -57,7 +53,7 @@ class HarvestStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
@@ -71,10 +67,7 @@ class HarvestStream(HttpStream, ABC):
             stream_data = response.json().get(self.data_field, [])
 
         if isinstance(stream_data, list):
-            for record in stream_data:
-                if self.parent_stream:
-                    record["parent_id"] = stream_slice["parent_id"]
-                yield record
+            yield from stream_data
         else:
             yield stream_data
 
@@ -123,6 +116,11 @@ class HarvestSubStream(HarvestStream, ABC):
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(parent_id=stream_slice["parent_id"])
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, stream_slice=stream_slice, **kwargs):
+            record["parent_id"] = stream_slice["parent_id"]
+            yield record
 
 
 class Contacts(IncrementalHarvestStream):
