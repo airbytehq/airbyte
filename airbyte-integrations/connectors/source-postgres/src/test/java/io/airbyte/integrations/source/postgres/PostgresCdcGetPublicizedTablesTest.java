@@ -91,6 +91,7 @@ class PostgresCdcGetPublicizedTablesTest {
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
   }
 
