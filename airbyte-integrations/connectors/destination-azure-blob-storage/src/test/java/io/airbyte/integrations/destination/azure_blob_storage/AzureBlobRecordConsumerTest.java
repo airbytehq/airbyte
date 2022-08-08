@@ -18,7 +18,6 @@ public class AzureBlobRecordConsumerTest extends PerStreamStateMessageTest {
   @Mock
   private Consumer<AirbyteMessage> outputRecordCollector;
 
-  @InjectMocks
   private AzureBlobStorageConsumer consumer;
 
   @Mock
