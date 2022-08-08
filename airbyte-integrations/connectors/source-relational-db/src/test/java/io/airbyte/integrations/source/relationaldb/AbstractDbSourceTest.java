@@ -9,12 +9,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -37,6 +40,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfGlobalState() throws IOException {
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
@@ -50,6 +54,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfStreamState() throws IOException {
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
@@ -69,6 +74,19 @@ public class AbstractDbSourceTest {
     final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(null, config);
     assertEquals(1, result.size());
     assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
+  }
+
+  public static void setEnv(final String key, final String value) {
+    try {
+      final Map<String, String> env = System.getenv();
+      final Class<?> cl = env.getClass();
+      final Field field = cl.getDeclaredField("m");
+      field.setAccessible(true);
+      final Map<String, String> writableEnv = (Map<String, String>) field.get(env);
+      writableEnv.put(key, value);
+    } catch (final Exception e) {
+      throw new IllegalStateException("Failed to set environment variable", e);
+    }
   }
 
 }

@@ -11,12 +11,13 @@ import io.airbyte.api.model.generated.StreamDescriptor;
  */
 public class ProtocolConverters {
 
-  public static StreamDescriptor streamDescriptorToApi(final io.airbyte.config.StreamDescriptor protocolStreamDescriptor) {
+  public static StreamDescriptor streamDescriptorToApi(final io.airbyte.protocol.models.StreamDescriptor protocolStreamDescriptor) {
     return new StreamDescriptor().name(protocolStreamDescriptor.getName()).namespace(protocolStreamDescriptor.getNamespace());
   }
 
-  public static StreamDescriptor streamDescriptorToApi(final io.airbyte.protocol.models.StreamDescriptor protocolStreamDescriptor) {
-    return new StreamDescriptor().name(protocolStreamDescriptor.getName()).namespace(protocolStreamDescriptor.getNamespace());
+  public static io.airbyte.protocol.models.StreamDescriptor streamDescriptorToProtocol(final StreamDescriptor apiStreamDescriptor) {
+    return new io.airbyte.protocol.models.StreamDescriptor().withName(apiStreamDescriptor.getName())
+        .withNamespace(apiStreamDescriptor.getNamespace());
   }
 
 }

@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.relationaldb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -66,6 +68,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+  // TODO: Remove when the flag is not use anymore
+  private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
@@ -235,8 +239,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
       }
 
-      final JsonSchemaPrimitive cursorType = IncrementalUtils
-          .getCursorType(airbyteStream, cursorField);
+      final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
 
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
           autoCloseableIterator,
@@ -244,7 +247,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           pair,
           cursorField,
           cursorOptional.orElse(null),
-          cursorType),
+          cursorType,
+          getStateEmissionFrequency()),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
@@ -487,16 +491,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         final String tableName);
 
   /**
-   * Read incremental data from a table. Incremental read should returns only records where cursor
-   * column value is bigger than cursor.
+   * Read incremental data from a table. Incremental read should return only records where cursor
+   * column value is bigger than cursor. Note that if the connector needs to emit intermediate state
+   * (i.e. {@link AbstractDbSource#getStateEmissionFrequency} > 0), the incremental query must be
+   * sorted by the cursor field.
    *
-   * @param database source database
-   * @param columnNames interested column names
-   * @param schemaName table namespace
-   * @param tableName target table
-   * @param cursorField cursor field name
-   * @param cursorFieldType cursor field type
-   * @param cursor cursor value
    * @return iterator with read data
    */
   public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
@@ -505,7 +504,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         String tableName,
                                                                         String cursorField,
                                                                         DataType cursorFieldType,
-                                                                        String cursor);
+                                                                        String cursorValue);
+
+  /**
+   * When larger than 0, the incremental iterator will emit intermediate state for every N records.
+   * Please note that if intermediate state emission is enabled, the incremental query must be ordered
+   * by the cursor field.
+   */
+  protected int getStateEmissionFrequency() {
+    return 0;
+  }
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);
@@ -522,7 +530,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson);
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson, featureFlags.useStreamCapableState());
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:

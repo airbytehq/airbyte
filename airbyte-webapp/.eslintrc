@@ -17,8 +17,8 @@
   },
   "rules": {
     "curly": "warn",
-    "css-modules/no-undef-class": ["warn", { "camelCase": true }],
-    "css-modules/no-unused-class": ["warn", { "camelCase": true }],
+    "css-modules/no-undef-class": ["error", { "camelCase": true }],
+    "css-modules/no-unused-class": ["error", { "camelCase": true }],
     "dot-location": "warn",
     "eqeqeq": "error",
     "prettier/prettier": "warn",
@@ -64,7 +64,6 @@
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {
-        "ts-ignore": "allow-with-description",
         "ts-expect-error": "allow-with-description"
       }
     ],

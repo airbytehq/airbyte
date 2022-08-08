@@ -2,7 +2,7 @@
 
 ## CDK Speedrun \(HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route\)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/0-getting-started.md)
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
 
 If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 
@@ -51,7 +51,6 @@ connectionSpecification:
   type: object
   required:
     - pokemon_name
-  additionalProperties: false
   properties:
     pokemon_name:
       type: string
@@ -238,3 +237,6 @@ docker build . -t airbyte/source-python-http-example:dev
 
 You're done. Stop the clock :\)
 
+## Further reading
+
+If you have enjoyed the above example, and would like to explore the Python CDK in even more detail, you may be interested looking at [how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)

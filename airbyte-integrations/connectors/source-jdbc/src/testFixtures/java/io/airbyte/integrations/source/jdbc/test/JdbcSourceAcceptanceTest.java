@@ -205,11 +205,11 @@ public abstract class JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
@@ -294,7 +294,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }
@@ -393,7 +393,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     final List<AirbyteMessage> expectedMessages = getAirbyteMessagesReadOneColumn();
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
@@ -448,7 +449,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessages);
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
@@ -483,7 +485,8 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
@@ -625,7 +628,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessagesSecondSync);
 
     assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
-    assertEquals(expectedMessages, actualMessagesSecondSync);
+    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
+    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
   }
 
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
@@ -740,7 +744,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessagesFirstSync);
 
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
-    assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
+    assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
+    assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
@@ -815,7 +820,8 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   // get catalog and perform a defensive copy.
@@ -833,7 +839,7 @@ public abstract class JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
@@ -841,7 +847,7 @@ public abstract class JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
@@ -984,7 +990,7 @@ public abstract class JdbcSourceAcceptanceTest {
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
-      return config.get("database").asText();
+      return config.get(JdbcUtils.DATABASE_KEY).asText();
     } else {
       return SCHEMA_NAME;
     }
@@ -1058,6 +1064,19 @@ public abstract class JdbcSourceAcceptanceTest {
     } else {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
+    }
+  }
+
+  public static void setEnv(final String key, final String value) {
+    try {
+      final Map<String, String> env = System.getenv();
+      final Class<?> cl = env.getClass();
+      final java.lang.reflect.Field field = cl.getDeclaredField("m");
+      field.setAccessible(true);
+      final Map<String, String> writableEnv = (Map<String, String>) field.get(env);
+      writableEnv.put(key, value);
+    } catch (final Exception e) {
+      throw new IllegalStateException("Failed to set environment variable", e);
     }
   }
 

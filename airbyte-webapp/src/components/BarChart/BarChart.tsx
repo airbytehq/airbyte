@@ -1,5 +1,14 @@
 import React, { useMemo } from "react";
-import { Bar, BarChart as BasicBarChart, CartesianGrid, Label, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart as BasicBarChart,
+  CartesianGrid,
+  Label,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 import { barChartColors, theme } from "theme";
 
 interface BarChartProps {
@@ -13,8 +22,9 @@ interface BarChartProps {
 }
 
 const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel }) => {
-  const chartLinesColor = theme.greyColor20;
-  const chartTicksColor = theme.lightTextColor;
+  const chartLinesColor = theme.grey100;
+  const chartTicksColor = theme.grey;
+  const chartHoverFill = theme.grey100;
 
   const width = useMemo(
     () => Math.min(Math.max([...data].sort((a, b) => b.value - a.value)[0].value.toFixed(0).length * 10, 80), 130),
@@ -53,6 +63,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
         >
           <Label value={yLabel} fontSize={11} fill={chartTicksColor} fontWeight={600} position="top" offset={10} />
         </YAxis>
+        <Tooltip cursor={{ fill: chartHoverFill }} />
         {legendLabels.map((barName, key) => (
           <Bar key={barName} dataKey={barName} fill={barChartColors[key]} />
         ))}

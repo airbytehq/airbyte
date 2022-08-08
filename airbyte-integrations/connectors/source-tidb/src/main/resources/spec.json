@@ -5,7 +5,6 @@
     "title": "TiDB Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "Hostname of the database.",

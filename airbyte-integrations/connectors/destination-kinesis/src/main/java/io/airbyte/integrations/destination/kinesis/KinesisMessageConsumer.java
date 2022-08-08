@@ -29,13 +29,11 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final Map<AirbyteStreamNameNamespacePair, KinesisStreamConfig> kinesisStreams;
 
-  private AirbyteMessage lastMessage = null;
-
-  public KinesisMessageConsumer(KinesisConfig kinesisConfig,
-                                ConfiguredAirbyteCatalog configuredCatalog,
-                                Consumer<AirbyteMessage> outputRecordCollector) {
+  public KinesisMessageConsumer(final ConfiguredAirbyteCatalog configuredCatalog,
+                                final KinesisStream kinesisStream,
+                                final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
-    this.kinesisStream = new KinesisStream(kinesisConfig);
+    this.kinesisStream = kinesisStream;
     var nameTransformer = new KinesisNameTransformer();
     this.kinesisStreams = configuredCatalog.getStreams().stream()
         .collect(Collectors.toUnmodifiableMap(
@@ -60,7 +58,7 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
    * @param message received from the Airbyte source.
    */
   @Override
-  protected void acceptTracked(AirbyteMessage message) {
+  protected void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       var messageRecord = message.getRecord();
 
@@ -84,7 +82,7 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
         // throw exception and end sync?
       });
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
-      this.lastMessage = message;
+      outputRecordCollector.accept(message);
     } else {
       LOGGER.warn("Unsupported airbyte message type: {}", message.getType());
     }
@@ -97,13 +95,12 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
    * @param hasFailed flag for indicating if the operation has failed.
    */
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     try {
       if (!hasFailed) {
         kinesisStream.flush(e -> {
           LOGGER.error("Error while streaming data to Kinesis", e);
         });
-        this.outputRecordCollector.accept(lastMessage);
       }
     } finally {
       kinesisStream.close();

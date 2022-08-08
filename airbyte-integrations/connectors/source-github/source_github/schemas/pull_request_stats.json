@@ -27,6 +27,9 @@
       "type": ["null", "string"]
     },
     "merged_by": {
+      "$ref": "user_graphql.json"
+    },
+    "merged_by": {
       "type": ["null", "object"],
       "properties": {
         "login": {

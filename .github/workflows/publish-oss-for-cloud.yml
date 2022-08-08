@@ -1,6 +1,6 @@
 name: Publish OSS Artifacts for Cloud
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
 
 on:
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
   generate-tags:
-    name: "Generate Tags"
+    name: "Generate Dev and Master Tags"
     runs-on: ubuntu-latest
     outputs:
       dev_tag: ${{ steps.set-outputs.outputs.dev_tag }}
@@ -69,16 +69,17 @@ jobs:
           echo "::set-output name=dev_tag::dev-${commit_sha}"
           
           # If this commit is on the master branch, also set master_tag
-          if test 0 -eq $(git merge-base --is-ancestor "${commit_sha}" master); then
+          if $(git merge-base --is-ancestor "${commit_sha}" master); then
             echo "::set-output name=master_tag::${commit_sha}"
           fi
 
   oss-branch-build:
-    name: "Build and Push Images from Branch"
+    name: "Gradle Build and Publish"
     needs:
       - start-runner
       - generate-tags
     runs-on: ${{ needs.start-runner.outputs.label }}
+    environment: more-secrets
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -90,37 +91,55 @@ jobs:
         with:
           branch_version_tag: ${{ needs.generate-tags.outputs.dev_tag }}
 
+      - name: Publish Dev Jars
+        env:
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: VERSION=${{ needs.generate-tags.outputs.dev_tag }} SUB_BUILD=PLATFORM ./gradlew publish
+        shell: bash
+
+      - name: Publish Master Jars
+        if: needs.generate-tags.outputs.master_tag != ''
+        env:
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: VERSION=${{ needs.generate-tags.outputs.master_tag }} SUB_BUILD=PLATFORM ./gradlew publish
+        shell: bash
+
+  docker-push:
+    name: "Push Docker Images"
+    needs:
+      - start-runner
+      - generate-tags
+      - oss-branch-build
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    steps:
       - name: Login to Docker (on Master)
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Push Dev Docker Images
+      - name: Prepare Docker buildx
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --name oss-buildx --driver docker-container --use
+        shell: bash
+
+      - name: Set Git Revision
         run: |
           GIT_REVISION=$(git rev-parse HEAD)
           [ [ -z "$GIT_REVISION" ] ] && echo "Couldn't get the git revision..." && exit 1
-          docker buildx create --name oss-buildx --driver docker-container --use
-          VERSION=${{ needs.generate-tags.outputs.dev_tag }}
-          VERSION=$VERSION GIT_REVISION=$GIT_REVISION docker buildx bake --platform=linux/amd64,linux/arm64 -f docker-compose-cloud.build.yaml --push
-          docker buildx rm oss-buildx
+          echo "GIT_REVISION=${GIT_REVISION}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Push Master Docker Images
-        if: needs.generate-tags.outputs.master_tag != ""
-        run: |
-          GIT_REVISION=$(git rev-parse HEAD)
-          [ [ -z "$GIT_REVISION" ] ] && echo "Couldn't get the git revision..." && exit 1
-          docker buildx create --name oss-buildx --driver docker-container --use
-          VERSION=${{ needs.generate-tags.outputs.master_tag }}
-          VERSION=$VERSION GIT_REVISION=$GIT_REVISION docker buildx bake --platform=linux/amd64,linux/arm64 -f docker-compose-cloud.build.yaml --push
-          docker buildx rm oss-buildx
+      - name: Push Docker Images
+        env:
+          VERSION: ${{ needs.generate-tags.outputs.dev_tag }}
+          ALT_TAG: ${{ needs.generate-tags.outputs.master_tag }}
+        run: GIT_REVISION=$GIT_REVISION docker buildx bake -f docker-compose-cloud.buildx.yaml --push
         shell: bash
 
-      - name: Publish Dev Jars
+      - name: Cleanup Docker buildx
+        run: docker buildx rm oss-buildx
         shell: bash
-        run: VERSION=${{ needs.generate-tags.outputs.dev_tag }} SUB_BUILD=PLATFORM ./gradlew publish
-      - name: Publish Master Jars
-        if: needs.generate-tags.outputs.master_tag != ""
-        shell: bash
-        run: VERSION=${{ needs.generate-tags.outputs.master_tag }} SUB_BUILD=PLATFORM ./gradlew publish

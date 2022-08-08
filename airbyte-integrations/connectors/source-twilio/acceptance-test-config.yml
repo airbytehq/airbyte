@@ -13,6 +13,8 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/no_empty_streams_catalog.json"
       empty_streams: ["message_media", "conferences"]
+      expect_records:
+        path: "integration_tests/expected_records.txt"
   incremental:
     - config_path: "secrets/config.json"
       # usage records stream produces and error if cursor date gte than current date

@@ -15,6 +15,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -33,6 +34,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.JSONB;
@@ -43,18 +45,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
+class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
+  private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
 
   @Test
-  public void testReadingNonExistingState() throws IOException {
+  void testReadingNonExistingState() throws IOException {
     Assertions.assertTrue(statePersistence.getCurrentState(UUID.randomUUID()).isEmpty());
   }
 
   @Test
-  public void testLegacyReadWrite() throws IOException {
+  void testLegacyReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -84,7 +87,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testLegacyMigrationToGlobal() throws IOException {
+  void testLegacyMigrationToGlobal() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -110,7 +113,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testLegacyMigrationToStream() throws IOException {
+  void testLegacyMigrationToStream() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -136,7 +139,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalReadWrite() throws IOException {
+  void testGlobalReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
@@ -180,7 +183,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalPartialReset() throws IOException {
+  void testGlobalPartialReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
@@ -239,7 +242,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalFullReset() throws IOException {
+  void testGlobalFullReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
@@ -275,7 +278,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalStateAllowsEmptyNameAndNamespace() throws IOException {
+  void testGlobalStateAllowsEmptyNameAndNamespace() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
@@ -296,7 +299,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamReadWrite() throws IOException {
+  void testStreamReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -332,7 +335,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamPartialUpdates() throws IOException {
+  void testStreamPartialUpdates() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -400,7 +403,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamFullReset() throws IOException {
+  void testStreamFullReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -437,7 +440,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testInconsistentTypeUpdates() throws IOException {
+  void testInconsistentTypeUpdates() throws IOException {
     final StateWrapper streamState = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -481,7 +484,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testEnumsConversion() {
+  void testEnumsConversion() {
     // Making sure StateType we write to the DB and the StateType from the protocols are aligned.
     // Otherwise, we'll have to dig through runtime errors.
     Assertions.assertTrue(Enums.isCompatible(
@@ -489,8 +492,36 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         io.airbyte.config.StateType.class));
   }
 
+  @Test
+  void testStatePersistenceLegacyReadConsistency() throws IOException {
+    final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
+    final State state = new State().withState(jsonState);
+    configRepository.updateConnectionState(connectionId, state);
+
+    final StateWrapper readStateWrapper = statePersistence.getCurrentState(connectionId).orElseThrow();
+    Assertions.assertEquals(StateType.LEGACY, readStateWrapper.getStateType());
+    Assertions.assertEquals(state.getState(), readStateWrapper.getLegacyState());
+  }
+
+  @Test
+  void testStatePersistenceLegacyWriteConsistency() throws IOException {
+    final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
+    final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
+    statePersistence.updateOrCreateState(connectionId, stateWrapper);
+
+    // Making sure we still follow the legacy format
+    final List<State> readStates = dslContext
+        .selectFrom("state")
+        .where(DSL.field("connection_id").eq(connectionId))
+        .fetch().map(r -> Jsons.deserialize(r.get(DSL.field("state", JSONB.class)).data(), State.class))
+        .stream().toList();
+    Assertions.assertEquals(1, readStates.size());
+
+    Assertions.assertEquals(readStates.get(0).getState(), stateWrapper.getLegacyState());
+  }
+
   @BeforeEach
-  public void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
+  void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(),
@@ -502,7 +533,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @AfterEach
-  public void afterEach() {
+  void afterEach() {
     // Making sure we reset between tests
     dslContext.dropSchemaIfExists("public").cascade().execute();
     dslContext.createSchema("public").execute();
@@ -510,7 +541,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   private void setupTestData() throws JsonValidationException, IOException {
-    ConfigRepository configRepository = new ConfigRepository(
+    configRepository = new ConfigRepository(
         new DatabaseConfigPersistence(database, mock(JsonSecretsProcessor.class)),
         database);
 
@@ -548,7 +579,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     };
   }
 
-  private void assertEquals(StateWrapper lhs, StateWrapper rhs) {
+  private void assertEquals(final StateWrapper lhs, final StateWrapper rhs) {
     Assertions.assertEquals(Jsons.serialize(lhs), Jsons.serialize(rhs));
   }
 

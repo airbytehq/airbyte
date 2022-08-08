@@ -29,6 +29,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
@@ -101,6 +102,10 @@ public class JobConverter {
    */
   private static Optional<ResetConfig> extractResetConfigIfReset(final Job job) {
     if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
+      final ResetSourceConfiguration resetSourceConfiguration = job.getConfig().getResetConnection().getResetSourceConfiguration();
+      if (resetSourceConfiguration == null) {
+        return Optional.empty();
+      }
       return Optional.ofNullable(
           new ResetConfig().streamsToReset(job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset()
               .stream()

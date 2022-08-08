@@ -41,7 +41,7 @@ public final class FieldTransform {
   }
 
   public static FieldTransform createUpdateFieldTransform(final List<String> fieldName, final UpdateFieldSchemaTransform updateFieldTransform) {
-    return new FieldTransform(FieldTransformType.UPDATE_FIELD, fieldName, null, null, updateFieldTransform);
+    return new FieldTransform(FieldTransformType.UPDATE_FIELD_SCHEMA, fieldName, null, null, updateFieldTransform);
   }
 
   public FieldTransformType getTransformType() {

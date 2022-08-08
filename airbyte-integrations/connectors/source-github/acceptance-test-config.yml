@@ -42,7 +42,7 @@ tests:
         releases: ["airbytehq/integration-test", "created_at"]
         repositories: ["airbytehq", "updated_at"]
         review_comments: ["airbytehq/integration-test", "updated_at"]
-        reviews: ["airbytehq/integration-test", "pull_request_updated_at"]
+        reviews: ["airbytehq/integration-test", "updated_at"]
         stargazers: ["airbytehq/integration-test", "starred_at"]
         workflow_runs: ["airbytehq/integration-test", "updated_at"]
         workflows: ["airbytehq/integration-test", "updated_at"]
