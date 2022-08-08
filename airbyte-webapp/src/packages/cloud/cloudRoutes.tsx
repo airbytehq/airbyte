@@ -10,7 +10,7 @@ import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnal
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import { useRouterQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -113,7 +113,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const query = useRouterQuery();
+  const query = useQuery();
 
   return (
     <Routes>
