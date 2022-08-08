@@ -130,7 +130,8 @@
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --write",
-      "stylelint-config-prettier-scss-check"
+      "stylelint-config-prettier-scss-check",
+      "stylelint \"**/*.scss\""
     ]
   },
   "browserslist": {
