@@ -176,22 +176,11 @@ class TestSpec(BaseTest):
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
-    @pytest.fixture(name="spec_diff")
-    def spec_diff_fixture(
-        self,
-        skip_backward_compatibility_tests: bool,
-        actual_connector_spec: ConnectorSpecification,
-        previous_connector_spec: ConnectorSpecification,
-    ) -> DeepDiff:
-        assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
-        return
-
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
         skip_backward_compatibility_tests: bool,
-        inputs,
         actual_connector_spec: ConnectorSpecification,
         previous_connector_spec: ConnectorSpecification,
     ):
