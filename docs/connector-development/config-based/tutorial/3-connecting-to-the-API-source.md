@@ -116,9 +116,9 @@ requester:
       access_key: "{{ config.access_key }}"
 ```
 
-Since the access key is set directly as a request parameter, we can remove the `authentication` field from the `requester`.
+Since the access key is set directly as a request parameter, we can remove the `authenticator` field from the `requester`.
 
-5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter:
+5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter. Let's assume the user will configure this via the connector configuration in parameter called `base`; we'll pass the value input by the user as a request parameter:
 
 ```
 request_options_provider:

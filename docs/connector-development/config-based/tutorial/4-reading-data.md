@@ -46,7 +46,7 @@ selector:
   type: RecordSelector
   extractor:
     type: JelloExtractor
-    transform: "[_]"
+    transform: "[_]" # wrap the single record returned by the API in an array
 ```
 
 The transform is defined using the `Jello` syntax, which is a Python-based JQ alternative. More details on Jello can be found [here](https://github.com/kellyjonbrazil/jello).

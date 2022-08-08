@@ -9,6 +9,15 @@ Connectors are defined as a yaml configuration describing the connector's Source
 
 The configuration will be validated against this JSON Schema, which defines the set of valid properties.
 
+The general structure of the YAML is as follows: 
+```
+<key-value pairs defining objects which will be reused in the YAML connector> 
+streams:
+  <list definition of streams>
+check: 
+  <definition of connection checker>
+```
+
 We recommend using the `Configuration Based Source` template from the template generator in `airbyte-integrations/connector-templates/generator` to generate the basic file structure.
 
 See the [tutorial for a complete connector definition](tutorial/6-testing.md)
@@ -42,7 +51,7 @@ my_component:
 will result in
 
 ```
-fully_qualified.class_name(a_parameter=3, another_parameter="hello"
+fully_qualified.class_name(a_parameter=3, another_parameter="hello")
 ```
 
 If the component definition is a mapping with a "type" field,
