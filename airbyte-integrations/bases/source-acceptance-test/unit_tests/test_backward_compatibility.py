@@ -25,7 +25,7 @@ class SpecTransition:
         return pytest.param(self.previous_connector_specification, self.current_connector_specification, self.should_fail, id=self.name)
 
 
-FAILING_TRANSITIONS = [
+FAILING_SPEC_TRANSITIONS = [
     SpecTransition(
         ConnectorSpecification(connectionSpecification={}),
         ConnectorSpecification(
@@ -445,7 +445,7 @@ FAILING_TRANSITIONS = [
     ),
 ]
 
-VALID_TRANSITIONS = [
+VALID_SPEC_TRANSITIONS = [
     SpecTransition(
         ConnectorSpecification(
             connectionSpecification={
@@ -848,16 +848,16 @@ VALID_TRANSITIONS = [
     ),
 ]
 
-# Checking that all transition in FAILING_TRANSITIONS have should_fail == True to prevent typos
-assert all([transition.should_fail for transition in FAILING_TRANSITIONS])
-# Checking that all transition in VALID_TRANSITIONS have should_fail = False to prevent typos
-assert not all([transition.should_fail for transition in VALID_TRANSITIONS])
+# Checking that all transition in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
+assert all([transition.should_fail for transition in FAILING_SPEC_TRANSITIONS])
+# Checking that all transition in VALID_SPEC_TRANSITIONS have should_fail = False to prevent typos
+assert not all([transition.should_fail for transition in VALID_SPEC_TRANSITIONS])
 
 
-ALL_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_TRANSITIONS + VALID_TRANSITIONS]
+ALL_SPEC_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_SPEC_TRANSITIONS + VALID_SPEC_TRANSITIONS]
 
 
-@pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", ALL_TRANSITIONS_PARAMS)
+@pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", ALL_SPEC_TRANSITIONS_PARAMS)
 def test_backward_compatibility(previous_connector_spec, actual_connector_spec, should_fail):
     t = _TestSpec()
     expectation = pytest.raises(NonBackwardCompatibleSpecError) if should_fail else does_not_raise()
