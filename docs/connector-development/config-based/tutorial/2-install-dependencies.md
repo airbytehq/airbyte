@@ -8,9 +8,10 @@ If this is the case on your machine, substitute the `python` commands with `pyth
 The subsequent `python` invocations will use the virtual environment created for the connector.
 
 ```
-python tools/bin/update_intellij_venv.py -modules source-exchange-rates-tutorial --install-venv
-cd airbyte-integrations/connectors/source-exchange-rates-tutorial
+cd ../../connectors/source-exchange-rates-tutorial
+python -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 These steps create an initial python environment (using `python -m venv`), and install the dependencies required to run an API Source connector (using `pip install`).
