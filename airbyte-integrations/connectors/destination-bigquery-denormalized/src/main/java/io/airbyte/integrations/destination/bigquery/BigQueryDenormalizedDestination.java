@@ -5,20 +5,31 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Table;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ObsoleteArrayFormatter;
+import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
+import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
+import io.airbyte.protocol.models.AirbyteStream;
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.avro.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedDestination extends BigQueryDestination {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
   @Override
   protected String getTargetTableName(final String streamName) {
@@ -65,6 +76,30 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   @Override
   protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
     return namingResolver::getIdentifier;
+  }
+
+  @Override
+  protected void putStreamIntoUploaderMap(AirbyteStream stream, UploaderConfig uploaderConfig,
+      Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) throws IOException {
+    Table existingTable = uploaderConfig.getBigQuery().getTable(uploaderConfig.getConfigStream().getStream().getNamespace(), uploaderConfig.getTargetTableName());
+    AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
+    BigQueryRecordFormatter formatter = uploader.getRecordFormatter();
+
+    LOGGER.info("existingTableSchema : " + existingTable);
+    LOGGER.info("formatter.getBigQuerySchema() : " + formatter.getBigQuerySchema());
+    if (existingTable != null)
+    {
+      com.google.cloud.bigquery.Schema existingTableSchema = existingTable.getDefinition().getSchema();
+      if (existingTableSchema != null && !existingTableSchema.equals(formatter.getBigQuerySchema())) {
+        ((DefaultBigQueryDenormalizedRecordFormatter) formatter).setArrayFormatter(new ObsoleteArrayFormatter());
+        LOGGER.warn("Existing target table has different structure with the new destination processing! Trying old implementation!!!");
+      }
+    }
+    LOGGER.info("!!!");
+
+    uploaderMap.put(
+        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        uploader);
   }
 
   public static void main(final String[] args) throws Exception {

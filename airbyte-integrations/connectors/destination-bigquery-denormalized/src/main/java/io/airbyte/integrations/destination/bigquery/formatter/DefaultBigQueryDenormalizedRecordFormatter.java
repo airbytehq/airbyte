@@ -26,6 +26,8 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
+import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ModernArrayFormatter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
@@ -42,26 +44,39 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBigQueryDenormalizedRecordFormatter.class);
 
-  public static final String NESTED_ARRAY_FIELD = "big_query_array";
-  protected static final String PROPERTIES_FIELD = "properties";
-  private static final String TYPE_FIELD = "type";
+  public static final String PROPERTIES_FIELD = "properties";
+  public static final String TYPE_FIELD = "type";
   private static final String ALL_OF_FIELD = "allOf";
   private static final String ANY_OF_FIELD = "anyOf";
-  private static final String ARRAY_ITEMS_FIELD = "items";
   private static final String FORMAT_FIELD = "format";
   private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final String REF_DEFINITION_KEY = "$ref";
   private static final ObjectMapper mapper = new ObjectMapper();
 
+  protected ArrayFormatter arrayFormatter;
+
   public DefaultBigQueryDenormalizedRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
+  }
+
+  private ArrayFormatter getArrayFormatter() {
+    if (arrayFormatter == null) {
+      arrayFormatter = new ModernArrayFormatter();
+    }
+    return arrayFormatter;
+  }
+
+  public void setArrayFormatter(ArrayFormatter arrayFormatter) {
+    this.arrayFormatter = arrayFormatter;
+    this.jsonSchema = formatJsonSchema(this.originalJsonSchema.deepCopy());
+    this.bigQuerySchema = getBigQuerySchema(jsonSchema);
   }
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
     var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
-    populateEmptyArrays(modifiedJsonSchema);
-    surroundArraysByObjects(modifiedJsonSchema);
+    getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
+    getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
   }
 
@@ -74,57 +89,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
         .peek(addToRefList(properties))
         .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
     return modifiedSchema;
-  }
-
-  private boolean isAirbyteArray(final JsonNode node) {
-    final JsonNode type = node.get(TYPE_FIELD);
-    if (type.isArray()) {
-      final ArrayNode typeNode = (ArrayNode) type;
-      for (final JsonNode arrayTypeNode : typeNode) {
-        if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
-          return true;
-        }
-      }
-    } else if (type.isTextual()) {
-      return node.asText().equals("array");
-    }
-    return false;
-  }
-
-  private List<JsonNode> findArrays(final JsonNode node) {
-    if (node != null) {
-      return node.findParents(TYPE_FIELD).stream()
-          .filter(this::isAirbyteArray)
-          .collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
-  }
-
-  private void populateEmptyArrays(final JsonNode node) {
-    findArrays(node).forEach(jsonNode -> {
-      if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
-        final ObjectNode nodeToChange = (ObjectNode) jsonNode;
-        nodeToChange.putObject(ARRAY_ITEMS_FIELD).putArray(TYPE_FIELD).add("string");
-      }
-    });
-  }
-
-  private void surroundArraysByObjects(final JsonNode node) {
-    findArrays(node).forEach(
-        jsonNode -> {
-          if (isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
-            final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
-            final ObjectNode originalNode = (ObjectNode) jsonNode;
-
-            originalNode.remove(ARRAY_ITEMS_FIELD);
-            final ObjectNode itemsNode = originalNode.putObject(ARRAY_ITEMS_FIELD);
-            itemsNode.putArray(TYPE_FIELD).add("object");
-            itemsNode.putObject(PROPERTIES_FIELD).putObject(NESTED_ARRAY_FIELD).setAll(arrayNode);
-
-            surroundArraysByObjects(originalNode.get(ARRAY_ITEMS_FIELD));
-          }
-        });
   }
 
   @Override
@@ -157,10 +121,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
   }
 
-  /*
-   * protected JsonNode formatData(final FieldList fields, final JsonNode root) { var newData =
-   * formatJsonNode(fields, root); formatDateTimeFields(fields, newData); return newData; }
-   */
 
   private JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
@@ -201,10 +161,11 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     } else {
       subFields = arrayField.getSubFields();
     }
-    return Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
+    List<JsonNode> arrayItems = MoreIterators.toList(root.elements()).stream()
         .map(p -> formatData(subFields, p))
-        .map(p -> (p.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, p)) : p))
-        .collect(Collectors.toList()));
+        .toList();
+
+    return getArrayFormatter().formatArrayItems(arrayItems);
   }
 
   private JsonNode getObjectNode(final FieldList fields, final JsonNode root) {

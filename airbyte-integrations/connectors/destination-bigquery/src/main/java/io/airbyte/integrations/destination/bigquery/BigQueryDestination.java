@@ -221,11 +221,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      uploaderMap.put(
-          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          BigQueryUploaderFactory.getUploader(uploaderConfig));
+      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
     }
     return uploaderMap;
+  }
+
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream, final UploaderConfig uploaderConfig, final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) throws IOException {
+    uploaderMap.put(
+        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 
   /**
