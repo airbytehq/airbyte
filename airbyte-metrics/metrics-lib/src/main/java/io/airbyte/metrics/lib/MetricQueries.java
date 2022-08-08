@@ -148,6 +148,11 @@ public class MetricQueries {
     return pairedRes;
   }
 
+  /*
+   * A connection that is not running on schedule is defined in last 24 hours if the number of runs
+   * are not matching with the number of expected runs according to the schedule settings.
+   * Refer to playbook for detailed discussion.
+   */
   public static Long numOfJobsNotRunningOnSchedule(final DSLContext ctx) {
     final var countField = "cnt";
     final var query = """
