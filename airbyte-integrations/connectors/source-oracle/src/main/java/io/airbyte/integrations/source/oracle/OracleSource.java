@@ -81,7 +81,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       final String connectionType = connectionData.has("connection_type") ? connectionData.get("connection_type").asText()
           : UNRECOGNIZED;
       connectionString = switch (connectionType) {
-        case SERVICE_NAME -> buildConnectionString(config, protocol.toString(), SERVICE_NAME.toUpperCase(), config.get(CONNECTION_DATA).get(SERVICE_NAME).asText());
+        case SERVICE_NAME -> buildConnectionString(config, protocol.toString(), SERVICE_NAME.toUpperCase(),
+            config.get(CONNECTION_DATA).get(SERVICE_NAME).asText());
         case SID -> buildConnectionString(config, protocol.toString(), SID.toUpperCase(), config.get(CONNECTION_DATA).get(SID).asText());
         default -> throw new IllegalArgumentException("Unrecognized connection type: " + connectionType);
       };
@@ -212,4 +213,5 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         connectionTypeName,
         connectionTypeValue);
   }
+
 }
