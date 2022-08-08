@@ -433,8 +433,3 @@ def test_export_stream(requests_mock, export_response):
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
-
-    # no records should be returned when state older than the record
-    records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=stream_state)
-    records_length = sum(1 for _ in records)
-    assert records_length == 0

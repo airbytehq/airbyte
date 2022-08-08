@@ -4,7 +4,7 @@
 
 import json
 from datetime import datetime
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -74,7 +74,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     """
 
     primary_key: str = None
-    cursor_field: str = "time"
+    cursor_field: str = "mp_processing_time_ms"
 
     @property
     def url_base(self):
@@ -122,10 +122,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             # convert timestamp to datetime string
             if item.get("time") and item["time"].isdigit():
                 item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
-
-            # Even though the API is on DATE level, we still filter items compared to state cursor
-            if not "date" in stream_state or stream_state["date"] <= item["time"]:
-                yield item
+            yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -151,3 +148,14 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        mapping = {
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"]
+        }
+        if "date" in stream_state:
+            mapping["where"]  = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+        return mapping
