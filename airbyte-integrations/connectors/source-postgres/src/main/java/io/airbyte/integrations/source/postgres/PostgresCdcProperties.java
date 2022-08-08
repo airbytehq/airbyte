@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.debezium.internals.PostgresConverter;
 import java.util.Properties;
 
 public class PostgresCdcProperties {
@@ -27,7 +28,7 @@ public class PostgresCdcProperties {
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
 
     props.setProperty("converters", "datetime");
-    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.PostgresConverter");
+    props.setProperty("datetime.type", PostgresConverter.class.getName());
     return props;
   }
 

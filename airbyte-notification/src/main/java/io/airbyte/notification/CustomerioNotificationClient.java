@@ -139,6 +139,7 @@ public class CustomerioNotificationClient extends NotificationClient {
     return httpStatusCode / 100 == 2;
   }
 
+  @Override
   public String renderTemplate(final String templateFile, final String... data) throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, data);

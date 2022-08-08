@@ -52,14 +52,14 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_internal_server_error_retry(time_mock):
-    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
-    stream = PullRequestCommentReactions(**args)
-    stream_slice = {"repository": "test_repo", "comment_id": "id"}
+    args = {"authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    stream = CommitCommentReactions(**args)
+    stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
     time_mock.reset_mock()
     responses.add(
         "GET",
-        "https://api.github.com/repos/test_repo/pulls/comments/id/reactions",
+        "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
         status=HTTPStatus.INTERNAL_SERVER_ERROR,
         json={"message": "Server Error"},
     )
@@ -1077,3 +1077,53 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
     ]
 
     assert len(responses.calls) == 4
+
+
+@responses.activate
+def test_stream_pull_request_comment_reactions_read():
+
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 2,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = PullRequestCommentReactions(**repository_args_with_start_date)
+    stream.page_size = 2
+
+    f = Path(__file__).parent / "pull_request_comment_reactions.json"
+    response_objects = json.load(open(f))
+
+    def request_callback(request):
+        return (HTTPStatus.OK, {}, json.dumps(response_objects.pop(0)))
+
+    responses.add_callback(
+        responses.POST,
+        "https://api.github.com/graphql",
+        callback=request_callback,
+        content_type="application/json",
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    records = [{"comment_id": r["comment_id"], "created_at": r["created_at"], "node_id": r["node_id"]} for r in records]
+    assert records == [
+        {"comment_id": "comment1", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction1"},
+        {"comment_id": "comment1", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction2"},
+        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction3"},
+        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction4"},
+        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction5"},
+        {"comment_id": "comment5", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction6"},
+        {"comment_id": "comment7", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction7"},
+        {"comment_id": "comment8", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction8"},
+    ]
+
+    assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-01T00:00:01Z"}}
+    records = read_incremental(stream, stream_state)
+    records = [{"comment_id": r["comment_id"], "created_at": r["created_at"], "node_id": r["node_id"]} for r in records]
+
+    assert records == [
+        {"comment_id": "comment2", "created_at": "2022-01-02T00:00:01Z", "node_id": "reaction9"},
+        {"comment_id": "comment8", "created_at": "2022-01-02T00:00:01Z", "node_id": "reaction10"},
+    ]
+
+    assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-02T00:00:01Z"}}

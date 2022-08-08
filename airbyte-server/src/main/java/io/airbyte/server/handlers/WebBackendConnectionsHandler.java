@@ -35,6 +35,8 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.StreamDescriptor;
+import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
@@ -50,12 +52,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
+import io.airbyte.server.converters.ProtocolConverters;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -252,7 +258,7 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = ConnectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog());
+      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
@@ -371,7 +377,50 @@ public class WebBackendConnectionsHandler {
       verifyManualOperationResult(manualOperationResult);
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
+    return buildWebBackendConnectionRead(connectionRead);
+  }
 
+  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
+    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
+    final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
+    final ConfiguredAirbyteCatalog existingConfiguredCatalog =
+        configRepository.getConfiguredCatalogForConnection(connectionId);
+    ConnectionRead connectionRead;
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+    final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
+    if (!skipReset) {
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingConfiguredCatalog);
+      final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
+      newAirbyteCatalog
+          .setStreams(newAirbyteCatalog.getStreams().stream().filter(streamAndConfig -> streamAndConfig.getConfig().getSelected()).toList());
+      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
+      final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+      final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+      final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
+      allStreamToReset.addAll(apiStreamsToReset);
+      allStreamToReset.addAll(changedConfigStreamDescriptors);
+      List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
+          allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+
+      if (!streamsToReset.isEmpty()) {
+        final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
+        final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+
+        if (stateType == ConnectionStateType.LEGACY) {
+          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+        }
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+            webBackendConnectionUpdate.getConnectionId(),
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        verifyManualOperationResult(manualOperationResult);
+        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
+      }
+    }
     return buildWebBackendConnectionRead(connectionRead);
   }
 
@@ -486,6 +535,11 @@ public class WebBackendConnectionsHandler {
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
         .status(webBackendConnectionSearch.getStatus());
+  }
+
+  @VisibleForTesting
+  static List<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
+    return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).toList();
   }
 
   /**
