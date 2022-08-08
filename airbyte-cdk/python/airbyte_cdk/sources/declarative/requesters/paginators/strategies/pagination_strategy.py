@@ -3,12 +3,15 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class PaginationStrategy:
+@dataclass
+class PaginationStrategy(JsonSchemaMixin):
     """
     Defines how to get the next page token
     """
@@ -21,3 +24,9 @@ class PaginationStrategy:
         :return: next page token. Returns None if there are no more pages to fetch
         """
         pass
+
+    @abstractmethod
+    def reset(self):
+        """
+        Reset the pagination's inner state
+        """

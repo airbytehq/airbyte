@@ -23,14 +23,14 @@
         "order": 1
       },
       "database": {
-        "title": "DB Name",
+        "title": "Database Name",
         "description": "Name of the database.",
         "type": "string",
         "order": 2
       },
       "schemas": {
         "title": "Schemas",
-        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "description": "The list of schemas (case sensitive) to sync from. Defaults to public.",
         "type": "array",
         "items": {
           "type": "string"
@@ -41,8 +41,8 @@
         "order": 3
       },
       "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
+        "title": "Username",
+        "description": "Username to access the database.",
         "type": "string",
         "order": 4
       },
@@ -54,7 +54,7 @@
         "order": 5
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#jdbc-url-params\">additional JDBC URL parameters</a>.",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
         "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 6
@@ -67,8 +67,8 @@
         "order": 7
       },
       "ssl_mode": {
-        "title": "SSL modes",
-        "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and source database\n <b>allow</b> - Chose this mode to enable encryption only when required by the source database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the source database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "title": "SSL Modes",
+        "description": "SSL connection modes. \n <ul><li><b>disable</b> - Disables encryption of communication between Airbyte and source database</li>\n <li><b>allow</b> - Enables encryption only when required by the source database</li>\n <li><b>prefer</b> - allows unencrypted connection only if the source database does not support encryption</li>\n <li><b>require</b> - Always require encryption. If the source database server does not support encryption, connection will fail</li>\n  <li><b>verify-ca</b> - Always require encryption and verifies that the source database server has a valid SSL certificate</li>\n  <li><b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the source database server</li></ul>\n Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
@@ -155,8 +155,8 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
-                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "title": "Client Key Password (Optional)",
+                "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
               }
@@ -182,7 +182,7 @@
               },
               "ca_certificate": {
                 "type": "string",
-                "title": "CA certificate",
+                "title": "CA Certificate",
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -190,7 +190,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client certificate",
+                "title": "Client Certificate",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -198,7 +198,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client key",
+                "title": "Client Key",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -207,7 +207,7 @@
               "client_key_password": {
                 "type": "string",
                 "title": "Client key password (Optional)",
-                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
               }
@@ -218,7 +218,7 @@
       "replication_method": {
         "type": "object",
         "title": "Replication Method",
-        "description": "Replication method to use for extracting data from the database.",
+        "description": "Replication method for extracting data from the database.",
         "order": 8,
         "oneOf": [
           {
@@ -237,7 +237,7 @@
           },
           {
             "title": "Logical Replication (CDC)",
-            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">Postgres Source</a> docs for more information.",
+            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">docs</a>.",
             "required": ["method", "replication_slot", "publication"],
             "properties": {
               "method": {
@@ -250,7 +250,7 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-plugin\">Select replication plugin</a>.",
+                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 1
@@ -258,22 +258,22 @@
               "replication_slot": {
                 "type": "string",
                 "title": "Replication Slot",
-                "description": "A plug-in logical replication slot. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-slot\">replication slots</a>.",
+                "description": "A plugin logical replication slot. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\">replication slots</a>.",
                 "order": 2
               },
               "publication": {
                 "type": "string",
                 "title": "Publication",
-                "description": "A Postgres publication used for consuming changes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#publications-replication\">publications and replication identities</a>.",
+                "description": "A Postgres publication used for consuming changes. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\">publications and replication identities</a>.",
                 "order": 3
               },
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to figure out whether there is new data to sync or not. Default to 5 minutes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
                 "order": 4,
-                "min": 30,
+                "min": 120,
                 "max": 1200
               }
             }
