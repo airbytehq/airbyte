@@ -30,4 +30,5 @@ def mock_stream_fixture(requests_mock):
     def _mock_stream(path, response={}):
         url = f"https://api.harvestapp.com/v2/{path}"
         requests_mock.get(url, json=response)
+
     return _mock_stream
