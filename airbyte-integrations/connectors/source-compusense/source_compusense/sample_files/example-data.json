@@ -1,0 +1,637 @@
+[
+  {
+    "testID": 40,
+    "testName": "Laramie Happy Hour - Triangle test",
+    "testType": "Triangle",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Triangle",
+        "design": "D-40",
+        "designName": "1 Triangle Test",
+        "smps": [
+          { "smpNum": 1, "smpName": "A", "smpType": "Sample", "smpData": [] },
+          { "smpNum": 2, "smpName": "B", "smpType": "Sample", "smpData": [] }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Triangle",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "triangle",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Comment",
+            "qDisplay": "Triangle response related",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "comment",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 41,
+    "testName": "Laramie Happy Hour - Ranking",
+    "testType": "Standard",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Standard",
+        "design": "D-41",
+        "designName": "Williams Design (1 Latin Square)",
+        "smps": [
+          {
+            "smpNum": 1,
+            "smpName": "Maple Bar",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 2,
+            "smpName": "Chocolate Bar",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 3,
+            "smpName": "Powdered Donut",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 4,
+            "smpName": "Cinnamon Donut",
+            "smpType": "Sample",
+            "smpData": []
+          }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Sorting",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "binsamples",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Ranking",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "ranksamples",
+            "descriptors": []
+          },
+          {
+            "qNum": 3,
+            "aNum": 1,
+            "qName": "Labeled Magnitude Scale - Place a mark on the line to indicate how you feel about your favorite sample as compared to all the other desserts you've eaten before.",
+            "qDisplay": "Once (not sample related)",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 1.98, "text": "max" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 43,
+    "testName": "Tomato test",
+    "testType": "Standard",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Standard",
+        "design": "D-43",
+        "designName": "Fixed Order",
+        "smps": [
+          {
+            "smpNum": 1,
+            "smpName": "8033 Treatment 3",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 2,
+            "smpName": "8033 Treatment 4",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 3,
+            "smpName": "8034 Treatment 3",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 4,
+            "smpName": "8034 Treatment 4",
+            "smpType": "Sample",
+            "smpData": []
+          }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Rank the tomato samples based on overall liking of flavor",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "ranksamples",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Group samples based on texture similarities - i.e. thickness of skin, bursting, chewy, etc",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "freesort",
+            "descriptors": []
+          },
+          {
+            "qNum": 3,
+            "aNum": 1,
+            "qName": "Which survey platform do you prefer for sensory evaluations",
+            "qDisplay": "Once (not sample related)",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "choice",
+            "descriptors": [
+              { "value": 1.0, "text": "RStudio Survey" },
+              { "value": 2.0, "text": "CompuSense" }
+            ]
+          },
+          {
+            "qNum": 4,
+            "aNum": 1,
+            "qName": "Any additional comments/questions/suggestions",
+            "qDisplay": "Once (not sample related)",
+            "required": false,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "comment",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 44,
+    "testName": "Laramie Raspberry Standard test 2/22",
+    "testType": "Standard",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Standard",
+        "design": "D-44",
+        "designName": "Williams Design (1 Latin Square)",
+        "smps": [
+          {
+            "smpNum": 1,
+            "smpName": "1109 Row 1",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 2,
+            "smpName": "1109 Row 2",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 3,
+            "smpName": "Let your soul shine Raspberries",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 4,
+            "smpName": "Peak Quality Raspberries",
+            "smpType": "Sample",
+            "smpData": []
+          }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Rank based on overall liking",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "ranksamples",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Intensity of Raspberry flavor - Raspberry intensity",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "category",
+            "descriptors": [
+              { "value": 1.0, "text": "Low" },
+              { "value": 2.0, "text": "" },
+              { "value": 3.0, "text": "" },
+              { "value": 4.0, "text": "" },
+              { "value": 5.0, "text": "" },
+              { "value": 6.0, "text": "" },
+              { "value": 7.0, "text": "" },
+              { "value": 8.0, "text": "" },
+              { "value": 9.0, "text": "High" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 45,
+    "testName": "Laramie Tomato standard test 2/23",
+    "testType": "Standard",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Standard",
+        "design": "D-45",
+        "designName": "Williams Design (1 Latin Square)",
+        "smps": [
+          {
+            "smpNum": 1,
+            "smpName": "8033 Treatment 1",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 2,
+            "smpName": "8033 Treatment 2",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 3,
+            "smpName": "8034 Treatment 1",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 4,
+            "smpName": "8034 Treatment 2",
+            "smpType": "Sample",
+            "smpData": []
+          }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Overall liking",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "ranksamples",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Group based on texture",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "binsamples",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 46,
+    "testName": "JCC Triangle Test",
+    "testType": "Triangle",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Triangle",
+        "design": "D-46",
+        "designName": "1 Triangle Test",
+        "smps": [
+          { "smpNum": 1, "smpName": "A", "smpType": "Sample", "smpData": [] },
+          { "smpNum": 2, "smpName": "B", "smpType": "Sample", "smpData": [] }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Triangle",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "triangle",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Comment",
+            "qDisplay": "Triangle response related",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "comment",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 47,
+    "testName": "JCC Triangle Test Trial 2",
+    "testType": "Triangle",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Triangle",
+        "design": "D-47",
+        "designName": "1 Triangle Test",
+        "smps": [
+          { "smpNum": 1, "smpName": "A", "smpType": "Sample", "smpData": [] },
+          { "smpNum": 2, "smpName": "B", "smpType": "Sample", "smpData": [] }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "Triangle",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "triangle",
+            "descriptors": []
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "Comment",
+            "qDisplay": "Triangle response related",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "comment",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "testID": 49,
+    "testName": "3/21 Strawberry Ranking - Bowery Berries",
+    "testType": "Standard",
+    "day": "31",
+    "month": "5",
+    "year": "2022",
+    "location": "Evaluation Tests",
+    "folderPath": "Plenty\\All tests\\Evaluation Tests",
+    "customTestProperties": [],
+    "tags": [],
+    "sections": [
+      {
+        "sectionNum": 1,
+        "sectionName": "First Section",
+        "testType": "Standard",
+        "design": "D-49",
+        "designName": "Williams Design (1 Latin Square)",
+        "smps": [
+          {
+            "smpNum": 1,
+            "smpName": "Plenty",
+            "smpType": "Control",
+            "smpData": []
+          },
+          {
+            "smpNum": 2,
+            "smpName": "Harrys Berries",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 3,
+            "smpName": "Bowery Berries - Garden",
+            "smpType": "Sample",
+            "smpData": []
+          },
+          {
+            "smpNum": 4,
+            "smpName": "Bowery Berries - Wild",
+            "smpType": "Sample",
+            "smpData": []
+          }
+        ],
+        "questions": [
+          {
+            "qNum": 1,
+            "aNum": 1,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Sweetness",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 1,
+            "aNum": 2,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Sourness",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 1,
+            "aNum": 3,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Strawberry Flavor",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 1,
+            "aNum": 4,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Strawberry Aroma",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 1,
+            "aNum": 5,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Texture",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 1,
+            "aNum": 6,
+            "qName": "For each of the attributes listed below, indicate how the sample compares to your idea of a perfect strawberry. Make sure to save enough sample to taste them again at the end. - Overall Liking",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "linescale",
+            "descriptors": [
+              { "value": 0.0, "text": "min" },
+              { "value": 100.0, "text": "max" }
+            ]
+          },
+          {
+            "qNum": 2,
+            "aNum": 1,
+            "qName": "How do you feel about the sample overall?",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "comment",
+            "descriptors": []
+          },
+          {
+            "qNum": 3,
+            "aNum": 1,
+            "qName": "Ranking",
+            "qDisplay": "For all samples",
+            "required": true,
+            "branch": "",
+            "eCriteria": "",
+            "qType": "ranksamples",
+            "descriptors": []
+          }
+        ]
+      }
+    ]
+  }
+]

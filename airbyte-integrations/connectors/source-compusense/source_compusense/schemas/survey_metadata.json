@@ -1,0 +1,274 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1659735821.json",
+  "title": "Root",
+  "type": "array",
+  "default": [],
+  "items": {
+    "$id": "#root/items",
+    "title": "Items",
+    "type": "object",
+    "required": [
+      "testID",
+      "testName",
+      "testType",
+      "day",
+      "month",
+      "year",
+      "location",
+      "folderPath",
+      "customTestProperties",
+      "tags",
+      "sections"
+    ],
+    "properties": {
+      "testID": {
+        "$id": "#root/items/testID",
+        "title": "Testid",
+        "type": "integer",
+        "default": 0
+      },
+      "testName": {
+        "$id": "#root/items/testName",
+        "title": "Testname",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "testType": {
+        "$id": "#root/items/testType",
+        "title": "Testtype",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "day": {
+        "$id": "#root/items/day",
+        "title": "Day",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "month": {
+        "$id": "#root/items/month",
+        "title": "Month",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "year": {
+        "$id": "#root/items/year",
+        "title": "Year",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "location": {
+        "$id": "#root/items/location",
+        "title": "Location",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "folderPath": {
+        "$id": "#root/items/folderPath",
+        "title": "Folderpath",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      },
+      "customTestProperties": {
+        "$id": "#root/items/customTestProperties",
+        "title": "Customtestproperties",
+        "type": "array",
+        "default": []
+      },
+      "tags": {
+        "$id": "#root/items/tags",
+        "title": "Tags",
+        "type": "array",
+        "default": []
+      },
+      "sections": {
+        "$id": "#root/items/sections",
+        "title": "Sections",
+        "type": "array",
+        "default": [],
+        "items": {
+          "$id": "#root/items/sections/items",
+          "title": "Items",
+          "type": "object",
+          "required": [
+            "sectionNum",
+            "sectionName",
+            "testType",
+            "design",
+            "designName",
+            "smps",
+            "questions"
+          ],
+          "properties": {
+            "sectionNum": {
+              "$id": "#root/items/sections/items/sectionNum",
+              "title": "Sectionnum",
+              "type": "integer",
+              "default": 0
+            },
+            "sectionName": {
+              "$id": "#root/items/sections/items/sectionName",
+              "title": "Sectionname",
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "testType": {
+              "$id": "#root/items/sections/items/testType",
+              "title": "Testtype",
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "design": {
+              "$id": "#root/items/sections/items/design",
+              "title": "Design",
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "designName": {
+              "$id": "#root/items/sections/items/designName",
+              "title": "Designname",
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "smps": {
+              "$id": "#root/items/sections/items/smps",
+              "title": "Smps",
+              "type": "array",
+              "default": [],
+              "items": {
+                "$id": "#root/items/sections/items/smps/items",
+                "title": "Items",
+                "type": "object",
+                "required": ["smpNum", "smpName", "smpType", "smpData"],
+                "properties": {
+                  "smpNum": {
+                    "$id": "#root/items/sections/items/smps/items/smpNum",
+                    "title": "Smpnum",
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "smpName": {
+                    "$id": "#root/items/sections/items/smps/items/smpName",
+                    "title": "Smpname",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "smpType": {
+                    "$id": "#root/items/sections/items/smps/items/smpType",
+                    "title": "Smptype",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "smpData": {
+                    "$id": "#root/items/sections/items/smps/items/smpData",
+                    "title": "Smpdata",
+                    "type": "array",
+                    "default": []
+                  }
+                }
+              }
+            },
+            "questions": {
+              "$id": "#root/items/sections/items/questions",
+              "title": "Questions",
+              "type": "array",
+              "default": [],
+              "items": {
+                "$id": "#root/items/sections/items/questions/items",
+                "title": "Items",
+                "type": "object",
+                "required": [
+                  "qNum",
+                  "aNum",
+                  "qName",
+                  "qDisplay",
+                  "required",
+                  "branch",
+                  "eCriteria",
+                  "qType",
+                  "descriptors"
+                ],
+                "properties": {
+                  "qNum": {
+                    "$id": "#root/items/sections/items/questions/items/qNum",
+                    "title": "Qnum",
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "aNum": {
+                    "$id": "#root/items/sections/items/questions/items/aNum",
+                    "title": "Anum",
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "qName": {
+                    "$id": "#root/items/sections/items/questions/items/qName",
+                    "title": "Qname",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "qDisplay": {
+                    "$id": "#root/items/sections/items/questions/items/qDisplay",
+                    "title": "Qdisplay",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "required": {
+                    "$id": "#root/items/sections/items/questions/items/required",
+                    "title": "Required",
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "branch": {
+                    "$id": "#root/items/sections/items/questions/items/branch",
+                    "title": "Branch",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "eCriteria": {
+                    "$id": "#root/items/sections/items/questions/items/eCriteria",
+                    "title": "Ecriteria",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "qType": {
+                    "$id": "#root/items/sections/items/questions/items/qType",
+                    "title": "Qtype",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "descriptors": {
+                    "$id": "#root/items/sections/items/questions/items/descriptors",
+                    "title": "Descriptors",
+                    "type": "array",
+                    "default": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
