@@ -1018,7 +1018,7 @@ public abstract class DestinationAcceptanceTest {
    * @throws Exception
    */
   @Test
-  public void testNewFields() throws Exception {
+  public void testSyncNotFailsWithNewFields() throws Exception {
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
@@ -1032,13 +1032,14 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
+    final var stream = catalog.getStreams().get(0);
 
     // Run second sync with new fields on the message
     final List<AirbyteMessage> secondSyncMessagesWithNewFields = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getName())
+                .withStream(stream.getName())
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
                     .put("id", 1)
@@ -1053,9 +1054,12 @@ public abstract class DestinationAcceptanceTest {
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
 
+    // Run sync and verify that all message were written without failing
     runSyncAndVerifyStateOutput(config, secondSyncMessagesWithNewFields, configuredCatalog, false);
-    final String defaultSchema = getDefaultSchema(config);
-    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessagesWithNewFields, defaultSchema);
+    var destinationOutput = retrieveRecords(testEnv, stream.getName(), getDefaultSchema(config), stream.getJsonSchema());
+    // Remove state message
+    secondSyncMessagesWithNewFields.removeIf(airbyteMessage -> airbyteMessage.getType().equals(Type.STATE));
+    assertEquals(secondSyncMessagesWithNewFields.size(), destinationOutput.size());
   }
 
   /**
