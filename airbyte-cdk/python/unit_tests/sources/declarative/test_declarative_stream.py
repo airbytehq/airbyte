@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 
 
-def test():
+def test_declarative_stream():
     name = "stream"
     primary_key = "pk"
     cursor_field = ["created_at"]
@@ -38,12 +38,13 @@ def test():
     stream = DeclarativeStream(
         name=name,
         primary_key=primary_key,
-        cursor_field=cursor_field,
+        stream_cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
         config=config,
         transformations=transformations,
         checkpoint_interval=checkpoint_interval,
+        options={},
     )
 
     assert stream.name == name

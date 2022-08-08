@@ -1,4 +1,28 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "reaction.json"
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "user": {
+      "$ref": "user_graphql.json"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "comment_id": {
+      "type": "integer"
+    }
+  }
 }

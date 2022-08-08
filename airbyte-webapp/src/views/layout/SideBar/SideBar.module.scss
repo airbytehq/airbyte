@@ -1,0 +1,55 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.menuItem {
+  color: colors.$grey-30;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 12px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  margin-top: 7px;
+  text-decoration: none;
+  position: relative;
+
+  &:hover,
+  &:focus-visible {
+    background: colors.$dark-blue-800;
+    transition: variables.$transition-out;
+  }
+
+  &.active {
+    color: colors.$white;
+    background: colors.$blue-400;
+    transition: variables.$transition-out;
+
+    &:hover,
+    &:focus-visible {
+      color: colors.$white;
+      background: colors.$blue-300;
+      transition: variables.$transition-out;
+    }
+  }
+
+  &.activeChild {
+    color: colors.$white;
+    background: colors.$dark-blue-600;
+
+    &:hover,
+    &:focus-visible {
+      color: colors.$white;
+      background: colors.$dark-blue-400;
+    }
+  }
+
+  &.popoutOpen {
+    background: colors.$dark-blue-600;
+    transition: variables.$transition-out;
+  }
+}

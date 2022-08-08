@@ -95,10 +95,10 @@ public class MongoUtils {
     }
   }
 
-  public static CommonField<BsonType> nodeToCommonField(TreeNode<CommonField<BsonType>> node) {
-    CommonField<BsonType> field = node.getData();
+  public static CommonField<BsonType> nodeToCommonField(final TreeNode<CommonField<BsonType>> node) {
+    final CommonField<BsonType> field = node.getData();
     if (node.hasChildren()) {
-      List<CommonField<BsonType>> subFields = node.getChildren().stream().map(MongoUtils::nodeToCommonField).toList();
+      final List<CommonField<BsonType>> subFields = node.getChildren().stream().map(MongoUtils::nodeToCommonField).toList();
       return new CommonField<>(field.getName(), field.getType(), subFields);
     } else {
       return new CommonField<>(field.getName(), field.getType());
@@ -137,7 +137,7 @@ public class MongoUtils {
 
   private static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
-      JsonNode data = jsonNodes.get(fieldName);
+      final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
         jsonNodes.put(fieldName, data.asText());
       } else {
@@ -200,12 +200,12 @@ public class MongoUtils {
    * @return map of unique fields and its type
    */
   public static List<TreeNode<CommonField<BsonType>>> getUniqueFields(final MongoCollection<Document> collection) {
-    var allkeys = new HashSet<>(getFieldsName(collection));
+    final var allkeys = new HashSet<>(getFieldsName(collection));
 
     return allkeys.stream().map(key -> {
-      var types = getTypes(collection, key);
-      var type = getUniqueType(types);
-      var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
+      final var types = getTypes(collection, key);
+      final var type = getUniqueType(types);
+      final var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
       if (type.equals(DOCUMENT)) {
         setSubFields(collection, fieldNode, key);
       }
@@ -221,28 +221,30 @@ public class MongoUtils {
    * @param name field name
    * @return name
    */
-  private static String transformName(List<String> types, String name) {
+  private static String transformName(final List<String> types, final String name) {
     return types.size() != 1 ? name + AIRBYTE_SUFFIX : name;
   }
 
-  private static void setSubFields(final MongoCollection<Document> collection, TreeNode<CommonField<BsonType>> parentNode, String pathToField) {
-    var nestedKeys = getFieldsName(collection, pathToField);
+  private static void setSubFields(final MongoCollection<Document> collection,
+                                   final TreeNode<CommonField<BsonType>> parentNode,
+                                   final String pathToField) {
+    final var nestedKeys = getFieldsName(collection, pathToField);
     nestedKeys.forEach(key -> {
-      var types = getTypes(collection, pathToField + "." + key);
-      var nestedType = getUniqueType(types);
-      var childNode = parentNode.addChild(new CommonField<>(transformName(types, key), nestedType));
+      final var types = getTypes(collection, pathToField + "." + key);
+      final var nestedType = getUniqueType(types);
+      final var childNode = parentNode.addChild(new CommonField<>(transformName(types, key), nestedType));
       if (nestedType.equals(DOCUMENT)) {
         setSubFields(collection, childNode, pathToField + "." + key);
       }
     });
   }
 
-  private static List<String> getFieldsName(MongoCollection<Document> collection) {
+  private static List<String> getFieldsName(final MongoCollection<Document> collection) {
     return getFieldsName(collection, "$ROOT");
   }
 
-  private static List<String> getFieldsName(MongoCollection<Document> collection, String fieldName) {
-    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+  private static List<String> getFieldsName(final MongoCollection<Document> collection, final String fieldName) {
+    final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
@@ -254,18 +256,18 @@ public class MongoUtils {
     }
   }
 
-  private static ArrayList<String> getTypes(MongoCollection<Document> collection, String name) {
-    var fieldName = "$" + name;
-    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+  private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
+    final var fieldName = "$" + name;
+    final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
         new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
-    var listOfTypes = new ArrayList<String>();
-    var cursor = output.cursor();
+    final var listOfTypes = new ArrayList<String>();
+    final var cursor = output.cursor();
     while (cursor.hasNext()) {
-      var type = ((Document) cursor.next().get("_id")).get("fieldType").toString();
-      if (!type.equals(MISSING_TYPE) && !type.equals(NULL_TYPE)) {
+      final var type = ((Document) cursor.next().get("_id")).get("fieldType").toString();
+      if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
         listOfTypes.add(type);
       }
     }
@@ -275,16 +277,16 @@ public class MongoUtils {
     return listOfTypes;
   }
 
-  private static BsonType getUniqueType(List<String> types) {
+  private static BsonType getUniqueType(final List<String> types) {
     if (types.size() != 1) {
       return BsonType.STRING;
     } else {
-      var type = types.get(0);
+      final var type = types.get(0);
       return getBsonTypeByTypeAlias(type);
     }
   }
 
-  private static BsonType getBsonTypeByTypeAlias(String typeAlias) {
+  private static BsonType getBsonTypeByTypeAlias(final String typeAlias) {
     return switch (typeAlias) {
       case "object" -> BsonType.DOCUMENT;
       case "double" -> BsonType.DOUBLE;
@@ -310,7 +312,7 @@ public class MongoUtils {
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
-      CodecRegistry customCodecRegistry =
+      final CodecRegistry customCodecRegistry =
           fromProviders(asList(
               new ValueCodecProvider(),
               new BsonValueCodecProvider(),
@@ -342,9 +344,9 @@ public class MongoUtils {
     return value == null ? null : value.getData();
   }
 
-  private static void readJavaScriptWithScope(ObjectNode o, BsonReader reader, String fieldName, List<String> columnNames) {
-    var code = reader.readJavaScriptWithScope();
-    var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
+  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final List<String> columnNames) {
+    final var code = reader.readJavaScriptWithScope();
+    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
