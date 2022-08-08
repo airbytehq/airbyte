@@ -24,6 +24,14 @@ export class UserService extends AirbyteRequestService {
     return this.fetch<void>(`${this.url}/update`, params);
   }
 
+  public async changeName(authUserId: string, userId: string, name: string): Promise<void> {
+    return this.fetch<void>(`${this.url}/update`, {
+      authUserId,
+      userId,
+      name,
+    });
+  }
+
   public async changeEmail(email: string): Promise<void> {
     return this.fetch<void>(`${this.url}/update`, {
       email,

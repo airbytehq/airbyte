@@ -16,5 +16,5 @@ ENV APPLICATION destination-dynamodb
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.4
+LABEL io.airbyte.version=0.1.5
 LABEL io.airbyte.name=airbyte/destination-dynamodb
