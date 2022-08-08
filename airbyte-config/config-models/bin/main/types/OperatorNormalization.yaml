@@ -1,0 +1,13 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/OperatorNormalization.yaml
+title: OperatorNormalization
+description: Settings for a normalization operator
+type: object
+additionalProperties: false
+properties:
+  option:
+    type: string
+    enum:
+      - basic
+      #- unnesting

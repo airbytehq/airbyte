@@ -1,0 +1,19 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SyncStats.yaml
+title: SyncStats
+description: sync stats.
+type: object
+required:
+  - recordsEmitted
+  - bytesEmitted
+additionalProperties: false
+properties:
+  recordsEmitted:
+    type: integer
+  bytesEmitted:
+    type: integer
+  stateMessagesEmitted: # TODO make required once per-stream state messages are supported in V2
+    type: integer
+  recordsCommitted:
+    type: integer # if unset, committed records could not be computed
