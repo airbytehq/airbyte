@@ -189,5 +189,5 @@ class SourceCompusense(AbstractSource):
 
         return [SurveyMetadata(authenticator=auth),]
 
-# TODO (kbochanski@plenty.ag): Need to finish https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/read-data
+# TODO (kbochanski@plenty.ag): Need to finish testing and docs - https://docs.airbyte.com/connector-development/tutorials/building-a-python-source
 # TODO (kbochanski@plenty.ag): Will want to use an incremental loader BUT query only takes date inputs and data returned does not have a single date field (would need to combine day,month,year)
