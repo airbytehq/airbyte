@@ -52,7 +52,7 @@ class DeclarativeComponentFactory:
     If the component definition is a mapping with neither a "class_name" nor a "type" field,
     the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
     If the type hint is an interface present in `DEFAULT_IMPLEMENTATIONS_REGISTRY`,
-    then the factory will create an object of it's default implementation.
+    then the factory will create an object of its default implementation.
 
     If the component definition is a list, then the factory will iterate over the elements of the list,
     instantiate its subcomponents, and return a list of instantiated objects.
