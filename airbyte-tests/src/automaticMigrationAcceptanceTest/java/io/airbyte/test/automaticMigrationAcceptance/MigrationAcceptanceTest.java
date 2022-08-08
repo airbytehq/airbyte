@@ -42,6 +42,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,7 @@ class MigrationAcceptanceTest {
   private static final String TEST_LOCAL_DOCKER_MOUNT = "/tmp/airbyte_local_migration_test";
 
   @Test
+  @Disabled
   void testAutomaticMigration() throws Exception {
     // run version 17 (the oldest version of airbyte that supports auto migration)
     final File version17DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-17-0-alpha.yaml");
