@@ -7,6 +7,7 @@ package io.airbyte.workers;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
@@ -147,6 +148,7 @@ public class WorkerApp {
   private final FeatureFlags featureFlags;
   private final JobCreator jobCreator;
   private final StatePersistence statePersistence;
+  private final AirbyteApiClient airbyteApiClient;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -239,7 +241,7 @@ public class WorkerApp {
       final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
           defaultWorkerConfigs,
           defaultProcessFactory);
-      final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
+      final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(airbyteApiClient, featureFlags);
 
       for (final String taskQueue : configs.getSyncDataPlaneTaskQueues()) {
         // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
@@ -498,6 +500,20 @@ public class WorkerApp {
             webUrlHelper,
             jobErrorReportingClient);
 
+    LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
+        configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+
+    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.generated.ApiClient()
+            .setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api")
+            .setRequestInterceptor(builder -> {
+              builder.setHeader(configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+              builder.setHeader("User-Agent", "WorkerApp");
+            }));
+
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -529,7 +545,8 @@ public class WorkerApp {
         streamResetPersistence,
         featureFlags,
         jobCreator,
-        statePersistence).start();
+        statePersistence,
+        airbyteApiClient).start();
   }
 
   public static void main(final String[] args) {
