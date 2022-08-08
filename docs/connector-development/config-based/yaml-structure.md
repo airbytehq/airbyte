@@ -240,7 +240,7 @@ If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
-the "options" keyword [see ($options)](connector-definition.md#object-instantiation) can be referenced.
+the "options" keyword [see ($options)](yaml-structure.md#object-instantiation) can be referenced.
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 

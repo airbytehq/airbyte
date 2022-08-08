@@ -35,7 +35,7 @@ requester:
       key: value
 ```
 
-In addition to $options, the provider can also access the following arguments for [string interpolation](connector-definition.md#string-interpolation):
+In addition to $options, the provider can also access the following arguments for [string interpolation](yaml-structure.md#string-interpolation):
 
 - stream_slice
 - stream_state

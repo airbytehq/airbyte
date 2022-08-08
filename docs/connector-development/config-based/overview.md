@@ -9,7 +9,7 @@ Config-based connectors work by parsing a YAML configuration describing the Sour
 
 The process then submits HTTP requests to the API endpoint, and extracts records out of the response.
 
-See the [connector definition section](connector-definition.md) for more information on the YAML file describing the connector.
+See the [connector definition section](yaml-structure.md) for more information on the YAML file describing the connector.
 
 ## Source
 
