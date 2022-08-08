@@ -6,8 +6,17 @@ from unittest.mock import MagicMock
 
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_okta.authenticator import OktaOauth2Authenticator
-from source_okta.source import CustomRoles, GroupMembers, GroupRoleAssignments, Groups, Logs, SourceOkta, UserRoleAssignments, Users
-from source_okta.source import initialize_authenticator
+from source_okta.source import (
+    CustomRoles,
+    GroupMembers,
+    GroupRoleAssignments,
+    Groups,
+    Logs,
+    SourceOkta,
+    UserRoleAssignments,
+    Users,
+    initialize_authenticator,
+)
 
 
 class TestAuthentication:

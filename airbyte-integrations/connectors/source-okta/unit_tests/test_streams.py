@@ -79,7 +79,7 @@ class TestOktaStream:
     def test_okta_stream_incremental_request_params(self, patch_base_class, url_base, start_date):
         stream = IncrementalOktaStream(url_base=url_base, start_date=start_date)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-        expected_params = {'filter': 'None gt "2021-03-21T20:49:13.000Z"', 'limit': 200}
+        expected_params = {"filter": 'None gt "2021-03-21T20:49:13.000Z"', "limit": 200}
         assert stream.request_params(**inputs) == expected_params
 
     def test_incremental_okta_stream_parse_response(self, patch_base_class, requests_mock, url_base, api_url, start_date):
@@ -183,7 +183,11 @@ class TestStreamUsers:
     def test_users_source_request_params_have_next_cursor(self, patch_base_class, url_base, user_status_filter, start_date):
         stream = Users(url_base=url_base, start_date=start_date)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"next_cursor": "123"}}
-        expected_params = {"limit": 200, "next_cursor": "123", "filter": f'lastUpdated gt "2021-03-21T20:49:13.000Z" and ({user_status_filter})'}
+        expected_params = {
+            "limit": 200,
+            "next_cursor": "123",
+            "filter": f'lastUpdated gt "2021-03-21T20:49:13.000Z" and ({user_status_filter})',
+        }
         assert stream.request_params(**inputs) == expected_params
 
     def test_users_source_request_params_have_latest_entry(self, patch_base_class, url_base, user_status_filter, start_date):
@@ -268,7 +272,9 @@ class TestStreamGroupMembers:
             "after": "some_test_id",
         }
 
-    def test_group_members_slice_stream(self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date):
+    def test_group_members_slice_stream(
+        self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
+    ):
         stream = GroupMembers(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
         assert list(stream.stream_slices()) == [{"group_id": "test_group_id"}]
@@ -341,7 +347,9 @@ class TestStreamUserRoleAssignment:
         inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"user_id": user_id}}
         assert list(stream.read_records(**inputs)) == [user_role_assignments_instance]
 
-    def test_user_role_assignments_parse_response(self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url, start_date):
+    def test_user_role_assignments_parse_response(
+        self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url, start_date
+    ):
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[user_role_assignments_instance])
         assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [user_role_assignments_instance]

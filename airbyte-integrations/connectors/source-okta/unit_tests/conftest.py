@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import pendulum
 import pytest
 
@@ -420,4 +421,3 @@ def error_failed_to_authorize_with_provided_credentials():
 @pytest.fixture()
 def start_date():
     return pendulum.parse("2021-03-21T20:49:13Z")
-
