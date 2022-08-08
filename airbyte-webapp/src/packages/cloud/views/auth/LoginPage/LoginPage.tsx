@@ -13,6 +13,7 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
+import { OAuthLogin } from "../OAuthLogin";
 import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
@@ -104,6 +105,7 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <OAuthLogin />
     </div>
   );
 };
