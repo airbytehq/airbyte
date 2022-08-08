@@ -3931,7 +3931,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-rockset:0.1.3"
+- dockerImage: "airbyte/destination-rockset:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/rockset"
     connectionSpecification:
