@@ -15,7 +15,6 @@ import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import { useRouterQuery } from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
@@ -28,16 +27,18 @@ import SourceSettings from "./components/SourceSettings";
 
 const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
-  const query = useRouterQuery();
-  const params = useParams() as { "*": StepsTypes | "" };
+  const params = useParams<{ "*": StepsTypes | "" | undefined; id: string }>();
   const navigate = useNavigate();
-  const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
+  const currentStep = useMemo<StepsTypes | "" | undefined>(
+    () => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]),
+    [params]
+  );
 
   const { destinations } = useDestinationList();
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const source = useGetSource(query.id || "");
+  const source = useGetSource(params.id || "");
   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const { connections } = useConnectionList();

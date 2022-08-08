@@ -9,7 +9,7 @@ import SortButton from "components/EntityTable/components/SortButton";
 import { SortOrderEnum } from "components/EntityTable/types";
 import Table from "components/Table";
 
-import { useRouterQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useRouter";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -40,7 +40,7 @@ type FullTableProps = CreditConsumptionByConnector & {
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
-  const query = useRouterQuery();
+  const query = useQuery();
   const navigate = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();

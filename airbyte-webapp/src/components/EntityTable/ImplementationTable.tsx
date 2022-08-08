@@ -6,7 +6,7 @@ import { CellProps } from "react-table";
 
 import Table from "components/Table";
 
-import { useRouterQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useRouter";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
@@ -24,7 +24,7 @@ interface IProps {
 }
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
-  const query = useRouterQuery();
+  const query = useQuery();
   const navigate = useNavigate();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;

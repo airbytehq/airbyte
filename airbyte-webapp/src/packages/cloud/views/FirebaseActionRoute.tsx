@@ -7,7 +7,7 @@ import LoadingPage from "components/LoadingPage";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
-import { useRouterQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import { CloudRoutes } from "../cloudRoutes";
@@ -21,7 +21,7 @@ export enum FirebaseActionMode {
 }
 
 export const VerifyEmailAction: React.FC = () => {
-  const query = useRouterQuery();
+  const query = useQuery();
   const { verifyEmail } = useAuthService();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
@@ -52,7 +52,7 @@ export const VerifyEmailAction: React.FC = () => {
 };
 
 export const FirebaseActionRoute: React.FC = () => {
-  const { mode } = useRouterQuery();
+  const { mode } = useQuery();
 
   switch (mode) {
     case FirebaseActionMode.VERIFY_EMAIL:

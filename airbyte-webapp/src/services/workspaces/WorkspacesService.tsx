@@ -76,9 +76,9 @@ function useWorkspaceApiService() {
 }
 
 export const useCurrentWorkspaceId = () => {
-  const params = useParams() as { workspaceId: string };
+  const params = useParams<{ workspaceId: string }>();
 
-  return params.workspaceId;
+  return params.workspaceId as string;
 };
 
 export const useCurrentWorkspace = () => {
