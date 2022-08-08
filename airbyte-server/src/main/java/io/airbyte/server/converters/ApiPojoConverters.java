@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
@@ -130,7 +131,8 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .sourceCatalogId(standardSync.getSourceCatalogId());
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -161,6 +163,10 @@ public class ApiPojoConverters {
 
   public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
+  }
+
+  public static BasicSchedule.TimeUnit toBasicScheduleTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
+    return Enums.convertTo(apiTimeUnit, BasicSchedule.TimeUnit.class);
   }
 
 }

@@ -73,6 +73,7 @@ const OnboardingPage: React.FC = () => {
   const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
   const [animateExit, setAnimateExit] = useState(false);
+  const [hasApiError, setHasApiError] = useState(false);
 
   const afterUpdateStep = () => {
     setAnimateExit(false);
@@ -86,18 +87,22 @@ const OnboardingPage: React.FC = () => {
   );
 
   const handleFinishOnboarding = () => {
-    finishOnboarding();
+    finishOnboarding(currentStep);
     push(RoutePaths.Connections);
   };
 
   return (
     <ConnectorDocumentationWrapper>
       <ScreenContent>
-        {currentStep === StepType.CREATE_SOURCE ? (
-          <LetterLine exit={animateExit} />
-        ) : currentStep === StepType.CREATE_DESTINATION ? (
-          <LetterLine onRight exit={animateExit} />
-        ) : null}
+        {!hasApiError && (
+          <>
+            {currentStep === StepType.CREATE_SOURCE ? (
+              <LetterLine exit={animateExit} />
+            ) : currentStep === StepType.CREATE_DESTINATION ? (
+              <LetterLine onRight exit={animateExit} />
+            ) : null}
+          </>
+        )}
         <Content
           big={currentStep === StepType.SET_UP_CONNECTION}
           medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAL}
@@ -119,7 +124,11 @@ const OnboardingPage: React.FC = () => {
                 <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />
               </TitlesBlock>
             )}
-            <ApiErrorBoundary hideHeader>
+            <ApiErrorBoundary
+              onError={(error) => {
+                setHasApiError(!!error);
+              }}
+            >
               {currentStep === StepType.INSTRUCTION && (
                 <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
               )}

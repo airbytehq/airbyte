@@ -16,5 +16,5 @@ select
 from {{ ref('1_prefix_startwith_number_ab2') }} tmp
 -- 1_prefix_startwith_number
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

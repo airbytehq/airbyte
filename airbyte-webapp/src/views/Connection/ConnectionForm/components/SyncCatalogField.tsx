@@ -1,9 +1,10 @@
+import classnames from "classnames";
 import { FieldProps } from "formik";
 import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox } from "components";
+import { CheckBox, H5 } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
@@ -17,20 +18,15 @@ import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import { ConnectionFormMode } from "../ConnectionForm";
 import InformationToolTip from "./InformationToolTip";
 import Search from "./Search";
+import styles from "./SyncCatalogField.module.scss";
 
 const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
   margin-bottom: 29px;
   max-height: 600px;
   overflow-y: auto;
   --webkit-overlay: true;
-  // Find better way (for checkbox)
-  margin-left: -43px;
-  padding-left: ${({ mode }) => (mode === "readonly" ? "0" : "43px")};
-  width: calc(100% + 43px);
-`;
 
-const SchemaHeader = styled(Header)`
-  min-height: 33px;
+  width: 100%;
 `;
 
 const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
@@ -38,21 +34,6 @@ const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   line-height: 12px;
   border-top: 1px solid ${({ theme }) => theme.greyColor0};
   padding-top: 5px;
-`;
-
-const CheckboxCell = styled(Cell)`
-  max-width: 43px;
-  text-align: center;
-  margin-left: -43px;
-`;
-
-const ArrowCell = styled(Cell)`
-  width: 40px;
-  max-width: 40px;
-`;
-
-const StreamsContent = styled.div`
-  margin-left: 43px;
 `;
 
 const ClearSubtitleCell = styled(SubtitleCell)`
@@ -95,16 +76,21 @@ interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
 const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
   const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
+  const catalogHeaderStyle = classnames({
+    [styles.catalogHeader]: mode !== "readonly",
+    [styles.readonlyCatalogHeader]: mode === "readonly",
+  });
+
   return (
-    <SchemaHeader>
+    <Header className={catalogHeaderStyle}>
       {mode !== "readonly" && (
-        <CheckboxCell>
+        <Cell className={styles.checkboxCell}>
           <CheckBox
             onChange={onCheckAll}
             indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
             checked={allChecked}
           />
-        </CheckboxCell>
+        </Cell>
       )}
       {mode !== "readonly" && <Cell flex={0.2} />}
       <Cell lighter flex={0.4}>
@@ -121,7 +107,7 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
         <FormattedMessage id="form.syncMode" />
         <InformationToolTip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.ui.syncModeLink}>
+          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
             <FormattedMessage id="form.entrypoint.docs" />
           </LearnMoreLink>
         </InformationToolTip>
@@ -148,34 +134,38 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
         </InformationToolTip>
       </Cell>
       <Cell />
-    </SchemaHeader>
+    </Header>
   );
 };
 
-const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => (
-  <SchemaHeader>
-    {mode !== "readonly" && <CheckboxCell />}
-    <ArrowCell />
-    <ClearSubtitleCell flex={mode === "readonly" ? 0.1 : 0.4} />
-    <SubtitleCell>
-      <FormattedMessage id="form.namespace" />
-    </SubtitleCell>
-    <SubtitleCell>
-      <FormattedMessage id="form.streamName" />
-    </SubtitleCell>
-    <SubtitleCell flex={1.5}>
-      <FormattedMessage id="form.sourceAndDestination" />
-    </SubtitleCell>
-    <ClearSubtitleCell />
-    <ClearSubtitleCell />
-    <SubtitleCell>
-      <FormattedMessage id="form.namespace" />
-    </SubtitleCell>
-    <SubtitleCell>
-      <FormattedMessage id="form.streamName" />
-    </SubtitleCell>
-  </SchemaHeader>
-);
+const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
+  const catalogSubheaderStyle = classnames({
+    [styles.catalogSubheader]: mode !== "readonly",
+    [styles.readonlyCatalogSubheader]: mode === "readonly",
+  });
+
+  return (
+    <Header className={catalogSubheaderStyle}>
+      <SubtitleCell>
+        <FormattedMessage id="form.namespace" />
+      </SubtitleCell>
+      <SubtitleCell>
+        <FormattedMessage id="form.streamName" />
+      </SubtitleCell>
+      <SubtitleCell flex={1.5}>
+        <FormattedMessage id="form.sourceAndDestination" />
+      </SubtitleCell>
+      <ClearSubtitleCell />
+      <ClearSubtitleCell />
+      <SubtitleCell>
+        <FormattedMessage id="form.namespace" />
+      </SubtitleCell>
+      <SubtitleCell>
+        <FormattedMessage id="form.streamName" />
+      </SubtitleCell>
+    </Header>
+  );
+};
 
 const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
@@ -190,7 +180,9 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const setField = form.setFieldValue;
 
   const onChangeSchema = useCallback(
-    (newValue: SyncSchemaStream[]) => setField(fieldName, newValue),
+    (newValue: SyncSchemaStream[]) => {
+      setField(fieldName, newValue);
+    },
     [fieldName, setField]
   );
 
@@ -214,20 +206,25 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
+
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <HeaderBlock>
-        {mode !== "readonly" ? (
-          <>
-            <FormattedMessage id="form.dataSync" />
-            {additionalControl}
-          </>
-        ) : (
-          <FormattedMessage id="form.dataSync.readonly" />
-        )}
-      </HeaderBlock>
-      {mode !== "readonly" && <Search onSearch={setSearchString} />}
-      <StreamsContent>
+      <div>
+        <HeaderBlock>
+          {mode !== "readonly" ? (
+            <>
+              <H5 bold>
+                <FormattedMessage id="form.dataSync" />
+              </H5>
+              {additionalControl}
+            </>
+          ) : (
+            <H5 bold>
+              <FormattedMessage id="form.dataSync.readonly" />
+            </H5>
+          )}
+        </HeaderBlock>
+        {mode !== "readonly" && <Search onSearch={setSearchString} />}
         <CatalogHeader mode={mode} />
         <CatalogSubheader mode={mode} />
         <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
@@ -239,7 +236,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
             mode={mode}
           />
         </TreeViewContainer>
-      </StreamsContent>
+      </div>
     </BatchEditProvider>
   );
 };

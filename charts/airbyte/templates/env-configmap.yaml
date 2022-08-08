@@ -1,7 +1,8 @@
+{{- if eq .Values.global.deploymentMode "oss"  }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "common.names.fullname" . }}-env
+  name: {{ .Release.Name }}-airbyte-env
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-weight: "-1"
@@ -17,37 +18,47 @@ data:
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
-  GCS_LOG_BUCKET: {{ .Values.logs.gcs.bucket | quote }}
+  GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
-  INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
+  INTERNAL_API_HOST: {{ .Release.Name }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
-{{- if $.Values.jobs.kube.annotations }}
-  JOB_KUBE_ANNOTATIONS: {{ $.Values.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
+{{- if $.Values.global.jobs.kube.annotations }}
+  JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
 {{- end }}
-{{- if $.Values.jobs.kube.nodeSelector }}
-  JOB_KUBE_NODE_SELECTORS: {{ $.Values.jobs.kube.nodeSelector | include "airbyte.flattenMap" | quote }}
+{{- if $.Values.global.jobs.kube.nodeSelector }}
+  JOB_KUBE_NODE_SELECTORS: {{ $.Values.global.jobs.kube.nodeSelector | include "airbyte.flattenMap" | quote }}
 {{- end }}
-{{- if $.Values.jobs.kube.tolerations }}
-  JOB_KUBE_TOLERATIONS: {{ $.Values.jobs.kube.tolerations | include "airbyte.flattenArrayMap" | quote }}
+{{- if $.Values.global.jobs.kube.tolerations }}
+  JOB_KUBE_TOLERATIONS: {{ $.Values.global.jobs.kube.tolerations | include "airbyte.flattenArrayMap" | quote }}
 {{- end }}
-  JOB_MAIN_CONTAINER_CPU_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).cpu | default "" | quote }}
-  JOB_MAIN_CONTAINER_CPU_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).cpu | default "" | quote }}
-  JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}
-  JOB_MAIN_CONTAINER_MEMORY_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).memory | default "" | quote }}
+  JOB_MAIN_CONTAINER_CPU_LIMIT: {{ ((.Values.global.jobs.resources | default dict).limits | default dict).cpu | default "" | quote }}
+  JOB_MAIN_CONTAINER_CPU_REQUEST: {{ ((.Values.global.jobs.resources | default dict).requests | default dict).cpu | default "" | quote }}
+  JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.global.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}
+  JOB_MAIN_CONTAINER_MEMORY_REQUEST: {{ ((.Values.global.jobs.resources | default dict).requests | default dict).memory | default "" | quote }}
+{{- if $.Values.global.jobs.kube.main_container_image_pull_secret }}
+  JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET: {{ $.Values.global.jobs.kube.main_container_image_pull_secret }}
+{{- end }}
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
-  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket | quote }}
-  S3_LOG_BUCKET_REGION: {{ .Values.logs.s3.bucketRegion | quote }}
+  S3_LOG_BUCKET: {{ .Values.global.logs.s3.bucket | quote }}
+  S3_LOG_BUCKET_REGION: {{ .Values.global.logs.s3.bucketRegion | quote }}
   S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
   S3_PATH_STYLE_ACCESS: {{ include "airbyte.s3PathStyleAccess" . | quote }}
   STATE_STORAGE_MINIO_BUCKET_NAME: airbyte-state-storage
   STATE_STORAGE_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
-  SUBMITTER_NUM_THREADS: "10"
-  TEMPORAL_HOST: {{ include "common.names.fullname" . }}-temporal:{{ .Values.temporal.service.port }}
+  TEMPORAL_HOST: {{ .Release.Name }}-temporal:{{ .Values.temporal.service.port }}
   TEMPORAL_WORKER_PORTS: 9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,9038,9039,9040
   TRACKING_STRATEGY: segment
-  WEBAPP_URL: http://{{ include "common.names.fullname" . }}-webapp:{{ .Values.webapp.service.port }}
+  WEBAPP_URL: http://{{ .Release.Name }}-webapp:{{ .Values.webapp.service.port }}
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
+  METRIC_CLIENT: ""
+  OTEL_COLLECTOR_ENDPOINT: ""
+  ACTIVITY_MAX_ATTEMPT: ""
+  ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
+  ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
+  WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
+  USE_STREAM_CAPABLE_STATE: "false"
+{{- end }}

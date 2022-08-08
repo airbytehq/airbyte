@@ -4,21 +4,16 @@ import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
 
-type IProps = {
+interface EditControlProps {
   isSubmitting: boolean;
   dirty: boolean;
+  submitDisabled?: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-  editSchemeMode?: boolean;
+  enableControls?: boolean;
   withLine?: boolean;
-};
-
-const Warning = styled.div`
-  margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: bold;
-`;
+}
 
 const Buttons = styled.div`
   display: flex;
@@ -49,13 +44,14 @@ const Line = styled.div`
   margin: 16px -27px 0 -24px;
 `;
 
-const EditControls: React.FC<IProps> = ({
+const EditControls: React.FC<EditControlProps> = ({
   isSubmitting,
   dirty,
+  submitDisabled,
   resetForm,
   successMessage,
   errorMessage,
-  editSchemeMode,
+  enableControls,
   withLine,
 }) => {
   const showStatusMessage = () => {
@@ -70,33 +66,19 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <>
-      {editSchemeMode && (
-        <Warning>
-          <FormattedMessage id="connection.warningUpdateSchema" />
-        </Warning>
-      )}
       {withLine && <Line />}
       <Buttons>
         <div>{showStatusMessage()}</div>
         <div>
-          <Button
-            type="button"
-            secondary
-            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
-            onClick={resetForm}
-          >
+          <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />
           </Button>
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
-            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
+            disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
           >
-            {editSchemeMode ? (
-              <FormattedMessage id="connection.saveAndReset" />
-            ) : (
-              <FormattedMessage id="form.saveChanges" />
-            )}
+            <FormattedMessage id="form.saveChanges" />
           </ControlButton>
         </div>
       </Buttons>

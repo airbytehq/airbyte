@@ -27,25 +27,34 @@ class AirbyteRecordMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    stream: str = Field(..., description="the name of this record's stream")
-    data: Dict[str, Any] = Field(..., description="the record data")
+    namespace: Optional[str] = Field(None, description="namespace the data is associated with")
+    stream: str = Field(..., description="stream the data is associated with")
+    data: Dict[str, Any] = Field(..., description="record data")
     emitted_at: int = Field(
         ...,
         description="when the data was emitted from the source. epoch in millisecond.",
     )
-    namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
 
 
 class AirbyteStateType(Enum):
     GLOBAL = "GLOBAL"
-    PER_STREAM = "PER_STREAM"
+    STREAM = "STREAM"
+    LEGACY = "LEGACY"
+
+
+class StreamDescriptor(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str
+    namespace: Optional[str] = None
 
 
 class AirbyteStateBlob(BaseModel):
     pass
 
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
 
 class Level(Enum):
@@ -61,8 +70,8 @@ class AirbyteLogMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    level: Level = Field(..., description="the type of logging")
-    message: str = Field(..., description="the log message")
+    level: Level = Field(..., description="log level")
+    message: str = Field(..., description="log message")
 
 
 class TraceType(Enum):
@@ -144,6 +153,9 @@ class AuthFlowType(Enum):
 
 
 class OAuthConfigSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
@@ -164,10 +176,18 @@ class OAuthConfigSpecification(BaseModel):
 
 class AirbyteStreamState(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    name: Optional[str] = Field(None, description="Stream name")
-    state: Optional[AirbyteStateBlob] = None
+    stream_descriptor: StreamDescriptor
+    stream_state: Optional[AirbyteStateBlob] = None
+
+
+class AirbyteGlobalState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    shared_state: Optional[AirbyteStateBlob] = None
+    stream_states: List[AirbyteStreamState]
 
 
 class AirbyteTraceMessage(BaseModel):
@@ -244,7 +264,10 @@ class ConnectorSpecification(BaseModel):
         ...,
         description="ConnectorDefinition specific blob. Must be a valid JSON string.",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsIncremental: Optional[bool] = Field(
+        None,
+        description="(deprecated) If the connector supports incremental mode or not.",
+    )
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
@@ -261,10 +284,10 @@ class AirbyteStateMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    state_type: Optional[AirbyteStateType] = None
+    type: Optional[AirbyteStateType] = None
+    stream: Optional[AirbyteStreamState] = None
+    global_: Optional[AirbyteGlobalState] = Field(None, alias="global")
     data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")
-    global_: Optional[AirbyteStateBlob] = Field(None, alias="global")
-    streams: Optional[List[AirbyteStreamState]] = None
 
 
 class AirbyteCatalog(BaseModel):

@@ -4,21 +4,22 @@ import { FormattedMessage } from "react-intl";
 import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
+import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
 
-export type ConnectorCardProvidedProps = {
+export interface ConnectorCardProvidedProps {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
-};
+}
 
 export const ConnectorCard: React.FC<
   {
@@ -45,39 +46,34 @@ export const ConnectorCard: React.FC<
     setErrorStatusRequest(null);
   }, [props.selectedConnectorDefinitionSpecification, reset]);
 
-  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
-  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
+  const analyticsService = useAnalyticsService();
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
-    const trackAction = (action: string) => {
+    const trackAction = (actionType: Action, actionDescription: string) => {
       if (!connector) {
         return;
       }
 
-      if (props.formType === "source") {
-        trackNewSourceAction(action, {
-          connector_source: connector?.name,
-          connector_source_definition_id: Connector.id(connector),
-        });
-      } else {
-        trackNewDestinationAction(action, {
-          connector_destination: connector?.name,
-          connector_destination_definition_id: Connector.id(connector),
-        });
-      }
+      const namespace = props.formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
+
+      analyticsService.track(namespace, actionType, {
+        actionDescription,
+        connector_source: connector?.name,
+        connector_source_definition_id: Connector.id(connector),
+      });
     };
 
     const testConnectorWithTracking = async () => {
-      trackAction("Test a connector");
+      trackAction(Action.TEST, "Test a connector");
       try {
         await testConnector(values);
-        trackAction("Tested connector - success");
+        trackAction(Action.SUCCESS, "Tested connector - success");
       } catch (e) {
-        trackAction("Tested connector - failure");
+        trackAction(Action.FAILURE, "Tested connector - failure");
         throw e;
       }
     };

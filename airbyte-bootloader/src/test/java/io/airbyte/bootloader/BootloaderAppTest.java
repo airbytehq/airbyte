@@ -52,8 +52,9 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 @ExtendWith(SystemStubsExtension.class)
-public class BootloaderAppTest {
+class BootloaderAppTest {
 
   private PostgreSQLContainer container;
   private DataSource configsDataSource;
@@ -100,7 +101,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     val mockedSecretMigrator = mock(SecretMigrator.class);
 
@@ -130,7 +130,7 @@ public class BootloaderAppTest {
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
-      assertEquals("0.39.1.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.39.17.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(version, jobsPersistence.getVersion().get());
@@ -157,7 +157,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .copySecrets(true)
@@ -190,7 +189,7 @@ public class BootloaderAppTest {
       val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       initBootloader.load();
 
-      final ConfigPersistence localSchema = YamlSeedConfigPersistence.getDefault();
+      final ConfigPersistence localSchema = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
       final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
       configRepository.loadDataNoSecrets(localSchema);
 
@@ -302,7 +301,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     val mockedSecretMigrator = mock(SecretMigrator.class);
 

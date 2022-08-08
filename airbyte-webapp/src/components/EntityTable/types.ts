@@ -1,21 +1,21 @@
 import { ConnectionSchedule } from "../../core/request/AirbyteClient";
 
-type EntityTableDataItem = {
+interface EntityTableDataItem {
   entityId: string;
   entityName: string;
   connectorName: string;
-  connectEntities: {
+  connectEntities: Array<{
     name: string;
     connector: string;
     status: string;
     lastSyncStatus: string | null;
-  }[];
+  }>;
   enabled: boolean;
   lastSync?: number | null;
   connectorIcon?: string;
-};
+}
 
-type ITableDataItem = {
+interface ITableDataItem {
   connectionId: string;
   name: string;
   entityName: string;
@@ -24,11 +24,11 @@ type ITableDataItem = {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ConnectionSchedule | undefined;
+  schedule?: ConnectionSchedule;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;
-};
+}
 
 enum Status {
   ACTIVE = "active",

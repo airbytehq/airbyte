@@ -2,6 +2,7 @@ apiVersion: v2
 name: airbyte
 description: Helm chart to deploy airbyte
 
+
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -15,13 +16,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.3.3
+version: 0.39.36
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.39.7-alpha"
+appVersion: "0.39.41-alpha"
 
 dependencies:
   - name: common
@@ -33,7 +34,31 @@ dependencies:
     name: postgresql
     version: 10.x.x
     repository: https://charts.bitnami.com/bitnami
-  - condition: minio.enabled
+  - condition: logs.minio.enabled
     name: minio
-    version: 7.x.x
+    version: 11.x.x
     repository: https://charts.bitnami.com/bitnami
+  - condition: airbyte-bootloader.enabled
+    name: airbyte-bootloader
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: temporal.enabled
+    name: temporal
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: webapp.enabled
+    name: webapp
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: server.enabled
+    name: server
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: worker.enabled
+    name: worker
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: pod-sweeper.enabled
+    name: pod-sweeper
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder

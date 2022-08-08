@@ -7,7 +7,7 @@ export function makeConnectionConfigurationPath(path: string[]): string {
   return `connectionConfiguration.${path.join(".")}`;
 }
 
-export type OauthOutputSpec = {
+export interface OauthOutputSpec {
   client_id: {
     type: string;
     path_in_connector_config: ["credentials", "client_id"];
@@ -16,13 +16,13 @@ export type OauthOutputSpec = {
     type: string;
     path_in_connector_config: ["credentials", "client_secret"];
   };
-};
+}
 
 type OAuthOutputSpec = { properties: Record<string, { type: string; path_in_connector_config: string[] }> } | undefined;
 
-export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecification): {
-  [key: string]: { path_in_connector_config: string[] };
-} {
+export function serverProvidedOauthPaths(
+  connector?: ConnectorDefinitionSpecification
+): Record<string, { path_in_connector_config: string[] }> {
   return {
     ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as OAuthOutputSpec)
       ?.properties ?? {}),

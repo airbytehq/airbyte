@@ -62,6 +62,7 @@ jobs:
             db:
               - 'airbyte-db/**'
             frontend:
+              - 'airbyte-api/src/main/openapi/config.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
   find_valid_pat:
@@ -193,9 +194,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - uses: actions/setup-python@v2
         with:
@@ -304,9 +305,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -343,9 +344,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -441,9 +442,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -521,11 +522,11 @@ jobs:
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
-  ## Kube Acceptance Tests (with scheduler v2 - both temporal changes and container orchestrator)
+  ## Kube Acceptance Tests
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
-  start-kube-acceptance-test-runner-v2:
-    name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
+  start-kube-acceptance-test-runner:
+    name: "Platform: Start Kube Acceptance Test Runner"
     needs:
       - changes
       - find_valid_pat
@@ -548,11 +549,11 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-  kube-acceptance-test-v2:
-    name: "Platform: Acceptance Tests (Kube v2)"
+  kube-acceptance-test:
+    name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-kube-acceptance-test-runner-v2 # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }} # run the job on the newly created runner
+    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
     timeout-minutes: 90
     steps:
@@ -569,9 +570,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Fix EC-2 Runner
         run: |
@@ -631,17 +632,17 @@ jobs:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
   # In case of self-hosted EC2 errors, remove this block.
-  stop-kube-acceptance-test-runner-v2:
+  stop-kube-acceptance-test-runner:
     name: "Platform: Stop Kube Acceptance Test EC2 Runner"
     timeout-minutes: 10
     needs:
-      - start-kube-acceptance-test-runner-v2 # required to get output from the start-runner job
-      - kube-acceptance-test-v2 # required to wait when the main job is done
+      - start-kube-acceptance-test-runner # required to get output from the start-runner job
+      - kube-acceptance-test # required to wait when the main job is done
       - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-kube-acceptance-test-runner-v2.result != 'skipped'}}
+    if: ${{ always() && needs.start-kube-acceptance-test-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -654,8 +655,8 @@ jobs:
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
-          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
+          label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
@@ -665,7 +666,7 @@ jobs:
       - frontend-build
       - octavia-cli-build
       - platform-build
-      - kube-acceptance-test-v2
+      - kube-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Publish to OSS Build Failure Slack Channel
@@ -689,7 +690,7 @@ jobs:
       - frontend-build
       - octavia-cli-build
       - platform-build
-      - kube-acceptance-test-v2
+      - kube-acceptance-test
     if: success()
     steps:
       - name: Get Previous Workflow Status

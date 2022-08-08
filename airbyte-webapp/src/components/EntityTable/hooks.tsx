@@ -1,5 +1,7 @@
-import FrequencyConfig from "config/FrequencyConfig.json";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { getFrequencyConfig } from "config/utils";
+import { Action, Namespace } from "core/analytics";
+import { buildConnectionUpdate } from "core/domain/connection";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
@@ -13,28 +15,26 @@ const useSyncActions = (): {
   const analyticsService = useAnalyticsService();
 
   const changeStatus = async (connection: WebBackendConnectionRead) => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      prefix: connection.prefix,
-      schedule: connection.schedule || null,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      operations: connection.operations,
-      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-    });
-
-    const frequency = FrequencyConfig.find(
-      (item) => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      })
     );
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === "active" ? "Disable connection" : "Reenable connection",
+    const frequency = getFrequencyConfig(connection.schedule);
+
+    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
+
+    analyticsService.track(Namespace.CONNECTION, trackableAction, {
+      frequency: frequency?.type,
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
+      available_streams: connection.syncCatalog.streams.length,
+      enabled_streams: enabledStreams,
     });
   };
 

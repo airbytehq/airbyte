@@ -94,16 +94,27 @@ def test_expected_output_connector_specification_renderer(
     assert filecmp.cmp(output_path, expect_output_path)
 
 
-def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker):
+@pytest.mark.parametrize(
+    "with_normalization, expected_yaml_path",
+    [
+        (False, "connection/expected_without_normalization.yaml"),
+        (True, "connection/expected_with_normalization.yaml"),
+    ],
+)
+def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker, with_normalization, expected_yaml_path):
     stream = AirbyteStream(default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")])
     config = AirbyteStreamConfiguration(
         alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
     )
     catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
-    mock_source = mocker.Mock(resource_id="my_source_id", catalog=catalog)
-    mock_destination = mocker.Mock(resource_id="my_destination_id")
+    mock_source = mocker.Mock(resource_id="my_source_id", configuration_path="source_configuration_path", catalog=catalog)
+    mock_destination = mocker.Mock(
+        resource_id="my_destination_id",
+        configuration_path="destination_configuration_path",
+        definition=mocker.Mock(supports_dbt=with_normalization, supports_normalization=with_normalization),
+    )
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)
     output_path = renderer.write_yaml(octavia_tmp_project_directory)
-    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/expected.yaml")
+    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
     assert filecmp.cmp(output_path, expect_output_path)

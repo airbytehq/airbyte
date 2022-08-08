@@ -11,13 +11,11 @@ import GlobalStyle from "../src/global-styles";
 import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
+import { DocumentationPanelProvider } from "../src/views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServicesProvider } from "../src/core/servicesProvider";
-import {
-  analyticsServiceContext,
-  AnalyticsServiceProviderValue,
-} from "../src/hooks/services/Analytics";
+import { analyticsServiceContext, AnalyticsServiceProviderValue } from "../src/hooks/services/Analytics";
 
-const AnalyticsContextMock: AnalyticsServiceProviderValue = ({
+const AnalyticsContextMock: AnalyticsServiceProviderValue = {
   analyticsContext: {},
   setContext: () => {},
   addContextProps: () => {},
@@ -25,7 +23,7 @@ const AnalyticsContextMock: AnalyticsServiceProviderValue = ({
   service: {
     track: () => {},
   },
-} as unknown) as AnalyticsServiceProviderValue;
+} as unknown as AnalyticsServiceProviderValue;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,14 +42,13 @@ export const withProviders = (getStory) => (
           <MemoryRouter>
             <IntlProvider messages={messages} locale={"en"}>
               <ThemeProvider theme={theme}>
-                <ConfigServiceProvider
-                  defaultConfig={defaultConfig}
-                  providers={[]}
-                >
-                  <FeatureService>
-                    <GlobalStyle />
-                    {getStory()}
-                  </FeatureService>
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
+                  <DocumentationPanelProvider>
+                    <FeatureService features={[]}>
+                      <GlobalStyle />
+                      {getStory()}
+                    </FeatureService>
+                  </DocumentationPanelProvider>
                 </ConfigServiceProvider>
               </ThemeProvider>
             </IntlProvider>

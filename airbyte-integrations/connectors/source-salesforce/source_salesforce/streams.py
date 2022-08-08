@@ -312,8 +312,8 @@ class BulkSalesforceStream(SalesforceStream):
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
-                    for n, row in enumerate(chunk, 1):
-                        yield n, row
+                    for row in chunk:
+                        yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
@@ -382,12 +382,15 @@ class BulkSalesforceStream(SalesforceStream):
 
             count = 0
             record: Mapping[str, Any] = {}
-            for count, record in self.read_with_chunks(self.download_data(url=job_full_url)):
+            for record in self.read_with_chunks(self.download_data(url=job_full_url)):
+                count += 1
                 yield record
             self.delete_job(url=job_full_url)
 
             if count < self.page_size:
-                # this is a last page
+                # Salesforce doesn't give a next token or something to know the request was
+                # the last page. The connectors will sync batches in `page_size` and
+                # considers that batch is smaller than the `page_size` it must be the last page.
                 break
 
             next_page_token = self.next_page_token(record)

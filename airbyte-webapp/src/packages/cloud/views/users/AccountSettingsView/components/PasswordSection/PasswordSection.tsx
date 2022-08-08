@@ -36,7 +36,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.currentPassword" />}
                       disabled={isSubmitting}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}
@@ -51,7 +51,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.newPassword" />}
                       disabled={isSubmitting || values.currentPassword.length === 0}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}
@@ -66,7 +66,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.newPasswordConfirmation" />}
                       disabled={isSubmitting || values.currentPassword.length === 0}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}

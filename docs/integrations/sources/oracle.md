@@ -130,8 +130,12 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject                                         |
-|:--------| :--- | :--- |:------------------------------------------------|
+| Version | Date       | Pull Request | Subject                                         |
+|:--------|:-----------| :--- |:------------------------------------------------|
+| 0.3.19  | 2022-08-03 | [14953](https://github.com/airbytehq/airbyte/pull/14953) | Use Service Name to connect to database |
+| 0.3.18  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
+| 0.3.17  | 2022-06-24 | [14092](https://github.com/airbytehq/airbyte/pull/14092) | Introduced a custom jdbc param field |
+| 0.3.16  | 2022-06-22 | [13997](https://github.com/airbytehq/airbyte/pull/13997) | Fixed tests |
 | 0.3.15  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.3.14  | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
 | 0.3.13  | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |

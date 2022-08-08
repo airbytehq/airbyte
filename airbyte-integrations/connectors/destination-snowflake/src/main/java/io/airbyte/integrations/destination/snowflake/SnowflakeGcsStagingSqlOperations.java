@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -15,7 +15,6 @@ import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -28,8 +27,8 @@ import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.joda.time.DateTime;
@@ -140,9 +139,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
       throws Exception {
     LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName))),
-        Map.of("schema", schemaName, "path", stagingPath, "table", dstTableName));
+    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName)));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
@@ -163,9 +160,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
   @Override
   public void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception {
-    AirbyteSentry.executeWithTracing("CleanStage",
-        () -> cleanUpBucketObject(stagedFiles),
-        Map.of("stage", stageName));
+    cleanUpBucketObject(stagedFiles);
   }
 
   private void cleanUpBucketObject(List<String> currentStagedFiles) {
@@ -183,14 +178,19 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
   @Override
   public void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception {
-    AirbyteSentry.executeWithTracing("DropStageIfExists",
-        this::dropBucketObject,
-        Map.of("stage", stageName));
+    dropBucketObject();
   }
 
   private void dropBucketObject() {
     if (!fullObjectKeys.isEmpty()) {
-      fullObjectKeys.forEach(this::removeBlob);
+      Iterator<String> iterator = fullObjectKeys.iterator();
+      while (iterator.hasNext()) {
+        String element = iterator.next();
+        if (element != null) {
+          removeBlob(element);
+          iterator.remove();
+        }
+      }
     }
   }
 
