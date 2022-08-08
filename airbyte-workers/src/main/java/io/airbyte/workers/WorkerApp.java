@@ -76,6 +76,7 @@ import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivityImpl
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
@@ -221,23 +222,46 @@ public class WorkerApp {
   }
 
   private void registerSync(final WorkerFactory factory) {
-    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+    registerSyncDataPlaneWorkers(factory);
+    registerSyncControlPlaneWorkers(factory);
+  }
 
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
+  /**
+   * Data Plane workers handle the subset of SyncWorkflow activity tasks that should run within a Data
+   * Plane.
+   */
+  private void registerSyncDataPlaneWorkers(final WorkerFactory factory) {
+    if (!configs.getSyncDataPlaneTaskQueues().isEmpty()) {
+      final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+      final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
+          defaultWorkerConfigs,
+          defaultProcessFactory);
+      final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
+          defaultWorkerConfigs,
+          defaultProcessFactory);
+      final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
-    final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
+      for (final String taskQueue : configs.getSyncDataPlaneTaskQueues()) {
+        // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
+        final Worker worker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+        worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+      }
+    }
+  }
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
+  /**
+   * Control Plane workers handle all workflow tasks for the SyncWorkflow, as well as the activity
+   * task to decide which task queue to use for Data Plane tasks.
+   */
+  private void registerSyncControlPlaneWorkers(final WorkerFactory factory) {
+    if (configs.shouldHandleSyncControlPlaneTasks()) {
+      // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
+      final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+      syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
-
+      final DecideDataPlaneTaskQueueActivityImpl decideTaskQueueActivity = getDecideTaskQueueActivityImpl();
+      syncWorker.registerActivitiesImplementations(decideTaskQueueActivity);
+    }
   }
 
   private void registerDiscover(final WorkerFactory factory) {
@@ -312,6 +336,10 @@ public class WorkerApp {
         logConfigs,
         jobPersistence,
         airbyteVersion);
+  }
+
+  private DecideDataPlaneTaskQueueActivityImpl getDecideTaskQueueActivityImpl() {
+    return new DecideDataPlaneTaskQueueActivityImpl(configs);
   }
 
   private static ProcessFactory getJobProcessFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
