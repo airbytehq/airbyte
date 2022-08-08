@@ -3,7 +3,7 @@
 We should make sure the connector respects the Airbyte specifications before we start using it in production.
 This can be done by executing the Source Acceptance Tests (SAT).
 
-These tests will assert the most basic functionalities work as expected and are configured in `acceptance-test-config`.
+These tests will assert the most basic functionalities work as expected and are configured in `acceptance-test-config.yml`.
 
 Before running the tests, we'll create an invalid config to make sure the `check` operation fails if the credentials are wrong, and an abnormal state to verify the connector's behavior when running with an abnormal state.
 

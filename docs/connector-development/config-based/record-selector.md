@@ -3,6 +3,7 @@
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
 
 The current record selector implementation uses Jello to select records from the json-decoded HTTP response.
+The record selection uses Python syntax, where `_` means top of the object. See [common recipes](#common-recipes).
 More information on Jello can be found at https://github.com/kellyjonbrazil/jello
 
 ## Common recipes:
@@ -10,6 +11,21 @@ More information on Jello can be found at https://github.com/kellyjonbrazil/jell
 1. Selecting the whole json object can be done with `_`
 2. Wrapping the whole json object in an array can be done with `[_]`
 3. Inner fields can be selected by referring to it with the dot-notation: `_.data` will return the data field
+
+Given a json object of the form
+
+```
+{
+  "data": [{"id": 0}, {"id": 1}],
+  "metadata": {"api-version": "1.0.0"}
+}
+```
+
+and a selector `_.data`, will produce the following:
+
+```
+[{"id": 0}, {"id": 1}]
+```
 
 ## Filtering records
 

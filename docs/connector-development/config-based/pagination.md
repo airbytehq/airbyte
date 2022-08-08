@@ -77,7 +77,7 @@ and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&of
 
 The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` string with the following parameters:
 
-- `response`: decoded response
+- `response`: The decoded response
 - `headers`: HTTP headers on the response
 - `last_records`: List of records selected from the last response
 
