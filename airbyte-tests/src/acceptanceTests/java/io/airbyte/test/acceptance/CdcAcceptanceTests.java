@@ -94,7 +94,7 @@ class CdcAcceptanceTests {
   private static final String REPLICATION_SLOT = "airbyte_slot";
   // must match publication name used in the above POSTGRES_INIT_SQL_FILE
   private static final String PUBLICATION = "airbyte_publication";
-  private static final Integer INITIAL_WAITING_SECONDS = 30;
+  private static final Integer INITIAL_WAITING_SECONDS = 120;
 
   private static final String SOURCE_NAME = "CDC Source";
   private static final String CONNECTION_NAME = "test-connection";
