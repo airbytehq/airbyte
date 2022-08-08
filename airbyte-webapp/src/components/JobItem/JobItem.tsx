@@ -63,12 +63,20 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   };
 
   useEffectOnce(() => {
-    if (linkedJobId) {
-      scrollAnchor.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+    if (linkedJobId === String(getJobId(job))) {
+      // We need to wait here a bit, so the page has a chance to finish rendering, before starting to scroll
+      // since otherwise this scroll won't really do anything.
+      const timeout = window.setTimeout(() => {
+        scrollAnchor.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 1000);
+      return () => {
+        window.clearTimeout(timeout);
+      };
     }
+    return undefined;
   });
 
   return (
