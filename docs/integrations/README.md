@@ -113,6 +113,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
+| [Orbit](sources/orbit.md)                                                                   | Alpha                | No                  |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | Yes                 |
@@ -151,7 +152,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
 | [Stripe](sources/stripe.md)                                                                 | Generally Available  | Yes                 |
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
-| [SurveyMonkey](sources/surveymonkey.md)                                                     | Alpha                | Yes                 |
+| [SurveyMonkey](sources/surveymonkey.md)                                                     | Beta                 | Yes                 |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |

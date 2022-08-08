@@ -17,6 +17,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -26,6 +29,7 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
@@ -210,6 +214,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(useStreamCapableState)
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+      MetricClientFactory.initialize(MetricEmittingApps.WORKER);
+      final MetricClient metricClient = MetricClientFactory.getMetricClient();
+      final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
@@ -218,7 +225,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
           new AirbyteMessageTracker(),
-          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)));
+          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+          metricReporter);
     };
   }
 

@@ -43,7 +43,7 @@ Notion is a productivity and project management software. It was designed to hel
 ### For Airbyte OSS:
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Bing Ads** from the Source type dropdown. 
+3. On the Set up the source page, enter the name for the connector and select **Notion** from the Source type dropdown. 
 4. Add required Start date
 5. Copy and paste values from setup Notion step (8):
       1) **client_id**
