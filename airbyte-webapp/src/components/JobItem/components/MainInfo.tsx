@@ -39,9 +39,9 @@ interface MainInfoProps {
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
   const jobStatus = getJobStatus(job);
+  const streamsToReset = "job" in job ? job.job.resetConfig?.streamsToReset : undefined;
   const isPartialSuccess = partialSuccessCheck(attempts);
 
-  const streamsToReset = (job as JobsWithJobs).job.resetConfig?.streamsToReset;
   const statusIcon = () => {
     switch (true) {
       case Boolean(streamsToReset):

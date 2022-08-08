@@ -6,6 +6,7 @@
   min-height: 75px;
 
   .titleCell {
+    width: 80%;
     display: flex;
     color: colors.$dark-blue;
     min-width: 0;
@@ -29,6 +30,7 @@
     }
 
     .justification {
+      width: 80%;
       display: flex;
       flex-grow: 1;
       flex-direction: column;

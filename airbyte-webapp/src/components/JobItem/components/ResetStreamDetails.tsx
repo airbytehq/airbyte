@@ -1,15 +1,19 @@
+import classNames from "classnames";
 import React from "react";
 
-import styled from "./ResetStreamDetails.module.scss";
+import styles from "./ResetStreamDetails.module.scss";
 
 interface IProps {
   names: string[];
+  isOpen?: boolean;
 }
 
-export const ResetStreamsDetails: React.FC<IProps> = ({ names }) => (
-  <p className={styled.textContainer}>
+export const ResetStreamsDetails: React.FC<IProps> = ({ names, isOpen }) => (
+  <p className={classNames(styles.textContainer, { [styles.open]: isOpen })}>
     {names.map((name) => (
-      <span className={styled.text}>{name}</span>
+      <span key={name} className={styles.text}>
+        {name}
+      </span>
     ))}
   </p>
 );
