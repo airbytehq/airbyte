@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import jsonschema
 from airbyte_cdk.models import ConnectorSpecification
 from deepdiff import DeepDiff
