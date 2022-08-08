@@ -72,9 +72,7 @@ public class AirbyteTestContainer {
   public void startAsync() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
     dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile)
-        .withEnv(env)
-        .withExposedService("server", 8001,
-            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(240)));
+        .withEnv(env);
 
     // Only expose logs related to db migrations.
     serviceLogConsumer(dockerComposeContainer, "init");
@@ -131,7 +129,7 @@ public class AirbyteTestContainer {
       }
     };
 
-    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(10), Duration.ofMinutes(3), condition)) {
+    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(2), condition)) {
       throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException.get());
     }
   }

@@ -496,11 +496,11 @@ jobs:
         run: ./tools/site/link_checker.sh check_docs
 
 #       This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
-      - name: Get Docker Space
-        run: docker run --rm busybox df -h
+#      - name: Get Docker Space
+#        run: docker run --rm busybox df -h
 
-#      - name: Run End-to-End Acceptance Tests
-#        run: ./tools/bin/acceptance_test.sh
+      - name: Run End-to-End Acceptance Tests
+        run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i

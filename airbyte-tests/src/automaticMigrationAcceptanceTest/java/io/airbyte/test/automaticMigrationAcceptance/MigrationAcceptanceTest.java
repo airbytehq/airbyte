@@ -109,11 +109,7 @@ class MigrationAcceptanceTest {
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
 
     // run from last major version bump to current version.
-    try {
-      runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
-    } catch (final Exception e) {
-      LOGGER.error("msg:", e);
-    }
+    runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
   }
 
   private Properties overrideDirectoriesForTest(final Properties properties) {
