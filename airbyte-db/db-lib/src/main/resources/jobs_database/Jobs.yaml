@@ -23,7 +23,7 @@ properties:
   status:
     type: string
   expected_status:
-    type: string
+    type: ["null", string]
   created_at:
     # todo should be datetime.
     type: string
