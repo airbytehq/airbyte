@@ -49,6 +49,7 @@ interface AuthContextApi {
   emailVerified: boolean;
   isLoading: boolean;
   loggedOut: boolean;
+  provider: string | null;
   login: AuthLogin;
   loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
@@ -112,7 +113,11 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     async (currentUser: FbUser, user?: User) => {
       try {
         user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
-        loggedIn({ user, emailVerified: currentUser.emailVerified });
+        loggedIn({
+          user,
+          emailVerified: currentUser.emailVerified,
+          provider: currentUser.providerData[0]?.providerId ?? "",
+        });
       } catch (e) {
         if (isCommonRequestError(e) && e.status === 404) {
           // If there is a firebase user but not database user we'll create a db user in this step
@@ -155,6 +160,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       isLoading: state.loading,
       emailVerified: state.emailVerified,
       loggedOut: state.loggedOut,
+      provider: state.provider,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 

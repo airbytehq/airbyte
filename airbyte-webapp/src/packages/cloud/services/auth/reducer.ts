@@ -4,7 +4,7 @@ import { User } from "packages/cloud/lib/domain/users";
 
 export const actions = {
   authInited: createAction("AUTH_INITED")<void>(),
-  loggedIn: createAction("LOGGED_IN")<{ user: User; emailVerified: boolean }>(),
+  loggedIn: createAction("LOGGED_IN")<{ user: User; emailVerified: boolean; provider: string }>(),
   emailVerified: createAction("EMAIL_VERIFIED")<boolean>(),
   loggedOut: createAction("LOGGED_OUT")<void>(),
   updateUserName: createAction("UPDATE_USER_NAME")<{ value: string }>(),
@@ -18,6 +18,7 @@ export interface AuthServiceState {
   emailVerified: boolean;
   loading: boolean;
   loggedOut: boolean;
+  provider: string | null;
 }
 
 export const initialState: AuthServiceState = {
@@ -26,6 +27,7 @@ export const initialState: AuthServiceState = {
   emailVerified: false,
   loading: false,
   loggedOut: false,
+  provider: null,
 };
 
 export const authStateReducer = createReducer<AuthServiceState, Actions>(initialState)
@@ -40,6 +42,7 @@ export const authStateReducer = createReducer<AuthServiceState, Actions>(initial
       ...state,
       currentUser: action.payload.user,
       emailVerified: action.payload.emailVerified,
+      provider: action.payload.provider,
       inited: true,
       loading: false,
       loggedOut: false,
@@ -57,6 +60,7 @@ export const authStateReducer = createReducer<AuthServiceState, Actions>(initial
       currentUser: null,
       emailVerified: false,
       loggedOut: true,
+      provider: null,
     };
   })
   .handleAction(actions.updateUserName, (state, action): AuthServiceState => {
