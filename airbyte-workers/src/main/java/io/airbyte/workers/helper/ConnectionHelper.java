@@ -88,7 +88,9 @@ public class ConnectionHelper {
 
     if (update.getScheduleType() != null) {
       newConnection.withScheduleType(update.getScheduleType());
-      newConnection.withScheduleData(Jsons.clone(update.getScheduleData()));
+      if (update.getScheduleData() != null) {
+        newConnection.withScheduleData(Jsons.clone(update.getScheduleData()));
+      }
     } else if (update.getSchedule() != null) {
       final Schedule newSchedule = new Schedule()
           .withTimeUnit(update.getSchedule().getTimeUnit())
