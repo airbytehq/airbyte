@@ -4,7 +4,9 @@
 
 package io.airbyte.server.handlers;
 
-import static io.airbyte.server.constants.DockerImageName.*;
+import static io.airbyte.server.constants.DockerImageName.MSSQL_DOCKER_IMAGES;
+import static io.airbyte.server.constants.DockerImageName.MYSQL_DOCKER_IMAGES;
+import static io.airbyte.server.constants.DockerImageName.MYSQL_REPLICATION_ERRORS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
