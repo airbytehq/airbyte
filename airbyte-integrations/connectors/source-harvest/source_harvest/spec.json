@@ -32,6 +32,7 @@
             "type": "object",
             "title": "Authenticate via Harvest (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -61,6 +62,7 @@
             "type": "object",
             "title": "Authenticate with Personal Access Token",
             "required": ["api_token"],
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -96,6 +98,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -105,6 +108,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"
@@ -116,6 +120,7 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string",

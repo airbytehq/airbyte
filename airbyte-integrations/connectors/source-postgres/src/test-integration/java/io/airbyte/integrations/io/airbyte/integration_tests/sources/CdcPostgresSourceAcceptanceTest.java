@@ -77,6 +77,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -142,20 +143,20 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
