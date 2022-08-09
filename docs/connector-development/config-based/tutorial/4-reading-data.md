@@ -76,7 +76,7 @@ requester:
 retriever:
   type: SimpleRetriever
   $options:
-    url_base: "https://api.exchangeratesapi.io/v1/" # Only change the url_base field
+    url_base: "https://api.exchangeratesapi.io/v1/"
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
