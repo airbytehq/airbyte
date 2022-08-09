@@ -94,7 +94,7 @@ rates_stream:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path: "/latest"
+      path: "/exchangerates_data/latest"
 streams:
   - "*ref(rates_stream)"
 check:
