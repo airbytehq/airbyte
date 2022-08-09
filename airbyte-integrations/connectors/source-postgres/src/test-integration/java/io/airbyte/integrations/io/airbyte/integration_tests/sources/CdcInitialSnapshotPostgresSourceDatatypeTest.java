@@ -18,7 +18,7 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class CdcPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
+public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
@@ -55,6 +55,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatyp
         .put("replication_method", replicationMethod)
         .put("is_test", true)
         .put(JdbcUtils.SSL_KEY, false)
+        .put("snapshot_mode", "initial_only")
         .build());
 
     dslContext = DSLContextFactory.create(

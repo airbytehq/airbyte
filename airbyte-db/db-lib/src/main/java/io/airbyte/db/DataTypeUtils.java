@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
-
+/**
+ * TODO : Replace all the DateTime related logic of this class with {@link io.airbyte.db.jdbc.DateTimeConverter}
+ */
 public class DataTypeUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
