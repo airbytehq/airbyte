@@ -104,6 +104,8 @@ class CdcAcceptanceTests {
   private static final String ID_AND_NAME_TABLE = "id_and_name";
   private static final String COLOR_PALETTE_TABLE = "color_palette";
   private static final String COLUMN_COLOR = "color";
+  private static final String STARTING = "Starting {}";
+  private static final String STARTING_SYNC_ONE = "Starting {} sync 1";
 
   // version of the postgres destination connector that was built with the
   // old Airbyte protocol that does not contain any per-stream logic/fields
@@ -157,10 +159,10 @@ class CdcAcceptanceTests {
 
   @Test
   void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -253,7 +255,7 @@ class CdcAcceptanceTests {
   // built on the old protocol that did not have any per-stream state fields
   @Test
   void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    LOGGER.info(STARTING, testInfo.getDisplayName());
     final UUID postgresDestDefId = testHarness.getPostgresDestinationDefinitionId();
     // Fetch the current/most recent source definition version
     final DestinationDefinitionRead destinationDefinitionRead = apiClient.getDestinationDefinitionApi().getDestinationDefinition(
@@ -274,10 +276,10 @@ class CdcAcceptanceTests {
 
   @Test
   void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -313,10 +315,10 @@ class CdcAcceptanceTests {
 
   @Test
   void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -356,10 +358,10 @@ class CdcAcceptanceTests {
 
   @Test
   void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
