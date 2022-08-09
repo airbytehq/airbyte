@@ -1,6 +1,7 @@
 {
   "type": ["null", "object"],
   "additionalProperties": true,
+  "description": "Gets a paginated list of Custom Roles",
   "properties": {
     "id": {
       "type": ["null", "string"]
