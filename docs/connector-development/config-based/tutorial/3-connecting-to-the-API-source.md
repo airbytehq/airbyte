@@ -85,13 +85,12 @@ check:
 
 2. Next we'll set the base url.
    According to the API documentation, the base url is `"https://api.exchangeratesapi.io/v1/"`.
-   This can be set in the requester definition.
 
 ```
-requester:
-  type: HttpRequester
-  name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/" # Only change the url_base field
+retriever:
+  type: SimpleRetriever
+  $options:
+    url_base: "https://api.apilayer.com" # Only change the url_base field
 ```
 
 3. We can fetch the latest data by submitting a request to "/latest". This path is specific to the stream, so we'll set within the `rates_stream` definition.
@@ -101,14 +100,14 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-    primary_key: "date"
+  primary_key: "date"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path: "/latest"
+      path: "/exchangerates_data/latest"
 ```
 
 4. Next, we'll set up the authentication.
@@ -119,20 +118,27 @@ rates_stream:
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
-  request_options_provider:
-    request_parameters:
-      access_key: "{{ config.access_key }}"
+  authenticator:
+    type: ApiKeyAuthenticator
+    header: "apikey"
+    api_token: "{{ config['access_key'] }}"
 ```
 
 5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter. Let's assume the user will configure this via the connector configuration in parameter called `base`; we'll pass the value input by the user as a request parameter:
 
 ```
-request_options_provider:
-  request_parameters:
-    access_key: "{{ config.access_key }}"
-    base: "{{ config.base }}"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  http_method: "GET"
+  authenticator:
+    type: ApiKeyAuthenticator
+    header: "apikey"
+    api_token: "{{ config['access_key'] }}"
+  request_options_provider:
+    request_parameters:
+      base: "{{ config.base }}"
 ```
 
 The full connection definition should now look like
