@@ -4,7 +4,28 @@ on:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+
   shared-pulls:
+    name: "Run github actions to organize issues.  SAFE_TO_PUSH_WHEN_FAILING"
+    needs:
+      - find_valid_pat
     runs-on: ubuntu-latest
     steps:
       - uses: nick-fields/private-action-loader@v3
@@ -12,5 +33,5 @@ jobs:
           pal-repo-token: "${{ secrets.OCTAVIA_PAT }}"
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
-          token: "${{ secrets.OCTAVIA_PAT }}"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
           command: "pull"
