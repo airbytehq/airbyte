@@ -91,6 +91,7 @@ describe("<ConnectionForm />", () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });

@@ -43,6 +43,7 @@ export async function render<
     renderResult = await rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return renderResult!;
 }
 export const TestWrapper: React.FC = ({ children }) => (
