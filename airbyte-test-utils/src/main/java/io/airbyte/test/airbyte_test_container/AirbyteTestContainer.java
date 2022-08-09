@@ -70,7 +70,9 @@ public class AirbyteTestContainer {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void startAsync() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
-    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
+    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile)
+        .withEnv(env);
+
     // Only expose logs related to db migrations.
     serviceLogConsumer(dockerComposeContainer, "init");
     serviceLogConsumer(dockerComposeContainer, "bootloader");

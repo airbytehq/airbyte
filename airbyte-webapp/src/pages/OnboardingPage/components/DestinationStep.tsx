@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -30,10 +31,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
 
   const { mutateAsync: createDestination } = useCreateDestination();
 
-  const trackNewDestinationAction = useTrackAction(
-    TrackActionNamespace.DESTINATION,
-    TrackActionLegacyType.NEW_DESTINATION
-  );
+  const analyticsService = useAnalyticsService();
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
@@ -75,7 +73,8 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
+    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
+      actionDescription: "Destination connector type selected",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });
