@@ -39,7 +39,7 @@ selector:
   extractor:
     transform: "[_]"
   record_filter:
-    condition: "{{ record.created_at < stream_slice.start_time }}"
+    condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
 ```
 
 ## Transformations
@@ -70,7 +70,7 @@ stream:
     - type: AddFields
       fields:
         - path: ["start_date"]
-          value: {{ stream_slice.start_date }}
+          value: {{ stream_slice['start_date'] }}
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.

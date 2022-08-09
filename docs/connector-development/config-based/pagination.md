@@ -91,7 +91,7 @@ paginator:
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"
-    cursor_value: "{{ last_records[-1].id }}"
+    cursor_value: "{{ last_records[-1]['id'] }}"
   page_token:
     field_name: "from"
     inject_into: "request_parameter"
@@ -110,7 +110,7 @@ paginator:
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"
-    cursor_value: "{{ headers.urls.next }}"
+    cursor_value: "{{ headers['urls']['next'] }}"
   page_token:
     inject_into: "path"
 ```

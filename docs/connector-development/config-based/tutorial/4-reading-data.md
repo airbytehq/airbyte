@@ -72,7 +72,7 @@ requester:
     api_token: "{{ config['access_key'] }}"
   request_options_provider:
     request_parameters:
-      base: "{{ config.base }}"
+      base: "{{ config['base'] }}"
 retriever:
   type: SimpleRetriever
   $options:

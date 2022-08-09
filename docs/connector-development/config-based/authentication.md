@@ -67,7 +67,7 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 authenticator:
   type: "OAuthAuthenticator"
   token_refresh_endpoint: "https://api.searchmetrics.com/v4/token"
-  client_id: "{{ config.api_key }}"
-  client_secret: "{{ config.client_secret }}"
+  client_id: "{{ config['api_key'] }}"
+  client_secret: "{{ config['client_secret'] }}"
   refresh_token: ""
 ```

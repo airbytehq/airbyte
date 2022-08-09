@@ -74,7 +74,7 @@ rates_stream:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
+      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
 ```
 
 You can test these changes by executing the `read` operation:
@@ -97,14 +97,14 @@ Let's first define a stream slicer at the top level of the connector definition:
 stream_slicer:
   type: "DatetimeStreamSlicer"
   start_datetime:
-    datetime: "{{ config.start_date }}"
+    datetime: "{{ config['start_date'] }}"
     datetime_format: "%Y-%m-%d"
   end_datetime:
     datetime: "{{ now_local() }}"
     datetime_format: "%Y-%m-%d %H:%M:%S.%f"
   step: "1d"
   datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options.stream_cursor_field }}"
+  cursor_field: "{{ options['stream_cursor_field'] }}"
 ```
 
 and refer to it in the stream's retriever.
@@ -149,7 +149,7 @@ rates_stream:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
+      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
@@ -177,14 +177,14 @@ requester:
 stream_slicer:
   type: "DatetimeStreamSlicer"
   start_datetime:
-    datetime: "{{ config.start_date }}"
+    datetime: "{{ config['start_date'] }}"
     datetime_format: "%Y-%m-%d"
   end_datetime:
     datetime: "{{ now_local() }}"
     datetime_format: "%Y-%m-%d %H:%M:%S.%f"
   step: "1d"
   datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options.stream_cursor_field }}"
+  cursor_field: "{{ options['stream_cursor_field'] }}"
 retriever:
   type: SimpleRetriever
   $options:
@@ -209,7 +209,7 @@ rates_stream:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
+      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
 streams:
   - "*ref(rates_stream)"
 check:

@@ -124,7 +124,7 @@ outer:
   $options:
     MyKey: MyValue
   inner:
-   k2: "MyKey is {{ options.MyKey }}"
+   k2: "MyKey is {{ options['MyKey'] }}"
 ```
 
 In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
