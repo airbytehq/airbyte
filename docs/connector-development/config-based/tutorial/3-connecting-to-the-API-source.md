@@ -94,7 +94,7 @@ retriever:
     url_base: "https://api.apilayer.com" # Only change the url_base field
 ```
 
-3. We can fetch the latest data by submitting a request to "/latest". This path is specific to the stream, so we'll set within the `rates_stream` definition.
+3. We can fetch the latest data by submitting a request to the `/latest` API endpoint. This path is specific to the stream, so we'll set it within the `rates_stream` definition, at the `retriever` level.
 
 ```
 rates_stream:
