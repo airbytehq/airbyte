@@ -23,6 +23,7 @@ MAIN_REQUIREMENTS = [
     "deepdiff~=5.8.0",
     "requests-mock",
     "pytest-mock~=3.6.1",
+    "pytest-cov~=3.0.0",
 ]
 
 setuptools.setup(
