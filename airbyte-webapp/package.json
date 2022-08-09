@@ -16,10 +16,11 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 --quiet",
     "build:storybook": "build-storybook -o 'build/storybook'",
-    "lint": "eslint --ext js,ts,tsx src",
+    "lint": "eslint --ext js,ts,tsx src && stylelint \"**/*.scss\"",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
-    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
+    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts",
+    "stylelint-check": "stylelint-config-prettier-scss-check"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
@@ -129,9 +130,7 @@
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write",
-      "stylelint-config-prettier-scss-check",
-      "stylelint \"**/*.scss\""
+      "prettier --write"
     ]
   },
   "browserslist": {
