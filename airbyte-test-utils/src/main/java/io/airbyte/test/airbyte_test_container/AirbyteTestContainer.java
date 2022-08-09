@@ -40,6 +40,7 @@ import org.testcontainers.containers.output.OutputFrame;
  * { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also
  * handles the nuances of configuring the Airbyte docker-compose configuration in test containers.
  */
+@SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class AirbyteTestContainer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTestContainer.class);

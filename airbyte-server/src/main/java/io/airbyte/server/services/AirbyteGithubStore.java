@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class AirbyteGithubStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
