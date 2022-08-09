@@ -802,7 +802,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             record["pull_request_url"] = pull_request["url"]
             if record["commit"]:
                 record["commit_id"] = record.pop("commit")["oid"]
-            if record["user"] is not None:
+            if record["user"]:
                 record["user"]["type"] = record["user"].pop("__typename")
             # for backward compatibility with REST API response
             record["_links"] = {
