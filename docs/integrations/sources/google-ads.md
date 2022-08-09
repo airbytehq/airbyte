@@ -4,86 +4,78 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Prerequisites
 
-Google Ads registered account with
-
-- Customer ID
-- Login Customer ID (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
-- Custom GAQL Queries (if needed)
-
-Also:
-
-- Start Date
-- End Date
-- Conversion Window
-
-For Airbyte OSS:
-Google Ads Account with an approved Developer Token. (note: In order to get API access to Google Ads, you must have a "manager" account; standard accounts cannot generate a Developer Token. This manager account must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://support.google.com/google-ads/answer/6139186).)
-You'll also need to find these values. See the [setup guide](#setup-guide) for instructions.
-
-- Client ID
-- Client Secret
-- Refresh Token
+- A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
+- (For Airbyte OSS) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
 
 ## Setup guide
 
-### Step 1: Set up Google Ads
+### Step 1: (For Airbyte OSS) Apply for a developer token
 
-This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
+:::note
+You'll need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/) since Google Ads accounts cannot generate a developer token.
+::: 
 
-1. Create a Google Ads Account. Here are [Google's instructions](https://support.google.com/google-ads/answer/6366720) on how to create one.
-2. Create a Google Ads MANAGER Account. Here are [Google's instructions](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
-3. You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
-4. Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
+To set up the Google Ads source connector with Airbyte OSS, you'll need a developer token. This token allows you to access your data from the Google Ads API. However, Google is selective about which software and use cases can get a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and make sure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
 
-### Airbyte Open Source additional setup steps
+Follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token) to apply for the token. Note that you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. 
 
-1. Apply for a developer token (**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token) on your Manager account. This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
-2. Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
+When you apply for a token, make sure to mention:
 
-### How to apply for the developer token
-
-Google is very picky about which software and which use case can get access to a developer token. The Airbyte team has worked with the Google Ads team to whitelist Airbyte and make sure you can get one (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
-When you apply for a token, you need to mention:
-
-- Why you need the token (eg: want to run some internal analytics...)
+- Why you need the token (example: Want to run some internal analytics)
 - That you will be using the Airbyte Open Source project
 - That you have full access to the code base (because we're open source)
 - That you have full access to the server running the code (because you're self-hosting Airbyte)
 
-## Step 2: Set up the Google Ads connector in Airbyte
+### Step 2: Set up the Google Ads connector in Airbyte
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud
+
+To set up Google Ads as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Google Ads connector and select **Google Ads** from the Source type dropdown.
-4. Click `Authenticate your Google Ads account` to sign in with Google and authorize your account.
-5. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
-6. If your access to the account is through a manager account, get the customer ID of the manager account.
-7. Fill out a start date, and optionally, a conversion window, and custom [GAQL](https://developers.google.com/google-ads/api/docs/query/overview).
-8. You're done.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
+4. Enter a **Name** for your source.
+5. Click **Sign in with Google** to authenticate your Google Ads account.
+6. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
+7. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
+9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
+10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
+11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. 
+12. Click **Set up source**.
 
-### For Airbyte OSS:
+#### For Airbyte OSS
 
-1. Create a new Google Ads source with a suitable name.
-2. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
-3. If your access to the account is through a manager account, get the customer ID of the manager account.
-4. Fill out a start date, and optionally, end date and a conversion window, and custom [GAQL](https://developers.google.com/google-ads/api/docs/query/overview).
-5. Fill out the Client ID, Client Secret, Access Token(if any), Refresh Token and the Developer Token from [Step 1](#step-1-set-up-google-ads))
-6. You're done
+To set up Google Ads as a source in Airbyte OSS:
+
+1. Log into your Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
+4. Enter a **Name** for your source.
+5. Enter the [**Developer Token**](#step-1-for-airbyte-oss-apply-for-a-developer-token).
+6. To authenticate your Google account via OAuth, enter your Google application's [**Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**](https://developers.google.com/google-ads/api/docs/first-call/overview).
+7. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
+8. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+9. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
+10. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
+11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
+12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. 
+13. Click **Set up source**.
 
 ## Supported sync modes
 
 The Google Ads source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh | Overwrite
-- Full Refresh | Append
-- Incremental Sync | Append
-- Incremental Sync | Deduped History
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
-This source is capable of syncing the tables described below and can sync custom queries using GAGL.
+The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
+
 ### Main Tables
 
 - [accounts](https://developers.google.com/google-ads/api/fields/v9/customer)
@@ -108,33 +100,23 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 - [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 - [user_location_report](https://developers.google.com/google-ads/api/fields/v9/user_location_view)
 
-    :::note
-    Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
-    :::
+:::note
+Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+:::
 
-    :::note
-    Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
-    :::
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
-    :::note
-    For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
-    :::
-
-## Custom Query: understanding Google Ads Query Language
+## Custom Query: Understanding Google Ads Query Language
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
-    :::note
-    Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
-    :::
+Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
 
-    :::warning
-    Please take into account Google's note on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords, and remove any row that is not associated with a keyword. This is often not obvious and undesired behaviour and can lead to missing data records. If you do need this field in the stream, please choose adding a new stream instead of editing existing ones.
-    :::
+Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
 
 ## Performance considerations
 
-This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
+This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
 ## Changelog
 
