@@ -13,11 +13,10 @@ public class MySqlUtils {
   @VisibleForTesting
   public static Certificate getCertificate(final MySQLContainer<?> container) throws IOException, InterruptedException {
     container.execInContainer("sh", "-c", "mkdir -p /etc/mysql/newcerts");
-    container.execInContainer("sh", "-c", "chown -R test:test /etc/mysql/newcerts");
     // create root certificates
     container.execInContainer("sh", "-c", "openssl genrsa 2048 > /etc/mysql/newcerts/ca-key.pem");
     container.execInContainer("sh", "-c",
-        "openssl req -new -x509 -nodes -days 1000 -key /etc/mysql/newcerts/ca-key.pem > /etc/mysql/newcerts/ca-cert.pem -subj \"/CN=127.0.0.1\"");
+            "openssl req -new -x509 -nodes -days 1000 -key /etc/mysql/newcerts/ca-key.pem > /etc/mysql/newcerts/ca-cert.pem -subj \"/CN=localhost\"");
     // create server certificates
     container.execInContainer("sh", "-c",
         "openssl req -newkey rsa:2048 -days 1000 -nodes -keyout /etc/mysql/newcerts/server-key.pem > /etc/mysql/newcerts/server-req.pem -subj \"/CN=localhost\"");
@@ -29,14 +28,18 @@ public class MySqlUtils {
     container.execInContainer("sh", "-c",
         "openssl x509 -req -in /etc/mysql/newcerts/client-req.pem -days 1000 -CA /etc/mysql/newcerts/ca-cert.pem -CAkey /etc/mysql/newcerts/ca-key.pem -set_serial 01 > /etc/mysql/newcerts/client-cert.pem");
     // add root and server certificates to config file
-    container.execInContainer("sh", "-c", "sed -i '31 a ssl-ca=/etc/mysql/newcerts/ca-cert.pem' /etc/my.cnf");
-    container.execInContainer("sh", "-c", "sed -i '32 a ssl-cert=/etc/mysql/newcerts/server-cert.pem' /etc/my.cnf");
-    container.execInContainer("sh", "-c", "sed -i '33 a ssl-key=/etc/mysql/newcerts/server-key.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '31 a ssl' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '32 a ssl-ca=/etc/mysql/newcerts/ca-cert.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '33 a ssl-cert=/etc/mysql/newcerts/server-cert.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '34 a ssl-key=/etc/mysql/newcerts/server-key.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '35 a require_secure_transport=ON' /etc/my.cnf");
     // add client certificates to config file
-    container.execInContainer("sh", "-c", "sed -i '38 a ssl-ca=/etc/mysql/newcerts/ca-cert.pem' /etc/my.cnf");
-    container.execInContainer("sh", "-c", "sed -i '39 a ssl-cert=/etc/mysql/newcerts/client-cert.pem' /etc/my.cnf");
-    container.execInContainer("sh", "-c", "sed -i '40 a ssl-key=/etc/mysql/newcerts/client-key.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '39 a [client]' /etc/mysql/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '40 a ssl-ca=/etc/mysql/newcerts/ca-cert.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '41 a ssl-cert=/etc/mysql/newcerts/client-cert.pem' /etc/my.cnf");
+    container.execInContainer("sh", "-c", "sed -i '42 a ssl-key=/etc/mysql/newcerts/client-key.pem' /etc/my.cnf");
     // restart server
+    container.execInContainer("sh", "-c", "chown -R mysql:mysql /etc/mysql/newcerts");
     container.execInContainer("sh", "-c", "service mysqld restart");
     // copy root certificate and client certificates
     var caCert = container.execInContainer("sh", "-c", "cat /etc/mysql/newcerts/ca-cert.pem").getStdout().trim();
