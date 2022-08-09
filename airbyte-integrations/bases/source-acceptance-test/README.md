@@ -35,13 +35,13 @@ These iterations are more conveniently achieved by remaining in the current dire
 1. Create a `virtualenv`: `python -m venv .venv`
 2. Activate the `virtualenv`: `source ./.venv/bin/activate`
 3. Install requirements: `pip install -e .`
-4. Run the unit tests on SAT: `python -m pytest -s unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+4. Run the unit tests on SAT: `python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
 5. Make the changes you want:
     * Global pytest fixtures are defined in `./source_acceptance_test/conftest.py`
     * Existing test modules are defined in `./source_acceptance_test/tests`
     * `acceptance-test-config.yaml` structure is defined in `./source_acceptance_test/config.py`
 6. Unit test your changes by adding tests to `./unit_tests`
-7. Run the unit tests on SAT again: `python -m pytest -s unit_tests`, make sure the coverage did not decrease.
+7. Run the unit tests on SAT again: `python -m pytest unit_tests`, make sure the coverage did not decrease.
 8. Manually test the changes you made by running SAT on a specific connector. e.g. `python -m pytest -p source_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
 9. Make sure you updated `docs/connector-development/testing-connectors/source-acceptance-tests-reference.md` according to your changes
 10. Bump the SAT version in `airbyte-integrations/bases/source-acceptance-test/Dockerfile`
