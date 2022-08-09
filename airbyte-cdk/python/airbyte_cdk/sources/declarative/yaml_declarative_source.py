@@ -42,9 +42,7 @@ class YamlDeclarativeSource(DeclarativeSource):
         for s in stream_configs:
             if "class_name" not in s:
                 s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
-        all_streams = [self._factory.create_component(stream_config, config)() for stream_config in self._source_config["streams"]]
-        print(f"all_streams:\n{all_streams}")
-        return all_streams
+        return [self._factory.create_component(stream_config, config)() for stream_config in self._source_config["streams"]]
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         with open(path_to_yaml_file, "r") as f:
