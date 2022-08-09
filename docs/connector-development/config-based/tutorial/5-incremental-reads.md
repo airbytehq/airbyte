@@ -62,13 +62,19 @@ And we'll update the `path` in the connector definition to point to `/{{ config.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/latest`:
 
 ```
-retriever:
-  requester:
-    $ref: "*ref(requester)"
-    path:
-      type: "InterpolatedString"
-      string: "/{{ config.start_date }}"
-      default: "/latest"
+rates_stream:
+  type: DeclarativeStream
+  $options:
+    name: "rates"
+    stream_cursor_field: "date"
+  primary_key: "date"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
 ```
 
 You can test these changes by executing the `read` operation:
@@ -98,6 +104,7 @@ stream_slicer:
     datetime_format: "%Y-%m-%d %H:%M:%S.%f"
   step: "1d"
   datetime_format: "%Y-%m-%d"
+  cursor_field: "{{ options.stream_cursor_field }}"
 ```
 
 and refer to it in the stream's retriever.
@@ -111,22 +118,38 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-    cursor_field: "date
+    stream_cursor_field: "date"
+```
+
+We'll also update the retriever to user the stream slicer:
+
+```
+retriever:
+  type: SimpleRetriever
+  $options:
+    url_base: "https://api.apilayer.com" # Only change the url_base field
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  stream_slicer:
+    $ref: "*ref(stream_slicer)"
+```
+
+Finally, we'll update the path to point to the `stream_slice`'s start_date
+
+```
+rates_stream:
+  type: DeclarativeStream
+  $options:
+    name: "rates"
+    stream_cursor_field: "date"
   primary_key: "date"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
     $ref: "*ref(retriever)"
-    stream_slicer:
-      $ref: "*ref(stream_slicer)"
-```
-
-And we'll update the path to point to the `stream_slice`'s start_date
-
-```
-requester:
-  ref: "*ref(requester)"
-  path: "{{ stream_slice.start_date or 'latest' }}"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
