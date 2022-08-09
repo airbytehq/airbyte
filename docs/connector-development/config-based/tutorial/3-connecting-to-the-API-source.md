@@ -74,7 +74,7 @@ rates_stream:
   primary_key: "date"
 ```
 
-and update the references in the streams list and check block
+and update the references in the `streams` list and `check` block
 
 ```
 streams:
