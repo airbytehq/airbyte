@@ -27,6 +27,7 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
                                                 final String jobId,
                                                 final int jobAttempt,
