@@ -2,11 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-# Created by PyCharm Professional.
-# User: romandemyanchuk
-# Date: 22.07.2022
-# Time: 12:11
-# To change this template use File | Settings | File and Code Templates.
 from urllib.parse import urlparse
 
 import requests
