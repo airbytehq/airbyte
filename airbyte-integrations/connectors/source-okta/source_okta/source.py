@@ -78,22 +78,21 @@ class OktaStream(HttpStream, ABC):
 
 
 class IncrementalOktaStream(OktaStream, ABC):
-    def __init__(self, url_base: str, *args, **kwargs):
-        super().__init__(url_base, *args, **kwargs)
-        self._state = {}
+    min_id = ''
 
     @property
     @abstractmethod
     def cursor_field(self) -> str:
         pass
 
-    @property
-    def state(self) -> Mapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._state[self.cursor_field] = value[self.cursor_field]
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        lowest_date = self.min_id if self.min_id else str(pendulum.datetime.min)
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, lowest_date),
+                current_stream_state.get(self.cursor_field, lowest_date),
+            )
+        }
 
     def request_params(
         self,
@@ -120,11 +119,20 @@ class GroupMembers(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
     use_cache = True
+    min_id = "00u00000000000000000"
 
     def stream_slices(self, **kwargs):
         group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, self.min_id),
+                current_stream_state.get(self.cursor_field, self.min_id),
+            )
+        }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         group_id = stream_slice["group_id"]
@@ -136,11 +144,8 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # Filter param should be ignored SCIM filter expressions can't use the published
-        # attribute since it may conflict with the logic of the since, after, and until query params.
-        # Docs: https://developer.okta.com/docs/reference/api/system-log/#expression-filter
         params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_user_id
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
         params["after"] = latest_entry
         return params
 
@@ -246,9 +251,18 @@ class Users(IncrementalOktaStream):
 class ResourceSets(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
+    min_id = 'iam00000000000000000' 
 
     def path(self, **kwargs) -> str:
         return "iam/resource-sets"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, self.min_id),
+                current_stream_state.get(self.cursor_field, self.min_id),
+            )
+        }
 
     def parse_response(
         self,
