@@ -5,9 +5,11 @@
 .icon {
   margin-right: 7px;
   margin-top: -1px;
+
   &.plus {
     color: colors.$green;
   }
+
   &.minus {
     color: colors.$red;
   }

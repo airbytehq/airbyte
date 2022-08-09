@@ -12,7 +12,8 @@ def commonConfigs = [
     'package.json',
     'package-lock.json',
     'tsconfig.json',
-    '.prettierrc.js'
+    '.prettierrc.js',
+    '.stylelintrc'
 ]
 
 node {

@@ -16,6 +16,14 @@
   position: relative;
 }
 
+.icon {
+  display: none;
+  position: absolute;
+  right: variables.$spacing-xl;
+  font-size: 18px;
+  color: colors.$blue;
+}
+
 .nameContainer {
   composes: textContainer;
   background-color: colors.$beige-100;
@@ -46,14 +54,6 @@
       display: block;
     }
   }
-}
-
-.icon {
-  display: none;
-  position: absolute;
-  right: variables.$spacing-xl;
-  font-size: 18px;
-  color: colors.$blue;
 }
 
 .editingContainer {
