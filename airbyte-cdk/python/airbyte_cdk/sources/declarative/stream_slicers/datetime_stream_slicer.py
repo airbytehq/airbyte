@@ -5,9 +5,10 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -77,8 +78,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
+        self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
+        print(f"initial format: {self.start_datetime.datetime_format}")
         if not self.start_datetime.datetime_format:
             self.start_datetime.datetime_format = self.datetime_format
         if not self.end_datetime.datetime_format:
@@ -142,7 +145,12 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
         start_datetime = max(cursor_datetime, start_datetime)
 
-        state_date = self.parse_date(stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state)))
+        stream_state_unparsed_date = stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state))
+
+        if stream_state_unparsed_date:
+            state_date = self.parse_date(stream_state_unparsed_date)
+        else:
+            state_date = None
         if state_date:
             # If the input_state's date is greater than start_datetime, the start of the time window is the state's next day
             next_date = state_date + datetime.timedelta(days=1)
@@ -151,13 +159,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
-        # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
-        # It's safer to use the timestamp() method than the %s directive
-        # See https://stackoverflow.com/a/4974930
-        if self.datetime_format == "%s":
-            return str(int(dt.timestamp()))
-        else:
-            return dt.strftime(self.datetime_format)
+        return self._parser.format(dt, self.datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         start_field = self.stream_slice_field_start.eval(self.config)
@@ -170,23 +172,11 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
-        cursor_date = self.parse_date(cursor_value or default_date)
+        cursor_date = cursor_value or default_date
         return comparator(cursor_date, default_date)
 
-    def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
-        if isinstance(date, str):
-            # "%s" is a valid (but unreliable) directive for formatting, but not for parsing
-            # It is defined as
-            # The number of seconds since the Epoch, 1970-01-01 00:00:00+0000 (UTC). https://man7.org/linux/man-pages/man3/strptime.3.html
-            #
-            # The recommended way to parse a date from its timestamp representation is to use datetime.fromtimestamp
-            # See https://stackoverflow.com/questions/4974712/python-setting-a-datetime-in-a-specific-timezone-without-utc-conversions/4974930#4974930
-            if self.datetime_format == "%s":
-                return datetime.datetime.fromtimestamp(int(date), tz=self._timezone)
-            else:
-                return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
-        else:
-            return date
+    def parse_date(self, date: str) -> datetime.datetime:
+        return self._parser.parse(date, self.datetime_format, self._timezone)
 
     @classmethod
     def _parse_timedelta(cls, time_str):
