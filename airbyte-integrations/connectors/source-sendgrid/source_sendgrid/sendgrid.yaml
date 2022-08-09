@@ -3,7 +3,7 @@ definitions:
 
   schema_loader:
     type: JsonSchema
-    file_path: "./source_sendgrid/schemas/{{ options.stream_name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   result_selector:
     type: RecordSelector
     extractor:
@@ -55,7 +55,7 @@ definitions:
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
-    primary_key: "{{ options['stream_primary_key'] }}"
+    primary_key: "{{ options['primary_key'] }}"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
@@ -77,8 +77,8 @@ definitions:
 streams:
   - type: DeclarativeStream
     $options:
-      stream_name: "lists"
-      stream_primary_key: "id"
+      name: "lists"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -92,8 +92,8 @@ streams:
         $ref: "*ref(definitions.cursor_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "campaigns"
-      stream_primary_key: "id"
+      name: "campaigns"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -107,8 +107,8 @@ streams:
         $ref: "*ref(definitions.cursor_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "contacts"
-      stream_primary_key: "id"
+      name: "contacts"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -122,8 +122,8 @@ streams:
         type: "NoPagination"
   - type: DeclarativeStream
     $options:
-      stream_name: "stats_automations"
-      stream_primary_key: "id"
+      name: "stats_automations"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -137,8 +137,8 @@ streams:
         $ref: "*ref(definitions.cursor_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "segments"
-      stream_primary_key: "id"
+      name: "segments"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -152,8 +152,8 @@ streams:
         type: "NoPagination"
   - type: DeclarativeStream
     $options:
-      stream_name: "single_sends"
-      stream_primary_key: "id"
+      name: "single_sends"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -167,8 +167,8 @@ streams:
         $ref: "*ref(definitions.cursor_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "templates"
-      stream_primary_key: "id"
+      name: "templates"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -185,8 +185,8 @@ streams:
         $ref: "*ref(definitions.cursor_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "bounces"
-      stream_primary_key: "email"
+      name: "bounces"
+      primary_key: "email"
       stream_cursor_field: "created"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -203,8 +203,8 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
   - type: DeclarativeStream
     $options:
-      stream_name: "global_suppressions"
-      stream_primary_key: "email"
+      name: "global_suppressions"
+      primary_key: "email"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -220,8 +220,8 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
   - type: DeclarativeStream
     $options:
-      stream_name: "blocks"
-      stream_primary_key: "email"
+      name: "blocks"
+      primary_key: "email"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -237,8 +237,8 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
   - type: DeclarativeStream
     $options:
-      stream_name: "suppression_groups"
-      stream_primary_key: "id"
+      name: "suppression_groups"
+      primary_key: "id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -252,8 +252,8 @@ streams:
         type: "NoPagination"
   - type: DeclarativeStream
     $options:
-      stream_name: "suppression_group_members"
-      stream_primary_key: "group_id"
+      name: "suppression_group_members"
+      primary_key: "group_id"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -267,8 +267,8 @@ streams:
         $ref: "*ref(definitions.offset_paginator)"
   - type: DeclarativeStream
     $options:
-      stream_name: "invalid_emails"
-      stream_primary_key: "email"
+      name: "invalid_emails"
+      primary_key: "email"
       stream_cursor_field: "created"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -285,8 +285,8 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
   - type: DeclarativeStream
     $options:
-      stream_name: "spam_reports"
-      stream_primary_key: "email"
+      name: "spam_reports"
+      primary_key: "email"
       stream_cursor_field: "created"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -304,8 +304,8 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
   - type: DeclarativeStream
     $options:
-      stream_name: "messages"
-      stream_primary_key: "msg_id"
+      name: "messages"
+      primary_key: "msg_id"
       stream_cursor_field: "last_event_time"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -324,4 +324,4 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
 check:
   type: CheckStream
-  stream_names: ["lists"]
+  names: ["lists"]
