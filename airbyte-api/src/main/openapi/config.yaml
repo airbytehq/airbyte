@@ -3466,6 +3466,7 @@ components:
       enum:
         - active
         - inactive
+        - deprecating
         - deprecated
     ConnectionSchedule:
       description: if null, then no schedule is set.

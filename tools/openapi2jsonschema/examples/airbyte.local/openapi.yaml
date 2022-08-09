@@ -1754,6 +1754,7 @@ components:
       enum:
         - active
         - inactive
+        - deprecating
         - deprecated
       type: string
     ConnectionUpdate:

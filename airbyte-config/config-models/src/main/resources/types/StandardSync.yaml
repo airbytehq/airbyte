@@ -45,6 +45,7 @@ properties:
     enum:
       - active
       - inactive
+      - deprecating
       - deprecated
   # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove. Prefer the scheduleType and scheduleData properties.
   schedule:

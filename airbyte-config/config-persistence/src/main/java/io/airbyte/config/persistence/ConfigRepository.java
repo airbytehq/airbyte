@@ -893,6 +893,7 @@ public class ConfigRepository {
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
         .and(CONNECTION.STATUS.notEqual(StatusType.deprecated))
+        // .and(CONNECTION.STATUS.notEqual(StatusType.depricating))
         .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
