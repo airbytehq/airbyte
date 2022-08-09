@@ -108,7 +108,7 @@ jobs_openings_stream:
       path: "jobs/{{ stream_slice.parent_id }}/openings"
     stream_slicer:
       type: SubstreamSlicer
-      parent_streams_configs:
+      parent_stream_configs:
         - stream: "*ref(jobs_stream)"
           parent_key: "id"
           stream_slice_field: "parent_id"
