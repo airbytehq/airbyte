@@ -12,6 +12,7 @@ export interface ModalProps {
   clear?: boolean;
   closeOnBackground?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
+  testId?: string;
 }
 
 const cardStyleBySize = {
@@ -21,7 +22,7 @@ const cardStyleBySize = {
   xl: styles.xl,
 };
 
-const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground, size }) => {
+const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground, size, testId }) => {
   const handleUserKeyPress = useCallback((event: KeyboardEvent, closeModal: () => void) => {
     const { key } = event;
     // Escape key
@@ -44,7 +45,11 @@ const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnB
   }, [handleUserKeyPress, onClose]);
 
   return createPortal(
-    <div className={styles.modal} onClick={() => (closeOnBackground && onClose ? onClose() : null)}>
+    <div
+      className={styles.modal}
+      onClick={() => (closeOnBackground && onClose ? onClose() : null)}
+      data-testid={testId}
+    >
       {clear ? (
         children
       ) : (
