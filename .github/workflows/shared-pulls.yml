@@ -17,6 +17,7 @@ jobs:
         id: variables
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_PAT }} \
             ${{ secrets.AIRBYTEIO_PAT }} \
             ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
@@ -30,7 +31,7 @@ jobs:
     steps:
       - uses: nick-fields/private-action-loader@v3
         with:
-          pal-repo-token: "${{ secrets.OCTAVIA_PAT }}"
+          pal-repo-token: ${{ needs.find_valid_pat.outputs.pat }}
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
           token: ${{ needs.find_valid_pat.outputs.pat }}
