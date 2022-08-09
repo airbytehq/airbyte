@@ -287,7 +287,6 @@ class TestStreamGroupMembers:
         assert stream.state == {"id": "test_user_group_id"}
 
 
-
 class TestStreamGroupRoleAssignment:
     def test_group_role_assignments(self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url, start_date):
         stream = GroupRoleAssignments(url_base=url_base, start_date=start_date)
@@ -390,7 +389,7 @@ class TestStreamResourceSets:
         response.json = MagicMock(return_value={"resource-sets": [resource_set_instance]})
         inputs = {"response": response}
         result = stream.next_page_token(**inputs)
-        assert result == None
+        assert result is None
 
     def test_resource_sets_request_params(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url):
         stream = ResourceSets(url_base=url_base)
