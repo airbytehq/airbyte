@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.1.70
+- Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
+
+## 0.1.70
 - Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
 - Bugfix: Set stream slicer's request options in SimpleRetriever
 
