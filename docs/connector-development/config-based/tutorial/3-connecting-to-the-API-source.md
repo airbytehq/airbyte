@@ -205,7 +205,7 @@ Next, we'll [extract the records from the response](4-reading-data.md)
 
 ## More readings
 
-- <connector_definition_yaml_file.yaml>
+- [Connector definition YAML file](../yaml-structure.md)
 - [Config-based connectors overview](../overview.md)
 - [Authentication](../authentication.md)
 - [Request options providers](../request-options.md)
