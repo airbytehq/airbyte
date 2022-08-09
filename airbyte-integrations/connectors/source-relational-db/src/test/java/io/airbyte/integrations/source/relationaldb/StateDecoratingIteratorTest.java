@@ -45,9 +45,13 @@ class StateDecoratingIteratorTest {
   private static final AirbyteMessage RECORD_MESSAGE_2 = createRecordMessage(RECORD_VALUE_2);
   private static final AirbyteMessage STATE_MESSAGE_2 = createStateMessage(RECORD_VALUE_2);
 
-  private static final String RECORD_VALUE_3 = "xyz";
+  private static final String RECORD_VALUE_3 = "ghi";
   private static final AirbyteMessage RECORD_MESSAGE_3 = createRecordMessage(RECORD_VALUE_3);
   private static final AirbyteMessage STATE_MESSAGE_3 = createStateMessage(RECORD_VALUE_3);
+
+  private static final String RECORD_VALUE_4 = "xyz";
+  private static final AirbyteMessage RECORD_MESSAGE_4 = createRecordMessage(RECORD_VALUE_4);
+  private static final AirbyteMessage STATE_MESSAGE_4 = createStateMessage(RECORD_VALUE_4);
 
   private static AirbyteMessage createRecordMessage(final String recordValue) {
     return new AirbyteMessage()
@@ -73,6 +77,7 @@ class StateDecoratingIteratorTest {
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1)).thenReturn(STATE_MESSAGE_1.getState());
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2)).thenReturn(STATE_MESSAGE_2.getState());
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4)).thenReturn(STATE_MESSAGE_4.getState());
 
     when(stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
     when(stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
@@ -106,13 +111,13 @@ class StateDecoratingIteratorTest {
         stateManager,
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
-        RECORD_VALUE_3,
+        RECORD_VALUE_4,
         JsonSchemaPrimitive.STRING,
         0);
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
-    assertEquals(STATE_MESSAGE_3, iterator.next());
+    assertEquals(STATE_MESSAGE_4, iterator.next());
     assertFalse(iterator.hasNext());
   }
 
@@ -180,7 +185,7 @@ class StateDecoratingIteratorTest {
   @Test
   @DisplayName("When initial cursor is null, and emit state for every record")
   void testStateEmission1() {
-    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3);
+    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_4);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
         stateManager,
@@ -193,16 +198,16 @@ class StateDecoratingIteratorTest {
     assertEquals(RECORD_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
     assertEquals(STATE_MESSAGE_1, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_4, iterator1.next());
     // final state message should only be emitted once
-    assertEquals(STATE_MESSAGE_3, iterator1.next());
+    assertEquals(STATE_MESSAGE_4, iterator1.next());
     assertFalse(iterator1.hasNext());
   }
 
   @Test
   @DisplayName("When initial cursor is null, and emit state for every 2 records")
   void testStateEmission2() {
-    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3);
+    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_4);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
         stateManager,
@@ -215,15 +220,15 @@ class StateDecoratingIteratorTest {
     assertEquals(RECORD_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
     assertEquals(STATE_MESSAGE_1, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(STATE_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_4, iterator1.next());
+    assertEquals(STATE_MESSAGE_4, iterator1.next());
     assertFalse(iterator1.hasNext());
   }
 
   @Test
   @DisplayName("When initial cursor is not null")
   void testStateEmission3() {
-    messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3);
+    messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_4);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
         stateManager,
@@ -234,8 +239,8 @@ class StateDecoratingIteratorTest {
         1);
 
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(STATE_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_4, iterator1.next());
+    assertEquals(STATE_MESSAGE_4, iterator1.next());
     assertFalse(iterator1.hasNext());
   }
 
