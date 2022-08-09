@@ -16,6 +16,8 @@ from airbyte_cdk.sources.streams import Stream
 class YamlDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a yaml file"""
 
+    VALID_TOP_LEVEL_FIELDS = {"definitions", "streams", "check", "version"}
+
     def __init__(self, path_to_yaml):
         """
         :param path_to_yaml: Path to the yaml file describing the source
@@ -24,6 +26,9 @@ class YamlDeclarativeSource(DeclarativeSource):
         self._factory = DeclarativeComponentFactory()
         self._path_to_yaml = path_to_yaml
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
+
+        # Stopgap to protect the top-level namespace until it's validated through the schema
+        assert all([key in self.VALID_TOP_LEVEL_FIELDS for key in self._source_config.keys()])
 
     @property
     def connection_checker(self) -> ConnectionChecker:
