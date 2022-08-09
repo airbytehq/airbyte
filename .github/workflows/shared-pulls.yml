@@ -23,7 +23,7 @@ jobs:
             ${{ secrets.DAVINCHIA_PAT }}
 
   shared-pulls:
-    name: "Label github issues.  SAFE_TO_PUSH_WHEN_FAILING"
+    name: "Label github issues for tracking"
     needs:
       - find_valid_pat
     runs-on: ubuntu-latest
