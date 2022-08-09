@@ -27,6 +27,13 @@ _Note: this way will also build docker image for the connector_
 ```
 _Note: this will use the latest docker image for source-acceptance-test and will also build docker image for the connector_
 
+## When does SAT run?
+* When running local acceptance tests on connector:
+  * When running `sourceAcceptanceTest` `gradle` task
+  * When running or `./acceptance-test-docker.sh` in a connector project
+* When running `/test` command on a GitHub pull request.
+* When running `/publish` command on a GitHub pull request.
+* When running ` integration-test` GitHub action that is creating the [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
 
 ## Developing on the SAT 
 You may want to iterate on the SAT project: adding new tests, fixing a bug etc.
