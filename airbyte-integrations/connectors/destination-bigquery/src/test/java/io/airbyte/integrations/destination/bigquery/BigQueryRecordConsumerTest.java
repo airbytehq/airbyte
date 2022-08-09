@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -23,11 +27,14 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
   @InjectMocks
   private BigQueryRecordConsumer bigQueryRecordConsumer;
 
-  @Override protected Consumer<AirbyteMessage> getMockedConsumer() {
+  @Override
+  protected Consumer<AirbyteMessage> getMockedConsumer() {
     return outputRecordCollector;
   }
 
-  @Override protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
+  @Override
+  protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return bigQueryRecordConsumer;
   }
+
 }

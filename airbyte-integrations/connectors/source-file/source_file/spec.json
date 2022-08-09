@@ -5,7 +5,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {
