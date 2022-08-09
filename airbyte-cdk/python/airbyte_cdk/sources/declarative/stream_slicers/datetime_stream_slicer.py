@@ -144,10 +144,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
         start_datetime = max(cursor_datetime, start_datetime)
 
-        stream_state_unparsed_date = stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state))
+        state_cursor_value = stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state))
 
-        if stream_state_unparsed_date:
-            state_date = self.parse_date(stream_state_unparsed_date)
+        if state_cursor_value:
+            state_date = self.parse_date(state_cursor_value)
         else:
             state_date = None
         if state_date:
