@@ -1,5 +1,4 @@
-import React, { Suspense, useRef, useState } from "react";
-import { useEffectOnce } from "react-use";
+import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
 import { Spinner } from "components";
@@ -53,6 +52,7 @@ export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) => ("
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
+  const alreadyScrolled = useRef(false);
   const [isOpen, setIsOpen] = useState(() => linkedJobId === String(getJobId(job)));
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
@@ -62,26 +62,20 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
     setIsOpen(!isOpen);
   };
 
-  useEffectOnce(() => {
-    if (linkedJobId !== String(getJobId(job))) {
+  const onDetailsToggled = useCallback(() => {
+    if (alreadyScrolled.current || linkedJobId !== String(getJobId(job))) {
       return;
     }
-    // We need to wait here a bit, so the page has a chance to finish rendering, before starting to scroll
-    // since otherwise this scroll won't really do anything.
-    const timeout = window.setTimeout(() => {
-      scrollAnchor.current?.scrollIntoView({
-        block: "start",
-      });
-    }, 1000);
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  });
+    scrollAnchor.current?.scrollIntoView({
+      block: "start",
+    });
+    alreadyScrolled.current = true;
+  }, [job, linkedJobId]);
 
   return (
     <Item isFailed={!didSucceed} ref={scrollAnchor}>
       <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
-      <ContentWrapper isOpen={isOpen}>
+      <ContentWrapper isOpen={isOpen} onToggled={onDetailsToggled}>
         <div>
           <Suspense
             fallback={
