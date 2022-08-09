@@ -34,7 +34,7 @@ public class KinesisDestination extends BaseConnector implements Destination {
    * @return AirbyteConnectionStatus status of the connection result.
    */
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     KinesisStream kinesisStream = null;
     var streamName = "test_stream";
     try {
@@ -69,10 +69,11 @@ public class KinesisDestination extends BaseConnector implements Destination {
    * @return KinesisMessageConsumer for consuming Airbyte messages and streaming them to Kinesis.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    return new KinesisMessageConsumer(new KinesisConfig(config), configuredCatalog, outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final KinesisStream kinesisStream = new KinesisStream(new KinesisConfig(config));
+    return new KinesisMessageConsumer(configuredCatalog, kinesisStream, outputRecordCollector);
   }
 
 }

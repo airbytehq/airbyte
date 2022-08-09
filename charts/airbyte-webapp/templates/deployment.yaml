@@ -115,7 +115,10 @@ spec:
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
       {{- if .Values.extraContainers }}
-      {{ toyaml .Values.extraInitContainers | indent 8 }}
+      {{ toYaml .Values.extraContainers | indent 8 }}
+      {{- end }}
+      {{- if .Values.global.extraConrainers }}
+      {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}

@@ -7,6 +7,8 @@ import styled from "styled-components";
 import { Button, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
@@ -61,6 +63,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
+  const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
   useEffectOnce(() => {
@@ -100,6 +103,9 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       workspaceId: currentWorkspace.workspaceId,
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
+    });
+    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+      actionDescription: "Checkout Start",
     });
     // Forward to stripe as soon as we created a checkout session successfully
     window.location.assign(stripeUrl);
