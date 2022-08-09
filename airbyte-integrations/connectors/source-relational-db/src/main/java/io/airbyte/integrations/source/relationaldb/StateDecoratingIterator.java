@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Iterator;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final String cursorCandidate = getCursorCandidate(message);
         final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
         if (cursorComparison < 0) {
-          if (stateEmissionFrequency > 0 && maxCursor != null && messageIterator.hasNext() && !maxCursor.equals(initialCursor)) {
+          if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
             // Only emit an intermediate state when it is not the first or last record message,
             // because the last state message will be taken care of in a different branch.
             intermediateStateMessage = createStateMessage(false);
