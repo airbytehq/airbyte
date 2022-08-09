@@ -70,7 +70,7 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-    primary_key: "date"
+  primary_key: "date"
 ```
 
 and update the references in the streams list and check block
