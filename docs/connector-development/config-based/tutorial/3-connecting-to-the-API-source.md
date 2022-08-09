@@ -139,7 +139,7 @@ requester:
     api_token: "{{ config['access_key'] }}"
   request_options_provider:
     request_parameters:
-      base: "{{ config.base }}"
+      base: "{{ config['base'] }}"
 ```
 
 The full connection definition should now look like
