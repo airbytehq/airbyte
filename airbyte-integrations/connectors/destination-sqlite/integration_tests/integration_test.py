@@ -23,7 +23,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sqlite import DestinationSqlite, destination
+from destination_sqlite import DestinationSqlite
 
 
 @pytest.fixture(autouse=True)
