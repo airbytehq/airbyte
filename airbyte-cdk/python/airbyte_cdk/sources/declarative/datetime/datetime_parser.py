@@ -7,6 +7,15 @@ from typing import Union
 
 
 class DatetimeParser:
+    """
+    Parses and formats datetime objects according to a specified format.
+
+    This class mainly acts as a wrapper to properly handling timestamp formatting through the "%s" directive.
+
+    %s is part of the list of format codes required by  the 1989 C standard, but it is unreliable because it ignores the time zone information
+    Instead of using the directive directly, we can use datetime.fromtimestamp and dt.timestamp()
+    """
+
     def parse(self, date: Union[str, int], format: str, timezone):
         # "%s" is a valid (but unreliable) directive for formatting, but not for parsing
         # It is defined as
