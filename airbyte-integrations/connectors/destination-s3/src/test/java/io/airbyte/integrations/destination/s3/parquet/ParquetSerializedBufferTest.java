@@ -20,15 +20,11 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
@@ -36,11 +32,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ParquetSerializedBufferTest {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ParquetSerializedBuffer.class);
 
   private static final JsonNode MESSAGE_DATA = Jsons.jsonNode(Map.of(
       "field1", 10000,
@@ -83,43 +76,16 @@ public class ParquetSerializedBufferTest {
     // TODO: Compressed parquet is the same size as uncompressed??
     runTest(195L, 215L, config, getExpectedString());
   }
-  private static String getDirectoryLocation() {
-    String osName = System.getProperty("" + "os.name").replace(' ', '_');
-    boolean windows = osName.toLowerCase().contains("windows");
-    if (!windows) {
-      return "/native/" + osName + "-" + System.getProperty("os.arch") + "-" +
-              System.getProperty("sun.arch.data.model") + "/lib";
-    } else {
-      return "/native/" + System.getenv("OS") + "-" + System.getenv("PLATFORM") + "/lib";
-    }
-  }
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
-    final Process pr = run.exec(cmd);
-    if (!pr.waitFor(5, TimeUnit.MINUTES)) {
-      pr.destroy();
-      throw new RuntimeException("Timeout while executing: " + cmd);
-    }
-    LOGGER.error("Input Stream for: "+cmd+ " "+ new String(pr.getInputStream().readAllBytes(), Charset.defaultCharset()));
-    LOGGER.error("Error Stream for: "+cmd+ " "+ new String(pr.getErrorStream().readAllBytes(), Charset.defaultCharset()));
-  }
 
   @Test
-  public void testLzoCompressedParquet()throws Exception{
-    final String directoryLocation = getDirectoryLocation();
-    LOGGER.error("Lzo lib directory location: "+ directoryLocation);
-    if(directoryLocation.equals("/native/Linux-amd64-64/lib")) {
-      final Runtime run = Runtime.getRuntime();
-      runProcess("apt-get update", run);
-      runProcess("apt-get install lzop liblzo2-2 liblzo2-dev -y", run);
-      final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
-              "format", Map.of(
-                      "format_type", "parquet",
-                      "compression_codec", "LZO"),
-              "s3_bucket_name", "test",
-              "s3_bucket_region", "us-east-2")));
-      // TODO: Compressed parquet is the same size as uncompressed??
-      runTest(195L, 215L, config, getExpectedString());
-    }
+  public void testLzoCompressedParquet() throws Exception {
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+        "format", Map.of(
+            "format_type", "parquet",
+            "compression_codec", "LZO"),
+        "s3_bucket_name", "test",
+        "s3_bucket_region", "us-east-2")));
+    runTest(195L, 215L, config, getExpectedString());
   }
 
   private static String getExpectedString() {
