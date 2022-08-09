@@ -30,7 +30,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private String maxCursor;
   private AirbyteMessage intermediateStateMessage;
   private boolean hasEmittedFinalState;
-  private int recordCount;
+  private int totalRecordCount;
 
   /**
    * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every
@@ -65,7 +65,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       intermediateStateMessage = null;
       return message;
     } else if (messageIterator.hasNext()) {
-      recordCount++;
+      totalRecordCount++;
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = getCursorCandidate(message);
@@ -74,7 +74,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         }
       }
 
-      if (stateEmissionFrequency > 0 && recordCount % stateEmissionFrequency == 0) {
+      if (stateEmissionFrequency > 0 && totalRecordCount % stateEmissionFrequency == 0) {
         // Mark the state as final in case this intermediate state happens to be the last one.
         // This is not necessary, but avoid sending the final states twice and prevent any edge case.
         final boolean isFinalState = !messageIterator.hasNext();
