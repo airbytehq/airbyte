@@ -868,52 +868,52 @@ def test_spec_backward_compatibility(previous_connector_spec, actual_connector_s
 
 
 FAILING_CATALOG_TRANSITIONS = [
-    # Transition(
-    #     name="Removing a stream from a catalog should fail.",
-    #     should_fail=True,
-    #     previous={
-    #         "test_stream": AirbyteStream.parse_obj(
-    #             {
-    #                 "name": "test_stream",
-    #                 "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
-    #             }
-    #         ),
-    #         "other_test_stream": AirbyteStream.parse_obj(
-    #             {
-    #                 "name": "other_test_stream",
-    #                 "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
-    #             }
-    #         )
-    #     },
-    #     current={
-    #         "test_stream": AirbyteStream.parse_obj(
-    #             {
-    #                 "name": "test_stream",
-    #                 "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
-    #             }
-    #         )
-    #     }
-    # ),
-    # Transition(
-    #     name="Changing a field type should fail.",
-    #     should_fail=True,
-    #     previous={
-    #         "test_stream": AirbyteStream.parse_obj(
-    #             {
-    #                 "name": "test_stream",
-    #                 "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
-    #             }
-    #         )
-    #     },
-    #     current={
-    #         "test_stream": AirbyteStream.parse_obj(
-    #             {
-    #                 "name": "test_stream",
-    #                 "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "integer"}}}}},
-    #             }
-    #         )
-    #     }
-    # ),
+    Transition(
+        name="Removing a stream from a catalog should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            ),
+            "other_test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "other_test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Changing a field type should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "integer"}}}}},
+                }
+            )
+        },
+    ),
     Transition(
         name="Renaming a stream should fail.",
         should_fail=True,
@@ -933,7 +933,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 }
             )
         },
-    )
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
@@ -1002,7 +1002,6 @@ VALID_CATALOG_TRANSITIONS = [
         },
     ),
 ]
-
 
 # Checking that all transitions in FAILING_CATALOG_TRANSITIONS have should_fail == True to prevent typos
 assert all([transition.should_fail for transition in FAILING_CATALOG_TRANSITIONS])

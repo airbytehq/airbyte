@@ -30,7 +30,7 @@ class BaseDiffChecker(ABC):
         pass
 
     @abstractmethod
-    def check(self):
+    def assert_is_backward_compatible(self):
         pass
 
     def check_if_value_of_type_field_changed(self):
@@ -96,7 +96,7 @@ class SpecDiffChecker(BaseDiffChecker):
 
     context = "Specification"
 
-    def check(self):
+    def assert_is_backward_compatible(self):
         self.check_if_declared_new_required_field()
         self.check_if_added_a_new_required_property()
         self.check_if_value_of_type_field_changed()
@@ -176,7 +176,7 @@ class CatalogDiffChecker(BaseDiffChecker):
 
     context = "Catalog"
 
-    def check(self):
+    def assert_is_backward_compatible(self):
         self.check_if_stream_was_removed()
         self.check_if_value_of_type_field_changed()
         self.check_if_type_of_type_field_changed()

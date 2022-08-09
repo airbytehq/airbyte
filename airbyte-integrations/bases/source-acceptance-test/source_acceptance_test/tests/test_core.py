@@ -183,6 +183,7 @@ class TestSpec(BaseTest):
         skip_backward_compatibility_tests: bool,
         actual_connector_spec: ConnectorSpecification,
         previous_connector_spec: ConnectorSpecification,
+        number_of_configs_to_generate: int = 100,
     ):
         """Check if the current spec is backward_compatible:
         1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
@@ -191,8 +192,8 @@ class TestSpec(BaseTest):
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
         checker = SpecDiffChecker(spec_diff)
-        checker.check()
-        validate_previous_configs(previous_connector_spec, actual_connector_spec)
+        checker.assert_is_backward_compatible()
+        validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.
@@ -344,7 +345,7 @@ class TestDiscovery(BaseTest):
         assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
         catalog_diff = self.compute_discovered_catalog_diff(discovered_catalog, previous_discovered_catalog)
         checker = CatalogDiffChecker(catalog_diff)
-        checker.check()
+        checker.assert_is_backward_compatible()
 
 
 def primary_keys_for_records(streams, records):
