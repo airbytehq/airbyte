@@ -21,7 +21,7 @@ definitions:
     name: "\{{ options['name'] }}"
     primary_key: "\{{ options['primary_key'] }}"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
 
@@ -31,11 +31,11 @@ streams:
       name: "customers"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(schema_loader)"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "*ref(retriever)"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(requester)"
+        $ref: "*ref(definitions.requester)"
         path: TODO "your_endpoint_path"
 check:
   type: CheckStream
