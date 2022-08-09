@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.61
+Add unit tests coverage computation [#15443](https://github.com/airbytehq/airbyte/pull/15443/).
+
 ## 0.1.59
 Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
 
