@@ -191,7 +191,7 @@ class TestSpec(BaseTest):
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
         checker = SpecDiffChecker(spec_diff)
-        checker.check()
+        checker.assert_spec_is_backward_compatible()
         validate_previous_configs(previous_connector_spec, actual_connector_spec)
 
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):

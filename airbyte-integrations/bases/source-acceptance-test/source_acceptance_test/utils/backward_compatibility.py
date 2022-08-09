@@ -20,7 +20,7 @@ class SpecDiffChecker:
     def __init__(self, diff: DeepDiff) -> None:
         self._diff = diff
 
-    def check(self):
+    def assert_spec_is_backward_compatible(self):
         self.check_if_declared_new_required_field()
         self.check_if_added_a_new_required_property()
         self.check_if_value_of_type_field_changed()
