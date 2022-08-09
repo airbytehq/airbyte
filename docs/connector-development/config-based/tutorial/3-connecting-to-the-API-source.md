@@ -84,6 +84,9 @@ check:
   stream_names: ["rates"]
 ```
 
+Adding the reference in `streams` will make the stream available to the `Source`.
+Adding the reference in the `check` tells the `check` operation to use that stream to test the connection.
+
 2. Next we'll set the base url.
    According to the API documentation, the base url is `"https://api.exchangeratesapi.io/v1/"`.
 
