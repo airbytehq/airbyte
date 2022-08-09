@@ -100,7 +100,9 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    database.getDatabase().getCollection(COLLECTION_NAME).drop();
+    for (final String collectionName : database.getCollectionNames()) {
+      database.getDatabase().getCollection(collectionName).drop();
+    }
     database.close();
   }
 
