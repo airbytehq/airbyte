@@ -18,10 +18,8 @@ These steps create an initial python environment, and install the dependencies r
 
 Let's verify everything works as expected by running the Airbyte `spec` operation:
 
-```
+```bash
 python main.py spec
-
-```
 
 You should see an output similar to the one below:
 
