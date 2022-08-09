@@ -610,7 +610,7 @@ public class AirbyteAcceptanceTestHarness {
         dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, "0.0.0.0");
       }
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
