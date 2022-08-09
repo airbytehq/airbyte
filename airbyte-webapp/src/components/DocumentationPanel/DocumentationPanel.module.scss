@@ -1,0 +1,11 @@
+@use "../../scss/colors";
+
+.documentationContainer {
+  min-height: 100vh;
+  padding-bottom: 40px;
+  background-color: colors.$white;
+
+  .documentationContent {
+    padding: 0 35px;
+  }
+}

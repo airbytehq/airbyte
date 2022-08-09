@@ -9,7 +9,6 @@ import { useLocation } from "react-router-dom";
 import { useUpdateEffect } from "react-use";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
-import styled from "styled-components";
 
 import { LoadingPage, PageTitle } from "components";
 import Markdown from "components/Markdown/Markdown";
@@ -18,15 +17,7 @@ import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-export const DocumentationContainer = styled.div`
-  padding: 0px 0px 20px;
-  background-color: #ffffff;
-  min-height: 100vh;
-`;
-
-export const DocumentationContent = styled(Markdown)`
-  padding: 0px 35px 20px;
-`;
+import styles from "./DocumentationPanel.module.scss";
 
 export const DocumentationPanel: React.FC = () => {
   const config = useConfig();
@@ -63,14 +54,17 @@ export const DocumentationPanel: React.FC = () => {
   return isLoading || documentationUrl === "" ? (
     <LoadingPage />
   ) : docs ? (
-    <DocumentationContainer>
+    <div className={styles.documentationContainer}>
       <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
       {!docs.includes("<!DOCTYPE html>") ? (
-        <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
+        <Markdown className={styles.documentationContent} content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
-        <DocumentationContent content={formatMessage({ id: "connector.setupGuide.notFound" })} />
+        <Markdown
+          className={styles.documentationContent}
+          content={formatMessage({ id: "connector.setupGuide.notFound" })}
+        />
       )}
-    </DocumentationContainer>
+    </div>
   ) : (
     <ReflexElement className="right-pane" maxSize={1000}>
       <FormattedMessage id="connector.setupGuide.notFound" />
