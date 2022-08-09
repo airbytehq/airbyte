@@ -32,7 +32,6 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
     final JsonNode configJson = Jsons.clone(this.configJson);
     final JsonNode dataSource = configJson.get("data_source");
     ((ObjectNode) dataSource).put("azure_blob_storage_account_name", "someInvalidName");
-    LOGGER.error("Invalid config: {}", configJson);
     return configJson;
   }
 
