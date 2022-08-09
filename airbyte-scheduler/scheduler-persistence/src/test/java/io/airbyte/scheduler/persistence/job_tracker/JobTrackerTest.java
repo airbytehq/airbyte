@@ -39,10 +39,13 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
@@ -112,6 +115,9 @@ class JobTrackerTest {
       .put("table_prefix", false)
       .put("operation_count", 0)
       .build();
+  private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers
+      .createConfiguredAirbyteCatalog("stream_name", "stream_namespace",
+          Field.of("int_field", JsonSchemaType.NUMBER));
 
   private static final ConnectorSpecification SOURCE_SPEC;
   private static final ConnectorSpecification DESTINATION_SPEC;
@@ -269,7 +275,9 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
@@ -280,7 +288,7 @@ class JobTrackerTest {
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
-        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false).withCatalog(CATALOG)
             .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
@@ -387,7 +395,8 @@ class JobTrackerTest {
 
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, LONG_JOB_ID);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(LONG_JOB_ID)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -556,6 +565,7 @@ class JobTrackerTest {
         .put("namespace_definition", NamespaceDefinitionType.SOURCE)
         .put("table_prefix", false)
         .put("operation_count", 0)
+        .put("number_of_streams", 1)
         .build();
   }
 
