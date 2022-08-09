@@ -85,17 +85,17 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
     BigQueryRecordFormatter formatter = uploader.getRecordFormatter();
 
-    LOGGER.info("existingTableSchema : " + existingTable);
-    LOGGER.info("formatter.getBigQuerySchema() : " + formatter.getBigQuerySchema());
     if (existingTable != null)
     {
+      LOGGER.info("Target table already exists. Checking could we use the modern destination processing!");
       com.google.cloud.bigquery.Schema existingTableSchema = existingTable.getDefinition().getSchema();
       if (existingTableSchema != null && !existingTableSchema.equals(formatter.getBigQuerySchema())) {
         ((DefaultBigQueryDenormalizedRecordFormatter) formatter).setArrayFormatter(new ObsoleteArrayFormatter());
         LOGGER.warn("Existing target table has different structure with the new destination processing! Trying old implementation!!!");
       }
+    } else {
+      LOGGER.info("Target table is not created yet. The modern destination processing will be used!");
     }
-    LOGGER.info("!!!");
 
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),

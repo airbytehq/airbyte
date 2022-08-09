@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CONFIG_DATASET_ID;
+
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -209,6 +211,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
+      stream.setNamespace(config.get(CONFIG_DATASET_ID).textValue());
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -258,7 +261,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, config.get(CONFIG_DATASET_ID).asText());
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
