@@ -174,15 +174,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
-        if isinstance(date, datetime.datetime):
-            return date
-        elif self.datetime_format == "%s":
-            # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
-            # It's safer to use the timestamp() method than the %s directive
-            # See https://stackoverflow.com/a/4974930
-            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-        else:
+        if isinstance(date, str):
             return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
+        else:
+            return date
 
     @classmethod
     def _parse_timedelta(cls, time_str):
