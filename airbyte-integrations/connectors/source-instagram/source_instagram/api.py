@@ -88,7 +88,7 @@ class InstagramAPI:
                             "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
                         }
                     )
-            logger.info(f"found instagram business acconuts: {instagram_business_accounts}"})
+            logger.info(f"found instagram business acconuts: {instagram_business_accounts}")
         except FacebookRequestError as exc:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
