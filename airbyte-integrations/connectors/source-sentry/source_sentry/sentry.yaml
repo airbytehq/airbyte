@@ -1,6 +1,5 @@
 definitions:
   page_size: 50
-
   schema_loader:
     type: JsonSchema
     file_path: "./source_sentry/schemas/{{ options.name }}.json"
@@ -16,7 +15,20 @@ definitions:
     http_method: "GET"
     authenticator:
       type: "BearerAuthenticator"
-      token: "{{ config.auth_token }}"
+      api_token: "{{ config.auth_token }}"
+  paginator:
+    type: LimitPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: ""
+    page_token_option:
+      inject_into: "path"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ headers.link.next.cursor }}"
+      stop_condition: "{{ headers.link.results != true }}"
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
@@ -40,7 +52,7 @@ streams:
           request_parameters:
             full: "true"
       paginator:
-        type: NoPagination
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
     $options:
       name: "issues"
