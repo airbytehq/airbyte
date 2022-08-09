@@ -38,10 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 /**
- * Coordinates configuring and managing the state of an async process. This is tied to the (job_id, attempt_id) and will attempt to kill off lower
- * attempt ids.
+ * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
+ * attempt_id) and will attempt to kill off lower attempt ids.
  *
- * @param <INPUT>  a json-serializable input class for the worker
+ * @param <INPUT> a json-serializable input class for the worker
  * @param <OUTPUT> either {@link Void} or a json-serializable output class for the worker
  */
 @Slf4j
@@ -64,14 +64,14 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private AsyncOrchestratorPodProcess process;
 
   public LauncherWorker(final UUID connectionId,
-      final String application,
-      final String podNamePrefix,
-      final JobRunConfig jobRunConfig,
-      final Map<String, String> additionalFileMap,
-      final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-      final ResourceRequirements resourceRequirements,
-      final Class<OUTPUT> outputClass,
-      final Supplier<ActivityExecutionContext> activityContext) {
+                        final String application,
+                        final String podNamePrefix,
+                        final JobRunConfig jobRunConfig,
+                        final Map<String, String> additionalFileMap,
+                        final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                        final ResourceRequirements resourceRequirements,
+                        final Class<OUTPUT> outputClass,
+                        final Supplier<ActivityExecutionContext> activityContext) {
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -186,8 +186,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   }
 
   /**
-   * It is imperative that we do not run multiple replications, normalizations, syncs, etc. at the same time. Our best bet is to kill everything that
-   * is labelled with the connection id and wait until no more pods exist with that connection id.
+   * It is imperative that we do not run multiple replications, normalizations, syncs, etc. at the
+   * same time. Our best bet is to kill everything that is labelled with the connection id and wait
+   * until no more pods exist with that connection id.
    */
   private void killRunningPodsForConnection() {
     final var client = containerOrchestratorConfig.kubernetesClient();
