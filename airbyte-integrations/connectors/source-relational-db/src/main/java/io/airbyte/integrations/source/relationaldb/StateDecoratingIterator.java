@@ -28,9 +28,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private final int stateEmissionFrequency;
 
   private String maxCursor;
-  private AirbyteMessage intermediateStateMessage;
   private boolean hasEmittedFinalState;
+
+  // The intermediateStateMessage is set to the latest state message.
+  // For every stateEmissionFrequency messages, emitIntermediateState is set to true and
+  // the latest intermediateStateMessage will be emitted.
   private int totalRecordCount;
+  private boolean emitIntermediateState = false;
+  private AirbyteMessage intermediateStateMessage;
 
   /**
    * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every
@@ -60,25 +65,27 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   @Override
   protected AirbyteMessage computeNext() {
-    if (intermediateStateMessage != null) {
+    if (emitIntermediateState && intermediateStateMessage != null) {
       final AirbyteMessage message = intermediateStateMessage;
       intermediateStateMessage = null;
+      emitIntermediateState = false;
       return message;
     } else if (messageIterator.hasNext()) {
       totalRecordCount++;
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = getCursorCandidate(message);
-        if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
+        final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
+        if (cursorComparison < 0) {
+          if (stateEmissionFrequency > 0) {
+            intermediateStateMessage = createStateMessage(!messageIterator.hasNext());
+          }
           maxCursor = cursorCandidate;
         }
       }
 
       if (stateEmissionFrequency > 0 && totalRecordCount % stateEmissionFrequency == 0) {
-        // Mark the state as final in case this intermediate state happens to be the last one.
-        // This is not necessary, but avoid sending the final states twice and prevent any edge case.
-        final boolean isFinalState = !messageIterator.hasNext();
-        intermediateStateMessage = createStateMessage(isFinalState);
+        emitIntermediateState = true;
       }
 
       return message;
