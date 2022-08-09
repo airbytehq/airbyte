@@ -4,12 +4,14 @@ import React from "react";
 interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
+  onToggled?: () => void;
 }
 
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
+const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
   return (
     <motion.div
       animate={!isOpen ? "closed" : "open"}
+      onAnimationComplete={onToggled}
       variants={{
         open: {
           height: "auto",

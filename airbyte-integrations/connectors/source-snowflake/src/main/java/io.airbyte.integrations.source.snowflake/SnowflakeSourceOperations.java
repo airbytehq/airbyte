@@ -59,4 +59,5 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       default -> JsonSchemaType.STRING;
     };
   }
+
 }
