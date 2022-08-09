@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -20,23 +20,25 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
 
     Attributes:
-        stream_name (str): stream name
+        name (str): stream name
+        primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream
         schema_loader (SchemaLoader): The schema loader
         retriever (Retriever): The retriever
         config (Config): The user-provided configuration as specified by the source's spec
-        stream_primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream
         stream_cursor_field (Optional[List[str]]): The cursor field
         transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
         stream. Transformations are applied in the order in which they are defined.
         checkpoint_interval (Optional[int]): How often the stream will checkpoint state (i.e: emit a STATE message)
     """
 
-    stream_name: str
     schema_loader: SchemaLoader
     retriever: Retriever
     config: Config
     options: InitVar[Mapping[str, Any]]
-    stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    name: str
+    _name: str = field(init=False, repr=False)
+    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    _primary_key: str = field(init=False, repr=False)
     stream_cursor_field: Optional[List[str]] = None
     transformations: List[RecordTransformation] = None
     checkpoint_interval: Optional[int] = None
@@ -47,14 +49,24 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self.stream_primary_key
+        return self._primary_key
+
+    @primary_key.setter
+    def primary_key(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._primary_key = value
 
     @property
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
         """
-        return self.stream_name
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._name = value
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
