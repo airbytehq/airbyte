@@ -316,7 +316,9 @@ public class WorkerApp {
   }
 
   /**
-   * Return either a docker or kubernetes process factory depending on the environment in {@link WorkerConfigs}
+   * Return either a docker or kubernetes process factory depending on the environment in
+   * {@link WorkerConfigs}
+   *
    * @param configs used to determine which process factory to create.
    * @param workerConfigs used to create the process factory.
    * @return either a {@link DockerProcessFactory} or a {@link KubeProcessFactory}.
@@ -350,13 +352,13 @@ public class WorkerApp {
   }
 
   public record ContainerOrchestratorConfig(
-                                                   String namespace,
-                                                   DocumentStoreClient documentStoreClient,
-                                                   KubernetesClient kubernetesClient,
-                                                   String secretName,
-                                                   String secretMountPath,
-                                                   String containerOrchestratorImage,
-                                                   String googleApplicationCredentials) {}
+                                            String namespace,
+                                            DocumentStoreClient documentStoreClient,
+                                            KubernetesClient kubernetesClient,
+                                            String secretName,
+                                            String secretMountPath,
+                                            String containerOrchestratorImage,
+                                            String googleApplicationCredentials) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
