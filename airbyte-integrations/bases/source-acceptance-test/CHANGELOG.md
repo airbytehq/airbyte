@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.61
+Backward compatibility tests: add syntactic validation of catalogs [#TBD](https://github.com/airbytehq/airbyte/pull/TBD/)
+
 ## 0.1.60
 Backward compatibility tests: validate fake previous config against current connector specification. [#15367](https://github.com/airbytehq/airbyte/pull/15367)
 
