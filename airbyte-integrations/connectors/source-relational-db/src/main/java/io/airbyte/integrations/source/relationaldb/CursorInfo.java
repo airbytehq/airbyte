@@ -13,6 +13,7 @@ public class CursorInfo {
 
   private final String cursorField;
   private String cursor;
+  private int cursorRecordCount;
 
   public CursorInfo(final String originalCursorField,
                     final String originalCursor,
@@ -22,6 +23,16 @@ public class CursorInfo {
     this.originalCursor = originalCursor;
     this.cursorField = cursorField;
     this.cursor = cursor;
+    this.cursorRecordCount = 0;
+  }
+
+  public CursorInfo(final String originalCursorField,
+                    final String originalCursor,
+                    final String cursorField,
+                    final String cursor,
+                    final int cursorRecordCount) {
+    this(originalCursorField, originalCursor, cursorField, cursor);
+    this.cursorRecordCount = cursorRecordCount;
   }
 
   public String getOriginalCursorField() {
@@ -40,9 +51,18 @@ public class CursorInfo {
     return cursor;
   }
 
+  public int getCursorRecordCount() {
+    return cursorRecordCount;
+  }
+
   @SuppressWarnings("UnusedReturnValue")
   public CursorInfo setCursor(final String cursor) {
     this.cursor = cursor;
+    return this;
+  }
+
+  public CursorInfo setCursorRecordCount(final int cursorRecordCount) {
+    this.cursorRecordCount = cursorRecordCount;
     return this;
   }
 
@@ -55,14 +75,16 @@ public class CursorInfo {
       return false;
     }
     final CursorInfo that = (CursorInfo) o;
-    return Objects.equals(originalCursorField, that.originalCursorField) && Objects
-        .equals(originalCursor, that.originalCursor)
-        && Objects.equals(cursorField, that.cursorField) && Objects.equals(cursor, that.cursor);
+    return Objects.equals(originalCursorField, that.originalCursorField)
+        && Objects.equals(originalCursor, that.originalCursor)
+        && Objects.equals(cursorField, that.cursorField)
+        && Objects.equals(cursor, that.cursor)
+        && Objects.equals(cursorRecordCount, that.cursorRecordCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(originalCursorField, originalCursor, cursorField, cursor);
+    return Objects.hash(originalCursorField, originalCursor, cursorField, cursor, cursorRecordCount);
   }
 
   @Override
@@ -72,6 +94,7 @@ public class CursorInfo {
         ", originalCursor='" + originalCursor + '\'' +
         ", cursorField='" + cursorField + '\'' +
         ", cursor='" + cursor + '\'' +
+        ", cursorRecordCount='" + cursorRecordCount + '\'' +
         '}';
   }
 
