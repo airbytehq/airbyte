@@ -98,12 +98,12 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   }
 
   @Override
-  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final int cursorRecordCount) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
       final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
       Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
-      cursorInfo.get().setCursor(cursor);
+      cursorInfo.get().setCursor(cursor).setCursorRecordCount(cursorRecordCount);
     }
 
     return toState(Optional.ofNullable(pair));
