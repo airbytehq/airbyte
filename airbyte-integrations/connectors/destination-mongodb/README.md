@@ -14,4 +14,4 @@ As a community contributor, you will need access to a MongoDB to run tests.
 ## Airbyte Employee
 
 1. Access the `MongoDB Integration Test User` secret on Rippling under the `Engineering` folder
-1. Create a file with the contents at `secrets/credentials.json`
+2. Create a file with the contents at `secrets/credentials.json`
