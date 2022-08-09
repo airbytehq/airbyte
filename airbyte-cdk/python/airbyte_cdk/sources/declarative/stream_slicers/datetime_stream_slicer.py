@@ -81,7 +81,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
-        print(f"initial format: {self.start_datetime.datetime_format}")
         if not self.start_datetime.datetime_format:
             self.start_datetime.datetime_format = self.datetime_format
         if not self.end_datetime.datetime_format:
