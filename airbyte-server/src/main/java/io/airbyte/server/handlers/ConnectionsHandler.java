@@ -400,6 +400,10 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
+  public void deprecateConnection(final UUID connectionId) throws IOException {
+    configRepository.markConnectionDeprecating(connectionId);
+  }
+
   public void deleteConnection(final UUID connectionId) {
     eventRunner.deleteConnection(connectionId);
   }

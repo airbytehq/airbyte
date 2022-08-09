@@ -702,6 +702,15 @@ public class ConfigRepository {
     });
   }
 
+  public void markConnectionDeprecating(final UUID connectionId) throws IOException {
+    database.transaction(ctx -> {
+      ctx.update(CONNECTION)
+          .set(CONNECTION.STATUS, StatusType.deprecating)
+          .where(CONNECTION.ID.eq(connectionId)).execute();
+      return null;
+    });
+  }
+
   public SourceOAuthParameter getSourceOAuthParams(final UUID sourceOAuthParameterId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameterId.toString(), SourceOAuthParameter.class);
@@ -893,7 +902,7 @@ public class ConfigRepository {
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
         .and(CONNECTION.STATUS.notEqual(StatusType.deprecated))
-        // .and(CONNECTION.STATUS.notEqual(StatusType.depricating))
+        .and(CONNECTION.STATUS.notEqual(StatusType.deprecating))
         .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 

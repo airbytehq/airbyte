@@ -681,6 +681,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
+      connectionsHandler.deprecateConnection(connectionIdRequestBody.getConnectionId());
       connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
       return null;
     });

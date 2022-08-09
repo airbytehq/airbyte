@@ -84,7 +84,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("operator_type enum created");
     ctx.createType("namespace_definition_type").asEnum("source", "destination", "customformat").execute();
     LOGGER.info("namespace_definition_type enum created");
-    ctx.createType("status_type").asEnum("active", "inactive", "deprecated").execute();
+    ctx.createType("status_type").asEnum("active", "inactive", "deprecating", "deprecated").execute();
     LOGGER.info("status_type enum created");
   }
 
