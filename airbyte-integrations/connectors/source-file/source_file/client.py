@@ -9,14 +9,14 @@ from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 
+import boto3
+import botocore
 import google
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from azure.storage.blob import BlobServiceClient
-from botocore import UNSIGNED
-from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
@@ -200,10 +200,8 @@ class URLFile:
             aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
             result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
         else:
-            config = Config(signature_version=UNSIGNED)
-            params = {
-                "resource_kwargs": {"config": config},
-            }
+            config = botocore.client.Config(signature_version=botocore.UNSIGNED)
+            params = {"client": boto3.client("s3", config=config)}
             result = smart_open.open(self.full_url, transport_params=params, mode=mode)
         return result
 

@@ -216,7 +216,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     LocalDate date = getObject(resultSet, index, LocalDate.class);
     if (isBce(date)) {
-      // java.time uses a year 0, but the standard AD/BC system does not. So we just subtract one to hack around this difference.
+      // java.time uses a year 0, but the standard AD/BC system does not. So we just subtract one to hack
+      // around this difference.
       date = date.minusYears(1);
     }
     node.put(columnName, resolveEra(date, date.toString()));

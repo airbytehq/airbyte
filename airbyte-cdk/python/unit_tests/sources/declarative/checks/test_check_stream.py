@@ -30,7 +30,7 @@ def test_check_stream(test_name, record, streams_to_check, expectation):
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(streams_to_check)
+    check_stream = CheckStream(streams_to_check, options={})
 
     if expectation:
         actual = check_stream.check_connection(source, logger, config)
