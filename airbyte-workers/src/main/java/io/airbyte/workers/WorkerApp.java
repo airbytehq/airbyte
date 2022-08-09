@@ -131,6 +131,7 @@ public class WorkerApp {
   private final WorkerConfigs checkWorkerConfigs;
   private final WorkerConfigs discoverWorkerConfigs;
   private final WorkerConfigs replicationWorkerConfigs;
+  private final WorkerConfigs normlizationWorkerConfigs;
   private final String airbyteVersion;
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
@@ -223,7 +224,7 @@ public class WorkerApp {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        defaultWorkerConfigs,
+        normlizationWorkerConfigs,
         defaultProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
@@ -313,6 +314,13 @@ public class WorkerApp {
         airbyteVersion);
   }
 
+  /**
+   * Return either a docker or kubernetes process factory depending on the environment in {@link WorkerConfigs}
+   * @param configs used to determine which process factory to create.
+   * @param workerConfigs used to create the process factory.
+   * @return either a {@link DockerProcessFactory} or a {@link KubeProcessFactory}.
+   * @throws IOException
+   */
   private static ProcessFactory getJobProcessFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -340,7 +348,7 @@ public class WorkerApp {
         .build();
   }
 
-  public static record ContainerOrchestratorConfig(
+  public record ContainerOrchestratorConfig(
                                                    String namespace,
                                                    DocumentStoreClient documentStoreClient,
                                                    KubernetesClient kubernetesClient,
@@ -378,6 +386,7 @@ public class WorkerApp {
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
     final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
     final WorkerConfigs replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
+    final WorkerConfigs normalizationWorkerConfigs = WorkerConfigs.buildNormalizationWorkerConfigs(configs);
 
     final ProcessFactory defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
     final ProcessFactory specProcessFactory = getJobProcessFactory(configs, specWorkerConfigs);
@@ -487,6 +496,7 @@ public class WorkerApp {
         checkWorkerConfigs,
         discoverWorkerConfigs,
         replicationWorkerConfigs,
+        normalizationWorkerConfigs,
         configs.getAirbyteVersionOrWarning(),
         jobFactory,
         jobPersistence,
