@@ -68,7 +68,7 @@ class SourceGreenhouse(AbstractSource):
             RejectionReasons(authenticator=auth),
             Scorecards(authenticator=auth),
             Sources(authenticator=auth),
-            Users(authenticator=auth),
+            Users(authenticator=auth, replication_start_date=config["replication_start_date"]),
             ApplicationsDemographicsAnswers(authenticator=auth),
             DemographicsAnswers(authenticator=auth),
             DemographicsAnswerOptions(authenticator=auth),

@@ -11,6 +11,10 @@
         "type": "string",
         "description": "Greenhouse API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/greenhouse\">docs</a> for more information on how to generate this key.",
         "airbyte_secret": true
+      },
+      "replication_start_date": {
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated."
       }
     }
   }

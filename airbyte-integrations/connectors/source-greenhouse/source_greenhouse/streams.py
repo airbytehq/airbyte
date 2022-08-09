@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type, Union, List
 from urllib import parse
 
 import requests
@@ -41,6 +41,40 @@ class GreenhouseStream(HttpStream, ABC):
 
         yield from response.json()
 
+
+class IncrementalGreenhouseStream(GreenhouseStream):
+    def __init__(self, replication_start_date, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._replication_start_date = replication_start_date
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    @property
+    @abstractmethod
+    def benchmark_field(self) -> Union[str, List[str]]:
+        pass
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token, **kwargs)
+
+        params.update({self.cursor_field: self._replication_start_date})
+
+        if self._replication_start_date and self.cursor_field:
+            start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
+            params.update({self.cursor_field: start_date})
+
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = latest_record[self.benchmark_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
 
 class GreenhouseSubStream(GreenhouseStream):
     @property
@@ -244,7 +278,9 @@ class Sources(GreenhouseStream):
     """
 
 
-class Users(GreenhouseStream):
+class Users(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-users
     """
+    cursor_field = "updated_after"
+    benchmark_field = "updated_at"
