@@ -6,6 +6,8 @@ package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -47,7 +49,6 @@ import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,8 +69,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
 
-  private final JobPersistence jobPersistence;
-
+  private final JobPersistence jobPersistence; // todo remove after part 3 covered by xiaohan
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final boolean useStreamCapableState;
@@ -81,8 +81,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final JobPersistence jobPersistence,
-                                 final AirbyteApiClient airbyteApiClient,
+                                 final JobPersistence jobPersistence, // todo remove after part 3 covered by xiaohan
+                                 final AirbyteApiClient airbyteApiClient, // todo remove after part 3 covered by xiaohan
                                  final String airbyteVersion,
                                  final boolean useStreamCapableState) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
@@ -98,7 +98,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
-                          final JobPersistence jobPersistence,
+                          final JobPersistence jobPersistence, // todo remove after part 3 covered by xiaohan
                           final AirbyteApiClient airbyteApiClient,
                           final String airbyteVersion,
                           final boolean useStreamCapableState) {
@@ -110,7 +110,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.validator = validator;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
+    this.jobPersistence = jobPersistence; // todo remove after part 3 covered by xiaohan
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
     this.useStreamCapableState = useStreamCapableState;
@@ -236,16 +236,17 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     };
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
-                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
                                                                                                                      final ResourceRequirements resourceRequirements,
                                                                                                                      final Supplier<ActivityExecutionContext> activityContext)
-      throws IOException {
+      throws ApiException {
+    final JobIdRequestBody id = new JobIdRequestBody();
+    id.setId(Long.valueOf(jobRunConfig.getJobId()));
 
-    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+    final var jobScope = airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);
 
     return () -> new ReplicationLauncherWorker(
