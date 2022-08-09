@@ -2,8 +2,23 @@
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
 When you're ready to start building a connector, you can start with [the tutorial](../../../config-based/tutorial/0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
+See the [motivation section](./motivation.md) for more information on the motivation driving this framework.
 
 ## Overview
+
+In building over 100 API connectors, we observed that most API connectors are implemented in a formulaic approach:
+
+1. Implement the API's authentication mechanism
+2. Describe the schema of the data returned by the API
+3. Make requests to the API's URL containing the data of interest
+4. Implement pagination strategy
+5. Implement error handling and rate limiting
+6. Decode the data returned from the API
+7. Keep track of what data was already synced.
+
+Each of these problems have a finite number of solutions. For instance, most APIs use one of 3 standard pagination mechanism.
+
+The CDK's config-based interface uses a declarative approach to the problem and allows the developers to specify __what__ data they want to read from a source and abstracts the specifics of the __how__.
 
 Config-based connectors work by parsing a YAML configuration describing the Source, then running the configured connector using a Python backend.
 
