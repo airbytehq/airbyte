@@ -175,7 +175,16 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
         if isinstance(date, str):
-            return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
+            # "%s" is a valid (but unreliable) directive for formatting, but not for parsing
+            # It is defined as
+            # The number of seconds since the Epoch, 1970-01-01 00:00:00+0000 (UTC). https://man7.org/linux/man-pages/man3/strptime.3.html
+            #
+            # The recommended way to parse a date from its timestamp representation is to use datetime.fromtimestamp
+            # See https://stackoverflow.com/questions/4974712/python-setting-a-datetime-in-a-specific-timezone-without-utc-conversions/4974930#4974930
+            if self.datetime_format == "%s":
+                return datetime.datetime.fromtimestamp(int(date), tz=self._timezone)
+            else:
+                return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
         else:
             return date
 
