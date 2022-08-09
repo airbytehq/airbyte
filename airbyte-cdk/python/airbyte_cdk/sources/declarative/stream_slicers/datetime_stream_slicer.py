@@ -5,9 +5,8 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
-import dateutil
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -34,6 +33,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     - days, d
 
     For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
+
+    The timestamp format accepts the same format codes as datetime.strfptime, which are
+    all the format codes required by the 1989 C standard.
+    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
         start_datetime (MinMaxDatetime): the datetime that determines the earliest record that should be synced
@@ -128,7 +131,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
-        end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
+        end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=self._timezone))
         lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "0d")
         start_datetime = self.start_datetime.get_datetime(self.config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
@@ -148,8 +151,11 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
-        if self.datetime_format == "timestamp":
-            return dt.timestamp()
+        # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
+        # It's safer to use the timestamp() method than the %s directive
+        # See https://stackoverflow.com/a/4974930
+        if self.datetime_format == "%s":
+            return str(int(dt.timestamp()))
         else:
             return dt.strftime(self.datetime_format)
 
@@ -167,22 +173,11 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         cursor_date = self.parse_date(cursor_value or default_date)
         return comparator(cursor_date, default_date)
 
-    def parse_date(self, date: Any) -> datetime:
-        if date and isinstance(date, str):
-            if self.is_int(date):
-                return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-            else:
-                return dateutil.parser.parse(date).replace(tzinfo=self._timezone)
-        elif isinstance(date, int):
-            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-        return date
-
-    def is_int(self, s) -> bool:
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
+    def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
+        if isinstance(date, str):
+            return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
+        else:
+            return date
 
     @classmethod
     def _parse_timedelta(cls, time_str):
