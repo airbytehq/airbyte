@@ -101,7 +101,6 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AvoidInstanceofChecksInCatchClause"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="CloseResource"/>
         <exclude name="CompareObjectsWithEquals"/>
