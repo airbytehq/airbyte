@@ -120,6 +120,7 @@ public class WorkerApp {
   private final ProcessFactory checkProcessFactory;
   private final ProcessFactory discoverProcessFactory;
   private final ProcessFactory replicationProcessFactory;
+  private final ProcessFactory normalizationProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final WorkflowClient workflowClient;
   private final ConfigRepository configRepository;
@@ -225,7 +226,7 @@ public class WorkerApp {
 
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
         normlizationWorkerConfigs,
-        defaultProcessFactory);
+        normalizationProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
         defaultWorkerConfigs,
@@ -393,6 +394,7 @@ public class WorkerApp {
     final ProcessFactory checkProcessFactory = getJobProcessFactory(configs, checkWorkerConfigs);
     final ProcessFactory discoverProcessFactory = getJobProcessFactory(configs, discoverWorkerConfigs);
     final ProcessFactory replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
+    final ProcessFactory normalizationProcessFactory = getJobProcessFactory(configs, normalizationWorkerConfigs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
@@ -485,6 +487,7 @@ public class WorkerApp {
         checkProcessFactory,
         discoverProcessFactory,
         replicationProcessFactory,
+        normalizationProcessFactory,
         secretsHydrator,
         workflowClient,
         configRepository,
