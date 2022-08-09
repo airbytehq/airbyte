@@ -324,4 +324,4 @@ streams:
         $ref: "*ref(definitions.stream_slicer)"
 check:
   type: CheckStream
-  names: ["lists"]
+  stream_names: ["lists"]
