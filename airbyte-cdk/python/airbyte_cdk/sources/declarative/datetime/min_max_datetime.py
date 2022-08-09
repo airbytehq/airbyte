@@ -17,6 +17,10 @@ class MinMaxDatetime(JsonSchemaMixin):
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
     If neither, the input date is returned.
 
+    The timestamp format accepts the same format codes as datetime.strfptime, which are
+    all the format codes required by the 1989 C standard.
+    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
+
     Attributes:
         datetime (Union[InterpolatedString, str]): InterpolatedString or string representing the datetime in the format specified by `datetime_format`
         datetime_format (str): Format of the datetime passed as argument
