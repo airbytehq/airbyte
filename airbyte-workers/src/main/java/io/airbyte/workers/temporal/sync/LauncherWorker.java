@@ -108,9 +108,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
         final var allLabels = KubeProcessFactory.getLabels(
-            jobRunConfig.getJobId(),
-            Math.toIntExact(jobRunConfig.getAttemptId()),
-            Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()));
+                jobRunConfig.getJobId(),
+                Math.toIntExact(jobRunConfig.getAttemptId()),
+                Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString(), "use-default-egress-policy", "true", "allow-to-apiserver", "true")
+        );
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();

@@ -72,6 +72,8 @@ spec:
     metadata:
       labels:
         airbyte: temporal
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       containers:
         - name: airbyte-temporal

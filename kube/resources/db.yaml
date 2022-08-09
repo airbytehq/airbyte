@@ -26,6 +26,8 @@ spec:
     metadata:
       labels:
         airbyte: db
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       containers:
         - name: airbyte-db-container

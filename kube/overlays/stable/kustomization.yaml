@@ -16,7 +16,7 @@ images:
   - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/webapp
     newTag: 0.39.41-alpha
   - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/worker
-    newTag: 0.39.41-alpha
+    newTag: 0.39.41-alpha-arvin-6
   - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/temporalio/auto-setup
     newTag: 1.7.0
 

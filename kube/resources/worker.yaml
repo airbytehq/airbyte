@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         airbyte: worker
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       serviceAccountName: airbyte-admin
       automountServiceAccountToken: true
@@ -297,4 +299,3 @@ spec:
             secretName: gcs-log-creds
       imagePullSecrets:
         - name: docker-horizon-snapshot
-      dnsPolicy: Default

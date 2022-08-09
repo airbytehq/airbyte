@@ -23,6 +23,8 @@ spec:
     metadata:
       labels:
         airbyte: webapp
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       containers:
         - name: airbyte-webapp-container
@@ -60,4 +62,14 @@ spec:
                   key: INTERNAL_API_HOST
           ports:
             - containerPort: 80
-      dnsPolicy: Default
+#---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: airbyte-webapp-ingress
+#spec:
+#  defaultBackend:
+#    service:
+#      name: airbyte-webapp-svc
+#      port:
+#        number: 80

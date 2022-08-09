@@ -61,6 +61,8 @@ spec:
     metadata:
       labels:
         airbyte: pod-sweeper
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       serviceAccountName: airbyte-admin
       containers:

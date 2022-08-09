@@ -14,6 +14,8 @@ spec:
       labels:
         # Label is used as selector in the service.
         app: airbyte-minio
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       # Refer to the PVC created earlier
       volumes:

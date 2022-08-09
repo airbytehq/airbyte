@@ -23,6 +23,8 @@ spec:
     metadata:
       labels:
         airbyte: server
+        use-default-egress-policy: "true"
+        allow-to-apiserver: "true"
     spec:
       containers:
         - name: airbyte-server-container
@@ -161,7 +163,6 @@ spec:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
               readOnly: true
-      dnsPolicy: Default
       volumes:
         - name: airbyte-volume-configs
           persistentVolumeClaim:
