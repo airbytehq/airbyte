@@ -461,6 +461,12 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
             "%Y%m%d",
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
+        (
+            "test_parse_timestamp",
+            "1609459200",
+            "%s",
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
     ],
 )
 def test_parse_date(test_name, input_date, date_format, expected_output_date):
