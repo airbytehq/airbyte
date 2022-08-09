@@ -1,8 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/sqlite",
-  "supported_destination_sync_modes": [
-    "overwrite", "append"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,

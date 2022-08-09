@@ -308,3 +308,10 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/google-sheets
   icon: google-sheets.svg
   releaseStage: alpha
+- name: Local SQLite
+  destinationDefinitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
+  dockerRepository: airbyte/destination-local-sqlite
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-sqlite
+  icon: sqlite.svg
+  releaseStage: alpha
