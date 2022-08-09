@@ -129,7 +129,6 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
               "LIBRARY_PATH=/usr/local/lzo-2.10/lib mvn clean package");
           runProcess(currentDir, runtime, "/bin/sh", "-c",
               "find /usr/lib/hadoop/lib/hadoop-lzo/ -name '*libgplcompression*' -exec cp {} /usr/lib/ \\;");
-          LOGGER.error("REFACTORI ii i i i NG3");
         } catch (InterruptedException e) {
           LOGGER.error("Failed to install native-lzo library for " + architecture);
         }
