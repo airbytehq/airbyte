@@ -7,10 +7,8 @@ import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import SideMenu from "components/SideMenu";
 import { CategoryItem } from "components/SideMenu/SideMenu";
 
-import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -39,8 +37,6 @@ const EmailVerificationHintWithMargin = styled(EmailVerificationHint)`
 `;
 
 const CreditsPage: React.FC = () => {
-  const { push, pathname } = useRouter();
-  const onSelectMenuItem = (newPath: string) => push(newPath);
   const { emailVerified } = useAuthService();
 
   const menuItems: CategoryItem[] = [
@@ -66,7 +62,6 @@ const CreditsPage: React.FC = () => {
         {!emailVerified && <EmailVerificationHintWithMargin />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
         <MainInfo>
-          <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
           <MainView>
             <Suspense fallback={<LoadingPage />}>
               <Routes>
