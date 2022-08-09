@@ -39,6 +39,10 @@ class OAuthConfigSupplierTest {
   static final String CREDENTIALS = "credentials";
   static final String PROPERTIES = "properties";
 
+  private static final String AUTH_TYPE = "auth_type";
+  private static final String OAUTH = "oauth";
+  private static final String API_SECRET = "api_secret";
+
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
   private OAuthConfigSupplier oAuthConfigSupplier;
@@ -51,8 +55,8 @@ class OAuthConfigSupplierTest {
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     sourceDefinitionId = UUID.randomUUID();
     setupStandardDefinitionMock(createAdvancedAuth()
-        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
-        .withPredicateValue("oauth"));
+        .withPredicateKey(List.of(CREDENTIALS, AUTH_TYPE))
+        .withPredicateValue(OAUTH));
   }
 
   @Test
@@ -67,8 +71,8 @@ class OAuthConfigSupplierTest {
   @Test
   void testNoOAuthInjectionBecauseMissingPredicateKey() throws IOException, JsonValidationException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
-        .withPredicateKey(List.of("some_random_fields", "auth_type"))
-        .withPredicateValue("oauth"));
+        .withPredicateKey(List.of("some_random_fields", AUTH_TYPE))
+        .withPredicateValue(OAUTH));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     setupOAuthParamMocks(generateOAuthParameters());
@@ -80,7 +84,7 @@ class OAuthConfigSupplierTest {
   @Test
   void testNoOAuthInjectionBecauseWrongPredicateValue() throws IOException, JsonValidationException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
-        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
+        .withPredicateKey(List.of(CREDENTIALS, AUTH_TYPE))
         .withPredicateValue("wrong_auth_type"));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
@@ -120,7 +124,7 @@ class OAuthConfigSupplierTest {
   @Test
   void testOAuthInjectionWithoutPredicateValue() throws JsonValidationException, IOException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
-        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
+        .withPredicateKey(List.of(CREDENTIALS, AUTH_TYPE))
         .withPredicateValue(""));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
@@ -188,8 +192,8 @@ class OAuthConfigSupplierTest {
     final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
         "fieldName", "fieldValue",
         CREDENTIALS, Map.of(
-            "api_secret", "123",
-            "auth_type", "oauth",
+            API_SECRET, "123",
+            AUTH_TYPE, OAUTH,
             API_CLIENT, ((Map<String, String>) oauthParameters.get(CREDENTIALS)).get(API_CLIENT))));
     assertEquals(expectedConfig, actualConfig);
     assertTracking(workspaceId);
@@ -247,13 +251,13 @@ class OAuthConfigSupplierTest {
         Map.of(
             "fieldName", "fieldValue",
             CREDENTIALS, Map.of(
-                "api_secret", "123",
-                "auth_type", "oauth")));
+                API_SECRET, "123",
+                AUTH_TYPE, OAUTH)));
   }
 
   private static Map<String, Object> generateOAuthParameters() {
     return Map.of(
-        "api_secret", "mysecret",
+        API_SECRET, "mysecret",
         API_CLIENT, UUID.randomUUID().toString());
   }
 
@@ -266,8 +270,8 @@ class OAuthConfigSupplierTest {
         Map.of(
             "fieldName", "fieldValue",
             CREDENTIALS, Map.of(
-                "api_secret", "123",
-                "auth_type", "oauth",
+                API_SECRET, "123",
+                AUTH_TYPE, OAUTH,
                 API_CLIENT, apiClient)));
   }
 
