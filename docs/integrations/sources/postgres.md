@@ -17,7 +17,7 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
 - Allowlist the IP address `34.106.109.131` to enable access to Airbyte
-- For Airbyte Cloud (and optionally for Airbyte OSS), ensure SSL is enabled in your environment
+- For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
 
@@ -86,7 +86,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
 ### Step 2: Set up the Postgres connector in Airbyte
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Postgres** from the Source type dropdown.
 4. Enter a name for your source.
@@ -111,7 +111,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
     
-9. For Airbyte OSS, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
+9. For Airbyte Open Source, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
 10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
 11. For SSH Tunnel Method, select:
     - No Tunnel for a direct connection to the database

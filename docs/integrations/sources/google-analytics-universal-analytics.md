@@ -25,7 +25,7 @@ Decide which Views you'd like to sync, prepare View IDs. Decide what date you'd 
 5. Find your View ID for the view you want to fetch data from. Find it [here](https://ga-dev-tools.web.app/account-explorer/).
 6. Enter a start date, and custom report information.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 There are 2 options of setting up authorization for this source:
 

@@ -22,7 +22,7 @@ In order to get an `Client ID` and `Secret` please go to [this](https://develope
 6. Enter the date you want your sync to start from
 7. Click **Set up source**.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter your client id

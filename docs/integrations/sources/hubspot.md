@@ -33,14 +33,14 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 
 ## Set up the HubSpot source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
-    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::

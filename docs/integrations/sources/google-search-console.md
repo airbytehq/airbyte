@@ -68,7 +68,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 5. Fill in the `start date` field.
 6. You should be ready to sync data.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 1. Fill in the `service_account_info` and `email` fields for authentication. 
 2. Fill in the `site_urls` field. 

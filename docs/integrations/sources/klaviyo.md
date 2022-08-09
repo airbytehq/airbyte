@@ -22,7 +22,7 @@ Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062
 5. Enter the date you want your sync to start from
 6. Submit the form
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 4. Enter you private API key from Prerequisites

@@ -22,7 +22,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 5. Enter your `Access Token`.
 6. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
