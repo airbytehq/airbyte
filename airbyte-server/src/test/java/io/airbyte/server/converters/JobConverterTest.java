@@ -99,14 +99,14 @@ class JobConverterTest {
               .withTotalStats(new SyncStats()
                   .withRecordsEmitted(RECORDS_EMITTED)
                   .withBytesEmitted(BYTES_EMITTED)
-                  .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                  .withSourceStateMessagesEmitted(STATE_MESSAGES_EMITTED)
                   .withRecordsCommitted(RECORDS_COMMITTED))
               .withStreamStats(Lists.newArrayList(new StreamSyncStats()
                   .withStreamName(STREAM_NAME)
                   .withStats(new SyncStats()
                       .withRecordsEmitted(RECORDS_EMITTED)
                       .withBytesEmitted(BYTES_EMITTED)
-                      .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                      .withSourceStateMessagesEmitted(STATE_MESSAGES_EMITTED)
                       .withRecordsCommitted(RECORDS_COMMITTED))))));
 
   private JobConverter jobConverter;
