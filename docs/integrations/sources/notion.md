@@ -43,7 +43,7 @@ Notion is a productivity and project management software. It was designed to hel
 ### For Airbyte OSS:
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Bing Ads** from the Source type dropdown. 
+3. On the Set up the source page, enter the name for the connector and select **Notion** from the Source type dropdown. 
 4. Add required Start date
 5. Copy and paste values from setup Notion step (8):
       1) **client_id**
@@ -75,6 +75,7 @@ The Notion connector should not run into Notion API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
 | 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec |
 | 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                             |
 | 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through           |

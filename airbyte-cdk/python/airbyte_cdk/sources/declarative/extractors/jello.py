@@ -2,27 +2,42 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from dataclasses import InitVar, dataclass
+from typing import Any, List, Mapping, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.types import Config, Record
+from dataclasses_jsonschema import JsonSchemaMixin
 from jello import lib as jello_lib
 
 
-class JelloExtractor:
-    default_transform = "."
+@dataclass
+class JelloExtractor(JsonSchemaMixin):
+    """
+    Record extractor that evaluates a Jello query to extract records from a decoded response.
 
-    def __init__(self, transform: str, decoder: Optional[Decoder] = None, config=None, kwargs=None):
-        self._interpolator = JinjaInterpolation()
-        self._transform = transform
-        self._decoder = decoder or JsonDecoder()
-        self._config = config
-        self._kwargs = kwargs or dict()
+    More information on Jello can be found at https://github.com/kellyjonbrazil/jello
+
+    Attributes:
+        transform (Union[InterpolatedString, str]): The Jello query to evaluate on the decoded response
+        config (Config): The user-provided configuration as specified by the source's spec
+        decoder (Decoder): The decoder responsible to transfom the response in a Mapping
+    """
+
+    default_transform = "_"
+    transform: Union[InterpolatedString, str]
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        if isinstance(self.transform, str):
+            self.transform = InterpolatedString(string=self.transform, default=self.default_transform, options=options or {})
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self._decoder.decode(response)
-        script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
+        response_body = self.decoder.decode(response)
+        script = self.transform.eval(self.config)
         return jello_lib.pyquery(response_body, script)

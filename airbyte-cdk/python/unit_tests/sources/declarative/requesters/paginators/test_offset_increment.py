@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_inc
     ],
 )
 def test_offset_increment_paginator_strategy(test_name, page_size, expected_next_page_token, expected_offset):
-    paginator_strategy = OffsetIncrement(page_size)
+    paginator_strategy = OffsetIncrement(page_size, options={})
     assert paginator_strategy._offset == 0
 
     response = requests.Response()
@@ -30,3 +30,6 @@ def test_offset_increment_paginator_strategy(test_name, page_size, expected_next
     next_page_token = paginator_strategy.next_page_token(response, last_records)
     assert expected_next_page_token == next_page_token
     assert expected_offset == paginator_strategy._offset
+
+    paginator_strategy.reset()
+    assert 0 == paginator_strategy._offset

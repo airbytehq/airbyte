@@ -9,6 +9,7 @@ metadata:
     helm.sh/chart: {{ include "airbyte.chart" . }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -76,7 +77,7 @@ spec:
               key: INTERNAL_API_HOST
         {{- end }}
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 8 }}
+        {{ .Values.extraEnv | toYaml | nindent 10 }}
         {{- end }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
@@ -113,6 +114,12 @@ spec:
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
+      {{- if .Values.extraContainers }}
+      {{ toYaml .Values.extraContainers | indent 8 }}
+      {{- end }}
+      {{- if .Values.global.extraConrainers }}
+      {{ toYaml .Values.global.extraContainers | indent 8 }}
+      {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}

@@ -15,6 +15,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -68,14 +69,15 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.SCHEMAS_KEY, List.of(NAMESPACE))
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -83,8 +85,8 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
+            container.getHost(),
+            container.getFirstMappedPort(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
@@ -143,7 +145,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 NAMESPACE,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -153,7 +155,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 NAMESPACE,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }

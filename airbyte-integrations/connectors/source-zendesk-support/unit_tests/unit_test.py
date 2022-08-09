@@ -40,6 +40,7 @@ from source_zendesk_support.streams import (
     Tickets,
     Users,
     UserSettingsStream,
+    UserSubscriptionStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
@@ -92,7 +93,7 @@ def test_token_authenticator():
     # we expect base64 from creds input
     expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
     result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -113,7 +114,7 @@ def test_convert_config2stream_args(config):
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
     result = SourceZendeskSupport().get_authenticator(config=config)
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -128,6 +129,22 @@ def test_check(response, check_passed):
         result = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
         mock_method.assert_called()
         assert check_passed == result
+
+
+@pytest.mark.parametrize(
+    "response, expected_n_streams",
+    [
+        ("Enterprise", 18),
+        # if restricted, TicketForms stream will not be listed
+        ("Other", 17),
+    ],
+    ids=["full_access", "restricted_access"],
+)
+def test_full_access_streams(response, expected_n_streams):
+    with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value=response) as mock_method:
+        result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+        mock_method.assert_called()
+        assert len(result) == expected_n_streams
 
 
 @pytest.fixture(autouse=True)
@@ -265,10 +282,12 @@ class TestAllStreams:
         ],
     )
     def test_streams(self, expected_stream_cls):
-        streams = SourceZendeskSupport().streams(TEST_CONFIG)
-        for stream in streams:
-            if expected_stream_cls in streams:
-                assert isinstance(stream, expected_stream_cls)
+        with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value="Enterprise") as mock_method:
+            streams = SourceZendeskSupport().streams(TEST_CONFIG)
+            mock_method.assert_called()
+            for stream in streams:
+                if expected_stream_cls in streams:
+                    assert isinstance(stream, expected_stream_cls)
 
     @pytest.mark.parametrize(
         "stream_cls, expected",

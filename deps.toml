@@ -8,7 +8,7 @@ log4j = "2.17.1"
 slf4j = "1.7.30"
 lombok = "1.18.22"
 jooq = "3.13.4"
-junit-jupiter = "5.7.2"
+junit-jupiter = "5.8.2"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
@@ -17,8 +17,8 @@ connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
-connectors-destination-testcontainers-oracle-xe = "1.16.0"
-connectors-source-testcontainers-clickhouse = "1.16.0"
+connectors-destination-testcontainers-oracle-xe = "1.17.3"
+connectors-source-testcontainers-clickhouse = "1.17.3"
 platform-testcontainers = "1.17.1"
 
 [libraries]
@@ -79,13 +79,16 @@ junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.re
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.0.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
-junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.6.2" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
 otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
 otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
 otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
 otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
+micrometer-statsd = {module = "io.micrometer:micrometer-registry-statsd", version = "1.9.2"}
+
+quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
 
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]

@@ -6,6 +6,7 @@ package io.airbyte.metrics.lib;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -35,12 +36,9 @@ class MetricClientFactoryTest {
   }
 
   @Test
-  @DisplayName("Should throw error if MetricClientFactory create a metric client multiple times;")
-  void testMetricClientFactoryCreateMultipleTimesThrows() {
-    Assertions.assertThrows(RuntimeException.class, () -> {
-      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
-      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
-    });
+  @DisplayName("Should not return null if metric client not specified;")
+  void testMicroMeterRegistryRuturnsNullForEmptyClientConfig() {
+    assertNull(MetricClientFactory.getMeterRegistry());
   }
 
 }

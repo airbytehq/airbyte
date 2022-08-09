@@ -119,7 +119,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -128,7 +128,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }

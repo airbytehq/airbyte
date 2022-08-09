@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.59
+Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
+
+## 0.1.58
+Bootstrap spec backward compatibility tests. Add fixtures to retrieve a previous connector version spec [#14954](https://github.com/airbytehq/airbyte/pull/14954/).
+
+## 0.1.57
+Run connector from its image `working_dir` instead of from `/data`.
+
 ## 0.1.56
 Add test case in `TestDiscovery` and `TestConnection` to assert `additionalProperties` fields are set to true if they are declared [#14878](https://github.com/airbytehq/airbyte/pull/14878/).
 
