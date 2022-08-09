@@ -115,6 +115,12 @@ public class FailureHelper {
         .withExternalMessage("Something went wrong during normalization");
   }
 
+  public static FailureReason normalizationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.NORMALIZATION)
+        .withExternalMessage(m.getError().getMessage());
+  }
+
   public static FailureReason dbtFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.DBT)
