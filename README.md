@@ -1,70 +1,132 @@
-# Introduction
+# Setup of Airbyte:
 
-[![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
+## Purpose
+We want to export data from a variety of systems into a [Data Warehouse](https://en.wikipedia.org/wiki/Data_warehouse) in order to be able to
+perform analytics on the data we collect.
+For a ```Data Warehouse``` we use [BigQuery](https://cloud.google.com/bigquery).
 
-**Data integration made simple, secure and extensible.**
-The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
+## Setup
+Initially I was using a docker image of ```Airbyte``` and set it up on my Laptop.
+I was using a ```Docker``` image of ```Airbyte``` available [here](https://docs.airbyte.com/quickstart/deploy-airbyte)
+Check [airbyte-with-primetric](https://github.com/andrzejdackiewicz/airbyte-with-primetric.git) if You want to use
+```Airbyte``` with a custom source ```Primetric``` connector.
 
-Airbyte is on a mission to make data integration pipelines a commodity.
+## Sources
+- [Harvest](https://www.getharvest.com/)
+- [Primetric](https://www.primetric.com/)
+- [BambooHR](https://www.bamboohr.com/)
+- [Google Sheets](https://www.google.com/sheets/about/)
 
-* **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
-* **Building new connectors made trivial.** We make it very easy to add new connectors that you need, using the language of your choice, by offering scheduling and orchestration. 
-* Designed to **cover the long tail of connectors and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
-* **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
-* **No more security compliance process** to go through as Airbyte is self-hosted. 
-* **No more pricing indexed on volume**, as cloud-based solutions offer. 
+### Source Harvest
 
-Here's a list of our [connectors with their health status](docs/integrations/).
+There is an out of the box definition of a [Harvest Source Connector](https://docs.airbyte.com/integrations/sources/harvest).
+For authentication we will be using a ```Personal Account Token```.
+We can generate one [here](https://id.getharvest.com/developers).
 
-## Quick start
+We need:
+- ```Name``` For example ```Harvest-source-connector```
+- ```Account ID```
+- ```Start Date``` (we can use 2017-01-01T00:00:00Z as the beginning of logs, our logs start later)
+- ```Authentication mechanism``` we choose ```Authenticate with Personal Account Token```
+- ```Personal Account Token``` that we generated in ```Harvest```.
 
-```bash
-git clone https://github.com/airbytehq/airbyte.git
-cd airbyte
-docker-compose up
-```
+We Save changes and test the ```Source Connector``` everything should be fine.
 
-Now visit [http://localhost:8000](http://localhost:8000)
+### Source Primetric
 
-Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
+There were no available out of the box definitions of a ```Source Connector``` for ```Primetric```.
+I needed to created a ```Custom Connector``` according to [this](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source/) instruction.
+The ```Airbyte``` image with an additional definition is [here](https://github.com/andrzejdackiewicz/airbyte-with-primetric.git).
 
-## Features
+We need:
+- ```Client Secret```
+- ```Client ID```
 
-* **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
-* **Optional normalized schemas**: Entirely customizable, start with raw data or from some suggestion of normalized data.
-* **Full-grade scheduler**: Automate your replications with the frequency you need.
-* **Real-time monitoring**: We log all errors in full detail to help you understand.
-* **Incremental updates**: Automated replications are based on incremental updates to reduce your data transfer costs.
-* **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
-* **Debugging autonomy**: Modify and debug pipelines as you see fit, without waiting.
+### Source BambooHR
 
-[See more on our website.](https://airbyte.io/features/)
+There is an out of the box definition of a [BambooHR Source Connector](https://docs.airbyte.com/integrations/sources/bamboo-hr/).
 
-## Contributing
+We need:
+- ```An api permission``` We can manage those here:
+  ```https://getindata.bamboohr.com/settings/permissions/```
 
-We love contributions to Airbyte, big or small.
+- ```ApiKey``` should be generated while creating a permission.
 
-See our [Contributing guide](docs/09-contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
+### Source Google Sheets
 
-**Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
+There is an out of the box definition of a [Google Sheets Source Connector](https://docs.airbyte.com/integrations/sources/google-sheets).
 
-**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
+For ```Airbyte``` to be able to use ```Google Sheets``` we need a Service Account that has access to specified sheets.
+In ```GCP``` create a ```Service Account```, share sheets with email generated for a ```Service Account``` and generate a
+JSON key for the ```Service Account```. The minimal role given to ```Service Account``` for a sheet should be ```Viewer```.
+When we create a source connection we will use generated JSON and the link to the ```Google Sheet``` with the data that we want to export to ```BigQuery```.
 
-## Community support
+## Destinations
 
-For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
+### Prerequsites
 
-* [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
-* [Forum](https://discuss.airbyte.io/) \(For deeper converstaions about features, connectors, or problems\)
-* [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
-* [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
-* [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
+Before we start defining ```Destinations``` on ```Airbyte```:
 
-## Roadmap
+- We need to create a ```Service Account``` with the ability to create tables, write and alter data on
+  GCP BigQuery.
+- The ```Service Account``` needs to have a generated JSON key for authorization to ```BigQuery```.
+  The same JSON can be used for all ```Destinations```.
+- We create a separate [Dataset](https://cloud.google.com/bigquery/docs/datasets-intro) for each ```Source``` where the data can be written:
+    - ```harvest-351907.harvest_airbyte_export```
+    - ```harvest-351907.primetric_airbyte_export```
+    - ```harvest-351907.bamboohr_airbyte_export```
+    - ```harvest-351907.google_sheets_airbyte_export```
 
-Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
+### Destination BigQuery
 
-## License
+For each of the sources we create a ```Destination```:
+- We click ```Destinations``` -> ```+ New destination```
+- We choose ```BigQuery``` as the ```Destination type```
+- We fill in the formulae:
+    - ```Name```
+    - ```ProjectID```
+    - ```Dataset Location```
+    - ```Default Dataset ID```
+    - ```Service Account Key JSON``` - (here we use our generated JSON)
 
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic. 
+We click ```Set up destination``` and check if everything.
 
+## Connections
+
+We create a connection for each pair ```Source``` - ```Destination```. We should give it a name, select how often the sync should take place, select the streams that should be synced and the method of synchronization (overwrite / incremental / some other).
+We choose whether we want just a raw data tables or do we want to use normalization. (We want to normalize everything apart from harvest-export as there is an error in Harvest source Normalization).
+
+For ```Harvest``` connection click "+ Add transformation" and specify:
+- ```Transformation name``` For example ```Harvest Custom Transformations```
+- ```Custom DBT``` for ```Transformation type```
+- ```fishtownanalytics/dbt:1.0.0``` for ```Docker image URL with dbt installed```
+- ```run``` for ```Entrypoint arguments for dbt cli to run the project```
+- ```https://github.com/andrzejdackiewicz/harvest-export-custom-transformation.git``` for ```Git repository URL of the custom transformation project```
+- ```main``` for ```Git branch name```
+
+Save configuration and set up connection. Everything should be good.
+
+## Known issues and workarounds
+
+### Running Airbyte on Kubernetes
+The problem is described [here](https://github.com/airbytehq/airbyte/issues/5091).
+It is currently not possible to use [Custom DBT Transformations](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-sql) for ```Airbyte``` running on ```Kubernetes```. For now we are using them
+for exporting ```Harvest``` data. We need to have ```DBT Transformation``` because of the following issue with ```Harvest``` source connector.
+
+If we can't use ```Kubernetes``` and want to deploy ```Airbyte``` somewhere then we can use a minimal (1 Core) VM instance on ```GCP Compute Engine```. and install
+```Airbyte``` there. The data that is exported so far is very small in size and the exports do not take long. For cost optimization
+we can also use preemptive VM and shut it down when not used.
+
+### Normalization errors for Harvest source connector
+There is a very well known problem with the [Harvest source connector](https://docs.airbyte.com/integrations/sources/harvest/).
+The issue is described [here](https://github.com/airbytehq/airbyte/issues/11980).
+During the sync there would be a problem with read data normalization before writing it to the table.
+The workaround is to put data into BigQuery without normalization and use a [Custom DBT Transformation](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-sql).
+I put my custom transformation [here](https://github.com/andrzejdackiewicz/harvest-export-custom-transformation.git). Use the main branch.
+There is 1 simple transformation which reads data from a table with raw JSON format, normalizes it by putting read values into another table on BigQuery dataset.
+```Airbyte``` uses the DBT project and uses it's transformations after writing raw data into BigQuery.
+
+### No available connector for Primetric source
+There was no available connector for ```Primetric```. That meant that we had to create a custom HTTP connector. I created a new connector following the [documentation](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/getting-started).
+
+The publically available ```Primetric Source Connector``` is [here](https://github.com/andrzejdackiewicz/airbyte-with-primetric.git).
