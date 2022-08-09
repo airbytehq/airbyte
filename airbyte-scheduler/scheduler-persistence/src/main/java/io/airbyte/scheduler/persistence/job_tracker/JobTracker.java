@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobTracker {
 
@@ -49,6 +51,8 @@ public class JobTracker {
     SUCCEEDED,
     FAILED
   }
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobTracker.class);
 
   public static final String MESSAGE_NAME = "Connector Jobs";
   public static final String CONFIG = "config";
@@ -120,6 +124,7 @@ public class JobTracker {
 
   // used for tracking all asynchronous jobs (sync and reset).
   public void trackSync(final Job job, final JobState jobState) {
+    LOGGER.info("tracking sync");
     Exceptions.swallow(() -> {
       final ConfigType configType = job.getConfigType();
       final boolean allowedJob = configType == ConfigType.SYNC || configType == ConfigType.RESET_CONNECTION;
@@ -360,6 +365,8 @@ public class JobTracker {
     // unfortunate but in the case of jobs that cannot be linked to a workspace there not a sensible way
     // track it.
     if (workspaceId != null) {
+      LOGGER.info("tracking with metadata");
+      LOGGER.info(String.valueOf(metadata));
       final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, true);
       if (standardWorkspace != null && standardWorkspace.getName() != null) {
         final Map<String, Object> standardTrackingMetadata = ImmutableMap.of(
