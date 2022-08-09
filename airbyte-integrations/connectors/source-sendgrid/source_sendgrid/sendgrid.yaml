@@ -65,7 +65,7 @@ definitions:
       datetime: "2022-08-01T00:00:00.0Z"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     step: "10000d"
-    cursor_field: "{{ options.cursor_field }}"
+    cursor_field: "{{ options.stream_cursor_field }}"
     start_time_option:
       field_name: "start_time"
       inject_into: "request_parameter"
@@ -205,6 +205,7 @@ streams:
     $options:
       name: "global_suppressions"
       primary_key: "email"
+      stream_cursor_field: "created"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
