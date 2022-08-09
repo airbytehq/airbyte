@@ -15,6 +15,14 @@ import org.junit.jupiter.api.Test;
 
 class SentryExceptionHelperTest {
 
+  private static final String ERROR_PATH = "/airbyte/connector-errors/error.py";
+  private static final String ABS_PATH = "abspath";
+  private static final String LINE_NO = "lineno";
+  private static final String FUNCTION = "function";
+  private static final String CONTEXT_LINE = "context_line";
+  private static final String FILENAME = "filename";
+  private static final String MODULE = "module";
+
   final SentryExceptionHelper exceptionHelper = new SentryExceptionHelper();
 
   @Test
@@ -64,37 +72,37 @@ class SentryExceptionHelperTest {
     assertExceptionContent(exceptionList.get(0), "requests.exceptions.HTTPError", "400 Client Error: Bad Request for url: https://airbyte.com",
         List.of(
             Map.of(
-                "abspath", "/airbyte/connector-errors/error.py",
-                "lineno", 31,
-                "function", "read_records",
-                "context_line", "failing_method()"),
+                ABS_PATH, ERROR_PATH,
+                LINE_NO, 31,
+                FUNCTION, "read_records",
+                CONTEXT_LINE, "failing_method()"),
             Map.of(
-                "abspath", "/airbyte/connector-errors/error.py",
-                "lineno", 36,
-                "function", "failing_method",
-                "context_line", "raise HTTPError(http_error_msg, response=self)")));
+                ABS_PATH, ERROR_PATH,
+                LINE_NO, 36,
+                FUNCTION, "failing_method",
+                CONTEXT_LINE, "raise HTTPError(http_error_msg, response=self)")));
 
     assertExceptionContent(exceptionList.get(1), "RuntimeError", "My other error", List.of(
         Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 39,
-            "function", "<module>",
-            "context_line", "main()"),
+            ABS_PATH, ERROR_PATH,
+            LINE_NO, 39,
+            FUNCTION, "<module>",
+            CONTEXT_LINE, "main()"),
         Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 13,
-            "function", "main",
-            "context_line", "sync_mode(\"incremental\")"),
+            ABS_PATH, ERROR_PATH,
+            LINE_NO, 13,
+            FUNCTION, "main",
+            CONTEXT_LINE, "sync_mode(\"incremental\")"),
         Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 17,
-            "function", "sync_mode",
-            "context_line", "incremental()"),
+            ABS_PATH, ERROR_PATH,
+            LINE_NO, 17,
+            FUNCTION, "sync_mode",
+            CONTEXT_LINE, "incremental()"),
         Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 33,
-            "function", "incremental",
-            "context_line", "raise RuntimeError(\"My other error\") from err")));
+            ABS_PATH, ERROR_PATH,
+            LINE_NO, 33,
+            FUNCTION, "incremental",
+            CONTEXT_LINE, "raise RuntimeError(\"My other error\") from err")));
 
   }
 
@@ -115,10 +123,10 @@ class SentryExceptionHelperTest {
 
     assertExceptionContent(exceptionList.get(0), "RuntimeError", null, List.of(
         Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 33,
-            "function", "incremental",
-            "context_line", "raise RuntimeError()")));
+            ABS_PATH, ERROR_PATH,
+            LINE_NO, 33,
+            FUNCTION, "incremental",
+            CONTEXT_LINE, "raise RuntimeError()")));
   }
 
   @Test
@@ -155,17 +163,17 @@ class SentryExceptionHelperTest {
 
     assertExceptionContent(exceptionList.get(0), "grpc._channel._InactiveRpcError", expectedValue, List.of(
         Map.of(
-            "abspath", "/usr/local/lib/python3.9/site-packages/grpc/_channel.py",
-            "lineno", 849,
-            "function", "_end_unary_response_blocking",
-            "context_line", "raise _InactiveRpcError(state)")));
+            ABS_PATH, "/usr/local/lib/python3.9/site-packages/grpc/_channel.py",
+            LINE_NO, 849,
+            FUNCTION, "_end_unary_response_blocking",
+            CONTEXT_LINE, "raise _InactiveRpcError(state)")));
 
     assertExceptionContent(exceptionList.get(1), "AttributeError", "'NoneType' object has no attribute 'from_call'", List.of(
         Map.of(
-            "abspath", "/usr/local/lib/python3.9/site-packages/google/api_core/exceptions.py",
-            "lineno", 553,
-            "function", "_parse_grpc_error_details",
-            "context_line", "status = rpc_status.from_call(rpc_exc)")));
+            ABS_PATH, "/usr/local/lib/python3.9/site-packages/google/api_core/exceptions.py",
+            LINE_NO, 553,
+            FUNCTION, "_parse_grpc_error_details",
+            CONTEXT_LINE, "status = rpc_status.from_call(rpc_exc)")));
   }
 
   @Test
@@ -190,37 +198,37 @@ class SentryExceptionHelperTest {
     assertExceptionContent(exceptionList.get(0), "java.lang.ArithmeticException", "/ by zero",
         List.of(
             Map.of(
-                "filename", "GradleWorkerMain.java",
-                "lineno", 74,
-                "module", "worker.org.gradle.process.internal.worker.GradleWorkerMain",
-                "function", "main"),
+                FILENAME, "GradleWorkerMain.java",
+                LINE_NO, 74,
+                MODULE, "worker.org.gradle.process.internal.worker.GradleWorkerMain",
+                FUNCTION, "main"),
             Map.of(
-                "module", "jdk.proxy2.$Proxy5",
-                "function", "stop"),
+                MODULE, "jdk.proxy2.$Proxy5",
+                FUNCTION, "stop"),
             Map.of(
-                "filename", "ThrowableCollector.java",
-                "lineno", 73,
-                "module", "org.junit.platform.engine.support.hierarchical.ThrowableCollector",
-                "function", "execute"),
+                FILENAME, "ThrowableCollector.java",
+                LINE_NO, 73,
+                MODULE, "org.junit.platform.engine.support.hierarchical.ThrowableCollector",
+                FUNCTION, "execute"),
             Map.of(
-                "filename", "NodeTestTask.java",
-                "lineno", 141,
-                "module", "org.junit.platform.engine.support.hierarchical.NodeTestTask",
-                "function", "lambda$executeRecursively$8"),
+                FILENAME, "NodeTestTask.java",
+                LINE_NO, 141,
+                MODULE, "org.junit.platform.engine.support.hierarchical.NodeTestTask",
+                FUNCTION, "lambda$executeRecursively$8"),
             Map.of(
-                "filename", "ExecutableInvoker.java",
-                "lineno", 115,
-                "module", "org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall",
-                "function", "lambda$ofVoidMethod$0"),
+                FILENAME, "ExecutableInvoker.java",
+                LINE_NO, 115,
+                MODULE, "org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall",
+                FUNCTION, "lambda$ofVoidMethod$0"),
             Map.of(
                 "isNative", true,
-                "module", "jdk.internal.reflect.NativeMethodAccessorImpl",
-                "function", "invoke0"),
+                MODULE, "jdk.internal.reflect.NativeMethodAccessorImpl",
+                FUNCTION, "invoke0"),
             Map.of(
-                "filename", "AirbyteTraceMessageUtilityTest.java",
-                "lineno", 61,
-                "module", "io.airbyte.integrations.base.AirbyteTraceMessageUtilityTest",
-                "function", "testCorrectStacktraceFormat")));
+                FILENAME, "AirbyteTraceMessageUtilityTest.java",
+                LINE_NO, 61,
+                MODULE, "io.airbyte.integrations.base.AirbyteTraceMessageUtilityTest",
+                FUNCTION, "testCorrectStacktraceFormat")));
   }
 
   @Test
@@ -252,33 +260,33 @@ class SentryExceptionHelperTest {
         "io.airbyte.workers.DefaultReplicationWorker$DestinationException: Destination process exited with non-zero exit code 1",
         List.of(
             Map.of(
-                "filename", "Thread.java",
-                "lineno", 833,
-                "module", "java.lang.Thread",
-                "function", "run"),
+                FILENAME, "Thread.java",
+                LINE_NO, 833,
+                MODULE, "java.lang.Thread",
+                FUNCTION, "run"),
             Map.of(
-                "filename", "ThreadPoolExecutor.java",
-                "lineno", 635,
-                "module", "java.util.concurrent.ThreadPoolExecutor$Worker",
-                "function", "run"),
+                FILENAME, "ThreadPoolExecutor.java",
+                LINE_NO, 635,
+                MODULE, "java.util.concurrent.ThreadPoolExecutor$Worker",
+                FUNCTION, "run"),
             Map.of(
-                "filename", "CompletableFuture.java",
-                "lineno", 315,
-                "module", "java.util.concurrent.CompletableFuture",
-                "function", "encodeThrowable")));
+                FILENAME, "CompletableFuture.java",
+                LINE_NO, 315,
+                MODULE, "java.util.concurrent.CompletableFuture",
+                FUNCTION, "encodeThrowable")));
 
     assertExceptionContent(exceptionList.get(1), "io.airbyte.workers.DefaultReplicationWorker$DestinationException",
         "Destination process exited with non-zero exit code 1", List.of(
             Map.of(
-                "filename", "CompletableFuture.java",
-                "lineno", 1804,
-                "module", "java.util.concurrent.CompletableFuture$AsyncRun",
-                "function", "run"),
+                FILENAME, "CompletableFuture.java",
+                LINE_NO, 1804,
+                MODULE, "java.util.concurrent.CompletableFuture$AsyncRun",
+                FUNCTION, "run"),
             Map.of(
-                "filename", "DefaultReplicationWorker.java",
-                "lineno", 397,
-                "module", "io.airbyte.workers.DefaultReplicationWorker",
-                "function", "lambda$getDestinationOutputRunnable$7")));
+                FILENAME, "DefaultReplicationWorker.java",
+                LINE_NO, 397,
+                MODULE, "io.airbyte.workers.DefaultReplicationWorker",
+                FUNCTION, "lambda$getDestinationOutputRunnable$7")));
   }
 
   @Test
@@ -310,20 +318,20 @@ class SentryExceptionHelperTest {
           "message" : "Invalid Credentials"
         }""", List.of(
             Map.of(
-                "filename", "GoogleJsonResponseException.java",
-                "lineno", 146,
-                "module", "com.google.api.client.googleapis.json.GoogleJsonResponseException",
-                "function", "from")));
+                FILENAME, "GoogleJsonResponseException.java",
+                LINE_NO, 146,
+                MODULE, "com.google.api.client.googleapis.json.GoogleJsonResponseException",
+                FUNCTION, "from")));
 
     assertExceptionContent(exceptionList.get(1), "org.postgresql.util.PSQLException",
         """
         ERROR: publication "airbyte_publication" does not exist
           Where: slot "airbyte_slot", output plugin "pgoutput", in the change callback, associated LSN 0/48029520""", List.of(
             Map.of(
-                "filename", "QueryExecutorImpl.java",
-                "lineno", 2675,
-                "module", "org.postgresql.core.v3.QueryExecutorImpl",
-                "function", "receiveErrorResponse")));
+                FILENAME, "QueryExecutorImpl.java",
+                LINE_NO, 2675,
+                MODULE, "org.postgresql.core.v3.QueryExecutorImpl",
+                FUNCTION, "receiveErrorResponse")));
   }
 
   private void assertExceptionContent(final SentryException exception,
@@ -343,28 +351,28 @@ class SentryExceptionHelperTest {
       final Map<String, Object> expectedFrame = frames.get(i);
       final SentryStackFrame sentryFrame = sentryFrames.get(i);
 
-      if (expectedFrame.containsKey("module")) {
-        Assertions.assertEquals(expectedFrame.get("module"), sentryFrame.getModule());
+      if (expectedFrame.containsKey(MODULE)) {
+        Assertions.assertEquals(expectedFrame.get(MODULE), sentryFrame.getModule());
       }
 
-      if (expectedFrame.containsKey("filename")) {
-        Assertions.assertEquals(expectedFrame.get("filename"), sentryFrame.getFilename());
+      if (expectedFrame.containsKey(FILENAME)) {
+        Assertions.assertEquals(expectedFrame.get(FILENAME), sentryFrame.getFilename());
       }
 
-      if (expectedFrame.containsKey("abspath")) {
-        Assertions.assertEquals(expectedFrame.get("abspath"), sentryFrame.getAbsPath());
+      if (expectedFrame.containsKey(ABS_PATH)) {
+        Assertions.assertEquals(expectedFrame.get(ABS_PATH), sentryFrame.getAbsPath());
       }
 
-      if (expectedFrame.containsKey("function")) {
-        Assertions.assertEquals(expectedFrame.get("function"), sentryFrame.getFunction());
+      if (expectedFrame.containsKey(FUNCTION)) {
+        Assertions.assertEquals(expectedFrame.get(FUNCTION), sentryFrame.getFunction());
       }
 
-      if (expectedFrame.containsKey("lineno")) {
-        Assertions.assertEquals(expectedFrame.get("lineno"), sentryFrame.getLineno());
+      if (expectedFrame.containsKey(LINE_NO)) {
+        Assertions.assertEquals(expectedFrame.get(LINE_NO), sentryFrame.getLineno());
       }
 
-      if (expectedFrame.containsKey("context_line")) {
-        Assertions.assertEquals(expectedFrame.get("context_line"), sentryFrame.getContextLine());
+      if (expectedFrame.containsKey(CONTEXT_LINE)) {
+        Assertions.assertEquals(expectedFrame.get(CONTEXT_LINE), sentryFrame.getContextLine());
       }
 
       if (expectedFrame.containsKey("isNative")) {

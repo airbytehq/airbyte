@@ -1,5 +1,3 @@
-import { faStar } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -9,6 +7,8 @@ import styled from "styled-components";
 import { Button, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
@@ -40,10 +40,6 @@ const Count = styled.div`
   font-size: 24px;
   line-height: 29px;
 `;
-const StarIcon = styled(FontAwesomeIcon)`
-  margin-right: 6px;
-  font-size: 22px;
-`;
 const Actions = styled.div`
   display: flex;
   gap: 12px;
@@ -67,6 +63,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
+  const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
   useEffectOnce(() => {
@@ -107,6 +104,9 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
+    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+      actionDescription: "Checkout Start",
+    });
     // Forward to stripe as soon as we created a checkout session successfully
     window.location.assign(stripeUrl);
   };
@@ -116,21 +116,19 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       <CreditView>
         <FormattedMessage id="credits.remainingCredits" />
         <Count>
-          <StarIcon icon={faStar} />
           <FormattedNumber value={cloudWorkspace.remainingCredits} />
         </Count>
       </CreditView>
       <Actions>
         <LoadingButton
           disabled={!selfServiceCheckoutEnabled}
-          size="xl"
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
         >
           <FormattedMessage id="credits.buyCredits" />
         </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales} size="xl">
+        <Button as="a" target="_blank" href={config.links.contactSales}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>
