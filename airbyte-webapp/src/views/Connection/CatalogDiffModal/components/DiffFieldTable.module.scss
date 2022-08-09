@@ -2,7 +2,7 @@
 @use "./DiffSection.module.scss";
 
 .accordionSubHeader {
-  @extend .sectionSubHeader;
+  @extend %sectionSubHeader;
 
   & .padLeft {
     padding-left: variables.$spacing-lg;

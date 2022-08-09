@@ -47,7 +47,8 @@
   background: colors.$red-100;
 }
 
-.nameCell {
+.nameCell,
+%nameCell {
   width: 140px;
   text-align: left;
 

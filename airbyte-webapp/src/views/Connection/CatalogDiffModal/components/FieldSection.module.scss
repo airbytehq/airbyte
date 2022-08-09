@@ -13,13 +13,13 @@ li {
 }
 
 .fieldHeader {
-  @extend .sectionHeader;
+  @extend %sectionHeader;
 
   padding: variables.$spacing-lg variables.$spacing-xl;
 }
 
 .fieldSubHeader {
-  @extend .sectionSubHeader;
+  @extend %sectionSubHeader;
 
   padding: 0 variables.$spacing-sm 0 35px;
 
@@ -28,7 +28,7 @@ li {
   }
 
   > div {
-    @extend .nameCell;
+    @extend %nameCell;
 
     text-align: left;
     font-weight: 400;
