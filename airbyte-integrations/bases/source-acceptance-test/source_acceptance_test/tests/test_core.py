@@ -183,6 +183,7 @@ class TestSpec(BaseTest):
         skip_backward_compatibility_tests: bool,
         actual_connector_spec: ConnectorSpecification,
         previous_connector_spec: ConnectorSpecification,
+        number_of_configs_to_generate: int = 100,
     ):
         """Check if the current spec is backward_compatible:
         1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
@@ -192,7 +193,7 @@ class TestSpec(BaseTest):
         spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
         checker = SpecDiffChecker(spec_diff)
         checker.assert_spec_is_backward_compatible()
-        validate_previous_configs(previous_connector_spec, actual_connector_spec)
+        validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.

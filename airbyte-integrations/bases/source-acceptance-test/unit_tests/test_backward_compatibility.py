@@ -862,4 +862,4 @@ def test_backward_compatibility(previous_connector_spec, actual_connector_spec, 
     t = _TestSpec()
     expectation = pytest.raises(NonBackwardCompatibleSpecError) if should_fail else does_not_raise()
     with expectation:
-        t.test_backward_compatibility(False, actual_connector_spec, previous_connector_spec)
+        t.test_backward_compatibility(False, actual_connector_spec, previous_connector_spec, 10)
