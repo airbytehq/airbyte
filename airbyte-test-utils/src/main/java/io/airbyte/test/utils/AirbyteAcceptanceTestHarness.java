@@ -624,7 +624,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.PORT_KEY, 5432);
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
     // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
