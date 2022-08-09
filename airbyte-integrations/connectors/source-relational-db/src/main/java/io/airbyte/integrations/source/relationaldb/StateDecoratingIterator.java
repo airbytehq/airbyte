@@ -27,15 +27,16 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private final JsonSchemaPrimitive cursorType;
   private final int stateEmissionFrequency;
 
+  private final String initialCursor;
   private String maxCursor;
   private boolean hasEmittedFinalState;
 
   // The intermediateStateMessage is set to the latest state message.
   // For every stateEmissionFrequency messages, emitIntermediateState is set to true and
   // the latest intermediateStateMessage will be emitted.
-  private int totalRecordCount;
+  private int totalRecordCount = 0;
   private boolean emitIntermediateState = false;
-  private AirbyteMessage intermediateStateMessage;
+  private AirbyteMessage intermediateStateMessage = null;
 
   /**
    * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every
@@ -54,6 +55,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.pair = pair;
     this.cursorField = cursorField;
     this.cursorType = cursorType;
+    this.initialCursor = initialCursor;
     this.maxCursor = initialCursor;
     this.stateEmissionFrequency = stateEmissionFrequency;
   }
@@ -77,8 +79,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final String cursorCandidate = getCursorCandidate(message);
         final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
         if (cursorComparison < 0) {
-          if (stateEmissionFrequency > 0) {
-            intermediateStateMessage = createStateMessage(!messageIterator.hasNext());
+          if (stateEmissionFrequency > 0 && maxCursor != null && messageIterator.hasNext() && !maxCursor.equals(initialCursor)) {
+            // Only emit an intermediate state when it is not the first or last record message,
+            // because the last state message will be taken care of in a different branch.
+            intermediateStateMessage = createStateMessage(false);
           }
           maxCursor = cursorCandidate;
         }

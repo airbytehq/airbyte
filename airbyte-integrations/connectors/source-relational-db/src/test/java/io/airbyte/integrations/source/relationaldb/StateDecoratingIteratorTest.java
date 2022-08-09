@@ -191,9 +191,8 @@ class StateDecoratingIteratorTest {
         1);
 
     assertEquals(RECORD_MESSAGE_1, iterator1.next());
-    assertEquals(STATE_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(STATE_MESSAGE_2, iterator1.next());
+    assertEquals(STATE_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_3, iterator1.next());
     // final state message should only be emitted once
     assertEquals(STATE_MESSAGE_3, iterator1.next());
@@ -215,7 +214,7 @@ class StateDecoratingIteratorTest {
 
     assertEquals(RECORD_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(STATE_MESSAGE_2, iterator1.next());
+    assertEquals(STATE_MESSAGE_1, iterator1.next());
     assertEquals(RECORD_MESSAGE_3, iterator1.next());
     assertEquals(STATE_MESSAGE_3, iterator1.next());
     assertFalse(iterator1.hasNext());
@@ -235,7 +234,6 @@ class StateDecoratingIteratorTest {
         1);
 
     assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(STATE_MESSAGE_2, iterator1.next());
     assertEquals(RECORD_MESSAGE_3, iterator1.next());
     assertEquals(STATE_MESSAGE_3, iterator1.next());
     assertFalse(iterator1.hasNext());
