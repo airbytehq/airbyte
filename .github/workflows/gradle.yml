@@ -234,6 +234,15 @@ jobs:
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Connectors Base Test Report
+          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          reporter: java-junit
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
     name: "Connectors Base: Stop Build EC2 Runner"
@@ -471,7 +480,8 @@ jobs:
           SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
       - name: Integration test
-        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
+        run: |
+          SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
 
       - name: Slow integration test
         if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
@@ -485,15 +495,24 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
-      # This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
-      #      - name: Get Docker Space
-      #        run: docker run --rm busybox df -h
+#       This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
+#      - name: Get Docker Space
+#        run: docker run --rm busybox df -h
 
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()    # run this step even if previous step failed
+        with:
+          name: Platform Test Report with Docker E2E Test
+          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          reporter: java-junit
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
@@ -625,6 +644,14 @@ jobs:
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()    # run this step even if previous step failed
+        with:
+          name: Platform Kubernetes E2E Test Report
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
+          reporter: java-junit
 
       - uses: actions/upload-artifact@v2
         if: failure()
