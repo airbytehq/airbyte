@@ -17,7 +17,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+public class MySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   private static MySqlUtils.Certificate certs;
   private static final String PASSWORD = "Passw0rd";
@@ -28,13 +28,11 @@ public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcce
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     addTestData(container);
-    certs = MySqlUtils.getCertificate(container, true);
+    certs = MySqlUtils.getCertificate(container, false);
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_identity")
+            .put(JdbcUtils.MODE_KEY, "verify_ca")
             .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
             .put("client_key_password", PASSWORD)
             .build();
 
