@@ -129,8 +129,6 @@ public class AirbyteAcceptanceTestHarness {
 
   public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";
 
-  private static final String DEFAULT_IP = "0.0.0.0";
-
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
   private static final String OUTPUT_STREAM_PREFIX = "output_table_";
@@ -612,7 +610,7 @@ public class AirbyteAcceptanceTestHarness {
         dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put(JdbcUtils.HOST_KEY, DEFAULT_IP);
+        dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
       }
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
