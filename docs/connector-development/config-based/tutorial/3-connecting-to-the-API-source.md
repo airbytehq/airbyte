@@ -18,8 +18,9 @@ We'll also be creating the following files:
 
 ## Updating the connector spec and config
 
-1. Let's populate the config so the connector can access the access key and base currency.
-   First, we'll add these properties to the connector spec in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`
+Let's populate the specification (`spec.yaml`) the configuration (`secrets/config.json), so the connector can access the access key and base currency.
+
+1. We'll add these properties to the connector spec in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`
 
 ```
 documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
