@@ -78,18 +78,18 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         // Mark the state as final in case this intermediate state happens to be the last one.
         // This is not necessary, but avoid sending the final states twice and prevent any edge case.
         final boolean isFinalState = !messageIterator.hasNext();
-        intermediateStateMessage = emitStateMessage(isFinalState);
+        intermediateStateMessage = createStateMessage(isFinalState);
       }
 
       return message;
     } else if (!hasEmittedFinalState) {
-      return emitStateMessage(true);
+      return createStateMessage(true);
     } else {
       return endOfData();
     }
   }
 
-  public AirbyteMessage emitStateMessage(final boolean isFinalState) {
+  public AirbyteMessage createStateMessage(final boolean isFinalState) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
     LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor value {}, cursor field: {}, new cursor value: {}",
         pair,
