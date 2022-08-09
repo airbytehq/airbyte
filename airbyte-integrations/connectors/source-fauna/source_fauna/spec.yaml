@@ -1,4 +1,4 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Fauna Spec
@@ -15,7 +15,7 @@ connectionSpecification:
       type: string
       title: Domain
       description: >-
-        Domain of Fauna to query. Defaults fauna.db.com.
+        Domain of Fauna to query. Defaults db.fauna.com.
         See <a href=https://docs.fauna.com/fauna/current/learn/understanding/region_groups#how-to-use-region-groups>the docs</a>.
       default: "db.fauna.com"
     port:
@@ -51,7 +51,7 @@ connectionSpecification:
           order: 0
           type: string
           title: Collection Name
-          description: The name of the collection this connector will read from.
+          description: The name of the collection this connector should read from.
         index:
           title: Incremental Sync Index
           type: string
@@ -64,19 +64,19 @@ connectionSpecification:
           title: Data Column
           default: true
           description: >-
-            If enabled, then a column named "data" will be added to the destination
-            database. This column will be an object which includes the entire "data"
-            section of each Fauna document.<br>
+            If enabled, then a column named "data" is added to the destination database.
+            This column contains the entire <code>data</code> object from each Fauna
+            document.<br>
         additional_columns:
           order: 3
           type: array
           title: Additional Columns
           description: >-
-            These fields will be added as columns in the destination database.<br>
+            These fields are added as columns in the destination database.<br>
 
-            This can be used in addition to or in place of the data column if you
+            This can be used in addition to, or in place of, the data column if you
             would like to map certain document fields into columns, e.g.
-            ["data", "customer", "address"] or ["ttl"].<br>
+            <code>["data", "customer", "address"]</code> or <code>["ttl"]</code>.<br>
           items:
             type: object
             required:
@@ -95,15 +95,15 @@ connectionSpecification:
                 type: array
                 title: Path
                 description: >-
-                  The path of this value within each Fauna document. This starts at the top
-                  of each document, so if you wish to pluck a field from your data start the
-                  path with "data". If you wish to grab a different top-level fields, such as "ttl", enter
-                  that as the path (e.g. ["ttl"]).<br>
+                  The path of this value within each Fauna document. Path evaluation starts at the top
+                  of each document. To specify one of the document's <code>data</code> fields, start the
+                  path with <code>data</code>. For example: <code>["data", "address", "zip_code"]</code>.
+                  To specify a top-level field such as <code>ttl</code>, enter the path <code>["ttl"]</code>.<br>
 
                   Numerical values cannot be entered. It is not possible to index into an
                   array using this path.<br>
 
-                  This path is the same as a <a href="https://docs.fauna.com/fauna/current/api/fql/functions/select?lang=javascript">select call</a>.
+                  This path is the same as a <a href="https://docs.fauna.com/fauna/current/api/fql/functions/select"><code>Select</code> call</a>.
                 items:
                   type: string
               type:
@@ -111,33 +111,48 @@ connectionSpecification:
                 type: string
                 title: Type
                 description: >-
-                  The type of this column. Used in Airbyte when transferring documents
-                  to the destination database. This is an Airbyte record type.
-                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+                  The Airbyte record type for this field value from the Fauna document. <code>Type<code>
+                  specifies the encoding of the value separate from the type of value specified
+                  by <code>Format<code>.
+
+                  For example, `2022-08-05T12:34:56+00:00` is a value whose `Type` is
+                  "string" and its `Format` is "date-time".
+
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the Airbyte docs</a>.
               format:
                 order: 3
                 type: string
                 title: Format
                 description: >-
-                  The format of this column. Used to specify what format a column is in.
-                  This can be used to specify date-times and other more obscure types.<br>
+                  The format of this field value from the Fauna document. <code>Format</code>
+                  specifies the type of value separate from the encoding of the value specified
+                  by <code>Type</code>.
 
-                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+                  For example, <code>2022-08-05T12:34:56+00:00</code> is a value whose <code>Type</code>
+                  is "string" and its <code>Format</code> is "date-time".
+
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the Airbyte docs</a>.
               airbyte_type:
                 order: 4
                 type: string
                 title: Airbyte Type
                 description: >-
-                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+                  The Airbyte record type used to store the field value in the destination database.
+
+                  For example, <code>2022-08-05T12:34:56+00:00</code> is a value whose <code>Type</code>
+                  is "string" and its <code>Format</code> is "date-time". The most appropriate Airbyte record
+                  type would be "Date".
+
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the Airbyte docs</a>.
               required:
                 order: 5
                 type: boolean
                 title: Required
                 default: true
                 description: >-
-                  If true, then this value is required to exist within each Fauna document. If the path
-                  doesn't exist in a document the sync will fail.
-                  If false, then non-existent documents will place null in that column.
+                  If true, this value is required to exist within each Fauna document. If the path
+                  doesn't exist in a document the sync fails.
+                  If false, then non-existent field values store <code>null</code>.
         page_size:
           order: 4
           type: integer
@@ -145,8 +160,8 @@ connectionSpecification:
           default: 64
           description: >-
             The page size used when reading documents from the database. The larger the
-            page size, the faster the connector will run. However, if a page is too large,
-            the connector may fail.
+            page size, the faster the connector processes documents. However, if a
+            page is too large, the connector may fail.
             <br>
 
             Choose your page size based on how large the documents are.
@@ -161,12 +176,12 @@ connectionSpecification:
             <b>This only applies to incremental syncs.</b>
             <br>
 
-            Enabling deletion mode will inform your destination of deleted documents.<br>
+            Enabling deletion mode informs your destination of deleted documents.<br>
 
             Disabled - Leave this feature disabled, and ignore deleted documents.<br>
 
             Enabled - Enables this feature. When a document is deleted, the connector
-            will export a record with a "deleted at" column containing the time the
+            exports a record with a "deleted at" column containing the time that the
             document was deleted.
           oneOf:
             - title: Disabled
