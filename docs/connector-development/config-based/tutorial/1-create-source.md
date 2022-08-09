@@ -1,9 +1,10 @@
 # Step  1: Generate the source connector project locally
 
-Let's start by cloning the Airbyte repository
+Let's start by cloning the Airbyte repository:
 
 ```
 git clone git@github.com:airbytehq/airbyte.git
+cd airbyte
 ```
 
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.

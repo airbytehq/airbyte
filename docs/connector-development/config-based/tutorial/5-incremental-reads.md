@@ -126,10 +126,7 @@ And we'll update the path to point to the `stream_slice`'s start_date
 ```
 requester:
   ref: "*ref(requester)"
-  path:
-    type: "InterpolatedString"
-    string: "{{ stream_slice.start_date }}"
-    default: "/latest"
+  path: "{{ stream_slice.start_date or 'latest' }}"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
@@ -137,7 +134,7 @@ The full connector definition should now look like `./source_exchange_rates_tuto
 ```
 schema_loader:
   type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
 selector:
   type: RecordSelector
   extractor:
@@ -146,11 +143,13 @@ selector:
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
+  authenticator:
+    type: ApiKeyAuthenticator
+    header: "apikey"
+    api_token: "{{ config['access_key'] }}"
   request_options_provider:
     request_parameters:
-      access_key: "{{ config.access_key }}"
       base: "{{ config.base }}"
 stream_slicer:
   type: "DatetimeStreamSlicer"
@@ -162,21 +161,24 @@ stream_slicer:
     datetime_format: "%Y-%m-%d %H:%M:%S.%f"
   step: "1d"
   datetime_format: "%Y-%m-%d"
+  cursor_field: "{{ options.stream_cursor_field }}"
 retriever:
   type: SimpleRetriever
+  $options:
+    url_base: "https://api.apilayer.com" # Only change the url_base field
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
+  stream_slicer:
+    $ref: "*ref(stream_slicer)"
   record_selector:
     $ref: "*ref(selector)"
   paginator:
     type: NoPagination
-  stream_slicer:
-    $ref: "*ref(stream_slicer)"
 rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-    cursor_field: "date"
+    stream_cursor_field: "date"
   primary_key: "date"
   schema_loader:
     $ref: "*ref(schema_loader)"
@@ -184,10 +186,7 @@ rates_stream:
     $ref: "*ref(retriever)"
     requester:
       $ref: "*ref(requester)"
-      path:
-        type: "InterpolatedString"
-        string: "{{ stream_slice.start_date }}"
-        default: "/latest"
+      path: "/exchangerates_data/{{ stream_slice.start_time or 'latest' }}"
 streams:
   - "*ref(rates_stream)"
 check:

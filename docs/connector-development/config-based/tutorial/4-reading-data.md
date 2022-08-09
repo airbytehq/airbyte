@@ -56,7 +56,7 @@ Here is the complete connector definition for convenience:
 ```
 schema_loader:
   type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
 selector:
   type: RecordSelector
   extractor:
@@ -65,14 +65,18 @@ selector:
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
+  authenticator:
+    type: ApiKeyAuthenticator
+    header: "apikey"
+    api_token: "{{ config['access_key'] }}"
   request_options_provider:
     request_parameters:
-      access_key: "{{ config.access_key }}"
       base: "{{ config.base }}"
 retriever:
   type: SimpleRetriever
+  $options:
+    url_base: "https://api.exchangeratesapi.io/v1/" # Only change the url_base field
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
@@ -119,7 +123,7 @@ The `--debug` flag can be set to print out debug information, including the outg
 
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 We're however limited to only reading the latest exchange rate value.
-Next, we'll ([enhance the connector to read data for a given date, which will enable us to backfill the stream with historical data.](5-incremental-reads.md)
+Next, we'll [enhance the connector to read data for a given date, which will enable us to backfill the stream with historical data](5-incremental-reads.md).
 
 ## More readings
 

@@ -14,7 +14,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-These steps create an initial python environment (using `python -m venv`), and install the dependencies required to run an API Source connector (using `pip install`).
+These steps create an initial python environment, and install the dependencies required to run an API Source connector.
 
 Let's verify everything works as expected by running the Airbyte `spec` operation:
 
