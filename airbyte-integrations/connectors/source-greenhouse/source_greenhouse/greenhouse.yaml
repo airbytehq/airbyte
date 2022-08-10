@@ -5,7 +5,7 @@ selector:
   type: RecordSelector
   extractor:
     type: JelloExtractor
-    transform: "_"
+    transform: "_ or []"
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -394,4 +394,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["applications_stream"]
+  stream_names: ["applications"]
