@@ -20,6 +20,7 @@ Let's verify everything works as expected by running the Airbyte `spec` operatio
 
 ```bash
 python main.py spec
+```
 
 You should see an output similar to the one below:
 
