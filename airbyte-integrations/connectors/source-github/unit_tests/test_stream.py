@@ -41,6 +41,7 @@ from source_github.streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
 )
 
@@ -1077,6 +1078,99 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
     ]
 
     assert len(responses.calls) == 4
+
+
+@responses.activate
+def test_stream_workflow_jobs_full_refresh():
+
+    workflow_runs_data = [
+        {
+            "id": 2,
+            "created_at": "2022-01-03T00:00:00Z",
+            "updated_at": "2022-01-03T00:00:00Z",
+            "repository": {
+                "full_name": "org/repos"
+            }
+        },
+        {
+            "id": 1,
+            "created_at": "2022-01-02T00:00:00Z",
+            "updated_at": "2022-01-02T00:00:00Z",
+            "repository": {
+                "full_name": "org/repos"
+            }
+        }
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={
+            "total_count": len(workflow_runs_data),
+            "workflow_runs": workflow_runs_data
+        }
+    )
+
+    jobs_1_data = [{
+      "id": "job1"
+    }, {
+      "id": "job2"
+    }]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs/1/jobs",
+        json={
+          "total_count": len(jobs_1_data),
+          "jobs": jobs_1_data
+        })
+
+    jobs_2_data = [{
+      "id": "job3"
+    }, {
+      "id": "job4"
+    }]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs/2/jobs",
+        json={
+          "total_count": len(jobs_2_data),
+          "jobs": jobs_2_data
+        })
+
+    repository_args_with_start_date = {
+        "repositories": ["org/repos"],
+        "page_size_for_large_streams": 30,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+
+    repository_args = {
+        "repositories": ["org/repos"],
+        "page_size_for_large_streams": 30,
+    }
+
+    stream = WorkflowJobs(parent=WorkflowRuns(**repository_args_with_start_date), **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {
+            "id": "job3",
+            "workflow_run_id": 2
+        },
+        {
+            "id": "job4",
+            "workflow_run_id": 2
+        },
+        {
+            "id": "job1",
+            "workflow_run_id": 1
+        },
+        {
+            "id": "job2",
+            "workflow_run_id": 1
+        },
+    ]
 
 
 @responses.activate

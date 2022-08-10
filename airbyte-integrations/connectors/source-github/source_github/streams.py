@@ -1335,6 +1335,47 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 break
 
 
+class WorkflowJobs(GithubStream):
+    """
+    API documentation: https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    """
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['workflow_run_id']}/jobs"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        jobs = response.json()["jobs"]
+        for record in jobs:
+            yield self.transform(record=record, stream_slice=stream_slice)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"]["full_name"], "workflow_run_id": record["id"]}
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["workflow_run_id"] = stream_slice["workflow_run_id"]
+        return record
+
+
 class TeamMembers(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
