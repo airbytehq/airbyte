@@ -14,7 +14,7 @@ In this tutorial, we will read data from the following endpoints:
 - `Latest Rates Endpoint`
 - `Historical Rates Endpoint`
 
-With the end goal of implementing a Source with a single `Stream` containing exchange rates going from a base currency to many other currencies.
+With the end goal of implementing a `Source` with a single `Stream` containing exchange rates going from a base currency to many other currencies.
 The output schema of our stream will look like the following:
 
 ```json

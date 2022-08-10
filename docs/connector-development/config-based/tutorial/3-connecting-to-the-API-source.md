@@ -7,14 +7,13 @@ Over the course of this tutorial, we'll be editing a few files that were generat
 - `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`: This is the [spec file](../../connector-specification-reference.md). It describes the inputs used to configure the connector.
 - `source-exchange-rates-tutorial/source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`: This is the connector definition. It describes how the data should be read from the API source.
 - `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`: This is the connector's [catalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). It describes what data is available in a source
-- `source-exchange-rates-tutorial/integration_tests/sample_state.json`: Sample state object to be used to test [incremental syncs](../../cdk-python/incremental-stream.md).
+- `source-exchange-rates-tutorial/integration_tests/sample_state.json`: This is a sample state object to be used to test [incremental syncs](../../cdk-python/incremental-stream.md).
 
 We'll also be creating the following files:
 
 - `source-exchange-rates-tutorial/secrets/config.json`: This is the configuration file we'll be using to test the connector. It's schema should match the schema defined in the spec file.
 - `source-exchange-rates-tutorial/secrets/invalid_config.json`: This is an invalid configuration file we'll be using to test the connector. It's schema should match the schema defined in the spec file.
 - `source_exchange_rates_tutorial/schemas/rates.json`: This is the [schema definition](../../cdk-python/schemas.md) for the stream we'll implement.
-- `source-exchange-rates/acceptance-test-config.yml`: This is the [acceptance test configuration file](../../testing-connectors/README.md). It describes the integration tests to be used to verify that the connector works as expected.
 
 ## Updating the connector spec and config
 

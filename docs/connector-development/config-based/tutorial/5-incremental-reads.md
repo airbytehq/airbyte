@@ -3,7 +3,7 @@
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
 
-According to the API documentation, we can read the exchange rate for a specific date by querying the "/{date}" endpoint instead of "/latest".
+According to the API documentation, we can read the exchange rate for a specific date by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 We'll now add a `start_date` property to the connector.
 
@@ -59,7 +59,7 @@ The file should look like
 where the start date should be 7 days in the past.
 
 And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
-Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/latest`:
+Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
 
 ```
 streams:
@@ -115,7 +115,7 @@ and refer to it in the stream's retriever.
 This will generate slices from the start time until the end time, where each slice is exactly one day.
 The start time is defined in the config file, while the end time is defined by the `now_local()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../yaml-structure.md#string-interpolation) for more details.
 
-Note that we're also setting the `cursor_field` in the stream's `options` because it is used both by the `Stream` and the `StreamSlicer`:
+Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
 
 ```
 streams:
@@ -139,7 +139,7 @@ definitions:
       $ref: "*ref(definitions.stream_slicer)"
 ```
 
-Finally, we'll update the path to point to the `stream_slice`'s start_date
+Finally, we'll update the path to point to the `stream_slice`'s start_time
 
 ```
 streams:
