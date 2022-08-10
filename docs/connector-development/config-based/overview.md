@@ -105,3 +105,36 @@ More details on error handling can be found in the [error handling section](erro
 The `ConnectionChecker` defines how to test the connection to the integration.
 
 The only implementation as of now is `CheckStream`, which tries to read a record from a specified list of streams and fails if no records could be read.
+
+## Custom components
+
+Any builtin components can be overloaded by a custom Python class.
+To create a custom component, define a new class in a new file in the connector's module.
+The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
+The class must also be a dataclass where each field represent an argument to configure from the yaml file, and an `InitVar` named options.
+
+For example:
+
+```
+@dataclass
+class MyPaginationStrategy(PaginationStrategy):
+  my_field: Union[InterpolatedString, str]
+  options: InitVar[Mapping[str, Any]]
+
+  def __post_init__(self, options: Mapping[str, Any]):
+    pass
+
+  def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    pass
+
+  def reset(self):
+    pass
+```
+
+This class can then be referred from the yaml file using its fully qualified class name:
+
+```yaml
+pagination_strategy:
+  class_name: "my_connector_module.MyPaginationStrategy"
+  my_field: "hello world"
+```
