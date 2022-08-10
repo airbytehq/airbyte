@@ -46,6 +46,10 @@ export const OAuthLogin: React.FC = () => {
     stateSubscription.current?.unsubscribe();
   });
 
+  if (!isAnyOauthEnabled) {
+    return null;
+  }
+
   const getErrorMessage = (error: string): string | undefined => {
     switch (error) {
       // The following error codes are not really errors, thus we'll ignore them.
@@ -63,8 +67,7 @@ export const OAuthLogin: React.FC = () => {
 
   const login = (provider: "google" | "github") => {
     setErrorCode(undefined);
-    const state = loginWithOAuth(provider);
-    stateSubscription.current = state.subscribe({
+    stateSubscription.current = loginWithOAuth(provider).subscribe({
       next: (value) => {
         if (value === "loading") {
           setLoading(true);
@@ -81,10 +84,6 @@ export const OAuthLogin: React.FC = () => {
     });
   };
 
-  if (!isAnyOauthEnabled) {
-    return null;
-  }
-
   const errorMessage = errorCode ? getErrorMessage(errorCode) : undefined;
 
   return (
@@ -97,10 +96,12 @@ export const OAuthLogin: React.FC = () => {
           <Spinner />
         </div>
       )}
-      <div className={styles.buttons}>
-        {!isLoading && isGoogleLoginEnabled && <GoogleButton onClick={() => login("google")} />}
-        {!isLoading && isGitHubLoginEnabled && <GitHubButton onClick={() => login("github")} />}
-      </div>
+      {!isLoading && (
+        <div className={styles.buttons}>
+          {isGoogleLoginEnabled && <GoogleButton onClick={() => login("google")} />}
+          {isGitHubLoginEnabled && <GitHubButton onClick={() => login("github")} />}
+        </div>
+      )}
       {errorMessage && <div className={styles.error}>{errorMessage}</div>}
     </div>
   );
