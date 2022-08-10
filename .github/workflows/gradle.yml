@@ -744,15 +744,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      # Pull request based workflows.
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
+      # Pull request based workflows.
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v25
+        run: | 
+        echo "!!!github.event_name= ${{ github.event_name }}"
+        echo "!!!GITHUB_TOKEN= ${{ secrets.GITHUB_TOKEN }}"
+
 
       - name: List all changed files
         run: |
