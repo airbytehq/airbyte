@@ -9,7 +9,7 @@ import pytest
 from airbyte_cdk.models import AirbyteStream, ConnectorSpecification
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
-from source_acceptance_test.utils.backward_compatibility import NonBackwardCompatibleError
+from source_acceptance_test.utils.backward_compatibility import NonBackwardCompatibleError, validate_previous_configs
 
 from .conftest import does_not_raise
 
@@ -22,6 +22,7 @@ class Transition:
     current: Union[ConnectorSpecification, MutableMapping[str, AirbyteStream]]
     should_fail: bool
     name: str
+    is_valid_json_schema: bool = True
 
     def as_pytest_param(self):
         return pytest.param(self.previous, self.current, self.should_fail, id=self.name)
@@ -445,6 +446,48 @@ FAILING_SPEC_TRANSITIONS = [
         name="Nested level: Declaring a field enum should fail.",
         should_fail=True,
     ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": {}},
+                },
+            }
+        ),
+        name="Changing a 'type' field from a string to something else than a list should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": ["string"]},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": {}},
+                },
+            }
+        ),
+        name="Changing a 'type' field from a list to something else than a string should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
 ]
 
 VALID_SPEC_TRANSITIONS = [
@@ -865,6 +908,18 @@ def test_spec_backward_compatibility(previous_connector_spec, actual_connector_s
     expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
     with expectation:
         t.test_backward_compatibility(False, actual_connector_spec, previous_connector_spec, 10)
+
+
+VALID_JSON_SCHEMA_TRANSITIONS_PARAMS = [
+    transition.as_pytest_param() for transition in FAILING_SPEC_TRANSITIONS + VALID_SPEC_TRANSITIONS if transition.is_valid_json_schema
+]
+
+
+@pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", VALID_JSON_SCHEMA_TRANSITIONS_PARAMS)
+def test_validate_previous_configs(previous_connector_spec, actual_connector_spec, should_fail):
+    expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
+    with expectation:
+        validate_previous_configs(previous_connector_spec, actual_connector_spec, 100)
 
 
 FAILING_CATALOG_TRANSITIONS = [
