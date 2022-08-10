@@ -11,7 +11,7 @@ requester:
   name: "\{{ options['name'] }}"
   http_method: "GET"
   authenticator:
-    type: ApiKeyAuthenticator
+    type: BearerAuthenticator
     api_token: "\{{ config['api_key'] }}"
 retriever:
   type: SimpleRetriever
@@ -39,4 +39,4 @@ streams:
   - "*ref(customers_stream)"
 check:
   type: CheckStream
-  stream_names: ["customers_stream"]
+  stream_names: ["customers"]
