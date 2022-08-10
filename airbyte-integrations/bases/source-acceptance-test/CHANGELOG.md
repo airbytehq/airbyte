@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.0
+Finish backward compatibility syntactic test implementation: check that streams cursor field was not changed. [#TBD](https://github.com/airbytehq/airbyte/pull/TBD/)
+
 ## 0.1.62
 Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
 
