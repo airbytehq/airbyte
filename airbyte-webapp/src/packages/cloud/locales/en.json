@@ -28,7 +28,7 @@
   "login.companyName": "Company name*",
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
-  "login.disclaimer": "By signing up and continuing, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+  "login.disclaimer": "By signing up and continuing, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
   "login.inviteTitle": "Invite access",
   "login.inviteLinkExpired": "This invite link expired. A new invite link was sent to your email.",
   "login.inviteLinkInvalid": "This invite link is no longer valid.",
