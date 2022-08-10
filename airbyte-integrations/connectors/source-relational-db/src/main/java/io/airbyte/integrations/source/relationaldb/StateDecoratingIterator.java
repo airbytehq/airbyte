@@ -68,12 +68,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   @Override
   protected AirbyteMessage computeNext() {
-    if (emitIntermediateState && intermediateStateMessage != null) {
-      final AirbyteMessage message = intermediateStateMessage;
-      intermediateStateMessage = null;
-      emitIntermediateState = false;
-      return message;
-    } else if (messageIterator.hasNext()) {
+    if (messageIterator.hasNext()) {
+      if (emitIntermediateState && intermediateStateMessage != null) {
+        final AirbyteMessage message = intermediateStateMessage;
+        intermediateStateMessage = null;
+        emitIntermediateState = false;
+        return message;
+      }
+
       totalRecordCount++;
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
