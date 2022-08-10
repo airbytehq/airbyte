@@ -89,7 +89,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     Common base class for report streams
     """
 
-    primary_key = None
+    primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
     # (Service limits section)
