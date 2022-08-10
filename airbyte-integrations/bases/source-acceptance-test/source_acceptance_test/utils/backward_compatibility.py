@@ -22,7 +22,7 @@ class BaseDiffChecker(ABC):
         self._diff = diff
 
     def _raise_error(self, message: str):
-        raise NonBackwardCompatibleError(f"{context} - {message}: {self._diff.pretty()}")
+        raise NonBackwardCompatibleError(f"{context} - {message}. Diff: {self._diff.pretty()}")
 
     @property
     @abstractmethod
@@ -43,7 +43,7 @@ class BaseDiffChecker(ABC):
             change for change in self._diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
         ]
         if type_values_changed or type_values_changed_in_list:
-            self._raise_error("The value of a 'type' field was changed.")
+            self._raise_error("The'type' field value was changed.")
 
     def check_if_new_type_was_added(self):  # pragma: no cover
         """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
@@ -54,7 +54,7 @@ class BaseDiffChecker(ABC):
             if change.t2 != "null"
         ]
         if new_values_in_type_list:
-            self._raise_error("A new value was added to a 'type' field.")
+            self._raise_error("A new value was added to a 'type' field")
 
     def check_if_type_of_type_field_changed(self):
         """
@@ -79,12 +79,12 @@ class BaseDiffChecker(ABC):
                 # We want to raise an error otherwise.
                 t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
                 if not (len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1):
-                    self._raise_error("The type field changed to a list with multiple invalid values.")
+                    self._raise_error("The 'type' field was changed to a list with multiple invalid values")
             if isinstance(change.t1, list):
                 if not isinstance(change.t2, str):
-                    self._raise_error("The type field changed from a list to an invalid value.")
+                    self._raise_error("The 'type' field was changed from a list to an invalid value")
                 if not (len(change.t1) == 1 and change.t2 == change.t1[0]):
-                    self._raise_error("An element was removed from the list of valid types.")
+                    self._raise_error("An element was removed from the list of 'type'")
 
 
 class SpecDiffChecker(BaseDiffChecker):
@@ -108,10 +108,10 @@ class SpecDiffChecker(BaseDiffChecker):
             addition for addition in self._diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
         ]
         if added_required_fields:
-            self._raise_error(f"The current {context} declared a new 'required' field")
+            self._raise_error("A new 'required' field was declared.")
 
     def check_if_added_a_new_required_property(self):
-        """Check if the new spec added a property to the 'required' list."""
+        """Check if the new spec added a property to the 'required' list"""
         added_required_properties = [
             addition for addition in self._diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
         ]
@@ -124,7 +124,7 @@ class SpecDiffChecker(BaseDiffChecker):
             change for change in self._diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"
         ]
         if removed_nullable:
-            self._raise_error("A field type was narrowed or made a field not nullable.")
+            self._raise_error("A field type was narrowed or made a field not nullable")
 
     def check_if_enum_was_narrowed(self):
         """Check if the list of values in a enum was shortened in a spec."""
@@ -144,7 +144,7 @@ class SpecDiffChecker(BaseDiffChecker):
             if enum_addition.path(output_format="list")[-1] == "enum"
         ]
         if enum_additions:
-            self._raise_error("An 'enum' field was declared on an existing property of the spec.")
+            self._raise_error("An 'enum' field was declared on an existing property")
 
 
 def validate_previous_configs(
