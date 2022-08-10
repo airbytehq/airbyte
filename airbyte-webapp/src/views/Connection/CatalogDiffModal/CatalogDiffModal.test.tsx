@@ -2,7 +2,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IntlProvider } from "react-intl";
 
-import { CatalogDiff, StreamTransform } from "core/request/AirbyteClient";
+import {
+  AirbyteCatalog,
+  CatalogDiff,
+  DestinationSyncMode,
+  StreamTransform,
+  SyncMode,
+} from "core/request/AirbyteClient";
 
 import messages from "../../../locales/en.json";
 import { CatalogDiffModal } from "./CatalogDiffModal";
@@ -59,8 +65,79 @@ const updatedItems: StreamTransform[] = [
   },
 ];
 
-const mockCatalog = {
-  streams: [],
+const mockCatalog: AirbyteCatalog = {
+  streams: [
+    {
+      stream: {
+        namespace: "apple",
+        name: "banana",
+      },
+      config: {
+        syncMode: SyncMode.full_refresh,
+        destinationSyncMode: DestinationSyncMode.overwrite,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "carrot",
+      },
+      config: {
+        syncMode: SyncMode.full_refresh,
+        destinationSyncMode: DestinationSyncMode.overwrite,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "dragonfruit",
+      },
+      config: {
+        syncMode: SyncMode.full_refresh,
+        destinationSyncMode: DestinationSyncMode.overwrite,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "eclair",
+      },
+      config: {
+        syncMode: SyncMode.full_refresh,
+        destinationSyncMode: DestinationSyncMode.overwrite,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "fishcake",
+      },
+      config: {
+        syncMode: SyncMode.incremental,
+        destinationSyncMode: DestinationSyncMode.append_dedup,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "gelatin_mold",
+      },
+      config: {
+        syncMode: SyncMode.incremental,
+        destinationSyncMode: DestinationSyncMode.append_dedup,
+      },
+    },
+    {
+      stream: {
+        namespace: "apple",
+        name: "harissa_paste",
+      },
+      config: {
+        syncMode: SyncMode.full_refresh,
+        destinationSyncMode: DestinationSyncMode.overwrite,
+      },
+    },
+  ],
 };
 
 describe("catalog diff modal", () => {
@@ -84,14 +161,36 @@ describe("catalog diff modal", () => {
       </IntlProvider>
     );
 
+    /**
+     * tests for:
+     * - proper sections being created
+     * - syncmode string is only rendered for removed streams
+     */
+
     const newStreamsTable = screen.getByRole("table", { name: /new streams/ });
     expect(newStreamsTable).toBeInTheDocument();
+
+    const newStreamRow = screen.getByRole("row", { name: "apple banana" });
+    expect(newStreamRow).toBeInTheDocument();
+
+    const newStreamRowWithSyncMode = screen.queryByRole("row", { name: "apple carrot incremental | append_dedup" });
+    expect(newStreamRowWithSyncMode).not.toBeInTheDocument();
 
     const removedStreamsTable = screen.getByRole("table", { name: /removed streams/ });
     expect(removedStreamsTable).toBeInTheDocument();
 
+    const removedStreamRowWithSyncMode = screen.getByRole("row", {
+      name: "apple dragonfruit full_refresh | overwrite",
+    });
+    expect(removedStreamRowWithSyncMode).toBeInTheDocument();
+
     const updatedStreamsSection = screen.getByRole("list", { name: /table with changes/ });
     expect(updatedStreamsSection).toBeInTheDocument();
+
+    const updatedStreamRowWithSyncMode = screen.queryByRole("row", {
+      name: "apple harissa_paste full_refresh | overwrite",
+    });
+    expect(updatedStreamRowWithSyncMode).not.toBeInTheDocument();
   });
 
   test("added fields are not rendered when not in the diff", () => {
