@@ -12,10 +12,10 @@ public class MySqlSslCaCertificateStrictEncryptSourceAcceptanceTest extends Abst
   @Override
   public ImmutableMap getSslConfig() {
     return ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_ca")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_key_password", PASSWORD)
-            .build();
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_key_password", PASSWORD)
+        .build();
   }
 
 }

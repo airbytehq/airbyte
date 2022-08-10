@@ -12,12 +12,12 @@ public class MySqlSslFullCertificateSourceAcceptanceTest extends AbstractMySqlSs
   @Override
   public ImmutableMap getSslConfig() {
     return ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_identity")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build();
+        .put(JdbcUtils.MODE_KEY, "verify_identity")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
   }
 
 }

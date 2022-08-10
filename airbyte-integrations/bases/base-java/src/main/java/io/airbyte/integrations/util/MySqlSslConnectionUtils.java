@@ -5,7 +5,6 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -69,7 +68,7 @@ public class MySqlSslConnectionUtils {
     try {
       convertAndImportFullCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(),
           encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
-              encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+          encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
@@ -116,18 +115,18 @@ public class MySqlSslConnectionUtils {
     createCertificateFile(CLIENT_KEY_NAME, clientKey);
     // add client certificate to the custom keystore
     runProcess("openssl pkcs12 -export -in " + CLIENT_CERTIFICARE_NAME + " -inkey " + CLIENT_KEY_NAME +
-            " -out " + CLIENT_CERT_P12 + " -name \"certificate\" -passout pass:" + clientKeyPassword, run);
+        " -out " + CLIENT_CERT_P12 + " -name \"certificate\" -passout pass:" + clientKeyPassword, run);
     // add client key to the custom keystore
     runProcess("keytool -importkeystore -srckeystore " + CLIENT_CERT_P12 +
-            " -srcstoretype pkcs12 -destkeystore " + CUSTOM_KEY_STORE + " -srcstorepass " + clientKeyPassword +
-            " -deststoretype JKS -deststorepass " + clientKeyPassword + " -noprompt", run);
+        " -srcstoretype pkcs12 -destkeystore " + CUSTOM_KEY_STORE + " -srcstorepass " + clientKeyPassword +
+        " -deststoretype JKS -deststorepass " + clientKeyPassword + " -noprompt", run);
   }
 
   private static void convertAndImportCaCertificate(final String caCertificate,
                                                     final String clientKeyPassword)
       throws IOException, InterruptedException {
-      final Runtime run = Runtime.getRuntime();
-      createCaCertificate(caCertificate, clientKeyPassword, run);
+    final Runtime run = Runtime.getRuntime();
+    createCaCertificate(caCertificate, clientKeyPassword, run);
   }
 
   private static void createCaCertificate(final String caCertificate,

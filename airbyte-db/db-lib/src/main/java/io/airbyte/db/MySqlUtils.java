@@ -13,7 +13,7 @@ public class MySqlUtils {
   @VisibleForTesting
   public static Certificate getCertificate(final MySQLContainer<?> container,
                                            final boolean useAllCertificates)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     // add root and server certificates to config file
     container.execInContainer("sh", "-c", "sed -i '31 a ssl' /etc/my.cnf");
     container.execInContainer("sh", "-c", "sed -i '32 a ssl-ca=/var/lib/mysql/ca.pem' /etc/my.cnf");

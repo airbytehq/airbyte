@@ -33,38 +33,38 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
     var sslMode = getSslConfig();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put(JdbcUtils.HOST_KEY, container.getHost())
-            .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-            .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-            .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-            .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-            .put(JdbcUtils.SSL_KEY, true)
-            .put(JdbcUtils.SSL_MODE_KEY, sslMode)
-            .put("replication_method", ReplicationMethod.STANDARD)
-            .build());
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_KEY, true)
+        .put(JdbcUtils.SSL_MODE_KEY, sslMode)
+        .put("replication_method", ReplicationMethod.STANDARD)
+        .build());
   }
 
   public abstract ImmutableMap getSslConfig();
 
   private void addTestData(MySQLContainer container) throws Exception {
     try (final DSLContext dslContext = DSLContextFactory.create(
-            container.getUsername(),
-            container.getPassword(),
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format("jdbc:mysql://%s:%s/%s",
-                container.getHost(),
-                container.getFirstMappedPort(),
-                container.getDatabaseName()),
-            SQLDialect.MYSQL)) {
+        container.getUsername(),
+        container.getPassword(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s",
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()),
+        SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
       database.query(ctx -> {
         ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
         ctx.fetch(
-                "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
         ctx.fetch(
-                "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
         return null;
       });
     }
