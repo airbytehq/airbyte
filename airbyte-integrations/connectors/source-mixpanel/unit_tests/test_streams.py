@@ -426,7 +426,6 @@ def test_export_stream(requests_mock, export_response):
 
     stream = Export(authenticator=MagicMock())
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    stream_state = {"date" : "2021-06-16T17:00:00"}
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
@@ -434,7 +433,18 @@ def test_export_stream(requests_mock, export_response):
     records_length = sum(1 for _ in records)
     assert records_length == 1
 
-    # no records should be returned when state older than the record
-    records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=stream_state)
-    records_length = sum(1 for _ in records)
-    assert records_length == 0
+
+def test_export_stream_request_params():
+    stream = Export(authenticator=MagicMock())
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_state = {"date": "2021-06-16T17:00:00"}
+
+    request_params = stream.request_params(stream_state=None, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
+    assert "where" in request_params
+    assert request_params.get("where") == "properties[\"$time\"]>=datetime(1623888000)"

@@ -157,6 +157,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             "from_date": stream_slice["start_date"],
             "to_date": stream_slice["end_date"]
         }
-        if "date" in stream_state:
-            mapping["where"]  = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+        if stream_state and "date" in stream_state:
+            mapping["where"] = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
         return mapping
