@@ -34,25 +34,24 @@ interface MainInfoProps {
   isOpen?: boolean;
   onExpand: () => void;
   isFailed?: boolean;
-  shortInfo?: boolean;
 }
 
-const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed, shortInfo }) => {
+const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
   const jobStatus = getJobStatus(job);
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = () => {
     switch (true) {
       case jobStatus === JobStatus.cancelled:
-        return <StatusIcon />;
+        return <StatusIcon status="error" />;
       case jobStatus === JobStatus.running:
         return <StatusIcon status="loading" />;
       case jobStatus === JobStatus.succeeded:
         return <StatusIcon status="success" />;
       case isPartialSuccess:
         return <StatusIcon status="warning" />;
-      case !isPartialSuccess && isFailed && !shortInfo:
-        return <StatusIcon />;
+      case !isPartialSuccess && isFailed:
+        return <StatusIcon status="error" />;
       default:
         return null;
     }
@@ -71,8 +70,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           ) : (
             <FormattedMessage id={`sources.${getJobStatus(job)}`} />
           )}
-          {shortInfo && <FormattedMessage id="sources.additionLogs" />}
-          {attempts.length && !shortInfo && (
+          {attempts.length && (
             <>
               {attempts.length > 1 && (
                 <div className={styles.lastAttempt}>

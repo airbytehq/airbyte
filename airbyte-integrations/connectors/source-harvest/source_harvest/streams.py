@@ -101,7 +101,7 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         return params
 
 
-class HarvestSubStream(HarvestStream):
+class HarvestSubStream(HarvestStream, ABC):
     @property
     @abstractmethod
     def path_template(self) -> str:
@@ -123,6 +123,11 @@ class HarvestSubStream(HarvestStream):
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(parent_id=stream_slice["parent_id"])
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, stream_slice=stream_slice, **kwargs):
+            record["parent_id"] = stream_slice["parent_id"]
+            yield record
 
 
 class Contacts(IncrementalHarvestStream):
