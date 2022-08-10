@@ -267,4 +267,38 @@ class StateDecoratingIteratorTest {
     assertFalse(iterator1.hasNext());
   }
 
+  @Test
+  @DisplayName("When there are multiple records with the same cursor value")
+  void testStateEmission4() {
+    messageIterator = MoreIterators.of(
+        RECORD_MESSAGE_2, RECORD_MESSAGE_2,
+        RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
+        RECORD_MESSAGE_4,
+        RECORD_MESSAGE_5, RECORD_MESSAGE_5);
+    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
+        messageIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        1);
+
+    assertEquals(RECORD_MESSAGE_2, iterator1.next());
+    assertEquals(RECORD_MESSAGE_2, iterator1.next());
+    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    // state 2 is the latest state ready for emission because
+    // all records with the same cursor value have been emitted
+    assertEquals(STATE_MESSAGE_2, iterator1.next());
+    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_4, iterator1.next());
+    assertEquals(STATE_MESSAGE_3, iterator1.next());
+    assertEquals(RECORD_MESSAGE_5, iterator1.next());
+    assertEquals(STATE_MESSAGE_4, iterator1.next());
+    assertEquals(RECORD_MESSAGE_5, iterator1.next());
+    assertEquals(STATE_MESSAGE_5, iterator1.next());
+    assertFalse(iterator1.hasNext());
+  }
+
 }
