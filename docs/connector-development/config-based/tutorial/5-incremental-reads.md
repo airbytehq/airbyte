@@ -62,19 +62,18 @@ And we'll update the `path` in the connector definition to point to `/{{ config.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/latest`:
 
 ```
-rates_stream:
-  type: DeclarativeStream
-  $options:
-    name: "rates"
-    stream_cursor_field: "date"
-  primary_key: "date"
-  schema_loader:
-    $ref: "*ref(schema_loader)"
-  retriever:
-    $ref: "*ref(retriever)"
-    requester:
-      $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+    primary_key: "rates"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
 ```
 
 You can test these changes by executing the `read` operation:
@@ -94,17 +93,22 @@ More details on the stream slicers can be found [here](./link-to-stream-slicers.
 Let's first define a stream slicer at the top level of the connector definition:
 
 ```
-stream_slicer:
-  type: "DatetimeStreamSlicer"
-  start_datetime:
-    datetime: "{{ config['start_date'] }}"
+definitions:
+  requester:
+    <...>
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_local() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+    step: "1d"
     datetime_format: "%Y-%m-%d"
-  end_datetime:
-    datetime: "{{ now_local() }}"
-    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-  step: "1d"
-  datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+  retriever:
+    <...>
 ```
 
 and refer to it in the stream's retriever.
@@ -114,107 +118,106 @@ The start time is defined in the config file, while the end time is defined by t
 Note that we're also setting the `cursor_field` in the stream's `options` because it is used both by the `Stream` and the `StreamSlicer`:
 
 ```
-rates_stream:
-  type: DeclarativeStream
-  $options:
-    name: "rates"
-    stream_cursor_field: "date"
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+      stream_cursor_field: "date"
+    primary_key: "rates"
+    <...>
 ```
 
 We'll also update the retriever to user the stream slicer:
 
 ```
-retriever:
-  type: SimpleRetriever
-  $options:
-    url_base: "https://api.apilayer.com" # Only change the url_base field
-  name: "{{ options['name'] }}"
-  primary_key: "{{ options['primary_key'] }}"
-  stream_slicer:
-    $ref: "*ref(stream_slicer)"
+definitions:
+  <...>
+  retriever:
+    type: SimpleRetriever
+    <...>
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
 ```
 
 Finally, we'll update the path to point to the `stream_slice`'s start_date
 
 ```
-rates_stream:
-  type: DeclarativeStream
-  $options:
-    name: "rates"
-    stream_cursor_field: "date"
-  primary_key: "date"
-  schema_loader:
-    $ref: "*ref(schema_loader)"
-  retriever:
-    $ref: "*ref(retriever)"
-    requester:
-      $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
+streams:
+  - type: DeclarativeStream
+    <...>
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
 ```
-schema_loader:
-  type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
-selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "[_]"
-requester:
-  type: HttpRequester
-  name: "{{ options['name'] }}"
-  http_method: "GET"
-  authenticator:
-    type: ApiKeyAuthenticator
-    header: "apikey"
-    api_token: "{{ config['access_key'] }}"
-  request_options_provider:
-    request_parameters:
-      base: "{{ config.base }}"
-stream_slicer:
-  type: "DatetimeStreamSlicer"
-  start_datetime:
-    datetime: "{{ config['start_date'] }}"
-    datetime_format: "%Y-%m-%d"
-  end_datetime:
-    datetime: "{{ now_local() }}"
-    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-  step: "1d"
-  datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options['stream_cursor_field'] }}"
-retriever:
-  type: SimpleRetriever
-  $options:
-    url_base: "https://api.apilayer.com"
-  name: "{{ options['name'] }}"
-  primary_key: "{{ options['primary_key'] }}"
-  stream_slicer:
-    $ref: "*ref(stream_slicer)"
-  record_selector:
-    $ref: "*ref(selector)"
-  paginator:
-    type: NoPagination
-rates_stream:
-  type: DeclarativeStream
-  $options:
-    name: "rates"
-    stream_cursor_field: "date"
-  primary_key: "date"
+version: "0.1.0"
+
+definitions:
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    type: JsonSchema
+    file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "[_]"
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['access_key'] }}"
+    request_options_provider:
+      request_parameters:
+        base: "{{ config['base'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_local() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+    step: "1d"
+    datetime_format: "%Y-%m-%d"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
   retriever:
-    $ref: "*ref(retriever)"
-    requester:
-      $ref: "*ref(requester)"
-      path: "/exchangerates_data/{{ stream_slice['start_time'] or 'latest' }}"
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.apilayer.com"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
 streams:
-  - "*ref(rates_stream)"
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+      stream_cursor_field: "date"
+    primary_key: "rates"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
 check:
   type: CheckStream
   stream_names: ["rates"]
+
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:
