@@ -65,6 +65,7 @@
   }
 
   code {
+    white-space: break-spaces;
     background: colors.$grey-50;
 
     &.language-sql,
