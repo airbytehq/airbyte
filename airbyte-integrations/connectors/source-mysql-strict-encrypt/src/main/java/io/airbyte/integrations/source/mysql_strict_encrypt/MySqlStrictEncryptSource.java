@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -34,6 +35,12 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
     // SSL property should be enabled by default for secure versions of connectors
     // that can be used in the Airbyte cloud. User should not be able to change this property.
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    final ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
+    // Assume that the first items is the "disable" and "preferred" options; remove these options
+    modifiedSslModes.remove(1);
+    modifiedSslModes.remove(0);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
     return spec;
   }
 
