@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.Iterator;
 
+@SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
 public class Yamls {
 
   private static final YAMLFactory YAML_FACTORY = new YAMLFactory();

@@ -8,15 +8,15 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.39.41-alpha
+    newTag: 0.40.0-alpha
   - name: airbyte/bootloader
-    newTag: 0.39.41-alpha
+    newTag: 0.40.0-alpha
   - name: airbyte/server
-    newTag: 0.39.41-alpha
+    newTag: 0.40.0-alpha
   - name: airbyte/webapp
-    newTag: 0.39.41-alpha
+    newTag: 0.40.0-alpha
   - name: airbyte/worker
-    newTag: 0.39.41-alpha
+    newTag: 0.40.0-alpha
   - name: temporalio/auto-setup
     newTag: 1.7.0
 

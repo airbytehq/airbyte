@@ -3,11 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
+@dataclass
 class RequestOptionsProvider(ABC):
     """
     Defines the request options to set on an outgoing HTTP request
@@ -20,7 +22,13 @@ class RequestOptionsProvider(ABC):
     """
 
     @abstractmethod
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
@@ -29,14 +37,22 @@ class RequestOptionsProvider(ABC):
         pass
 
     @abstractmethod
-    def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
 
     @abstractmethod
-    def request_body_data(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
@@ -49,8 +65,12 @@ class RequestOptionsProvider(ABC):
         """
 
     @abstractmethod
-    def request_body_json(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         """
         Specifies how to populate the body of the request with a JSON payload.
