@@ -13,7 +13,6 @@ import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
 import { DocumentationPanelProvider } from "../src/views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServicesProvider } from "../src/core/servicesProvider";
-import { ModalServiceProvider } from "../src/hooks/services/Modal";
 import { analyticsServiceContext, AnalyticsServiceProviderValue } from "../src/hooks/services/Analytics";
 
 const AnalyticsContextMock: AnalyticsServiceProviderValue = {
