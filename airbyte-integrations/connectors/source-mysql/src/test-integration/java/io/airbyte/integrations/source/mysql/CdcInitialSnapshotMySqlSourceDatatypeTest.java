@@ -15,7 +15,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class CdcMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
+public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
   private DSLContext dslContext;
 
