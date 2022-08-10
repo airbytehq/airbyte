@@ -57,6 +57,7 @@ jobs:
           - source-stripe
           - source-amplitude
           - source-intercom
+          - source-google-ads
 
     steps:
       - uses: actions/checkout@v2
