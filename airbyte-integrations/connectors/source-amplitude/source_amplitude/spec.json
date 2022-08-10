@@ -5,6 +5,7 @@
     "title": "Amplitude Spec",
     "type": "object",
     "required": ["api_key", "secret_key", "start_date"],
+    "additionalProperties": true,
     "properties": {
       "api_key": {
         "type": "string",
