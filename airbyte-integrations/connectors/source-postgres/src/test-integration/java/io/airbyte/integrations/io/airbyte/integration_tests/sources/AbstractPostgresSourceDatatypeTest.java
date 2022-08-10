@@ -398,21 +398,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .build());
     }
 
-    // time with time zone
-    for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timetz")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
-              // A time value without time zone will use the time zone set on the database, which is Z-7,
-              // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
-                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
-              .build());
-    }
-
     // timestamp without time zone
     for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone")) {
       addDataTypeTestData(
@@ -555,6 +540,25 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
                 null)
             .build());
+
+    addTimeWithTimeZoneTest();
+  }
+
+  protected void addTimeWithTimeZoneTest() {
+    // time with time zone
+    for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timetz")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
+              // A time value without time zone will use the time zone set on the database, which is Z-7,
+              // so 13:00:01 is returned as 13:00:01-07.
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .build());
+    }
   }
 
 }
