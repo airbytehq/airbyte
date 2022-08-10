@@ -223,7 +223,8 @@ public class WorkerApp {
   private void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
-    // Note that the configuration injected here is for the normalization orchestrator, and not the normalization pod itself.
+    // Note that the configuration injected here is for the normalization orchestrator, and not the
+    // normalization pod itself.
     // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
 

@@ -80,7 +80,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     return syncOutput;
   }
 
-  private NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput, final Configs configs) {
+  private NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput,
+                                                        final StandardSyncOutput syncOutput,
+                                                        final Configs configs) {
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuRequest(configs.getNormalizationJobMainContainerCpuRequest())
         .withCpuLimit(configs.getNormalizationJobMainContainerCpuLimit())
