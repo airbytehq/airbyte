@@ -32,4 +32,7 @@ class DatetimeParser:
         # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
         # It's safer to use the timestamp() method than the %s directive
         # See https://stackoverflow.com/a/4974930
-        return dt.strftime(format)
+        if format == "%s":
+            return str(int(dt.timestamp()))
+        else:
+            return dt.strftime(format)
