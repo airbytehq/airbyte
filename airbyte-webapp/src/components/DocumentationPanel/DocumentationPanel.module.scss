@@ -1,0 +1,11 @@
+@use "../../scss/colors";
+
+.container {
+  padding: 0 0 20px;
+  background-color: colors.$white;
+  min-height: 100vh;
+}
+
+.content {
+  padding: 0 35px 20px;
+}
