@@ -357,7 +357,8 @@ class Client:
                 yield from df[columns].to_dict(orient="records")
             else:
                 fields = set(fields) if fields else None
-                fp = self._cache_stream(fp)
+                if self.binary_source:
+                    fp = self._cache_stream(fp)
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.where(pd.notnull(df), None)
