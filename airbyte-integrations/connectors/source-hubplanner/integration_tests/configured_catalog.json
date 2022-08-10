@@ -3,17 +3,7 @@
     {
       "stream": {
         "name": "billing_rates",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -22,17 +12,7 @@
     {
       "stream": {
         "name": "bookings",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -41,17 +21,7 @@
     {
       "stream": {
         "name": "clients",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -60,17 +30,7 @@
     {
       "stream": {
         "name": "events",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -79,17 +39,7 @@
     {
       "stream": {
         "name": "holidays",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -98,17 +48,7 @@
     {
       "stream": {
         "name": "projects",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -117,17 +57,7 @@
     {
       "stream": {
         "name": "resources",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",

@@ -1,16 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
 
 from source_hubplanner.source import SourceHubplanner
-
-
-def test_check_connection(mocker):
-    source = SourceHubplanner()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
 def test_streams(mocker):

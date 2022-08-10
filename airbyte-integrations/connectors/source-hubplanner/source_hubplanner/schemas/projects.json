@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "_id": {
             "type": [
@@ -274,15 +275,13 @@
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "end": {
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "backgroundColor": {
             "type": [
@@ -479,7 +478,7 @@
             "items": {
                 "type": [
                     "null",
-                    "string"
+                    "object"
                 ]
             },
             "type": [

@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
         "_id": {
             "type": [
@@ -200,7 +200,7 @@
             "items": {
                 "type": [
                     "null",
-                    "string"
+                    "object"
                 ]
             },
             "type": [

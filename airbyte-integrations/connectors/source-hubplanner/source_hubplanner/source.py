@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -51,6 +51,7 @@ class HubplannerStream(HttpStream, ABC):
         """
         yield {}
 
+
 # Basic incremental stream
 class IncrementalHubplannerStream(HubplannerStream, ABC):
     """
@@ -88,10 +89,9 @@ class HubplannerAuthenticator(HttpAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
         return {self.auth_header: f"{self._token}"}
 
+
 # Source
 class SourceHubplanner(AbstractSource):
-
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -125,7 +125,7 @@ class SourceHubplanner(AbstractSource):
             Events(authenticator=authenticator),
             Holidays(authenticator=authenticator),
             Projects(authenticator=authenticator),
-            Resources(authenticator=authenticator)
+            Resources(authenticator=authenticator),
         ]
 
 
@@ -136,12 +136,16 @@ class BillingRates(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/billingRate"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Bookings(HubplannerStream):
     primary_key = "_id"
 
@@ -149,12 +153,16 @@ class Bookings(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/booking"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Clients(HubplannerStream):
     primary_key = "_id"
 
@@ -162,12 +170,16 @@ class Clients(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/client"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Events(HubplannerStream):
     primary_key = "_id"
 
@@ -175,12 +187,16 @@ class Events(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/event"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Holidays(HubplannerStream):
     primary_key = "_id"
 
@@ -188,12 +204,16 @@ class Holidays(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/holiday"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Projects(HubplannerStream):
     primary_key = "_id"
 
@@ -201,12 +221,16 @@ class Projects(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/project"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
 class Resources(HubplannerStream):
     primary_key = "_id"
 
@@ -214,9 +238,11 @@ class Resources(HubplannerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v1/resource"
-    
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state, stream_slice, next_page_token)
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
