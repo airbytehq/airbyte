@@ -178,6 +178,12 @@ def cached_schemas_fixture() -> MutableMapping[str, AirbyteStream]:
     return {}
 
 
+@pytest.fixture(name="previous_cached_schemas", scope="session")
+def previous_cached_schemas_fixture() -> MutableMapping[str, AirbyteStream]:
+    """Simple cache for discovered catalog of previous connector: stream_name -> json_schema"""
+    return {}
+
+
 @pytest.fixture(name="discovered_catalog")
 def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
@@ -188,6 +194,19 @@ def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner,
             cached_schemas[stream.name] = stream
 
     return cached_schemas
+
+
+@pytest.fixture(name="previous_discovered_catalog")
+def previous_discovered_catalog_fixture(
+    connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas
+) -> MutableMapping[str, AirbyteStream]:
+    """JSON schemas for each stream"""
+    if not previous_cached_schemas:
+        output = previous_connector_docker_runner.call_discover(config=connector_config)
+        catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+        for stream in catalogs[-1].streams:
+            previous_cached_schemas[stream.name] = stream
+    return previous_cached_schemas
 
 
 @pytest.fixture
