@@ -9,7 +9,6 @@ import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
-import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.isBce;
 import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.resolveEra;
 import static java.time.ZoneOffset.UTC;
 
