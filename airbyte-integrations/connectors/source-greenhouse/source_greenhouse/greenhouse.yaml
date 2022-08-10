@@ -141,6 +141,24 @@ applications_demographics_answers_stream:
         - stream: "*ref(applications_stream)"
           parent_key: "id"
           stream_slice_field: "parent_id"
+applications_interviews_stream:
+  type: DeclarativeStream
+  $options:
+    name: "applications_interviews"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
+    stream_slicer:
+      type: SubstreamSlicer
+      parent_stream_configs:
+        - stream: "*ref(applications_stream)"
+          parent_key: "id"
+          stream_slice_field: "parent_id"
 streams:
   - "*ref(applications_stream)"
   - "*ref(candidates_stream)"
@@ -150,6 +168,7 @@ streams:
   - "*ref(jobs_stream)"
   - "*ref(jobs_openings_stream)"
   - "*ref(applications_demographics_answers_stream)"
+  - "*ref(applications_interviews_stream)"
 check:
   type: CheckStream
   stream_names: ["applications_stream"]
