@@ -30,8 +30,7 @@ def create_response(links):
 
 def test_next_page_token(patch_base_class):
     source = SourceSentry()
-    config = {}
-    streams = source.streams(config)
+    streams = source.streams(INIT_ARGS)
     cursor = "next_page_num"
 
     stream = [s for s in streams if s.name == "events"][0]
@@ -46,12 +45,18 @@ def test_next_page_token(patch_base_class):
 
 
 def test_next_page_token_is_none(patch_base_class):
-    stream = SentryStreamPagination(hostname="sentry.io")
-    resp = MagicMock()
-    resp.links = {"next": {"results": "false", "cursor": "no_next"}}
+    source = SourceSentry()
+    streams = source.streams(INIT_ARGS)
+    cursor = "next_page_num"
+
+    stream = [s for s in streams if s.name == "events"][0]
+    resp = create_response(
+        {
+            "link": f'<https://sentry.io/api/0/projects/airbyte-09/airbyte-09/events/?full=true&=50&cursor=0:100:0>; rel="next"; results="false"; cursor="{cursor}"'
+        }
+    )
     inputs = {"response": resp}
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    assert stream.retriever.next_page_token(**inputs) is None
 
 
 def next_page_token_inputs():
@@ -74,28 +79,35 @@ def test_next_page_token_raises(patch_base_class, response):
         stream.next_page_token(**inputs)
 
 
+def get_stream(stream_name):
+    source = SourceSentry()
+    streams = source.streams(INIT_ARGS)
+
+    return [s for s in streams if s.name == stream_name][0]
+
+
 def test_events_path():
-    stream = Events(**INIT_ARGS)
+    stream = get_stream("events")
     expected = "projects/test-org/test-project/events/"
-    assert stream.path() == expected
+    assert stream.retriever.path() == expected
 
 
 def test_issues_path():
-    stream = Issues(**INIT_ARGS)
+    stream = get_stream("issues")
     expected = "projects/test-org/test-project/issues/"
-    assert stream.path() == expected
+    assert stream.retriever.path() == expected
 
 
 def test_projects_path():
-    stream = Projects(hostname="sentry.io")
+    stream = get_stream("projects")
     expected = "projects/"
-    assert stream.path() == expected
+    assert stream.retriever.path() == expected
 
 
 def test_project_detail_path():
-    stream = ProjectDetail(**INIT_ARGS)
+    stream = get_stream("project_detail")
     expected = "projects/test-org/test-project/"
-    assert stream.path() == expected
+    assert stream.retriever.path() == expected
 
 
 def test_sentry_stream_pagination_request_params(patch_base_class):
