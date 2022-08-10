@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.s3.parquet;
 
-import static io.airbyte.integrations.destination.s3.util.JavaProcessRunner.runProcess;
-
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -31,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +71,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    if (formatConfig.getCompressionCodec().equals(CompressionCodecName.LZO)) {
-      installNativeLzoLibraries();
-    }
+    LOGGER.error("TRY labuda Dockerfilre");
     parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), new Configuration()))
         .withSchema(schema)
@@ -90,56 +85,6 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     inputStream = null;
     isClosed = false;
     lastByteCount = 0L;
-  }
-
-  private void installNativeLzoLibraries() throws IOException {
-    final String osName = System.getProperty("os.name").replace(' ', '_');
-    final String currentDir = System.getProperty("user.dir");
-    final String architecture = resolveArchitecture();
-
-    LOGGER.info("OS {} architecture {}: ", osName, architecture);
-    Runtime runtime = Runtime.getRuntime();
-    if (osName.equals("Linux")) {
-      if (architecture.equals("amd64-64")) {
-        try {
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev -y");
-        } catch (InterruptedException e) {
-          LOGGER.error("Failed to install native-lzo library for " + architecture);
-        }
-      }
-      // libgplcompression.so is out-of-the-box for amd64-64 but must be compiled manually for other
-      // processors architecture
-      else {
-        try {
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev " +
-              "wget curl unzip zip build-essential maven git -y");
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "wget http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /usr/local/tmp");
-          runProcess("/usr/local/tmp/", runtime, "/bin/sh", "-c", "tar xvfz lzo-2.10.tar.gz");
-          runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "./configure --enable-shared --prefix /usr/local/lzo-2.10");
-          runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "make && make install");
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "git clone https://github.com/twitter/hadoop-lzo.git /usr/lib/hadoop/lib/hadoop-lzo/");
-          runProcess(currentDir, runtime, "/bin/sh", "-c", "curl -s https://get.sdkman.io | bash");
-          runProcess(currentDir, runtime, "/bin/bash", "-c", "source /root/.sdkman/bin/sdkman-init.sh;" +
-              " sdk install java 8.0.342-librca;" +
-              " sdk use java 8.0.342-librca;" +
-              " cd /usr/lib/hadoop/lib/hadoop-lzo/ " +
-              "&& C_INCLUDE_PATH=/usr/local/lzo-2.10/include " +
-              "LIBRARY_PATH=/usr/local/lzo-2.10/lib mvn clean package");
-          runProcess(currentDir, runtime, "/bin/sh", "-c",
-              "find /usr/lib/hadoop/lib/hadoop-lzo/ -name '*libgplcompression*' -exec cp {} /usr/lib/ \\;");
-        } catch (InterruptedException e) {
-          LOGGER.error("Failed to install native-lzo library for " + architecture);
-        }
-      }
-    } else {
-      throw new RuntimeException(osName + "is not currently supported for LZO compression");
-    }
-  }
-
-  private static String resolveArchitecture() {
-    return System.getProperty("os.arch") + "-" + System.getProperty("sun.arch.data.model");
   }
 
   @Override

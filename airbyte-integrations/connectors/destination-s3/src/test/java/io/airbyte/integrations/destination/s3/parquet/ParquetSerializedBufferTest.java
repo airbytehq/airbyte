@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.parquet;
 
+import static io.airbyte.integrations.destination.s3.util.JavaProcessRunner.runProcess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,15 +78,25 @@ public class ParquetSerializedBufferTest {
     runTest(195L, 215L, config, getExpectedString());
   }
 
+  private static String resolveArchitecture() {
+    return System.getProperty("os.name").replace(' ', '_') + "-" + System.getProperty("os.arch") + "-" + System.getProperty("sun.arch.data.model");
+  }
+
   @Test
   public void testLzoCompressedParquet() throws Exception {
-    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
-        "format", Map.of(
-            "format_type", "parquet",
-            "compression_codec", "LZO"),
-        "s3_bucket_name", "test",
-        "s3_bucket_region", "us-east-2")));
-    runTest(195L, 215L, config, getExpectedString());
+    if (resolveArchitecture().equals("Linux-amd64-64")) {
+      final String currentDir = System.getProperty("user.dir");
+      Runtime runtime = Runtime.getRuntime();
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev -y");
+      final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+          "format", Map.of(
+              "format_type", "parquet",
+              "compression_codec", "LZO"),
+          "s3_bucket_name", "test",
+          "s3_bucket_region", "us-east-2")));
+      runTest(195L, 215L, config, getExpectedString());
+    }
   }
 
   private static String getExpectedString() {
