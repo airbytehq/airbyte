@@ -26,7 +26,7 @@ jobs:
             ${{ secrets.DAVINCHIA_PAT }}
 
   shared-pulls:
-    name: "Label github issues for tracking"
+    name: "Label github PRs for tracking"
     needs:
       - find_valid_pat
     runs-on: ubuntu-latest
