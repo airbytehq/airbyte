@@ -86,11 +86,11 @@ class IncrementalOktaStream(OktaStream, ABC):
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        lowest_date = self.min_id if self.min_id else str(pendulum.datetime.min)
+        lowest_cursor_value = self.min_id if self.min_id else str(pendulum.datetime.min)
         return {
             self.cursor_field: max(
-                latest_record.get(self.cursor_field, lowest_date),
-                current_stream_state.get(self.cursor_field, lowest_date),
+                latest_record.get(self.cursor_field, lowest_cursor_value),
+                current_stream_state.get(self.cursor_field, lowest_cursor_value),
             )
         }
 
@@ -125,14 +125,6 @@ class GroupMembers(IncrementalOktaStream):
         group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.min_id),
-                current_stream_state.get(self.cursor_field, self.min_id),
-            )
-        }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         group_id = stream_slice["group_id"]
@@ -255,14 +247,6 @@ class ResourceSets(IncrementalOktaStream):
 
     def path(self, **kwargs) -> str:
         return "iam/resource-sets"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.min_id),
-                current_stream_state.get(self.cursor_field, self.min_id),
-            )
-        }
 
     def parse_response(
         self,
