@@ -1,5 +1,5 @@
 {
-  "domain": "https://myorg.okta.com",
+  "domain": "myorg",
   "start_date": "2022-07-22T00:00:00Z",
   "credentials": {
     "auth_type": "api_token",

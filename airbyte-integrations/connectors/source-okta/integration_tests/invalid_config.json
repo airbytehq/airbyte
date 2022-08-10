@@ -1,4 +1,5 @@
 {
-  "base_url": "invalid url",
-  "token": "invalid token"
+  "domain": "myorg",
+  "start_date": "2022-07-22T00:00:00Z",
+  "credentials": {}
 }
