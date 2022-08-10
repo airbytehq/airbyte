@@ -7,7 +7,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: JelloExtractor
-      transform: "_"
+      transform: "_ or []"
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
