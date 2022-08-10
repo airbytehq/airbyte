@@ -60,3 +60,4 @@ you need to follow a few simple steps.
    mysql -h hostname -u user database < src/test-performance/sql/create_mysql_benchmarks.sql
    ```   
 4. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test_(the number of tables minus 1)**.
+
