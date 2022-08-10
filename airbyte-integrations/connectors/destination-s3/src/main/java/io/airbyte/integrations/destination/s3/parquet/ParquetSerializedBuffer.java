@@ -71,7 +71,6 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    LOGGER.error("TRY labuda Dockerfilre");
     parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), new Configuration()))
         .withSchema(schema)
