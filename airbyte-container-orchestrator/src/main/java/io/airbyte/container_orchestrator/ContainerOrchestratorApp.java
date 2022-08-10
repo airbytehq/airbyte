@@ -53,6 +53,7 @@ import sun.misc.Signal;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ContainerOrchestratorApp {
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;

@@ -104,6 +104,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 @AllArgsConstructor
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
