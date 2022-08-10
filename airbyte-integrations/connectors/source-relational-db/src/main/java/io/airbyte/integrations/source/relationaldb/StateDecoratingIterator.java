@@ -80,8 +80,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = getCursorCandidate(message);
-        final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
-        if (cursorComparison < 0) {
+        if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
           if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
             // Only emit an intermediate state when it is not the first or last record message,
             // because the last state message will be taken care of in a different branch.
