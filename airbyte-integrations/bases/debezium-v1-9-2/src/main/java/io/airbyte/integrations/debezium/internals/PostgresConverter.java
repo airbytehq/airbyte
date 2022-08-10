@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
@@ -21,7 +22,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresConverter.class);
 
-  private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ"};
+  private final String[] DATE_TYPES = {"DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ"};
   private final String[] BIT_TYPES = {"BIT", "VARBIT"};
   private final String[] MONEY_ITEM_TYPE = {"MONEY"};
   private final String[] GEOMETRICS_TYPES = {"BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH"};
@@ -115,7 +116,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         case "DATE" -> DateTimeConverter.convertToDate(x);
         case "TIME" -> DateTimeConverter.convertToTime(x);
         case "INTERVAL" -> convertInterval((PGInterval) x);
-        default -> DebeziumConverterUtils.convertDate(x);
+        default -> throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
       };
     });
   }
