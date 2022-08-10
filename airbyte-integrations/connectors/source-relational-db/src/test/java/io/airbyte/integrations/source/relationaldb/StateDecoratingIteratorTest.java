@@ -267,6 +267,28 @@ class StateDecoratingIteratorTest {
     assertFalse(iterator1.hasNext());
   }
 
+  /**
+   * Incremental syncs will sort the table with the cursor field, and emit the max cursor for every N records.
+   * The purpose is to emit the states frequently, so that if any transient failure occurs during a long sync,
+   * the next run does not need to start from the beginning, but can resume from the last successful intermediate
+   * state committed on the destination. The next run will start with `cursorField > cursor`. However, it is
+   * possible that there are multiple records with the same cursor value. If the intermediate state is emitted
+   * before all these records have been synced to the destination, some of these records may be lost.
+   * <p/>
+   * Here is an example:
+   * <pre>
+   * | Record ID | Cursor Field | Other Field | Note                          |
+   * | --------- | ------------ | ----------- | ----------------------------- |
+   * | 1         | F1=16        | F2="abc"    |                               |
+   * | 2         | F1=16        | F2="def"    | <- state emission and failure |
+   * | 3         | F1=16        | F2="ghi"    |                               |
+   * </pre>
+   * If the intermediate state is emitted for record 2 and the sync fails immediately such that the cursor value `16` is committed,
+   * but only record 1 and 2 are actually synced, the next run will start with `F1 > 16` and skip record 3.
+   * <p/>
+   * So intermediate state emission should only happen when all records with the same cursor value has been synced to destination.
+   * Reference: https://github.com/airbytehq/airbyte/issues/15427
+   */
   @Test
   @DisplayName("When there are multiple records with the same cursor value")
   void testStateEmission4() {
