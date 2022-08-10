@@ -65,6 +65,9 @@ const mockCatalog = {
 
 describe("catalog diff modal", () => {
   afterEach(cleanup);
+  beforeEach(() => {
+    mockCatalogDiff.transforms = [];
+  });
 
   test("it renders the correct section for each type of transform", () => {
     mockCatalogDiff.transforms.push(...addedItems, ...removedItems, ...updatedItems);
@@ -89,8 +92,6 @@ describe("catalog diff modal", () => {
 
     const updatedStreamsSection = screen.getByRole("list", { name: /table with changes/ });
     expect(updatedStreamsSection).toBeInTheDocument();
-
-    mockCatalogDiff.transforms = [];
   });
 
   test("added fields are not rendered when not in the diff", () => {
@@ -110,7 +111,6 @@ describe("catalog diff modal", () => {
 
     const newStreamsTable = screen.queryByRole("table", { name: /new streams/ });
     expect(newStreamsTable).not.toBeInTheDocument();
-    mockCatalogDiff.transforms = [];
   });
 
   test("removed fields are not rendered when not in the diff", () => {
@@ -130,7 +130,6 @@ describe("catalog diff modal", () => {
 
     const removedStreamsTable = screen.queryByRole("table", { name: /removed streams/ });
     expect(removedStreamsTable).not.toBeInTheDocument();
-    mockCatalogDiff.transforms = [];
   });
 
   test("changed streams accordion opens/closes on clicking the description row", () => {
@@ -162,5 +161,6 @@ describe("catalog diff modal", () => {
     userEvent.click(accordionHeader);
     const nullAccordionBodyAgain = screen.queryByRole("table", { name: /removed fields/ });
     expect(nullAccordionBodyAgain).not.toBeInTheDocument();
+    mockCatalogDiff.transforms = [];
   });
 });
