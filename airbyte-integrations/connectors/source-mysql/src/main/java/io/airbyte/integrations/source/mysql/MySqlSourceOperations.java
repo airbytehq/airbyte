@@ -20,10 +20,14 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +77,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
       case DECIMAL, DECIMAL_UNSIGNED -> putBigDecimal(json, columnName, resultSet, colIndex);
       case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case DATETIME, TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
+      case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       // The returned year value can either be a java.sql.Short (when yearIsDateType=false)
       // or a java.sql.Date with the date set to January 1st, at midnight (when yearIsDateType=true).
@@ -165,6 +170,21 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           field.get(INTERNAL_COLUMN_TYPE_NAME)));
       return MysqlType.VARCHAR;
     }
+  }
+
+  @Override
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
+  }
+
+  @Override
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
   }
 
   @Override

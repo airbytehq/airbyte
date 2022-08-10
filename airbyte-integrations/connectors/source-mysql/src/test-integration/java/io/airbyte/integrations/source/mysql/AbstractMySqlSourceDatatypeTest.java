@@ -237,23 +237,23 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2021-01-01'")
-            .addExpectedValues(null, "2021-01-01T00:00:00Z")
+            .addExpectedValues(null, "2021-01-01")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'2005-10-10 23:22:21'")
-            .addExpectedValues(null, "2005-10-10T23:22:21.000000Z")
+            .addInsertValues("null", "'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
+            .addExpectedValues(null, "2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
-            .addExpectedValues(null, null, null, null)
+            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
+            .addExpectedValues(null, null, null, null, "2022-08-09T10:17:16.000000Z")
             .build());
 
     addDataTypeTestData(
@@ -261,8 +261,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
-            .addInsertValues("null", "'-23:59:59'", "'00:00:00'")
-            .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
+            .addInsertValues("null", "'-22:59:59'", "'23:59:59'", "'00:00:00'")
+            .addExpectedValues(null, "22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
             .build());
 
     addDataTypeTestData(
