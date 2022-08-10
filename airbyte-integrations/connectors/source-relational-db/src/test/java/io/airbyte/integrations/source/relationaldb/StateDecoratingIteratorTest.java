@@ -211,7 +211,7 @@ class StateDecoratingIteratorTest {
     assertEquals(RECORD_MESSAGE_4, iterator1.next());
     assertEquals(STATE_MESSAGE_3, iterator1.next());
     assertEquals(RECORD_MESSAGE_5, iterator1.next());
-    // state 3 is not emitted because there is no more record and only
+    // state 4 is not emitted because there is no more record and only
     // the final state should be emitted at this point; also the final
     // state should only be emitted once
     assertEquals(STATE_MESSAGE_5, iterator1.next());
