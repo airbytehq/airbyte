@@ -56,12 +56,12 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL modes",
+        "description": "SSL connection modes. \n <ul><li><b>disable</b> - Use to make a general connection without SSL.</li>\n <li><b>preferred</b> - Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.</li>\n <li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li>\n  <li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li>\n  <li><b>Verify Identity</b> -Always connect with SSL. Verify both CA and Hostname.</li></ul>\n Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
-            "title": "No",
+            "title": "disable",
             "description": "Disable SSL.",
             "required": ["mode"],
             "properties": {
@@ -75,7 +75,7 @@
             }
           },
           {
-            "title": "If available",
+            "title": "preferred",
             "description": "Preferred SSL mode.",
             "required": ["mode"],
             "properties": {
@@ -89,7 +89,7 @@
             }
           },
           {
-            "title": "Require",
+            "title": "required",
             "description": "Require SSL mode.",
             "required": ["mode"],
             "properties": {
@@ -103,7 +103,7 @@
             }
           },
           {
-            "title": "Require and Verify CA",
+            "title": "Verify CA",
             "description": "Verify CA SSL mode.",
             "required": ["mode"],
             "properties": {
@@ -132,7 +132,7 @@
             }
           },
           {
-            "title": "Require and Verify Identity",
+            "title": "Verify Identity",
             "description": "Verify-full SSL mode.",
             "required": [
               "mode",
