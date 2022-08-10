@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ class MigrationAcceptanceTest {
   private static WorkspaceIdRequestBody workspaceIdRequestBody = null;
 
   @Test
+  @Disabled
   void testAutomaticMigration() throws Exception {
     // start at "faux" major version bump version. This was the last version that required db data
     // migrations.
