@@ -11,7 +11,7 @@
         "order": 2,
         "type": "string",
         "title": "View ID",
-        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the Google Analytics Account Explorer: https://ga-dev-tools.appspot.com/account-explorer/"
+        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found in Google Analytics: https://go.estuary.dev/6utILS"
       },
       "start_date": {
         "order": 1,
