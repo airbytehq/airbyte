@@ -2,14 +2,14 @@
 
 Let's start by cloning the Airbyte repository:
 
-```
+```bash
 git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 ```
 
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.
 
-```
+```bash
 cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```

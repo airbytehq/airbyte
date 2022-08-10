@@ -9,13 +9,17 @@ Before running the tests, we'll create an invalid config to make sure the `check
 
 Update `integration_tests/invalid_config.json` with this content
 
-```
-{"access_key": "<invalid_key>", "start_date": "2022-07-21", "base": "USD"}
+```json
+{
+  "access_key": "<invalid_key>",
+  "start_date": "2022-07-21",
+  "base": "USD"
+}
 ```
 
 and `integration_tests/abnormal_state.json` with
 
-```
+```json
 {
   "rates": {
     "date": "2999-12-31"
@@ -26,7 +30,7 @@ and `integration_tests/abnormal_state.json` with
 
 You can run the acceptance tests with the following commands:
 
-```
+```bash
 docker build . -t airbyte/source-exchange-rates-tutorial:dev
 python -m pytest integration_tests -p integration_tests.acceptance
 ```

@@ -27,7 +27,7 @@ When using the `PageIncrement` strategy, the page number will be set as part of 
 
 The following paginator example will fetch 5 records per page, and specify the page number as a request_parameter:
 
-```
+```yaml
 paginator:
   type: "LimitPaginator"
   page_size: 5
@@ -54,7 +54,7 @@ When using the `OffsetIncrement` strategy, the number of records read will be se
 
 The following paginator example will fetch 5 records per page, and specify the offset as a request_parameter:
 
-```
+```yaml
 paginator:
   type: "LimitPaginator"
   page_size: 5
@@ -85,7 +85,7 @@ This cursor value can be used to request the next page of record.
 
 In this example, the next page of record is defined by setting the `from` request parameter to the id of the last record read:
 
-```
+```yaml
 paginator:
   type: "LimitPaginator"
   <...>
@@ -104,7 +104,7 @@ the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=10
 
 Some APIs directly point to the URL of the next page to fetch. In this example, the URL of the next page is extracted from the response headers:
 
-```
+```yaml
 paginator:
   type: "LimitPaginator"
   <...>

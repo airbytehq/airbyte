@@ -3,7 +3,7 @@
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
 Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
 
-```
+```json
 {
   "streams": [
     {
@@ -28,20 +28,20 @@ Let's define the stream schema in `source-exchange-rates-tutorial/source_exchang
 
 You can download the JSON file describing the output schema with all currencies [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
 
-```
+```bash
 curl https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json > source_exchange_rates_tutorial/schemas/rates.json
 ```
 
 We can also delete the boilerplate schema files
 
-```
+```bash
 rm source_exchange_rates_tutorial/schemas/customers.json
 rm source_exchange_rates_tutorial/schemas/employees.json
 ```
 
 Next, we'll update the record selection to wrap the single record returned by the source in an array in `source_exchange_rates_tutorial/exchange_rates_tutorial.yamlsource_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
-```
+```yaml
 definitions:
   <...>
   selector:
@@ -55,7 +55,7 @@ The transform is defined using the `Jello` syntax, which is a Python-based JQ al
 
 Here is the complete connector definition for convenience:
 
-```
+```yaml
 version: "0.1.0"
 
 definitions:
@@ -103,12 +103,12 @@ streams:
         path: "/exchangerates_data/latest"
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
 ```
 
 Reading from the source can be done by running the `read` operation
 
-```
+```bash
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
@@ -121,7 +121,9 @@ The logs should show that 1 record was read from the stream.
 
 The `--debug` flag can be set to print out debug information, including the outgoing request and its associated response
 
-```python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug```
+```bash
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
+```
 
 ## Next steps
 

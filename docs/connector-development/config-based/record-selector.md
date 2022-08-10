@@ -34,7 +34,7 @@ The expression in the filter will be evaluated to a boolean returning true the r
 
 In this example, all records with a `created_at` field greater than the stream slice's `start_time` will be filtered out:
 
-```
+```yaml
 selector:
   extractor:
     transform: "[_]"
@@ -51,26 +51,26 @@ Fields can be added or removed from records by adding `Transformation`s to a str
 Fields can be added with the `AddFields` transformation.
 This example adds a top-level field "field1" with a value "static_value"
 
-```
+```yaml
 stream:
   <...>
   transformations:
-    - type: AddFields
-      fields:
-        - path: ["field1"]
-          value: "static_value"
+      - type: AddFields
+        fields:
+          - path: [ "field1" ]
+            value: "static_value"
 ```
 
 This example adds a top-level field "start_date", whose value is evaluated from the stream slice:
 
-```
+```yaml
 stream:
   <...>
   transformations:
-    - type: AddFields
-      fields:
-        - path: ["start_date"]
-          value: {{ stream_slice['start_date'] }}
+      - type: AddFields
+        fields:
+          - path: [ "start_date" ]
+            value: { { stream_slice[ 'start_date' ] } }
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.
@@ -89,14 +89,14 @@ Given a record of the following shape:
 
 this definition will add a field in the "data" nested object:
 
-```
+```yaml
 stream:
   <...>
   transformations:
-    - type: AddFields
-      fields:
-        - path: ["data", "field1"]
-          value: "static_value"
+      - type: AddFields
+        fields:
+          - path: [ "data", "field1" ]
+            value: "static_value"
 ```
 
 resulting in the following record:
@@ -135,14 +135,14 @@ Given a record of the following shape:
 
 this definition will remove the 2 instances of "data_to_remove" which are found in "path2" and "path.to.field1":
 
-```
+```yaml
 the_stream:
   <...>
   transformations:
-    - type: RemoveFields
-      field_pointers:
-        - ["path", "to", "field1"]
-        - ["path2"]
+      - type: RemoveFields
+        field_pointers:
+          - [ "path", "to", "field1" ]
+          - [ "path2" ]
 ```
 
 resulting in the following record:

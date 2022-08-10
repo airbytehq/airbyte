@@ -7,7 +7,7 @@ The command below assume that `python` points to a version of python &gt;=3.9.0.
 If this is the case on your machine, substitute the `python` commands with `python3`.
 The subsequent `python` invocations will use the virtual environment created for the connector.
 
-```
+```bash
 cd ../../connectors/source-exchange-rates-tutorial
 python -m venv .venv
 source .venv/bin/activate

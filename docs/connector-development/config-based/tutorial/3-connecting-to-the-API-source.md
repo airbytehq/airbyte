@@ -21,7 +21,7 @@ Let's populate the specification (`spec.yaml`) the configuration (`secrets/confi
 
 1. We'll add these properties to the connector spec in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`
 
-```
+```yaml
 documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
@@ -52,7 +52,7 @@ connectionSpecification:
 2. We also need to fill in the connection config in the `secrets/config.json`
    Because of the sensitive nature of the access key, we recommend storing this config in the `secrets` directory because it is ignored by git.
 
-```
+```bash
 echo '{"access_key": "<your_access_key>", "base": "USD"}'  > secrets/config.json
 ```
 
@@ -65,7 +65,7 @@ Let's fill this out these TODOs with the information found in the [Exchange Rate
 
 1. First, let's rename the stream from `customers` to `rates`, and update the primary key to `date`
 
-```
+```yaml
 streams:
   - type: DeclarativeStream
     $options:
@@ -75,10 +75,10 @@ streams:
 
 and update the references in the `check` block
 
-```
+```yaml
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
 ```
 
 Adding the reference in the `check` tells the `check` operation to use that stream to test the connection.
@@ -86,7 +86,7 @@ Adding the reference in the `check` tells the `check` operation to use that stre
 2. Next we'll set the base url.
    According to the API documentation, the base url is `"https://api.exchangeratesapi.io/v1/"`.
 
-```
+```yaml
 definitions:
   <...>
   retriever:
@@ -97,7 +97,7 @@ definitions:
 
 3. We can fetch the latest data by submitting a request to the `/latest` API endpoint. This path is specific to the stream, so we'll set it within the `rates_stream` definition, at the `retriever` level.
 
-```
+```yaml
 streams:
   - type: DeclarativeStream
     $options:
@@ -116,7 +116,7 @@ streams:
    The Exchange Rates API requires an access key to be passed as header named "apikey".
    This can be done using an `ApiKeyAuthenticator`, which we'll configure to point to the config's `access_key` field.
 
-```
+```yaml
 definitions:
   <...>
   requester:
@@ -131,7 +131,7 @@ definitions:
 
 5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter. Let's assume the user will configure this via the connector configuration in parameter called `base`; we'll pass the value input by the user as a request parameter:
 
-```
+```yaml
 definitions:
   <...>
   requester:
@@ -143,7 +143,7 @@ definitions:
 
 The full connection definition should now look like
 
-```
+```yaml
 version: "0.1.0"
 
 definitions:
@@ -191,12 +191,12 @@ streams:
         path: "/exchangerates_data/latest"
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
 ```
 
 We can now run the `check` operation, which verifies the connector can connect to the API source.
 
-```
+```bash
 python main.py check --config secrets/config.json
 ```
 

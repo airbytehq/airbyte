@@ -9,7 +9,7 @@ We'll now add a `start_date` property to the connector.
 
 First we'll update the spec `source_exchange_rates_tutorial/spec.yaml`
 
-```
+```yaml
 documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
@@ -48,7 +48,7 @@ Then we'll set the `start_date` to last week in our connection config in `secret
 Let's add a start_date field to `secrets/config.json`.
 The file should look like
 
-```
+```json
 {
   "access_key": "<your_access_key>",
   "start_date": "2022-07-26",
@@ -61,7 +61,7 @@ where the start date should be 7 days in the past.
 And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
 
-```
+```yaml
 streams:
   - type: DeclarativeStream
     $options:
@@ -78,7 +78,9 @@ streams:
 
 You can test these changes by executing the `read` operation:
 
-```python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json```
+```bash
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+```
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
 For example:
@@ -92,7 +94,7 @@ More details on the stream slicers can be found [here](./link-to-stream-slicers.
 
 Let's first define a stream slicer at the top level of the connector definition:
 
-```
+```yaml
 definitions:
   requester:
     <...>
@@ -117,7 +119,7 @@ The start time is defined in the config file, while the end time is defined by t
 
 Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
 
-```
+```yaml
 streams:
   - type: DeclarativeStream
     $options:
@@ -129,7 +131,7 @@ streams:
 
 We'll also update the retriever to user the stream slicer:
 
-```
+```yaml
 definitions:
   <...>
   retriever:
@@ -141,7 +143,7 @@ definitions:
 
 Finally, we'll update the path to point to the `stream_slice`'s start_time
 
-```
+```yaml
 streams:
   - type: DeclarativeStream
     <...>
@@ -154,7 +156,7 @@ streams:
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
-```
+```yaml
 version: "0.1.0"
 
 definitions:
@@ -216,13 +218,13 @@ streams:
         path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
 
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:
 
-```
+```bash
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
@@ -237,7 +239,7 @@ The operation should now output more than one record:
 Instead of always reading data for all dates, we would like the connector to only read data for dates we haven't read yet.
 This can be achieved by updating the catalog to run in incremental mode (`integration_tests/configured_catalog.json`):
 
-```
+```json
 {
   "streams": [
     {
@@ -267,7 +269,7 @@ Where the date ("2022-07-15") should be replaced by today's date.
 We can simulate incremental syncs by creating a state file containing the last state produced by the `read` operation.
 `source-exchange-rates-tutorial/integration_tests/sample_state.json`:
 
-```
+```json
 {
   "rates": {
     "date": "2022-07-15"
@@ -277,7 +279,7 @@ We can simulate incremental syncs by creating a state file containing the last s
 
 Running the `read` operation will now only read data for dates later than the given state:
 
-```
+```bash
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 

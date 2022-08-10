@@ -7,7 +7,7 @@ There are a few ways to set request parameters, headers, and body on ongoing HTT
 The primary way to set request options is through the `Requester`'s `RequestOptionsProvider`.
 The options can be configured as key value pairs:
 
-```
+```yaml
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -24,7 +24,7 @@ requester:
 
 It is also possible to configure add a json-encoded body to outgoing requests.
 
-```
+```yaml
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -55,7 +55,7 @@ The respective values can be set on the outgoing HTTP requests by specifying whe
 
 The following example will set the "page" request parameter value to the page to fetch, and the "page_size" request parameter to 5:
 
-```
+```yaml
 paginator:
   type: "LimitPaginator"
   page_size: 5
@@ -78,7 +78,7 @@ The respective values can be set on the outgoing HTTP requests by specifying whe
 
 The following example will set the "created[gte]" request parameter value to the start of the time window, and "created[lte]" to the end of the time window.
 
-```
+```yaml
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",

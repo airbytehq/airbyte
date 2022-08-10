@@ -11,13 +11,13 @@ The configuration will be validated against this JSON Schema, which defines the 
 
 The general structure of the YAML is as follows:
 
-```
+```yaml
 version: "0.1.0"
 definitions:
-    <key-value pairs defining objects which will be reused in the YAML connector> 
+  <key-value pairs defining objects which will be reused in the YAML connector>
 streams:
   <list stream definitions>
-check: 
+check:
   <definition of connection checker>
 ```
 
@@ -44,7 +44,7 @@ will result in
 If the component is a mapping with a "class_name" field,
 an object of type "class_name" will be instantiated by passing the mapping's other fields to the constructor
 
-```
+```yaml
 my_component:
   class_name: "fully_qualified.class_name"
   a_parameter: 3
@@ -95,38 +95,38 @@ More details on object instantiation can be found [here](https://airbyte-cdk.rea
 Parameters can be passed down from a parent component to its subcomponents using the $options key.
 This can be used to avoid repetitions.
 
-```
+```yaml
 outer:
   $options:
     MyKey: MyValue
   inner:
-   k2: v2
+    k2: v2
 ```
 
 This the example above, if both outer and inner are types with a "MyKey" field, both of them will evaluate to "MyValue".
 
 These parameters can be overwritten by subcomponents as a form of specialization:
 
-```
+```yaml
 outer:
   $options:
     MyKey: MyValue
   inner:
-   $options:
-     MyKey: YourValue
-   k2: v2
+    $options:
+      MyKey: YourValue
+    k2: v2
 ```
 
 In this example, "outer.MyKey" will evaluate to "MyValue", and "inner.MyKey" will evaluate to "YourValue".
 
 The value can also be used for string interpolation:
 
-```
+```yaml
 outer:
   $options:
     MyKey: MyValue
   inner:
-   k2: "MyKey is {{ options['MyKey'] }}"
+    k2: "MyKey is {{ options['MyKey'] }}"
 ```
 
 In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
@@ -138,21 +138,21 @@ The parser will dereference these values to produce a complete ConnectionDefinit
 
 References can be defined using a *ref(<arg>) string.
 
-```
+```yaml
 key: 1234
 reference: "*ref(key)"
 ```
 
 will produce the following definition:
 
-```
+```yaml
 key: 1234
 reference: 1234
 ```
 
 This also works with objects:
 
-```
+```yaml
 key_value_pairs:
   k1: v1
   k2: v2
@@ -161,7 +161,7 @@ same_key_value_pairs: "*ref(key_value_pairs)"
 
 will produce the following definition:
 
-```
+```yaml
 key_value_pairs:
   k1: v1
   k2: v2
@@ -172,7 +172,7 @@ same_key_value_pairs:
 
 The $ref keyword can be used to refer to an object and enhance it with addition key-value pairs
 
-```
+```yaml
 key_value_pairs:
   k1: v1
   k2: v2
@@ -183,7 +183,7 @@ same_key_value_pairs:
 
 will produce the following definition:
 
-```
+```yaml
 key_value_pairs:
   k1: v1
   k2: v2
@@ -197,34 +197,34 @@ References can also point to nested values.
 Nested references are ambiguous because one could define a key containing with `.`
 in this example, we want to refer to the limit key in the dict object:
 
-```
+```yaml
 dict:
-    limit: 50
+  limit: 50
 limit_ref: "*ref(dict.limit)"
 ```
 
 will produce the following definition:
 
-```
+```yaml
 dict
-    limit: 50
+limit: 50
 limit-ref: 50
 ```
 
 whereas here we want to access the `nested.path` value.
 
-```
+```yaml
 nested:
-    path: "first one"
+  path: "first one"
 nested.path: "uh oh"
 value: "ref(nested.path)
 ```
 
 will produce the following definition:
 
-```
+```yaml
 nested:
-    path: "first one"
+  path: "first one"
 nested.path: "uh oh"
 value: "uh oh"
 ```
@@ -246,7 +246,7 @@ the "options" keyword [see ($options)](yaml-structure.md#object-instantiation) c
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 
-```
+```yaml
 some_object:
   $options:
     name: "airbyte"

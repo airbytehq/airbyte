@@ -23,7 +23,7 @@ This is done by slicing the stream on the records' cursor value, defined by the 
 Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
 For instance,
 
-```
+```yaml
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
@@ -34,7 +34,7 @@ will create one slice per day for the interval `2021-02-01` - `2021-03-01`.
 
 The `DatetimeStreamSlicer` also supports an optional lookback window, specifying how many days before the start_datetime to read data for.
 
-```
+```yaml
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
@@ -66,7 +66,7 @@ When reading data from the source, the cursor value will be updated to the max d
 If an API supports filtering data based on the cursor field, the `start_time_option` and `end_time_option` parameters can be used to configure this filtering.
 For instance, if the API supports filtering using the request parameters `created[gte]` and `created[lte]`, then the stream slicer can specify the request parameters as
 
-```
+```yaml
 stream_slicer:
   type: "DatetimeStreamSlicer"
   <...>
@@ -89,7 +89,7 @@ It is defined by
 
 As an example, this stream slicer will iterate over the 2 repositories ("airbyte" and "airbyte-secret") and will set a request_parameter on outgoing HTTP requests.
 
-```
+```yaml
 stream_slicer:
   type: "ListStreamSlicer"
   slice_values:
@@ -135,7 +135,7 @@ For each stream, the slicer needs to know
 
 Assuming the commits for a given repository can be read by specifying the repository as a request_parameter, this could be defined as
 
-```
+```yaml
 stream_slicer:
   type: "SubstreamSlicer"
   parent_streams_configs:
@@ -150,7 +150,7 @@ stream_slicer:
 REST APIs often nest sub-resources in the URL path.
 If the URL to fetch commits was "/repositories/:id/commits", then the `Requester`'s path would need to refer to the stream slice's value and no `request_option` would be set:
 
-```
+```yaml
 retriever:
   <...>
   requester:
