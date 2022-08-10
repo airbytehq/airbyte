@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "paging": {
@@ -21,48 +22,7 @@
     },
     "elements": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "totalShareStatistics": {
-              "type": "object",
-              "properties": {
-                "uniqueImpressionsCount": {
-                  "type": "integer"
-                },
-                "shareCount": {
-                  "type": "integer"
-                },
-                "shareMentionsCount": {
-                  "type": "integer"
-                },
-                "engagement": {
-                  "type": "number"
-                },
-                "clickCount": {
-                  "type": "integer"
-                },
-                "likeCount": {
-                  "type": "integer"
-                },
-                "impressionCount": {
-                  "type": "integer"
-                },
-                "commentMentionsCount": {
-                  "type": "integer"
-                },
-                "commentCount": {
-                  "type": "integer"
-                }
-              }
-            },
-            "organizationalEntity": {
-              "type": "string"
-            }
-          }
-        }
-      ]
+      "items": {}
     }
   }
 }
