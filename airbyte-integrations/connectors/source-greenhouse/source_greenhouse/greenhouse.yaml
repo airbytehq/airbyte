@@ -159,16 +159,239 @@ applications_interviews_stream:
         - stream: "*ref(applications_stream)"
           parent_key: "id"
           stream_slice_field: "parent_id"
+custom_fields_stream:
+  type: DeclarativeStream
+  $options:
+    name: "custom_fields"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "custom_fields"
+questions_stream:
+  type: DeclarativeStream
+  $options:
+    name: "demographics_questions"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "demographics/questions"
+demographics_answers_answer_options_stream:
+  type: DeclarativeStream
+  $options:
+    name: "demographics_answers_answer_options"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(questions_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+demographics_question_sets_stream:
+  type: DeclarativeStream
+  $options:
+    name: "demographics_question_sets"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "demographics/question_sets"
+demographics_question_sets_questions_stream:
+  type: DeclarativeStream
+  $options:
+    name: "demographics_question_sets_questions"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(demographics_question_sets_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+interviews_stream:
+  type: DeclarativeStream
+  $options:
+    name: "interviews"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "scheduled_interviews"
+job_posts_stream:
+  type: DeclarativeStream
+  $options:
+    name: "job_posts"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "job_posts"
+job_stages_stream:
+  type: DeclarativeStream
+  $options:
+    name: "job_stages"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "job_stages"
+jobs_stages_stream:
+  type: DeclarativeStream
+  $options:
+    name: "jobs_stages"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "jobs/{{ stream_slice.parent_id }}/stages"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(jobs_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+offers_stream:
+  type: DeclarativeStream
+  $options:
+    name: "offers"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "offers"
+rejection_reasons_stream:
+  type: DeclarativeStream
+  $options:
+    name: "rejection_reasons"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "rejection_reasons"
+scorecards_stream:
+  type: DeclarativeStream
+  $options:
+    name: "scorecards"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "scorecards"
+sources_stream:
+  type: DeclarativeStream
+  $options:
+    name: "sources"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "sources"
+users_stream:
+  type: DeclarativeStream
+  $options:
+    name: "users"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(schema_loader)"
+    retriever:
+      $ref: "*ref(retriever)"
+      requester:
+        $ref: "*ref(requester)"
+        path: "users"
 streams:
   - "*ref(applications_stream)"
+  - "*ref(applications_demographics_answers_stream)"
+  - "*ref(applications_interviews_stream)"
   - "*ref(candidates_stream)"
   - "*ref(close_reasons_stream)"
+  - "*ref(custom_fields_stream)"
   - "*ref(degrees_stream)"
+  - type: DeclarativeStream
+    $options:
+      name: "demographics_answers"
+      primary_key: "id"
+      schema_loader:
+        $ref: "*ref(schema_loader)"
+      retriever:
+        $ref: "*ref(retriever)"
+        requester:
+          $ref: "*ref(requester)"
+          path: "demographics/answers"
+  - type: DeclarativeStream
+    $options:
+      name: "demographics_answer_options"
+      primary_key: "id"
+      schema_loader:
+        $ref: "*ref(schema_loader)"
+      retriever:
+        $ref: "*ref(retriever)"
+        requester:
+          $ref: "*ref(requester)"
+          path: "demographics/answer_options"
+  - "*ref(questions_stream)"
+  - "*ref(demographics_answers_answer_options_stream)"
+  - "*ref(demographics_question_sets_stream)"
+  - "*ref(demographics_question_sets_questions_stream)"
   - "*ref(departments_stream)"
   - "*ref(jobs_stream)"
   - "*ref(jobs_openings_stream)"
-  - "*ref(applications_demographics_answers_stream)"
-  - "*ref(applications_interviews_stream)"
+  - "*ref(interviews_stream)"
+  - "*ref(job_posts_stream)"
+  - "*ref(job_stages_stream)"
+  - "*ref(jobs_stages_stream)"
+  - "*ref(offers_stream)"
+  - "*ref(rejection_reasons_stream)"
+  - "*ref(scorecards_stream)"
+  - "*ref(sources_stream)"
+  - "*ref(users_stream)"
+
 check:
   type: CheckStream
   stream_names: ["applications_stream"]
