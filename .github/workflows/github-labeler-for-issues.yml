@@ -35,5 +35,5 @@ jobs:
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
           # warning in the GH action for these inputs is expected
-          token: ${{ needs.find_valid_pat.outputs.pat }}
+          token: ${{ secrets.OCTAVIA_PAT }}
           command: "issue"
