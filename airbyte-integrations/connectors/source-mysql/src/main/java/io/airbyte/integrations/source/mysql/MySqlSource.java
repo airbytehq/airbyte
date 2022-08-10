@@ -160,7 +160,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           jdbcUrl.append(JdbcUtils.AMPERSAND).append("sslMode=DISABLE");
         } else {
           additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
-          additionalParameters.put("fallbackToSystemTrustStore", "false");
           jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
               .append(JdbcUtils.AMPERSAND);
           if (additionalParameters.isEmpty()) {

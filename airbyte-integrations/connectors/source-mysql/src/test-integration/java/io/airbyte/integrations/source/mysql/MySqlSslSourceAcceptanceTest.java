@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION;
-
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -45,12 +42,10 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?%s",
+        String.format("jdbc:mysql://%s:%s/%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText(),
-            String.join("&", SSL_PARAMETERS),
-            String.join("&", SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION)),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
