@@ -68,8 +68,7 @@
     white-space: break-spaces;
     background: colors.$grey-50;
 
-    &.language-sql,
-    &.language-text {
+    &[class^="language-"] {
       display: block;
       padding: 15px;
       overflow: auto;
@@ -84,7 +83,7 @@
     border-radius: 8px;
     border-left: 8px solid colors.$grey-300;
     padding: 1px 16px 1px 48px;
-    margin: -1px 0;
+    margin: -1px 0 15px;
     background-color: colors.$grey-50;
     position: relative;
 
@@ -112,16 +111,18 @@
       }
     }
 
-    // Default
-    // &--note {
-    // }
+    &--note::before {
+      content: "📝";
+    }
 
-    &--tip {
+    &--tip,
+    &--info {
       background-color: colors.$blue-50;
       border-left-color: colors.$blue-300;
-      &::before {
-        content: "💡";
-      }
+    }
+
+    &--tip::before {
+      content: "💡";
     }
   }
 }
