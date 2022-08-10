@@ -12,9 +12,11 @@ The configuration will be validated against this JSON Schema, which defines the 
 The general structure of the YAML is as follows:
 
 ```
-<key-value pairs defining objects which will be reused in the YAML connector> 
+version: "0.1.0"
+definitions:
+    <key-value pairs defining objects which will be reused in the YAML connector> 
 streams:
-  <list definition of streams>
+  <list stream definitions>
 check: 
   <definition of connection checker>
 ```
