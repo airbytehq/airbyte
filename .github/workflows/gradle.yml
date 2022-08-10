@@ -739,3 +739,22 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket: \n\"}},
             {\"type\":\"divider\"}]}
+  show-affected-connectors:
+    name: "Show affected connectors"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Get changed files using defaults
+        id: changed-files
+        uses: tj-actions/changed-files@v25
+      - name: Get changed files using a comma separator
+        id: changed-files-comma
+        uses: tj-actions/changed-files@v25
+        with:
+          separator: ","
+      - name: List all added files
+        run: |
+          for file in ${{ steps.changed-files.outputs.added_files }}; do
+            echo "$file was added"
+          done
