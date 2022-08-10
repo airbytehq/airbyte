@@ -12,7 +12,7 @@ class DatetimeParser:
 
     This class mainly acts as a wrapper to properly handling timestamp formatting through the "%s" directive.
 
-    %s is part of the list of format codes required by  the 1989 C standard, but it is unreliable because it ignores the time zone information
+    %s is part of the list of format codes required by  the 1989 C standard, but it is unreliable because it always return a datetime in the system's timezone.
     Instead of using the directive directly, we can use datetime.fromtimestamp and dt.timestamp()
     """
 
