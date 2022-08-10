@@ -119,6 +119,11 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_CLOUD_CLIENT_CERT = "TEMPORAL_CLOUD_CLIENT_CERT";
   private static final String TEMPORAL_CLOUD_CLIENT_KEY = "TEMPORAL_CLOUD_CLIENT_KEY";
 
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
+  private static final String CONTROL_PLANE_GOOGLE_ENDPOINT = "CONTROL_PLANE_GOOGLE_ENDPOINT";
+
+
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
@@ -460,6 +465,21 @@ public class EnvConfigs implements Configs {
   @Override
   public String getTemporalCloudClientKey() {
     return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_KEY, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountCredentialsPath() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountEmail() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
+  }
+
+  @Override
+  public String getControlPlaneGoogleEndpoint() {
+    return getEnvOrDefault(CONTROL_PLANE_GOOGLE_ENDPOINT, "");
   }
 
   // Airbyte Services
