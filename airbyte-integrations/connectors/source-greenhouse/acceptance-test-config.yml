@@ -19,6 +19,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      expect_records:
+        path: "integration_tests/expected_records.txt"
+        extra_fields: yes
+        exact_order: yes
+        extra_records: no
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   full_refresh:
