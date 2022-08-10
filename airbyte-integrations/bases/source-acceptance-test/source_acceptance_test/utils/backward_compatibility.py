@@ -8,7 +8,7 @@ from multiprocessing import context
 import jsonschema
 from airbyte_cdk.models import ConnectorSpecification
 from deepdiff import DeepDiff
-from hypothesis import given, settings
+from hypothesis import Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
 from source_acceptance_test.utils import SecretDict
 
@@ -26,11 +26,11 @@ class BaseDiffChecker(ABC):
 
     @property
     @abstractmethod
-    def context(self):
+    def context(self):  # pragma: no cover
         pass
 
     @abstractmethod
-    def assert_is_backward_compatible(self):
+    def assert_is_backward_compatible(self):  # pragma: no cover
         pass
 
     def check_if_value_of_type_field_changed(self):
@@ -45,7 +45,7 @@ class BaseDiffChecker(ABC):
         if type_values_changed or type_values_changed_in_list:
             self._raise_error("The value of a 'type' field was changed.")
 
-    def check_if_new_type_was_added(self):
+    def check_if_new_type_was_added(self):  # pragma: no cover
         """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
         new_values_in_type_list = [
             change
@@ -74,11 +74,7 @@ class BaseDiffChecker(ABC):
             # This might be something already guaranteed by JSON schema validation.
             if isinstance(change.t1, str):
                 if not isinstance(change.t2, list):
-                    self._raise_error("The current {context} change a type field from string to an invalid value.")
-                if not 0 < len(change.t2) <= 2:
-                    self._raise_error(
-                        "A type field changed from string to an invalid value. The type list should not be empty and have a maximum of two items."
-                    )
+                    self._raise_error("A 'type' field was changed from string to an invalid value.")
                 # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
                 # We want to raise an error otherwise.
                 t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
@@ -159,14 +155,15 @@ def validate_previous_configs(
     2. Validate a fake previous config against the actual connector specification json schema."""
 
     @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
-    @settings(max_examples=number_of_configs_to_generate)
+    @settings(max_examples=number_of_configs_to_generate, verbosity=Verbosity.quiet)
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
-        fake_previous_config = SecretDict(fake_previous_config)
-        filtered_fake_previous_config = {key: value for key, value in fake_previous_config.data.items() if not key.startswith("_")}
-        try:
-            jsonschema.validate(instance=filtered_fake_previous_config, schema=actual_connector_spec.connectionSpecification)
-        except jsonschema.exceptions.ValidationError as err:
-            raise NonBackwardCompatibleError(err)
+        if isinstance(fake_previous_config, dict):  # Looks like hypothesis-jsonschema not only generate dict objects...
+            fake_previous_config = SecretDict(fake_previous_config)
+            filtered_fake_previous_config = {key: value for key, value in fake_previous_config.data.items() if not key.startswith("_")}
+            try:
+                jsonschema.validate(instance=filtered_fake_previous_config, schema=actual_connector_spec.connectionSpecification)
+            except jsonschema.exceptions.ValidationError as err:
+                raise NonBackwardCompatibleError(err)
 
     check_fake_previous_config_against_actual_spec()
 

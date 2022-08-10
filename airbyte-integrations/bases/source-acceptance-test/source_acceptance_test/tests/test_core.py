@@ -28,7 +28,7 @@ from deepdiff import DeepDiff
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, SpecTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
@@ -247,7 +247,9 @@ class TestDiscovery(BaseTest):
         )
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+    def skip_backward_compatibility_tests_fixture(
+        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+    ) -> bool:
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
