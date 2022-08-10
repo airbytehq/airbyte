@@ -137,7 +137,7 @@ class PersistStateActivityTest {
     // This test is to ensure that we correctly throw an error if not every stream in the configured
     // catalog has a state message when migrating from Legacy to Per-Stream
     @Test
-    public void testPersistWithValidMissingState() throws ApiException {
+    void testPersistWithValidMissingState() throws ApiException {
       final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
       final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
 
@@ -209,6 +209,7 @@ class PersistStateActivityTest {
       verifyStateHelperCalls(state, true, CONNECTION_ID);
       verifyApiCalls(CONNECTION_ID);
     }
+
   }
 
   private void verifyStateHelperCalls(final State state, final Boolean useStreamCapableState, final UUID connectionId) {

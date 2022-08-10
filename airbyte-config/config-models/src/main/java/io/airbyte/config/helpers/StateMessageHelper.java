@@ -7,8 +7,6 @@ package io.airbyte.config.helpers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
-import io.airbyte.api.client.model.generated.ConnectionState;
-import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
