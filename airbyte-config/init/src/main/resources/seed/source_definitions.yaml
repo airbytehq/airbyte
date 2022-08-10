@@ -411,6 +411,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/hellobaton
   sourceType: api
   releaseStage: alpha
+- name: Hubplanner
+  sourceDefinitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
+  dockerRepository: airbyte/source-hubplanner
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/hubplanner
+  sourceType: api
+  releaseStage: alpha
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
