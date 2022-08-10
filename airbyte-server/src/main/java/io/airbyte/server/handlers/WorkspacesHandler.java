@@ -193,7 +193,7 @@ public class WorkspacesHandler {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {
-      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name());
+      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name(), e);
     } catch (final IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
@@ -225,7 +225,8 @@ public class WorkspacesHandler {
       // database transaction, but that is not something we can do quickly.
       resolvedSlug = proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
       isSlugUsed = configRepository.getWorkspaceBySlugOptional(resolvedSlug, true).isPresent();
-      if (count++ > MAX_ATTEMPTS) {
+      count++;
+      if (count > MAX_ATTEMPTS) {
         throw new InternalServerKnownException(String.format("could not generate a valid slug after %s tries.", MAX_ATTEMPTS));
       }
     }

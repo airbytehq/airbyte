@@ -13,7 +13,7 @@ interface DownloadButtonProps {
 }
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const downloadFileWithLogs = () => {
     const element = document.createElement("a");

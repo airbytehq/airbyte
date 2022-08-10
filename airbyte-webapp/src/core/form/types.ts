@@ -9,49 +9,41 @@ interface FormItem {
   order?: number;
   title?: string;
   description?: string;
-
   airbyte_hidden?: boolean;
 }
 
-export type FormBaseItem = {
+export interface FormBaseItem extends FormItem, AirbyteJSONSchema {
   _type: "formItem";
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
-} & FormItem &
-  AirbyteJSONSchema;
+  default?: JSONSchema7Type;
+}
 
-type FormGroupItem = {
+export interface FormGroupItem extends FormItem {
   _type: "formGroup";
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
   isLoading?: boolean;
   hasOauth?: boolean;
-  default?: JSONSchema7Type;
   examples?: JSONSchema7Type;
-} & FormItem;
+}
 
-type FormConditionItem = {
+export interface FormConditionItem extends FormItem {
   _type: "formCondition";
-  conditions: { [key: string]: FormGroupItem | FormBaseItem };
-} & FormItem;
+  conditions: Record<string, FormGroupItem | FormBaseItem>;
+}
 
-type FormObjectArrayItem = {
+export interface FormObjectArrayItem extends FormItem {
   _type: "objectArray";
   properties: FormBlock;
-} & FormItem;
+}
 
-type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
-
-export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
+export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface WidgetConfig {
-  [key: string]: any;
-}
-export interface WidgetConfigMap {
-  [key: string]: WidgetConfig;
-}
+export type WidgetConfig = Record<string, any>;
+export type WidgetConfigMap = Record<string, WidgetConfig>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FormComponentOverrideProps = Record<string, any>;

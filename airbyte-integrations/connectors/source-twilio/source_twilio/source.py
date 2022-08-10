@@ -61,7 +61,11 @@ class SourceTwilio(AbstractSource):
             ),
         )
         full_refresh_stream_kwargs = {"authenticator": auth}
-        incremental_stream_kwargs = {"authenticator": auth, "start_date": config["start_date"]}
+        incremental_stream_kwargs = {
+            "authenticator": auth,
+            "start_date": config["start_date"],
+            "lookback_window": config["lookback_window"],
+        }
 
         streams = [
             Accounts(**full_refresh_stream_kwargs),

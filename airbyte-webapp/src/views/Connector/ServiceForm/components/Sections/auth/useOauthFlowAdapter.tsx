@@ -7,7 +7,6 @@ import pick from "lodash/pick";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
-import { isSourceDefinitionSpecification } from "../../../../../../core/domain/connector/source";
 import { useServiceForm } from "../../../serviceFormContext";
 import { ServiceFormValues } from "../../../types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
@@ -24,7 +23,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
     let newValues: ServiceFormValues;
 
-    if (connector.advancedAuth && !isSourceDefinitionSpecification(connector)) {
+    if (connector.advancedAuth) {
       const oauthPaths = serverProvidedOauthPaths(connector);
 
       newValues = Object.entries(oauthPaths).reduce(
@@ -50,7 +49,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
       const oauthInputProperties =
         (
           connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
-            properties: { path_in_connector_config: string[] }[];
+            properties: Array<{ path_in_connector_config: string[] }>;
           }
         )?.properties ?? {};
 

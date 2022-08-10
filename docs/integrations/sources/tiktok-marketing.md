@@ -30,7 +30,7 @@ To access the Sandbox environment:
 3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a name for this connector.
 4. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
 5. Log in and Authorize to the Tiktok account
-6. Choose required Start date and report granularity
+6. Choose required Start date
 7. click `Set up source`.
 
 **For Airbyte OSS:**
@@ -39,25 +39,38 @@ To access the Sandbox environment:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown. 
 4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
-5. Choose required Start date and report granularity
+5. Choose required Start date
 6. Click `Set up source`.
 
 ## Supported streams and sync modes
 
-| Stream                            | Environment  | Supported aggregation granularities | Key         | Incremental    |
-|:----------------------------------|--------------|-------------------------------------|-------------|:---------------|
-| Advertisers                       | Prod,Sandbox | LIFETIME,DAY,HOUR                   | id          | No             |
-| AdGroups                          | Prod,Sandbox | LIFETIME,DAY,HOUR                   | adgroup_id  | Yes (DAY,HOUR) |
-| Ads                               | Prod,Sandbox | LIFETIME,DAY,HOUR                   | ad_id       | Yes (DAY,HOUR) |
-| Campaigns                         | Prod,Sandbox | LIFETIME,DAY,HOUR                   | campaign_id | Yes (DAY,HOUR) |
-| AdsReports                        | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
-| AdvertisersReports                | Prod         | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
-| AdGroupsReports                   | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
-| CampaignsReports                  | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
-| AdvertisersAudienceReports        | Prod         | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
-| AdGroupAudienceReports            | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
-| AdsAudienceReports                | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
-| CampaignsAudienceReportsByCountry | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
+| Stream                                  | Environment  | Key         | Incremental |
+|:----------------------------------------|--------------|-------------|:------------|
+| Advertisers                             | Prod,Sandbox | id          | No          |
+| AdGroups                                | Prod,Sandbox | adgroup_id  | Yes         |
+| Ads                                     | Prod,Sandbox | ad_id       | Yes         |
+| Campaigns                               | Prod,Sandbox | campaign_id | Yes         |
+| AdsReportsHourly                        | Prod,Sandbox | None        | Yes         |
+| AdsReportsDaily                         | Prod,Sandbox | None        | Yes         |
+| AdsReportsLifetime                      | Prod,Sandbox | None        | No          |
+| AdvertisersReportsHourly                | Prod         | None        | Yes         |
+| AdvertisersReportsDaily                 | Prod         | None        | Yes         |
+| AdvertisersReportsLifetime              | Prod         | None        | No          |
+| AdGroupsReportsHourly                   | Prod,Sandbox | None        | Yes         |
+| AdGroupsReportsDaily                    | Prod,Sandbox | None        | Yes         |
+| AdGroupsReportsLifetime                 | Prod,Sandbox | None        | No          |
+| CampaignsReportsHourly                  | Prod,Sandbox | None        | Yes         |
+| CampaignsReportsDaily                   | Prod,Sandbox | None        | Yes         |
+| CampaignsReportsLifetime                | Prod,Sandbox | None        | No          |
+| AdvertisersAudienceReportsHourly        | Prod         | None        | Yes         |
+| AdvertisersAudienceReportsDaily         | Prod         | None        | Yes         |
+| AdvertisersAudienceReportsLifetime      | Prod         | None        | No          |
+| AdGroupAudienceReportsHourly            | Prod,Sandbox | None        | Yes         |
+| AdGroupAudienceReportsDaily             | Prod,Sandbox | None        | Yes         |
+| AdsAudienceReportsHourly                | Prod,Sandbox | None        | Yes         |
+| AdsAudienceReportsDaily                 | Prod,Sandbox | None        | Yes         |
+| CampaignsAudienceReportsByCountryHourly | Prod,Sandbox | None        | Yes         |
+| CampaignsAudienceReportsByCountryDaily  | Prod,Sandbox | None        | Yes         |
 
 ### Report Aggregation
 Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
@@ -250,7 +263,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**AdsReports Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+**AdsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 ```
 {
   "dimensions": {
@@ -298,7 +311,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**AdvertisersReports Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+**AdvertisersReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 ```
 {
   "metrics": {
@@ -322,7 +335,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ```
 
-**AdGroupsReports Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+**AdGroupsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 ```
 {
   "metrics": {
@@ -367,7 +380,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**CampaignsReports Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+**CampaignsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 ```
 {
   "metrics": {
@@ -390,7 +403,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ```
 
-**AdsAudienceReports Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+**AdsAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 ```
 { 
   {
@@ -434,7 +447,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**AdvertisersAudienceReports Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+**AdvertisersAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 ```
 {
   "dimensions": {
@@ -454,7 +467,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**AdGroupAudienceReports Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+**AdGroupAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 ```
 {
   "dimensions": {
@@ -495,7 +508,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**CampaignsAudienceReportsByCountry Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+**CampaignsAudienceReportsByCountryDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 ```
 {
   "metrics": {
@@ -524,8 +537,10 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                      |
-| 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                      |
+| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |                                               |
+| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |                                                        |
+| 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                        |
+| 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                       |
 | 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |
 | 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                              |
 | 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |

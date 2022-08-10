@@ -27,6 +27,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.jooq.impl.SchemaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_32_8_001__AirbyteConfigDatabaseDenormalization.class);
@@ -75,7 +77,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   private static void createEnums(final DSLContext ctx) {
-    ctx.createType("source_type").asEnum("api", "file", "database", "custom").execute();
+    ctx.createType("source_type").asEnum("api", "file", JdbcUtils.DATABASE_KEY, "custom").execute();
     LOGGER.info("source_type enum created");
     ctx.createType("actor_type").asEnum("source", "destination").execute();
     LOGGER.info("actor_type enum created");
@@ -155,7 +157,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("workspace table populated with " + configsWithMetadata.size() + " records");
   }
 
-  private static void createAndPopulateActorDefinition(DSLContext ctx) {
+  private static void createAndPopulateActorDefinition(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
     final Field<String> dockerRepository = DSL.field("docker_repository", SQLDataType.VARCHAR(256).nullable(false));
@@ -234,7 +236,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("actor_definition table populated with " + destinationDefinitionsWithMetadata.size() + " destination definition records");
   }
 
-  private static void createAndPopulateActor(DSLContext ctx) {
+  private static void createAndPopulateActor(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
     final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));
@@ -338,7 +340,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   @VisibleForTesting
-  static boolean workspaceDoesNotExist(UUID workspaceId, DSLContext ctx) {
+  static boolean workspaceDoesNotExist(final UUID workspaceId, final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("workspace"))
@@ -346,7 +348,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   @VisibleForTesting
-  static boolean actorDefinitionDoesNotExist(UUID definitionId, DSLContext ctx) {
+  static boolean actorDefinitionDoesNotExist(final UUID definitionId, final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("actor_definition"))
@@ -354,7 +356,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   @VisibleForTesting
-  static boolean actorDoesNotExist(UUID actorId, DSLContext ctx) {
+  static boolean actorDoesNotExist(final UUID actorId, final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("actor"))
@@ -362,7 +364,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   @VisibleForTesting
-  static boolean connectionDoesNotExist(UUID connectionId, DSLContext ctx) {
+  static boolean connectionDoesNotExist(final UUID connectionId, final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("connection"))
@@ -370,7 +372,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   @VisibleForTesting
-  static boolean operationDoesNotExist(UUID operationId, DSLContext ctx) {
+  static boolean operationDoesNotExist(final UUID operationId, final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("operation"))
@@ -752,12 +754,12 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     api("api"),
     file("file"),
-    database("database"),
+    database(JdbcUtils.DATABASE_KEY),
     custom("custom");
 
     private final String literal;
 
-    SourceType(String literal) {
+    SourceType(final String literal) {
       this.literal = literal;
     }
 
@@ -792,7 +794,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     private final String literal;
 
-    NamespaceDefinitionType(String literal) {
+    NamespaceDefinitionType(final String literal) {
       this.literal = literal;
     }
 
@@ -826,7 +828,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     private final String literal;
 
-    StatusType(String literal) {
+    StatusType(final String literal) {
       this.literal = literal;
     }
 
@@ -859,7 +861,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     private final String literal;
 
-    OperatorType(String literal) {
+    OperatorType(final String literal) {
       this.literal = literal;
     }
 
@@ -892,7 +894,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     private final String literal;
 
-    ActorType(String literal) {
+    ActorType(final String literal) {
       this.literal = literal;
     }
 

@@ -31,7 +31,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLConverter.class);
 
   private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME"};
-  private final String[] TEXT_TYPES = {"VARCHAR", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT"};
+  private final String[] TEXT_TYPES = {"CHAR", "VARCHAR", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT"};
 
   @Override
   public void configure(final Properties props) {}

@@ -1,67 +1,41 @@
 # Mailchimp
 
-This page guides you through the process of setting up the Mailchimp source connector.
+This page guides you through setting up the Mailchimp source connector.
 
-## Prerequisites
+## Prerequisite
 
-For API Key authorization:
-* Mailchimp account 
-* Mailchimp API key
+You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) or an API key to authenticate your Mailchimp account. If you choose to authenticate with OAuth, [register](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application) your Mailchimp account.
 
-For OAuth2.0 authorization:
-* Mailchimp registered app
-* Mailchimp `client_id`
-* Mailchimp `client_secret`
+## Set up the Mailchimp source connector
 
-## Step 1: Set up Mailchimp
-
-[Log in](https://login.mailchimp.com/) to Mailchimp account. 
-If you don't have a Mailchimp account already, you’ll need to [create](https://login.mailchimp.com/signup/) one in order to use the API. 
-
-## Step 2: Set up the source connector in Airbyte
-
-**For Airbyte Cloud:**
-
-1. For using [OAuth2.0](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) creds, 
-please [register](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application) 
-your Mailchimp account.
-2. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-4. On the source setup page, select **Mailchimp** from the Source type dropdown and enter a name for this connector.
-5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
-6. Log in and Authorize to the Mailchimp account and click `Set up source`.
-
-**For Airbyte OSS:**
-
-1. For using an API key, [create an account](https://mailchimp.com/developer/marketing/guides/quick-start/#create-an-account) 
-in Mailchimp.
-2. [Generate](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) API key. 
-3. Go to local Airbyte page.
-4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-5. On the Set up the source page, enter the name for the Mailchimp connector and select **Mailchimp** from the Source type dropdown. 
-6. Select `API key` Authorization method, then copy and paste your API key from step 2. 
-7. Click `Set up source`.
-
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**. 
+3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
+4. Enter a name for your source.
+6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
+    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
+    :::note
+    Check the [performance considerations](#performance-considerations) before using an API key.
+    :::
+7. Click **Set up source**.
 
 ## Supported sync modes
 
 The Mailchimp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+
  - Full Refresh
  - Incremental
 
-We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams because 
-the Mailchimp doesn't give any information about deleted data in these streams.
+Airbyte doesn't support Incremental Deletes for the `Campaigns`, `Lists`, and `Email Activity` streams because Mailchimp doesn't provide any information about deleted data in these streams.
 
 ## Performance considerations
 
-At the time of this writing, [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) 
-on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous 
-connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp 
-using API keys generated from the same account.
+[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
 
 ## Supported streams
 
-This source is capable of syncing the following tables and their data:
+The Mailchimp source connector supports the following streams:
 
 **[Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info) Stream**
 
@@ -231,10 +205,9 @@ This source is capable of syncing the following tables and their data:
 }
 ```
 
-## Connector-specific features & highlights
+### A note on the primary keys 
 
-There is `id` primary key for `Lists` and `Campaigns` streams. 
-`Email Activity` hasn't primary key due to Mailchimp does not give it. 
+The `Lists` and `Campaigns` streams have `id` as the primary key. The `Email Activity` stream doesn't have a primary key because Mailchimp does not provide one. 
 
 ## Data type mapping
 
@@ -247,8 +220,10 @@ There is `id` primary key for `Lists` and `Campaigns` streams.
 | `string` | `string` |  |
 
 ## Tutorials
+
 Now that you have set up the Mailchimp source connector, check out the following Mailchimp tutorial:
-* [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
+
+- [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
 ## Changelog
 

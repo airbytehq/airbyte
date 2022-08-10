@@ -6,9 +6,12 @@ package io.airbyte.metrics.lib;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +62,15 @@ public class MetricQueries {
   }
 
   public static int numberOfRunningJobs(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).fetchOne(0, int.class);
+    return ctx.selectCount().from(JOBS).join(CONNECTION).on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.eq(StatusType.active)))
+        .fetchOne(0, int.class);
+  }
+
+  public static int numberOfOrphanRunningJobs(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).join(CONNECTION).on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.ne(StatusType.active)))
+        .fetchOne(0, int.class);
   }
 
   public static Long oldestPendingJobAgeSecs(final DSLContext ctx) {
@@ -135,6 +146,51 @@ public class MetricQueries {
     }
 
     return pairedRes;
+  }
+
+  /*
+   * A connection that is not running on schedule is defined in last 24 hours if the number of runs
+   * are not matching with the number of expected runs according to the schedule settings. Refer to
+   * playbook for detailed discussion.
+   */
+  public static Long numOfJobsNotRunningOnSchedule(final DSLContext ctx) {
+    final var countField = "cnt";
+    final var query = """
+                      SELECT count(1) as cnt FROM ((
+                      	SELECT
+                      		c.id,
+                      		count(*) as cnt
+                      	FROM
+                      		connection c
+                      	LEFT JOIN Jobs j ON j.scope::uuid = c.id
+                      	WHERE
+                      		c.schedule IS NOT null
+                      		AND c.schedule != 'null'
+                      		AND j.created_at > now() - interval '24 hours 1 minutes'
+                      		AND c.status = 'active'
+                      		AND j.config_type = 'sync'
+                      		AND c.updated_at < now() - interval '24 hours 1 minutes'
+                      		AND cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
+                      	GROUP BY 1
+                      	HAVING count(*) < 24 / cast(c.schedule::jsonb->'units' as integer))
+                      UNION (
+                      SELECT
+                      	c.id,
+                      	count(*) as cnt
+                      FROM connection c
+                      LEFT JOIN Jobs j ON j.scope::uuid = c.id
+                      WHERE
+                      	c.schedule IS NOT null
+                      	AND c.schedule != 'null'
+                      	AND j.created_at > now() - interval '1 hours 1 minutes'
+                      	AND c.status = 'active'
+                      	AND j.config_type = 'sync'
+                      	AND c.updated_at < now() - interval '1 hours 1 minutes'
+                      	AND cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
+                      GROUP BY 1
+                      HAVING count(*) < 60 / cast(c.schedule::jsonb->'units' as integer))) as abnormal_sync_jobs
+                      	""";
+    return ctx.fetch(query).getValues(countField, long.class).get(0).longValue();
   }
 
 }

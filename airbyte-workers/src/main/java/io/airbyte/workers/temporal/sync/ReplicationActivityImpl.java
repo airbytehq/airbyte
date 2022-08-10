@@ -17,6 +17,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -26,6 +29,7 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
@@ -65,6 +69,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
+  private final boolean useStreamCapableState;
 
   public ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
                                  final WorkerConfigs workerConfigs,
@@ -74,9 +79,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
                                  final JobPersistence jobPersistence,
-                                 final String airbyteVersion) {
+                                 final String airbyteVersion,
+                                 final boolean useStreamCapableState) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), jobPersistence, airbyteVersion);
+        new AirbyteConfigValidator(), jobPersistence, airbyteVersion, useStreamCapableState);
   }
 
   @VisibleForTesting
@@ -89,7 +95,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
                           final JobPersistence jobPersistence,
-                          final String airbyteVersion) {
+                          final String airbyteVersion,
+                          final boolean useStreamCapableState) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -100,6 +107,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
+    this.useStreamCapableState = useStreamCapableState;
   }
 
   @Override
@@ -203,8 +211,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource =
-          sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
+          WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
+              ? new EmptyAirbyteSource(useStreamCapableState)
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+      MetricClientFactory.initialize(MetricEmittingApps.WORKER);
+      final MetricClient metricClient = MetricClientFactory.getMetricClient();
+      final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
@@ -213,7 +225,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
           new AirbyteMessageTracker(),
-          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)));
+          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+          metricReporter);
     };
   }
 

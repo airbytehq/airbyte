@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Optional, Tuple
 
 import airbyte_api_client
@@ -9,15 +10,24 @@ import pkg_resources
 from airbyte_api_client.api import workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
+from ._import import commands as import_commands
 from .api_http_headers import ApiHttpHeader, merge_api_headers, set_api_headers_on_api_client
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
 from .generate import commands as generate_commands
+from .get import commands as get_commands
 from .init import commands as init_commands
 from .list import commands as list_commands
 from .telemetry import TelemetryClient, build_user_agent
 
-AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, init_commands.init, generate_commands.generate, apply_commands.apply]
+AVAILABLE_COMMANDS: List[click.Command] = [
+    list_commands._list,
+    get_commands.get,
+    import_commands._import,
+    init_commands.init,
+    generate_commands.generate,
+    apply_commands.apply,
+]
 
 
 def set_context_object(
@@ -138,17 +148,12 @@ def get_workspace_id(api_client, user_defined_workspace_id):
 def get_anonymous_data_collection(api_client, workspace_id):
     api_instance = workspace_api.WorkspaceApi(api_client)
     api_response = api_instance.get_workspace(WorkspaceIdRequestBody(workspace_id), _check_return_type=False)
-    return api_response.anonymous_data_collection
+    return api_response.get("anonymous_data_collection", True)
 
 
 def add_commands_to_octavia():
     for command in AVAILABLE_COMMANDS:
         octavia.add_command(command)
-
-
-@octavia.command(name="import", help="[NOT IMPLEMENTED]  Import an existing resources from the Airbyte instance.")
-def _import() -> None:
-    raise click.ClickException("The import command is not yet implemented.")
 
 
 @octavia.command(help="[NOT IMPLEMENTED] Delete resources")

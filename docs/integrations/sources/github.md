@@ -90,7 +90,7 @@ This connector outputs the following incremental streams:
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
-* [WorkflowRuns](https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository)
+* [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository)
 * [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
 
 ### Notes
@@ -99,12 +99,16 @@ This connector outputs the following incremental streams:
    * read only new records;
    * output only new records.
 
-2. Other 20 incremental streams are also incremental but with one difference, they:
+2. Stream `workflow_runs` is almost pure incremental:
+   * read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   * output only new records.
+
+3. Other 19 incremental streams are also incremental but with one difference, they:
    * read all records;
    * output only new records.
-   Please, consider this behaviour when using those 20 incremental streams because it may affect you API call limits.
+   Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
 
-3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 * `assignees`
@@ -137,6 +141,16 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.44  | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795) | Use GraphQL for `pull_request_comment_reactions` stream                                                    |
+| 0.2.43  | 2022-07-26 | [15049](https://github.com/airbytehq/airbyte/pull/15049) | Bugfix schemas for streams `deployments`, `workflow_runs`, `teams`                                         |
+| 0.2.42  | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613) | Improve schema for stream `pull_request_commits` added "null"                                              |
+| 0.2.41  | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376) | Add Retry for GraphQL API Resource limitations                                                             |
+| 0.2.40  | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338) | Revert: "Rename field `mergeable` to `is_mergeable`"                                                       |
+| 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable`                                                                 |
+| 0.2.38  | 2022-06-27 | [13989](https://github.com/airbytehq/airbyte/pull/13989) | Use GraphQL for `reviews` stream                                                                           |
+| 0.2.37  | 2022-06-21 | [13955](https://github.com/airbytehq/airbyte/pull/13955) | Fix "secondary rate limit" not retrying                                                                    |
+| 0.2.36  | 2022-06-20 | [13926](https://github.com/airbytehq/airbyte/pull/13926) | Break point added for `workflows_runs` stream                                                              |
+| 0.2.35  | 2022-06-16 | [13763](https://github.com/airbytehq/airbyte/pull/13763) | Use GraphQL for `pull_request_stats` stream                                                                |
 | 0.2.34  | 2022-06-14 | [13707](https://github.com/airbytehq/airbyte/pull/13707) | Fix API sorting, fix `get_starting_point` caching                                                          |
 | 0.2.33  | 2022-06-08 | [13558](https://github.com/airbytehq/airbyte/pull/13558) | Enable caching only for parent streams                                                                     |
 | 0.2.32  | 2022-06-07 | [13531](https://github.com/airbytehq/airbyte/pull/13531) | Fix different result from `get_starting_point` when reading by pages                                       |

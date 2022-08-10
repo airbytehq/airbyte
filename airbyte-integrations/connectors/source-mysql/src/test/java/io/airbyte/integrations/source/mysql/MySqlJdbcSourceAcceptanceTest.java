@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -54,25 +55,25 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD.call())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       return null;
     });
 

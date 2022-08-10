@@ -41,7 +41,7 @@ interface FormikConnectionFormValues {
 
 type ConnectionFormValues = ValuesProps;
 
-const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
+const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
   [SyncMode.incremental, DestinationSyncMode.append_dedup],
   [SyncMode.full_refresh, DestinationSyncMode.overwrite],
   [SyncMode.incremental, DestinationSyncMode.append],
@@ -114,7 +114,7 @@ const connectionValidationSchema = yup
               name: "connectionSchema.config.validator",
               // eslint-disable-next-line no-template-curly-in-string
               message: "${path} is wrong",
-              test: function (value) {
+              test(value) {
                 if (!value.selected) {
                   return true;
                 }
@@ -204,7 +204,7 @@ const getInitialTransformations = (operations: OperationCreate[]): OperationRead
   operations?.filter(isDbtTransformation) ?? [];
 
 const getInitialNormalization = (
-  operations?: (OperationRead | OperationCreate)[],
+  operations?: Array<OperationRead | OperationCreate>,
   isEditMode?: boolean
 ): NormalizationType => {
   const initialNormalization =
