@@ -1,5 +1,7 @@
 # Getting Started
 
+:warning: This framework is in alpha stage. Support is not in production and is available only to selected users.
+
 ## Summary
 
 Throughout this tutorial, we'll walk you through the creation an Airbyte source to read and extract data from an HTTP API.
