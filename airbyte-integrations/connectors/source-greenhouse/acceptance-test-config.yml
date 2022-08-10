@@ -4,6 +4,7 @@ connector_image: airbyte/source-greenhouse:dev
 tests:
   spec:
     - spec_path: "source_greenhouse/spec.json"
+      skip_backward_compatibility_tests: true
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
