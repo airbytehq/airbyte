@@ -28,7 +28,7 @@ definitions:
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ headers.link.next.cursor }}"
-      stop_condition: "{{ headers.link.results != true }}"
+      stop_condition: "{{ headers.link.next.results != 'true' }}"
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"

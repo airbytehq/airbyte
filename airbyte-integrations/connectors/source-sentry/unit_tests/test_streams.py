@@ -2,9 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest.mock import MagicMock
 
 import pytest
+import requests
+from source_sentry.source import SourceSentry
 from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
@@ -17,14 +20,29 @@ def patch_base_class(mocker):
     mocker.patch.object(SentryStreamPagination, "__abstractmethods__", set())
 
 
+def create_response(links):
+    response = requests.Response()
+    response_body = {"next": "https://airbyte.io/next_url"}
+    response._content = json.dumps(response_body).encode("utf-8")
+    response.headers = links
+    return response
+
+
 def test_next_page_token(patch_base_class):
-    stream = SentryStreamPagination(hostname="sentry.io")
-    resp = MagicMock()
+    source = SourceSentry()
+    config = {}
+    streams = source.streams(config)
     cursor = "next_page_num"
-    resp.links = {"next": {"results": "true", "cursor": cursor}}
+
+    stream = [s for s in streams if s.name == "events"][0]
+    resp = create_response(
+        {
+            "link": f'<https://sentry.io/api/0/projects/airbyte-09/airbyte-09/events/?full=true&=50&cursor=0:100:0>; rel="next"; results="true"; cursor="{cursor}"'
+        }
+    )
     inputs = {"response": resp}
-    expected_token = {"cursor": cursor}
-    assert stream.next_page_token(**inputs) == expected_token
+    expected_token = {"next_page_token": cursor}
+    assert stream.retriever.next_page_token(**inputs) == expected_token
 
 
 def test_next_page_token_is_none(patch_base_class):
