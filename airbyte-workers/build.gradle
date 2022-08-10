@@ -11,6 +11,8 @@ configurations {
 }
 
 dependencies {
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
+    implementation 'com.auth0:java-jwt:3.19.2'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'

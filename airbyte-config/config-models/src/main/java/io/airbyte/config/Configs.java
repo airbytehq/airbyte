@@ -216,6 +216,25 @@ public interface Configs {
    */
   String getTemporalCloudClientKey();
 
+  // Data Plane. Internal-Use Only.
+  /**
+   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
+   * only.
+   */
+  String getDataPlaneServiceAccountCredentialsPath();
+
+  /**
+   * Return the service account email a data plane uses to authenticate with a control plane.
+   * Internal-use only.
+   */
+  String getDataPlaneServiceAccountEmail();
+
+  /**
+   * Return the control plane endpoint a data plane will hit. This is used for authentication and
+   * separate from the actual endpoint being hit. Internal-use only.
+   */
+  String getControlPlaneGoogleEndpoint();
+
   // Airbyte Services
 
   /**

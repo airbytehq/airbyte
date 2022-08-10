@@ -4,6 +4,10 @@
 
 package io.airbyte.workers;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -89,13 +93,17 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.security.interfaces.RSAPrivateKey;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import lombok.AllArgsConstructor;
 import org.flywaydb.core.Flyway;
@@ -116,6 +124,7 @@ public class WorkerApp {
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
+  private static final int JWT_TTL_SECONDS = 10000;
 
   private final Path workspaceRoot;
   private final ProcessFactory defaultProcessFactory;
@@ -511,6 +520,12 @@ public class WorkerApp {
             webUrlHelper,
             jobErrorReportingClient);
 
+    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank() ? "bearer" : configs.getAirbyteApiAuthHeaderName();
+    final var authToken = generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
+        configs.getDataPlaneServiceAccountEmail(),
+        configs.getControlPlaneGoogleEndpoint(),
+        JWT_TTL_SECONDS);
+
     LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
         configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
 
@@ -521,7 +536,7 @@ public class WorkerApp {
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
             .setRequestInterceptor(builder -> {
-              builder.setHeader(configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+              builder.setHeader(authHeader, authToken);
               builder.setHeader("User-Agent", "WorkerApp");
             }));
 
@@ -557,6 +572,38 @@ public class WorkerApp {
         featureFlags,
         jobCreator,
         airbyteApiClient).start();
+  }
+
+  public static String generateJwt(final String saKeyfile,
+                                   final String saEmail,
+                                   final String audience,
+                                   final int expiryLengthSeconds)
+      throws IOException {
+
+    final Date now = new Date();
+    final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(expiryLengthSeconds));
+
+    // Build the JWT payload
+    final JWTCreator.Builder token = JWT.create()
+        .withIssuedAt(now)
+        // Expires after 'expiryLength' seconds
+        .withExpiresAt(expTime)
+        // Must match 'issuer' in the security configuration in your
+        // swagger spec (e.g. service account email)
+        .withIssuer(saEmail)
+        // Must be either your Endpoints service name, or match the value
+        // specified as the 'x-google-audience' in the OpenAPI document
+        .withAudience(audience)
+        // Subject and email should match the service account's email
+        .withSubject(saEmail)
+        .withClaim("email", saEmail);
+
+    // Sign the JWT with a service account
+    final FileInputStream stream = new FileInputStream(saKeyfile);
+    final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
+    final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
+    final Algorithm algorithm = Algorithm.RSA256(null, key);
+    return token.sign(algorithm);
   }
 
   public static void main(final String[] args) {
