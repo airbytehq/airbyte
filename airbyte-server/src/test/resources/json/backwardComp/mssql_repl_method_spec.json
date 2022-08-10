@@ -2,12 +2,7 @@
   "type": "object",
   "title": "MSSQL Source Spec",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "required": [
-    "host",
-    "port",
-    "database",
-    "username"
-  ],
+  "required": ["host", "port", "database", "username"],
   "properties": {
     "host": {
       "type": "string",
@@ -21,18 +16,14 @@
       "title": "Port",
       "maximum": 65536,
       "minimum": 0,
-      "examples": [
-        "1433"
-      ],
+      "examples": ["1433"],
       "description": "The port of the database."
     },
     "database": {
       "type": "string",
       "order": 2,
       "title": "Database",
-      "examples": [
-        "master"
-      ],
+      "examples": ["master"],
       "description": "The name of the database."
     },
     "password": {
@@ -53,14 +44,10 @@
       "oneOf": [
         {
           "title": "Unencrypted",
-          "required": [
-            "ssl_method"
-          ],
+          "required": ["ssl_method"],
           "properties": {
             "ssl_method": {
-              "enum": [
-                "unencrypted"
-              ],
+              "enum": ["unencrypted"],
               "type": "string",
               "const": "unencrypted",
               "default": "unencrypted"
@@ -70,14 +57,10 @@
         },
         {
           "title": "Encrypted (trust server certificate)",
-          "required": [
-            "ssl_method"
-          ],
+          "required": ["ssl_method"],
           "properties": {
             "ssl_method": {
-              "enum": [
-                "encrypted_trust_server_certificate"
-              ],
+              "enum": ["encrypted_trust_server_certificate"],
               "type": "string",
               "const": "encrypted_trust_server_certificate",
               "default": "encrypted_trust_server_certificate"
@@ -87,16 +70,10 @@
         },
         {
           "title": "Encrypted (verify certificate)",
-          "required": [
-            "ssl_method",
-            "trustStoreName",
-            "trustStorePassword"
-          ],
+          "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
           "properties": {
             "ssl_method": {
-              "enum": [
-                "encrypted_verify_certificate"
-              ],
+              "enum": ["encrypted_verify_certificate"],
               "type": "string",
               "const": "encrypted_verify_certificate",
               "default": "encrypted_verify_certificate"
@@ -120,14 +97,10 @@
       "oneOf": [
         {
           "title": "Standard",
-          "required": [
-            "replication_type"
-          ],
+          "required": ["replication_type"],
           "properties": {
             "replication_type": {
-              "enum": [
-                "STANDARD"
-              ],
+              "enum": ["STANDARD"],
               "type": "string",
               "const": "STANDARD",
               "order": 0,
@@ -138,15 +111,10 @@
         },
         {
           "title": "Logical Replication (CDC)",
-          "required": [
-            "replication_type"
-          ],
+          "required": ["replication_type"],
           "properties": {
             "data_to_sync": {
-              "enum": [
-                "Existing and New",
-                "New Changes Only"
-              ],
+              "enum": ["Existing and New", "New Changes Only"],
               "type": "string",
               "order": 1,
               "title": "Data to Sync",
@@ -154,19 +122,14 @@
               "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC."
             },
             "replication_type": {
-              "enum": [
-                "CDC"
-              ],
+              "enum": ["CDC"],
               "type": "string",
               "const": "CDC",
               "order": 0,
               "default": "CDC"
             },
             "snapshot_isolation": {
-              "enum": [
-                "Snapshot",
-                "Read Committed"
-              ],
+              "enum": ["Snapshot", "Read Committed"],
               "type": "string",
               "order": 2,
               "title": "Initial Snapshot Isolation Level",
@@ -187,9 +150,7 @@
       "oneOf": [
         {
           "title": "No Tunnel",
-          "required": [
-            "tunnel_method"
-          ],
+          "required": ["tunnel_method"],
           "properties": {
             "tunnel_method": {
               "type": "string",
@@ -230,9 +191,7 @@
               "default": 22,
               "maximum": 65536,
               "minimum": 0,
-              "examples": [
-                "22"
-              ],
+              "examples": ["22"],
               "description": "Port on the proxy/jump server that accepts inbound ssh connections."
             },
             "tunnel_user": {
@@ -272,9 +231,7 @@
               "default": 22,
               "maximum": 65536,
               "minimum": 0,
-              "examples": [
-                "22"
-              ],
+              "examples": ["22"],
               "description": "Port on the proxy/jump server that accepts inbound ssh connections."
             },
             "tunnel_user": {

@@ -2,13 +2,7 @@
   "type": "object",
   "title": "MySql Source Spec",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "required": [
-    "host",
-    "port",
-    "database",
-    "username",
-    "replication_method"
-  ],
+  "required": ["host", "port", "database", "username", "replication_method"],
   "properties": {
     "ssl": {
       "type": "boolean",
@@ -30,9 +24,7 @@
       "default": 3306,
       "maximum": 65536,
       "minimum": 0,
-      "examples": [
-        "3306"
-      ],
+      "examples": ["3306"],
       "description": "The port to connect to."
     },
     "database": {
@@ -59,9 +51,7 @@
       "oneOf": [
         {
           "title": "No Tunnel",
-          "required": [
-            "tunnel_method"
-          ],
+          "required": ["tunnel_method"],
           "properties": {
             "tunnel_method": {
               "type": "string",
@@ -102,9 +92,7 @@
               "default": 22,
               "maximum": 65536,
               "minimum": 0,
-              "examples": [
-                "22"
-              ],
+              "examples": ["22"],
               "description": "Port on the proxy/jump server that accepts inbound ssh connections."
             },
             "tunnel_user": {
@@ -144,9 +132,7 @@
               "default": 22,
               "maximum": 65536,
               "minimum": 0,
-              "examples": [
-                "22"
-              ],
+              "examples": ["22"],
               "description": "Port on the proxy/jump server that accepts inbound ssh connections."
             },
             "tunnel_user": {
