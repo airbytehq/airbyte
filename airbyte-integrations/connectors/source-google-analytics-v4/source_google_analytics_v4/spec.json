@@ -41,6 +41,7 @@
         "required": ["auth_type"],
         "discriminator": {"propertyName": "auth_type" },
         "oneOf": [{
+          "title": "Service Account",
           "required": ["credentials_json", "auth_type"],
           "properties": {
             "auth_type": {
