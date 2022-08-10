@@ -6,6 +6,7 @@ on:
 
 jobs:
   notify:
+    name: "Notify frontend team when something is labeled frontend"
     runs-on: ubuntu-latest
     steps:
         - uses: jenschelkopf/issue-label-notification-action@1.3

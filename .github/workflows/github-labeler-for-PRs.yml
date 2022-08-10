@@ -25,8 +25,7 @@ jobs:
 
   shared-pulls:
     name: "Label github PRs for tracking"
-    needs:
-      - find_valid_pat
+    needs: find_valid_pat
     runs-on: ubuntu-latest
     steps:
       - uses: nick-fields/private-action-loader@v3

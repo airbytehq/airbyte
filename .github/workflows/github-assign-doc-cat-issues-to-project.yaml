@@ -1,5 +1,5 @@
 # https://github.com/marketplace/actions/assign-to-one-project#:~:text=GitHub%20Action%20for%20Assign%20to,columns%20in%20your%20project%20dashboard.
-name: Auto Assign to Airbyte Github Project
+name: Auto doc/community Issues Assign to Airbyte Github Project
 
 on:
   issues:
@@ -10,7 +10,7 @@ env:
 jobs:
   assign_one_project:
     runs-on: ubuntu-latest
-    name: Assign to Airbyte Github Project
+    name: Assign doc/community issues to Airbyte Github Project
     steps:
       - name: Assign documentation issues to the Documentation Roadmap project
         uses: srggrs/assign-one-project-github-action@1.2.0

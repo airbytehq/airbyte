@@ -7,6 +7,7 @@ on:
       
 jobs:
   repo-sync:
+    name: Notify Cloud of OSS Push to Master
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch

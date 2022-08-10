@@ -10,6 +10,7 @@ env:
 jobs:
   # Simple assignment of issues to projects.
   assign-to-project:
+    name: Assign issues and PRs to a project based on label
     runs-on: ubuntu-latest
     steps:
         - uses: timroes/assign-to-project-action@0.1.0
