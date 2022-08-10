@@ -929,3 +929,26 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+class FBAInventoryLedgerReportSummary(ReportsAmazonSPStream):
+    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        replication_start_date = pendulum.parse(self._replication_start_date)
+
+        data = {
+            "reportOptions": {
+                "aggregateByLocation": "FULLFILLMENTCENTER",
+                "aggregatedByTimePeriod": "DAILY"
+            },
+            "reportType": self.name,
+            "marketplaceIds": [self.marketplace_id],
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
+        }
+        return data

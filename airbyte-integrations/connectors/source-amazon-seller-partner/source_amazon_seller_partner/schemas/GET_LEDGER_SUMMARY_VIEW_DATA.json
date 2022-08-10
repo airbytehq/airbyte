@@ -1,0 +1,28 @@
+{
+  "title": "Inventory Ledger report summary view",
+  "description": "Inventory Ledger report summary view",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "Date": { "type": ["null", "string"] },
+    "FNKSU": { "type": ["null", "string"] },
+    "ASIN": { "type": ["null", "string"] },
+    "MSKU": { "type": ["null", "string"] },
+    "Title": { "type": ["null", "string"] },
+    "Disposition": { "type": ["null", "string"] },
+    "Starting warehouse balance": { "type": ["null", "string"] },
+    "Receipts": { "type": ["null", "string"] },
+    "Customer shipments": { "type": ["null", "string"] },
+    "Customer returns": { "type": ["null", "string"] },
+    "Warehouse transfer in/out": { "type": ["null", "string"] },
+    "Found": { "type": ["null", "string"] },
+    "Removed": { "type": ["null", "string"] },
+    "Lost": { "type": ["null", "string"] },
+    "Disposed": { "type": ["null", "string"] },
+    "Other events": { "type": ["null", "string"] },
+    "Ending warehouse balance": { "type": ["null", "string"] },
+    "Unknown events": { "type": ["null", "string"] },
+    "In transit between warehouses": { "type": ["null", "string"] },
+    "Location": { "type": ["null", "string"] }
+  }
+}
