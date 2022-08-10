@@ -1,8 +1,8 @@
 name: "Github Labeler Issues Edition"
-on:
-  branch: toph_adds_PAT_rotation_to_GH_issues_part2
-  issues:
-    types: [opened, labeled, unlabeled]
+on: push
+# UNCOMMENT ME
+#  issues:
+#    types: [opened, labeled, unlabeled]
 
 jobs:
   find_valid_pat:

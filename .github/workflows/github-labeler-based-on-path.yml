@@ -1,0 +1,14 @@
+name: "Github Labeler Path Edition"
+on: push
+#  - pull_request_target
+
+jobs:
+  triage:
+    name: "Add Labels to PRs based on changes path"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          # remove labels when matching files are reverted or no longer changed by the PR
+          sync-labels: true
