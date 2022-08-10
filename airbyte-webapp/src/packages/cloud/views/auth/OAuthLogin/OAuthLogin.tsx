@@ -55,6 +55,7 @@ export const OAuthLogin: React.FC = () => {
       // The following error codes are not really errors, thus we'll ignore them.
       case "auth/popup-closed-by-user":
       case "auth/user-cancelled":
+      case "auth/cancelled-popup-request":
         return undefined;
       case "auth/account-exists-with-different-credential":
         // Happens if a user requests and sets a password for an originally OAuth account.

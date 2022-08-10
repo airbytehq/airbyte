@@ -50,6 +50,7 @@ interface AuthContextApi {
   isLoading: boolean;
   loggedOut: boolean;
   providers: string[] | null;
+  hasPasswordLogin: () => boolean;
   login: AuthLogin;
   loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
@@ -161,6 +162,9 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       emailVerified: state.emailVerified,
       loggedOut: state.loggedOut,
       providers: state.providers,
+      hasPasswordLogin(): boolean {
+        return !!state.providers?.includes("password");
+      },
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
