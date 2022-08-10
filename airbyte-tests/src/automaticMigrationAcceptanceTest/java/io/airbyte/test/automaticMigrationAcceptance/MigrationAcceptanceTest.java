@@ -62,19 +62,17 @@ class MigrationAcceptanceTest {
 
   @Test
   void testAutomaticMigration() throws Exception {
-    // attempt to run from pre-version bump version to post-version bump version. expect failure.
-    final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
-    // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
-    // point at test paths.
-    final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
-
-    // run "faux" major version bump version
+    // start at "faux" major version bump version. This was the last version that required db data
+    // migrations.
     final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
-
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
 
+    final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
+    // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
+    // point at test paths.
+    final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
     // run from last major version bump to current version.
     runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
   }
@@ -140,6 +138,7 @@ class MigrationAcceptanceTest {
     assertDataFromApi(apiClient);
   }
 
+  @SuppressWarnings("PMD.NonThreadSafeSingleton")
   private static void assertDataFromApi(final ApiClient apiClient) throws ApiException {
     if (workspaceIdRequestBody != null) {
       assertEquals(assertWorkspaceInformation(apiClient).getWorkspaceId(), workspaceIdRequestBody.getWorkspaceId());
