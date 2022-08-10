@@ -751,7 +751,6 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v5
 
-
       - uses: nrwl/last-successful-commit-action@v1
         run: echo "github.event_name == ${{ github.event_name }}"
         id: last_successful_commit_pull_request
