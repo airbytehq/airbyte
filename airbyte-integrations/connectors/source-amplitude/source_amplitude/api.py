@@ -144,9 +144,9 @@ class Events(IncrementalAmplitudeStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
-        print('State Value: ', state_value)
+        print("State Value: ", state_value)
         try:
-            print(f'Response {response.status_code}')
+            print(f"Response {response.status_code}")
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile as e:
             self.logger.exception(e)
@@ -157,9 +157,9 @@ class Events(IncrementalAmplitudeStream):
             return []
 
         for gzip_filename in zip_file.namelist():
-            print('Reading ZIP Response....')
+            print("Reading ZIP Response....")
             with zip_file.open(gzip_filename) as file:
-                print('Reading SUB_ZIP Response....')
+                print("Reading SUB_ZIP Response....")
                 for record in self._parse_zip_file(file):
                     print(f'Reading ZIPPED Record: {record["uuid"]}')
                     if record[self.cursor_field] >= state_value:
@@ -202,7 +202,7 @@ class Events(IncrementalAmplitudeStream):
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
             records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            print('Yielding Records...')
+            print("Yielding Records...")
             yield from records
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
