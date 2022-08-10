@@ -104,4 +104,4 @@ streams:
         type: NoPagination
 check:
   type: CheckStream
-  stream_names: ["events"]
+  stream_names: ["project_detail"]
