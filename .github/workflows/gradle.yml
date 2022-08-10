@@ -745,16 +745,14 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Get changed files using defaults
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+      - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v25
-      - name: Get changed files using a comma separator
-        id: changed-files-comma
-        uses: tj-actions/changed-files@v25
-        with:
-          separator: ","
-      - name: List all added files
+
+      - name: List all changed files
         run: |
-          for file in ${{ steps.changed-files.outputs.added_files }}; do
-            echo "$file was added"
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
           done
