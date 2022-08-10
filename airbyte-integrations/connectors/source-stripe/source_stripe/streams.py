@@ -16,11 +16,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
+    DEFAULT_SLICE_RANGE = 365
 
-    def __init__(self, start_date: int, account_id: str, **kwargs):
+    def __init__(self, start_date: int, account_id: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
         self.start_date = start_date
+        self.slice_range = slice_range or self.DEFAULT_SLICE_RANGE
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -57,10 +59,9 @@ class StripeStream(HttpStream, ABC):
         response_json = response.json()
         yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
-    @staticmethod
-    def chunk_dates(start_date_ts: int) -> Iterable[Tuple[int, int]]:
+    def chunk_dates(self, start_date_ts: int) -> Iterable[Tuple[int, int]]:
         now = pendulum.now().int_timestamp
-        step = int(pendulum.duration(days=30).total_seconds())
+        step = int(pendulum.duration(days=self.slice_range).total_seconds())
         after_ts = start_date_ts
         while after_ts < now:
             before_ts = min(now, after_ts + step)
@@ -620,7 +621,7 @@ class ExternalAccount(StripeStream, ABC):
     object = ""
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return [{}]
 
