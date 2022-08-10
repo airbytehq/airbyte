@@ -14,6 +14,10 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +31,50 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
   private static final int INITIAL_WAITING_SECONDS = 5;
+  private JsonNode stateAfterFirstSync;
+
+  @Override
+  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    if (stateAfterFirstSync == null) {
+      throw new RuntimeException("stateAfterFirstSync is null");
+    }
+    return super.runRead(configuredCatalog, stateAfterFirstSync);
+  }
+
+  @Override
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+    final Database database = setupDatabase();
+    initTests();
+    for (final TestDataHolder test : testDataHolders) {
+      database.query(ctx -> {
+        ctx.fetch(test.getCreateSqlQuery());
+        return null;
+      });
+    }
+
+    final ConfiguredAirbyteStream dummyTableWithData = createDummyTableWithData(database);
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    catalog.getStreams().add(dummyTableWithData);
+
+    final List<AirbyteMessage> allMessages = super.runRead(catalog);
+    if (allMessages.size() != 2) {
+      throw new RuntimeException("First sync should only generate 2 records");
+    }
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
+    if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
+      throw new RuntimeException("stateAfterFirstBatch should not be null or empty");
+    }
+    stateAfterFirstSync = Jsons.jsonNode(stateAfterFirstBatch);
+    if (stateAfterFirstSync == null) {
+      throw new RuntimeException("stateAfterFirstSync should not be null");
+    }
+    for (final TestDataHolder test : testDataHolders) {
+      database.query(ctx -> {
+        test.getInsertSqlQueries().forEach(ctx::fetch);
+        return null;
+      });
+    }
+  }
 
   @Override
   protected Database setupDatabase() throws Exception {
@@ -58,7 +106,6 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
         .put("replication_method", replicationMethod)
         .put("is_test", true)
         .put(JdbcUtils.SSL_KEY, false)
-        .put("snapshot_mode", "never")
         .build());
 
     dslContext = DSLContextFactory.create(

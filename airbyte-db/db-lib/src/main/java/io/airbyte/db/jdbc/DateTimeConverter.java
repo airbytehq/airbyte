@@ -98,13 +98,13 @@ public class DateTimeConverter {
     if (date instanceof final Date d) {
       // Snapshot mode
       final LocalDate localDate = ((Date) date).toLocalDate();
-      return resolveEra(d, localDate.toString());
+      return resolveEra(d, localDate.format(DATE_FORMATTER));
     } else if (date instanceof LocalDate d) {
       // Incremental mode
       return resolveEra(d, d.format(DATE_FORMATTER));
     } else {
       final LocalDate localDate = LocalDate.parse(date.toString());
-      return resolveEra(localDate, localDate.toString());
+      return resolveEra(localDate, localDate.format(DATE_FORMATTER));
     }
   }
 
