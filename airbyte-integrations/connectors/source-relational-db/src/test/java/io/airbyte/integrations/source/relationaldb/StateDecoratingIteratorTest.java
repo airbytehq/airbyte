@@ -189,7 +189,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   @DisplayName("When initial cursor is null, and emit state for every record")
-  void testStateEmission1() {
+  void testStateEmissionFrequency1() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
@@ -220,7 +220,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   @DisplayName("When initial cursor is null, and emit state for every 2 records")
-  void testStateEmission2() {
+  void testStateEmissionFrequency2() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
@@ -246,7 +246,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   @DisplayName("When initial cursor is not null")
-  void testStateEmission3() {
+  void testStateEmissionWhenInitialCursorIsNotNull() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
         messageIterator,
@@ -295,7 +295,7 @@ class StateDecoratingIteratorTest {
    */
   @Test
   @DisplayName("When there are multiple records with the same cursor value")
-  void testStateEmission4() {
+  void testStateEmissionForRecordsSharingSameCursorValue() {
     messageIterator = MoreIterators.of(
         RECORD_MESSAGE_2, RECORD_MESSAGE_2,
         RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
