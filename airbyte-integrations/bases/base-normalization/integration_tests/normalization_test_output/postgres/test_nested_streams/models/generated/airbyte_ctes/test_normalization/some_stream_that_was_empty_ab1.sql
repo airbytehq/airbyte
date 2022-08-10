@@ -15,5 +15,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_some_stream_that_was_empty') }} as table_alias
 -- some_stream_that_was_empty
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

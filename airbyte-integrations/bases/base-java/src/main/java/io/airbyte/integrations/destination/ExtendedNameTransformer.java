@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination;
@@ -25,10 +25,6 @@ public class ExtendedNameTransformer extends StandardNameTransformer {
     } else {
       return applyDefaultCase(input);
     }
-  }
-
-  protected String applyDefaultCase(final String input) {
-    return input;
   }
 
   protected boolean useExtendedIdentifiers(final String input) {

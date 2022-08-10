@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.scaffold_java_jdbc;
@@ -11,9 +11,7 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
 

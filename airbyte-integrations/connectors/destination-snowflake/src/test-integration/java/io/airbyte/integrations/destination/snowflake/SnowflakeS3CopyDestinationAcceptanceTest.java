@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -15,8 +15,8 @@ public class SnowflakeS3CopyDestinationAcceptanceTest extends SnowflakeInsertDes
   @Override
   public JsonNode getStaticConfig() {
     final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
-    Preconditions.checkArgument(SnowflakeDestination.isS3Copy(copyConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(copyConfig));
+    Preconditions.checkArgument(SnowflakeDestinationResolver.isS3Copy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(copyConfig));
     return copyConfig;
   }
 

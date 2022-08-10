@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.storage;
 
 import io.airbyte.config.storage.CloudStorageConfigs;
+import io.airbyte.workers.general.DocumentStoreClient;
 import java.nio.file.Path;
 
 public class StateClients {

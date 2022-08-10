@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.state;
@@ -28,7 +28,17 @@ public class WorkflowState {
   private boolean updated = false;
   private boolean cancelled = false;
   private boolean failed = false;
-  private boolean resetConnection = false;
+  @Deprecated
+  private final boolean resetConnection = false;
+  @Deprecated
+  private final boolean continueAsReset = false;
+  private boolean retryFailedActivity = false;
+  private boolean quarantined = false;
+  private boolean success = true;
+  private boolean cancelledForReset = false;
+  @Deprecated
+  private final boolean resetWithScheduling = false;
+  private boolean doneWaiting = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -78,14 +88,48 @@ public class WorkflowState {
     this.failed = failed;
   }
 
-  public void setResetConnection(final boolean resetConnection) {
+  public void setRetryFailedActivity(final boolean retryFailedActivity) {
     final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.RESET,
-        resetConnection);
+        StateField.RETRY_FAILED_ACTIVITY,
+        retryFailedActivity);
     stateChangedListener.addEvent(id, event);
-    this.resetConnection = resetConnection;
+    this.retryFailedActivity = retryFailedActivity;
   }
 
+  public void setQuarantined(final boolean quarantined) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.QUARANTINED,
+        quarantined);
+    stateChangedListener.addEvent(id, event);
+    this.quarantined = quarantined;
+  }
+
+  public void setSuccess(final boolean success) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SUCCESS,
+        success);
+    stateChangedListener.addEvent(id, event);
+    this.success = success;
+  }
+
+  public void setCancelledForReset(final boolean cancelledForReset) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.CANCELLED_FOR_RESET,
+        cancelledForReset);
+    stateChangedListener.addEvent(id, event);
+    this.cancelledForReset = cancelledForReset;
+  }
+
+  public void setDoneWaiting(final boolean doneWaiting) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.DONE_WAITING,
+        doneWaiting);
+    stateChangedListener.addEvent(id, event);
+    this.doneWaiting = doneWaiting;
+  }
+
+  // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
+  // event.
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
@@ -93,7 +137,10 @@ public class WorkflowState {
     this.setUpdated(false);
     this.setCancelled(false);
     this.setFailed(false);
-    this.setResetConnection(false);
+    this.setRetryFailedActivity(false);
+    this.setSuccess(false);
+    this.setQuarantined(false);
+    this.setDoneWaiting(false);
   }
 
 }

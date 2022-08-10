@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -11,7 +11,8 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -34,37 +35,48 @@ public class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
-  public void testEmptyOutputCompleteSourceOAuth() {}
+  @Override
+  void testEmptyOutputCompleteSourceOAuth() {}
 
   @Test
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  @Override
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
-  public void testValidateOAuthOutputFailure() {}
+  @Override
+  void testValidateOAuthOutputFailure() {}
 
   @Test
-  public void testCompleteSourceOAuth() {}
+  @Override
+  void testCompleteSourceOAuth() {}
 
   @Test
-  public void testEmptyInputCompleteDestinationOAuth() {}
+  @Override
+  void testEmptyInputCompleteDestinationOAuth() {}
 
   @Test
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  @Override
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
-  public void testDeprecatedCompleteSourceOAuth() {}
+  @Override
+  void testDeprecatedCompleteSourceOAuth() {}
 
   @Test
-  public void testEmptyOutputCompleteDestinationOAuth() {}
+  @Override
+  void testEmptyOutputCompleteDestinationOAuth() {}
 
   @Test
-  public void testCompleteDestinationOAuth() {}
+  @Override
+  void testCompleteDestinationOAuth() {}
 
   @Test
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  @Override
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
-  public void testEmptyInputCompleteSourceOAuth() {}
+  @Override
+  void testEmptyInputCompleteSourceOAuth() {}
 
   @Override
   protected Map<String, String> getExpectedOutput() {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,9 +10,21 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from bingads.service_client import ServiceClient
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
-from source_bing_ads.reports import ReportsMixin
+from source_bing_ads.reports import (
+    ALL_CONVERSION_FIELDS,
+    ALL_REVENUE_FIELDS,
+    AVERAGE_FIELDS,
+    BUDGET_FIELDS,
+    CONVERSION_FIELDS,
+    HISTORICAL_FIELDS,
+    LOW_QUALITY_FIELDS,
+    REVENUE_FIELDS,
+    ReportsMixin,
+)
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -61,6 +73,14 @@ class BingAdsStream(Stream, ABC):
         """
         pass
 
+    @property
+    def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
+        return self.client.get_service(service_name=self.service_name)
+
+    @property
+    def _user_id(self) -> int:
+        return self._service.GetUser().User.Id
+
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
         Default method for streams that don't support pagination
@@ -73,24 +93,20 @@ class BingAdsStream(Stream, ABC):
 
         yield from []
 
-    def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
+    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str = None) -> Mapping[str, Any]:
         request_kwargs = {
             "service_name": self.service_name,
+            "customer_id": customer_id,
             "account_id": account_id,
             "operation_name": self.operation_name,
             "params": params,
         }
-        if not self.use_cache:
-            return self.client.request(**request_kwargs)
-
-        with CACHE.use_cassette():
-            return self.client.request(**request_kwargs)
-
-    def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
-        """
-        Fetches account_id from slice object
-        """
-        return str(stream_slice.get("account_id")) if stream_slice else None
+        request = self.client.request(**request_kwargs)
+        if self.use_cache:
+            with CACHE.use_cassette():
+                return request
+        else:
+            return request
 
     def read_records(
         self,
@@ -101,14 +117,17 @@ class BingAdsStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
-        account_id = self.get_account_id(stream_slice)
+        account_id = str(stream_slice.get("account_id")) if stream_slice else None
+        customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
 
         while True:
             params = self.request_params(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, account_id=account_id
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                account_id=account_id,
             )
-
-            response = self.send_request(params, account_id=account_id)
+            response = self.send_request(params, customer_id=customer_id, account_id=account_id)
             for record in self.parse_response(response):
                 yield record
 
@@ -154,21 +173,12 @@ class Accounts(BingAdsStream):
                 {
                     "Field": "UserId",
                     "Operator": "Equals",
-                    "Value": self.config["user_id"],
+                    "Value": self._user_id,
                 }
             ]
         }
 
-        if self.config["accounts"]["selection_strategy"] == "subset":
-            predicates["Predicate"].append(
-                {
-                    "Field": "AccountId",
-                    "Operator": "In",
-                    "Value": ",".join(self.config["accounts"]["ids"]),
-                }
-            )
-
-        paging = self.client.get_service(service_name=self.service_name).factory.create("ns5:Paging")
+        paging = self._service.factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
         paging.Size = self.page_size_limit
         return {
@@ -213,7 +223,7 @@ class Campaigns(BingAdsStream):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"]}
+            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
 
@@ -247,8 +257,10 @@ class AdGroups(BingAdsStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"]}):
-                yield {"campaign_id": campaign["Id"], "account_id": account["Id"]}
+            for campaign in campaigns.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+            ):
+                yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
 
@@ -294,7 +306,7 @@ class Ads(BingAdsStream):
         ad_groups = AdGroups(self.client, self.config)
         for slice in ad_groups.stream_slices(sync_mode=SyncMode.full_refresh):
             for ad_group in ad_groups.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"]}
+                yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"], "customer_id": slice["customer_id"]}
         yield from []
 
 
@@ -330,24 +342,49 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "campaign_performance_report"
-
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
-        "TimePeriod",
         "CampaignId",
-        "CampaignName",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
         "Network",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+    ]
+
+    report_columns = [
+        *primary_key,
+        "CampaignStatus",
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
         "Spend",
+        "CostPerConversion",
+        "QualityScore",
+        "AdRelevance",
+        "LandingPageExperience",
+        "PhoneImpressions",
+        "PhoneCalls",
+        "Ptr",
+        "Assists",
         "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
+        "CostPerAssist",
+        "CustomParameters",
+        "ViewThroughConversions",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *LOW_QUALITY_FIELDS,
+        *HISTORICAL_FIELDS,
+        *REVENUE_FIELDS,
+        *BUDGET_FIELDS,
     ]
 
 
@@ -375,29 +412,47 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "ad_performance_report"
+    primary_key = [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+    ]
 
     report_columns = [
-        "AccountName",
-        "AccountNumber",
-        "AccountId",
-        "TimePeriod",
-        "CampaignId",
-        "CampaignName",
-        "DeviceType",
-        "Network",
+        *primary_key,
         "Impressions",
         "Clicks",
-        "Spend",
         "Ctr",
-        "AverageCpc",
+        "Spend",
+        "CostPerConversion",
+        "DestinationUrl",
+        "Assists",
         "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "AdGroupName",
-        "AdGroupId",
-        "AdTitle",
-        "AdId",
-        "AdType",
+        "CostPerAssist",
+        "CustomParameters",
+        "FinalAppUrl",
+        "AdDescription",
+        "AdDescription2",
+        "ViewThroughConversions",
+        "ViewThroughConversionsQualified",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *CONVERSION_FIELDS,
+        *AVERAGE_FIELDS,
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *REVENUE_FIELDS,
     ]
 
 
@@ -426,25 +481,49 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     cursor_field = "TimePeriod"
     report_schema_name = "ad_group_performance_report"
 
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
-        "TimePeriod",
         "CampaignId",
-        "CampaignName",
+        "AdGroupId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
         "Network",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "Language",
+    ]
+
+    report_columns = [
+        *primary_key,
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
         "Spend",
-        "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "AdGroupName",
-        "AdGroupId",
+        "CostPerConversion",
+        "QualityScore",
+        "ExpectedCtr",
+        "AdRelevance",
+        "LandingPageExperience",
+        "PhoneImpressions",
+        "PhoneCalls",
+        "Ptr",
+        "Assists",
+        "CostPerAssist",
+        "CustomParameters",
+        "FinalUrlSuffix",
+        "ViewThroughConversions",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *HISTORICAL_FIELDS,
+        *REVENUE_FIELDS,
     ]
 
 
@@ -472,33 +551,56 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "keyword_performance_report"
+    primary_key = [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "KeywordId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "DeliveredMatchType",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+    ]
 
     report_columns = [
-        "AccountName",
-        "AccountNumber",
-        "AccountId",
-        "TimePeriod",
-        "CampaignId",
-        "CampaignName",
-        "DeviceType",
-        "Network",
+        *primary_key,
+        "KeywordStatus",
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
+        "CurrentMaxCpc",
         "Spend",
-        "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "AdGroupName",
-        "AdGroupId",
-        "AdId",
-        "AdType",
-        "Keyword",
-        "KeywordId",
+        "CostPerConversion",
         "QualityScore",
-        "BidMatchType",
-        "AbsoluteTopImpressionRatePercent",
+        "ExpectedCtr",
+        "AdRelevance",
+        "LandingPageExperience",
+        "QualityImpact",
+        "Assists",
+        "ReturnOnAdSpend",
+        "CostPerAssist",
+        "CustomParameters",
+        "FinalAppUrl",
+        "Mainline1Bid",
+        "MainlineBid",
+        "FirstPageBid",
+        "FinalUrlSuffix",
+        "ViewThroughConversions",
+        "ViewThroughConversionsQualified",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *CONVERSION_FIELDS,
+        *AVERAGE_FIELDS,
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *REVENUE_FIELDS,
     ]
 
 
@@ -508,6 +610,10 @@ class KeywordPerformanceReportHourly(KeywordPerformanceReport):
 
 class KeywordPerformanceReportDaily(KeywordPerformanceReport):
     report_aggregation = "Daily"
+    report_columns = [
+        *KeywordPerformanceReport.report_columns,
+        *HISTORICAL_FIELDS,
+    ]
 
 
 class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
@@ -526,22 +632,36 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "account_performance_report"
-
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
         "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
         "Network",
-        "Impressions",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+    ]
+
+    report_columns = [
+        *primary_key,
+        "PhoneImpressions",
+        "PhoneCalls",
         "Clicks",
-        "Spend",
         "Ctr",
-        "AverageCpc",
+        "Spend",
+        "Impressions",
+        "CostPerConversion",
+        "Ptr",
+        "Assists",
         "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
+        "CostPerAssist",
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *LOW_QUALITY_FIELDS,
+        *REVENUE_FIELDS,
     ]
 
 
@@ -570,20 +690,12 @@ class SourceBingAds(AbstractSource):
         try:
             client = Client(**config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
-
-            if config["accounts"]["selection_strategy"] == "subset":
-                config_account_ids = set(config["accounts"]["ids"])
-                if not config_account_ids.issubset(account_ids):
-                    raise Exception(f"Accounts with ids: {config_account_ids.difference(account_ids)} not found on this user.")
-            elif config["accounts"]["selection_strategy"] == "all":
-                if not account_ids:
-                    raise Exception("You don't have accounts assigned to this user.")
+            if account_ids:
+                return True, None
             else:
-                raise Exception("Incorrect account selection strategy.")
+                raise Exception("You don't have accounts assigned to this user.")
         except Exception as error:
             return False, error
-
-        return True, None
 
     def get_report_streams(self, aggregation_type: str) -> List[Stream]:
         return [
@@ -603,16 +715,11 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
-        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
-            streams.append(BudgetSummaryReport(client, config))
+        streams.append(BudgetSummaryReport(client, config))
 
-        if config["hourly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
-        if config["daily_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
-        if config["weekly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
-        if config["monthly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
 
         return streams

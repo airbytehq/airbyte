@@ -1,36 +1,55 @@
 import React from "react";
-
-import { Attempt, Logs } from "core/domain/job";
-import DownloadButton from "./DownloadButton";
-import LogsTable from "./Logs";
-import AttemptDetails from "./AttemptDetails";
 import styled from "styled-components";
 
-const CenteredDetails = styled.div`
-  text-align: center;
-  padding-top: 9px;
+import { AttemptRead, JobDebugInfoRead } from "../../../core/request/AirbyteClient";
+import AttemptDetails from "./AttemptDetails";
+import DebugInfoButton from "./DebugInfoButton";
+import DownloadButton from "./DownloadButton";
+import { LinkToAttemptButton } from "./LinkToAttemptButton";
+import LogsTable from "./Logs";
+
+const LogHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 9px;
   font-size: 12px;
-  line-height: 28px;
-  color: ${({ theme }) => theme.greyColor40};
-  position: relative;
+  padding: 0 10px;
 `;
 
-const LogsDetails: React.FC<{
+const AttemptDetailsSection = styled.div`
+  padding: 10px 0 10px 10px;
+`;
+
+const LogPath = styled.span`
+  flex: 1;
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
+export const LogsDetails: React.FC<{
   id: number | string;
   path: string;
-  currentAttempt?: Attempt | null;
-  logs?: Logs;
-}> = ({ path, logs, id, currentAttempt }) => (
+  currentAttempt?: AttemptRead;
+  jobDebugInfo?: JobDebugInfoRead;
+  showAttemptStats: boolean;
+  logs?: string[];
+}> = ({ path, id, currentAttempt, jobDebugInfo, showAttemptStats, logs }) => (
   <>
-    {currentAttempt && <AttemptDetails attempt={currentAttempt} />}
-    <CenteredDetails>
-      <div>{path}</div>
-      {logs?.logLines && (
-        <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
+    {currentAttempt && showAttemptStats && (
+      <AttemptDetailsSection>
+        <AttemptDetails attempt={currentAttempt} />
+      </AttemptDetailsSection>
+    )}
+    <LogHeader>
+      <LogPath>{path}</LogPath>
+      <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
+      {jobDebugInfo && (
+        <>
+          <DownloadButton jobDebugInfo={jobDebugInfo} fileName={`logs-${id}`} />
+          <DebugInfoButton jobDebugInfo={jobDebugInfo} />
+        </>
       )}
-    </CenteredDetails>
-    <LogsTable logsArray={logs?.logLines} />
+    </LogHeader>
+    <LogsTable logsArray={logs} />
   </>
 );
-
-export { LogsDetails };

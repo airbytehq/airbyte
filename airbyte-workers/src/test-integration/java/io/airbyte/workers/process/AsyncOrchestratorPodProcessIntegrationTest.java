@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
@@ -12,7 +13,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
 import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -105,7 +106,12 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     final var asyncProcess = new AsyncOrchestratorPodProcess(
         kubePodInfo,
         documentStoreClient,
-        kubernetesClient);
+        kubernetesClient,
+        null,
+        null,
+        "airbyte/container-orchestrator:dev",
+        null,
+        true);
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
@@ -118,7 +124,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    asyncProcess.create("dev", Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
+    asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
         OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
         OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
 
@@ -137,13 +143,13 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   public static void teardown() {
     try {
       portForwardProcess.destroyForcibly();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
 
     try {
       kubernetesClient.pods().delete();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
   }

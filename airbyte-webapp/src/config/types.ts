@@ -1,6 +1,6 @@
 import { SegmentAnalytics } from "core/analytics/types";
-import { UiConfig } from "./uiConfig";
-import { Feature } from "hooks/services/Feature";
+
+import { OutboundLinks } from "./links";
 
 declare global {
   interface Window {
@@ -13,16 +13,14 @@ declare global {
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
+    SEGMENT_TOKEN?: string;
+    LAUNCHDARKLY_KEY?: string;
     analytics: SegmentAnalytics;
-
-    // API_URL to hack rest-hooks resources
-    _API_URL: string;
   }
 }
 
-export type Config = {
-  ui: UiConfig;
-  features: Feature[];
+export interface Config {
+  links: OutboundLinks;
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   oauthRedirectUrl: string;
@@ -30,7 +28,8 @@ export type Config = {
   isDemo: boolean;
   version?: string;
   integrationUrl: string;
-};
+  launchDarkly?: string;
+}
 
 export type DeepPartial<T> = {
   [P in keyof T]+?: DeepPartial<T[P]>;
@@ -39,8 +38,6 @@ export type DeepPartial<T> = {
 export type ProviderAsync<T> = () => Promise<T>;
 export type Provider<T> = () => T;
 
-export type ValueProvider<T> = ProviderAsync<DeepPartial<T>>[];
+export type ValueProvider<T> = Array<ProviderAsync<DeepPartial<T>>>;
 
-export type ConfigProvider<T extends Config = Config> = ProviderAsync<
-  DeepPartial<T>
->;
+export type ConfigProvider<T extends Config = Config> = ProviderAsync<DeepPartial<T>>;

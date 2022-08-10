@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import responses
@@ -22,35 +22,35 @@ def setup_responses():
 
 
 @responses.activate
-def test_discover(test_config):
+def test_discover(config):
     setup_responses()
     source = SourceAmazonAds()
-    catalog = source.discover(None, test_config)
+    catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
     for schema in schemas:
         Draft4Validator.check_schema(schema)
 
 
-def test_spec(test_config):
+def test_spec():
     source = SourceAmazonAds()
-    spec = source.spec()
+    spec = source.spec(None)
     assert isinstance(spec, ConnectorSpecification)
 
 
 @responses.activate
-def test_check(test_config):
+def test_check(config):
     setup_responses()
     source = SourceAmazonAds()
-    assert source.check(None, test_config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_source_streams(test_config):
+def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
-    streams = source.streams(test_config)
+    streams = source.streams(config)
     assert len(streams) == 18
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(

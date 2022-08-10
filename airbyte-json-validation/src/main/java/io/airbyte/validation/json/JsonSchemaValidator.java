@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.validation.json;
@@ -13,6 +13,7 @@ import com.networknt.schema.ValidationMessage;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import me.andrz.jackson.JsonContext;
@@ -38,6 +39,20 @@ public class JsonSchemaValidator {
         .stream()
         .map(ValidationMessage::getMessage)
         .collect(Collectors.toSet());
+  }
+
+  public List<String[]> getValidationMessageArgs(final JsonNode schemaJson, final JsonNode objectJson) {
+    return validateInternal(schemaJson, objectJson)
+        .stream()
+        .map(ValidationMessage::getArguments)
+        .collect(Collectors.toList());
+  }
+
+  public List<String> getValidationMessagePaths(final JsonNode schemaJson, final JsonNode objectJson) {
+    return validateInternal(schemaJson, objectJson)
+        .stream()
+        .map(ValidationMessage::getPath)
+        .collect(Collectors.toList());
   }
 
   // keep this internal as it returns a type specific to the wrapped library.

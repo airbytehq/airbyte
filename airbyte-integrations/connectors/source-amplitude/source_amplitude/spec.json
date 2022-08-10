@@ -5,23 +5,22 @@
     "title": "Amplitude Spec",
     "type": "object",
     "required": ["api_key", "secret_key", "start_date"],
-    "additionalProperties": false,
     "properties": {
       "api_key": {
         "type": "string",
         "title": "API Key",
-        "description": "Amplitude API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude\">docs</a> for more information on how to obtain this key.",
+        "description": "Amplitude API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude#setup-guide\">setup guide</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "secret_key": {
         "type": "string",
         "title": "Secret Key",
-        "description": "Amplitude Secret Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude\">docs</a> for more information on how to obtain this key.",
+        "description": "Amplitude Secret Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude#setup-guide\">setup guide</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-        "title": "Start Date",
+        "title": "Replication Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2021-01-25T00:00:00Z"]

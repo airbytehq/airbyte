@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,7 @@ public class PostgresSpecTest {
       + "\"schemas\" : [\"public\"],  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
+      + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
       + "\"ssl\" : true, "
       + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
       + "}";
@@ -50,7 +54,7 @@ public class PostgresSpecTest {
   @Test
   void testDatabaseMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config).remove("database");
+    ((ObjectNode) config).remove(JdbcUtils.DATABASE_KEY);
     assertFalse(validator.test(schema, config));
   }
 
@@ -110,6 +114,18 @@ public class PostgresSpecTest {
     ((ObjectNode) config.get("replication_method")).set("replication_slot", null);
 
     assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testWithJdbcAdditionalProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testJdbcAdditionalProperty() throws Exception {
+    final ConnectorSpecification spec = new PostgresSource().spec();
+    assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
 }

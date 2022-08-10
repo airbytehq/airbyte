@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.state.listener;
@@ -13,6 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TestStateListener implements WorkflowStateChangedListener {
 
   private static final ConcurrentHashMap<UUID, Queue<ChangedStateEvent>> events = new ConcurrentHashMap<>();
+
+  public static void reset() {
+    events.clear();
+  }
 
   @Override
   public Queue<ChangedStateEvent> events(final UUID testId) {

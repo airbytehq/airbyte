@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
@@ -11,10 +11,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from requests import codes, exceptions
+from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalSalesforceStream, SalesforceStream
 
 
 class SourceSalesforce(AbstractSource):
@@ -24,10 +24,9 @@ class SourceSalesforce(AbstractSource):
         sf.login()
         return sf
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         try:
             _ = self._get_sf_object(config)
-            return True, None
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
@@ -35,23 +34,25 @@ class SourceSalesforce(AbstractSource):
                 logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
                 return False, "API Call limit is exceeded"
 
+        return True, None
+
     @classmethod
     def generate_streams(
         cls,
         config: Mapping[str, Any],
-        stream_names: List[str],
+        stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
         state: Mapping[str, Any] = None,
-        stream_objects: List = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
+        stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
-        for stream_name in stream_names:
-            streams_kwargs = {}
+        for stream_name, sobject_options in stream_objects.items():
+            streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema(stream_name, stream_objects).get("properties", {})
+            selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
@@ -63,9 +64,8 @@ class SourceSalesforce(AbstractSource):
             else:
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
-                streams_kwargs["wait_timeout"] = config.get("wait_timeout")
 
-            json_schema = sf_object.generate_schema(stream_name, stream_objects)
+            json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -77,11 +77,17 @@ class SourceSalesforce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_names, stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_names, sf, state=state, stream_objects=stream_objects)
+        stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
+        streams = self.generate_streams(config, stream_objects, sf, state=state)
+        streams.append(Describe(sf_api=sf, catalog=catalog))
+        return streams
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self,
+        logger: AirbyteLogger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains

@@ -1,17 +1,17 @@
-import React from "react";
 import { Form, useFormikContext } from "formik";
+import React from "react";
 import styled from "styled-components";
 
 import { Spinner } from "components";
 
 import { FormBlock } from "core/form/types";
-import { ServiceFormValues } from "./types";
-import { useServiceForm } from "./serviceFormContext";
 
+import CreateControls from "./components/CreateControls";
+import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
-import EditControls from "./components/EditControls";
-import CreateControls from "./components/CreateControls";
+import { useServiceForm } from "./serviceFormContext";
+import { ServiceFormValues } from "./types";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -26,41 +26,33 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-const FormRoot: React.FC<{
+interface FormRootProps {
   formFields: FormBlock;
   hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
+  isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
-}> = ({
+  onStopTestingConnector?: () => void;
+}
+
+const FormRoot: React.FC<FormRootProps> = ({
+  isTestConnectionInProgress = false,
   onRetest,
   formFields,
   successMessage,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
-  additionBottomControls,
+  onStopTestingConnector,
 }) => {
-  const {
-    resetForm,
-    dirty,
-    isSubmitting,
-    isValid,
-  } = useFormikContext<ServiceFormValues>();
-
-  const {
-    resetUiFormProgress,
-    isLoadingSchema,
-    selectedService,
-    isEditMode,
-    formType,
-  } = useServiceForm();
+  const { dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
+  const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>
-      <FormSection blocks={formFields} />
+      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
@@ -72,26 +64,28 @@ const FormRoot: React.FC<{
 
       {isEditMode ? (
         <EditControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
           formType={formType}
-          onRetest={onRetest}
+          onRetestClick={onRetest}
           isValid={isValid}
           dirty={dirty}
-          resetForm={() => {
-            resetForm();
-            resetUiFormProgress();
+          onCancelClick={() => {
+            resetServiceForm();
           }}
           successMessage={successMessage}
         />
       ) : (
         <CreateControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
+          formType={formType}
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
-          formType={formType}
-          additionBottomControls={additionBottomControls}
           hasSuccess={hasSuccess}
         />
       )}

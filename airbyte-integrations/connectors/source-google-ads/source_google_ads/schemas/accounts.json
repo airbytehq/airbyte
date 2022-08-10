@@ -64,6 +64,10 @@
     },
     "customer.tracking_url_template": {
       "type": ["null", "string"]
+    },
+    "segments.date": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

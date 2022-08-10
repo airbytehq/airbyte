@@ -1,17 +1,22 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import random
 import string
+import tempfile
 import time
 from functools import partial
+from pathlib import Path
 from typing import Iterable
 from unittest.mock import Mock
 
 import docker
 import pytest
+import yaml
 from docker.errors import ContainerError, NotFound
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, load_yaml_or_json_path
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -310,3 +315,64 @@ def test_not_found_container():
 
     with pytest.raises(NotFound):
         list(ConnectorRunner.read(new_container, command=cmd))
+
+
+class TestLoadYamlOrJsonPath:
+    VALID_SPEC = {
+        "documentationUrl": "https://google.com",
+        "connectionSpecification": {
+            "type": "object",
+            "required": ["api_token"],
+            "additionalProperties": False,
+            "properties": {"api_token": {"type": "string"}},
+        },
+    }
+
+    def test_load_json(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".json") as f:
+            f.write(json.dumps(self.VALID_SPEC))
+            f.flush()
+            actual = load_yaml_or_json_path(Path(f.name))
+            assert self.VALID_SPEC == actual
+
+    def test_load_yaml(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml") as f:
+            f.write(yaml.dump(self.VALID_SPEC))
+            f.flush()
+            actual = load_yaml_or_json_path(Path(f.name))
+            assert self.VALID_SPEC == actual
+
+    def test_load_other(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
+            with pytest.raises(RuntimeError):
+                load_yaml_or_json_path(Path(f.name))
+
+
+@pytest.mark.parametrize(
+    "schema, searched_key, expected_values",
+    [
+        (
+            {
+                "looking_for_this_key": "first_match",
+                "foo": "bar",
+                "bar": {"looking_for_this_key": "second_match"},
+                "top_level_list": [
+                    {"looking_for_this_key": "third_match"},
+                    {"looking_for_this_key": "fourth_match"},
+                    "dump_value",
+                    {"nested_in_list": {"looking_for_this_key": "fifth_match"}},
+                ],
+            },
+            "looking_for_this_key",
+            ["first_match", "second_match", "third_match", "fourth_match", "fifth_match"],
+        ),
+        ({"foo": "bar", "bar": {"looking_for_this_key": "single_match"}}, "looking_for_this_key", ["single_match"]),
+        (
+            ["foo", "bar", {"looking_for_this_key": "first_match"}, [{"looking_for_this_key": "second_match"}]],
+            "looking_for_this_key",
+            ["first_match", "second_match"],
+        ),
+    ],
+)
+def test_find_all_values_for_key_in_schema(schema, searched_key, expected_values):
+    assert list(find_all_values_for_key_in_schema(schema, searched_key)) == expected_values

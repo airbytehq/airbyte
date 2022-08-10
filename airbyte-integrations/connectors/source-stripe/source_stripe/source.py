@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -22,6 +22,8 @@ from source_stripe.streams import (
     Customers,
     Disputes,
     Events,
+    ExternalAccountBankAccounts,
+    ExternalAccountCards,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -74,4 +76,6 @@ class SourceStripe(AbstractSource):
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             Transfers(**incremental_args),
+            ExternalAccountBankAccounts(**args),
+            ExternalAccountCards(**args),
         ]

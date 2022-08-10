@@ -1,72 +1,48 @@
-import { useFetcher } from "rest-hooks";
+import { useMutation } from "react-query";
 
-import WorkspaceResource from "core/resources/Workspace";
-import NotificationsResource, {
-  Notifications,
-} from "core/resources/Notifications";
-
+import { Action, Namespace } from "core/analytics";
+import { NotificationService } from "core/domain/notification/NotificationService";
+import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { Destination, Source } from "core/domain/connector";
-import { Workspace } from "core/domain/workspace/Workspace";
+import { useInitService } from "services/useInitService";
+import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 
-export type WebhookPayload = {
-  webhook: string;
-  sendOnSuccess: boolean;
-  sendOnFailure: boolean;
-};
+import { useConfig } from "../../config";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 
-const useWorkspace = (): {
-  workspace: Workspace;
-  updatePreferences: (data: {
-    email?: string;
-    anonymousDataCollection: boolean;
-    news: boolean;
-    securityUpdates: boolean;
-  }) => Promise<Workspace>;
-  updateWebhook: (data: WebhookPayload) => Promise<Workspace>;
-  testWebhook: (data: WebhookPayload) => Promise<Notifications>;
-  setInitialSetupConfig: (data: {
-    email: string;
-    anonymousDataCollection: boolean;
-    news: boolean;
-    securityUpdates: boolean;
-  }) => Promise<Workspace>;
-  finishOnboarding: (skipStep?: string) => Promise<void>;
-  sendFeedback: ({
-    feedback,
-    source,
-    destination,
-  }: {
-    feedback: string;
-    source: Source;
-    destination: Destination;
-  }) => Promise<void>;
-} => {
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-  const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
+export interface WebhookPayload {
+  webhook?: string;
+  sendOnSuccess?: boolean;
+  sendOnFailure?: boolean;
+}
+
+function useGetNotificationService() {
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+  return useInitService(() => new NotificationService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
+}
+
+const useWorkspace = () => {
+  const notificationService = useGetNotificationService();
+  const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
   const workspace = useCurrentWorkspace();
 
   const analyticsService = useAnalyticsService();
 
   const finishOnboarding = async (skipStep?: string) => {
-    if (skipStep) {
-      analyticsService.track("Skip Onboarding", {
-        step: skipStep,
-      });
-    }
+    analyticsService.track(Namespace.ONBOARDING, Action.SKIP, {
+      actionDescription: "Skip Onboarding",
+      step: skipStep,
+    });
 
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        anonymousDataCollection: workspace.anonymousDataCollection,
-        news: workspace.news,
-        securityUpdates: workspace.securityUpdates,
-        displaySetupWizard: false,
-      }
-    );
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      anonymousDataCollection: !!workspace.anonymousDataCollection,
+      news: !!workspace.news,
+      securityUpdates: !!workspace.securityUpdates,
+      displaySetupWizard: false,
+    });
   };
 
   const sendFeedback = async ({
@@ -75,10 +51,11 @@ const useWorkspace = (): {
     destination,
   }: {
     feedback: string;
-    source: Source;
-    destination: Destination;
+    source: SourceRead;
+    destination: DestinationRead;
   }) => {
-    analyticsService.track("Onboarding Feedback", {
+    analyticsService.track(Namespace.ONBOARDING, Action.FEEDBACK, {
+      actionDescription: "Onboarding Feedback",
       feedback,
       connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
@@ -93,17 +70,15 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    const result = await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: true,
-        displaySetupWizard: true,
-        ...data,
-      }
-    );
+    const result = await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: true,
+      displaySetupWizard: true,
+      ...data,
+    });
 
-    analyticsService.track("Specified Preferences", {
+    analyticsService.track(Namespace.ONBOARDING, Action.PREFERENCES, {
+      actionDescription: "Setup preferences set",
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,
@@ -119,60 +94,51 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) =>
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        displaySetupWizard: workspace.displaySetupWizard,
-        notifications: workspace.notifications,
-        ...data,
-      }
-    );
-
-  const testWebhook = async (data: WebhookPayload) =>
-    await tryWebhookUrl(
-      {
-        notificationType: "slack",
-        sendOnSuccess: data.sendOnSuccess,
-        sendOnFailure: data.sendOnFailure,
-        slackConfiguration: {
-          webhook: data.webhook,
-        },
-      },
-      {}
-    );
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      displaySetupWizard: workspace.displaySetupWizard,
+      notifications: workspace.notifications,
+      ...data,
+    });
 
   const updateWebhook = async (data: WebhookPayload) =>
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        displaySetupWizard: workspace.displaySetupWizard,
-        anonymousDataCollection: workspace.anonymousDataCollection,
-        news: workspace.news,
-        securityUpdates: workspace.securityUpdates,
-        notifications: [
-          {
-            notificationType: "slack",
-            sendOnSuccess: data.sendOnSuccess,
-            sendOnFailure: data.sendOnFailure,
-            slackConfiguration: {
-              webhook: data.webhook,
-            },
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      displaySetupWizard: workspace.displaySetupWizard,
+      anonymousDataCollection: !!workspace.anonymousDataCollection,
+      news: !!workspace.news,
+      securityUpdates: !!workspace.securityUpdates,
+      notifications: [
+        {
+          notificationType: "slack",
+          sendOnSuccess: !!data.sendOnSuccess,
+          sendOnFailure: !!data.sendOnFailure,
+          slackConfiguration: {
+            webhook: data.webhook ?? "",
           },
-        ],
-      }
-    );
+        },
+      ],
+    });
+
+  const tryWebhookUrl = useMutation((data: WebhookPayload) =>
+    notificationService.try({
+      notificationType: "slack",
+      sendOnSuccess: !!data.sendOnSuccess,
+      sendOnFailure: !!data.sendOnFailure,
+      slackConfiguration: {
+        webhook: data.webhook ?? "",
+      },
+    })
+  );
 
   return {
-    workspace,
     finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,
     updateWebhook,
-    testWebhook,
+    testWebhook: tryWebhookUrl.mutateAsync,
     sendFeedback,
   };
 };

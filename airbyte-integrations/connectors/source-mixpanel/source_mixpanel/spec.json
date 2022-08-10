@@ -5,46 +5,66 @@
     "title": "Source Mixpanel Spec",
     "type": "object",
     "required": ["api_secret"],
-    "additionalProperties": true,
     "properties": {
       "api_secret": {
-        "title": "API Secret",
+        "order": 0,
+        "title": "Project Token",
         "type": "string",
-        "description": "Mixpanel API Secret. See the <a href=\"https://docs.airbyte.io/integrations/sources/mixpanel\">docs</a> for more information on how to obtain this key.",
+        "description": "Mixpanel project token. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-\">docs</a> for more information on how to obtain this.",
         "airbyte_secret": true
       },
       "attribution_window": {
+        "order": 1,
         "title": "Attribution Window",
         "type": "integer",
-        "description": " A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted.Default attribution window is 5 days.",
+        "description": " A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days.",
         "default": 5
       },
       "project_timezone": {
+        "order": 2,
         "title": "Project Timezone",
         "type": "string",
-        "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the Mixpanel console.",
+        "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel\">Mixpanel console</a>.",
         "default": "US/Pacific",
         "examples": ["US/Pacific", "UTC"]
       },
       "select_properties_by_default": {
+        "order": 3,
         "title": "Select Properties By Default",
         "type": "boolean",
-        "description": "Setting this config parameter to TRUE ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored",
+        "description": "Setting this config parameter to TRUE ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored.",
         "default": true
       },
       "start_date": {
+        "order": 4,
         "title": "Start Date",
         "type": "string",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. If this option is not set, the connector will replicate data from up to one year ago by default.",
         "examples": ["2021-11-16"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
       },
+      "end_date": {
+        "order": 5,
+        "title": "End Date",
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated. Left empty to always sync to most recent date",
+        "examples": ["2021-11-16"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+      },
       "region": {
+        "order": 6,
         "title": "Region",
         "description": "The region of mixpanel domain instance either US or EU.",
         "type": "string",
         "enum": ["US", "EU"],
         "default": "US"
+      },
+      "date_window_size": {
+        "order": 7,
+        "title": "Date slicing window",
+        "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment.",
+        "type": "integer",
+        "default": 30
       }
     }
   }

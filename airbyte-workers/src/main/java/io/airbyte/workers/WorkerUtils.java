@@ -1,19 +1,35 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.FailureHelper;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +109,38 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
+                                                              final Map<Type, List<AirbyteMessage>> messagesByType,
+                                                              final String defaultErrorMessage)
+      throws WorkerException {
+    final Optional<AirbyteTraceMessage> traceMessage =
+        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
+            .map(AirbyteMessage::getTrace)
+            .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
+            .findFirst();
+
+    if (traceMessage.isPresent()) {
+      final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
+      return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
+    }
+
+    throw new WorkerException(defaultErrorMessage);
+  }
+
+  public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
+    return syncInput.getCatalog().getStreams().stream().collect(
+        Collectors.toMap(
+            k -> {
+              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
+            },
+            v -> v.getStream().getJsonSchema()));
+
+  }
+
+  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
+    return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,

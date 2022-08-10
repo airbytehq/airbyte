@@ -1,34 +1,27 @@
+import { Field, FieldProps, setIn, useFormikContext } from "formik";
 import React, { useCallback } from "react";
-import { FieldProps, Field, setIn, useField } from "formik";
 
-import {
-  AirbyteStreamConfiguration,
-  DestinationSyncMode,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { AirbyteStreamConfiguration, DestinationSyncMode } from "core/request/AirbyteClient";
+import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { CatalogSection } from "./CatalogSection";
 
-type IProps = {
+interface CatalogTreeProps {
   streams: SyncSchemaStream[];
   destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeStream: (stream: SyncSchemaStream) => void;
-};
+  mode?: ConnectionFormMode;
+}
 
-const CatalogTree: React.FC<IProps> = ({
-  streams,
-  destinationSupportedSyncModes,
-  onChangeStream,
-}) => {
+const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupportedSyncModes, onChangeStream, mode }) => {
   const onUpdateStream = useCallback(
-    (id: string, newStream: Partial<AirbyteStreamConfiguration>) => {
+    (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
-        const newStreamNode = setIn(
-          streamNode,
-          "config",
-          Object.assign({}, streamNode.config, newStream)
-        );
+        const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
 
         onChangeStream(newStreamNode);
       }
@@ -36,27 +29,28 @@ const CatalogTree: React.FC<IProps> = ({
     [streams, onChangeStream]
   );
 
-  const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
-  const [{ value: namespaceFormat }] = useField("namespaceFormat");
-  const [{ value: prefix }] = useField("prefix");
+  const { initialValues } = useFormikContext<ConnectionFormValues>();
+
+  const changedStreams = streams.filter((stream, idx) => {
+    return stream.config?.selected !== initialValues.syncCatalog.streams[idx].config?.selected;
+  });
 
   return (
     <>
       {streams.map((streamNode) => (
-        <Field
-          key={`schema.streams[${streamNode.id}].config`}
-          name={`schema.streams[${streamNode.id}].config`}
-        >
-          {({ form }: FieldProps) => (
+        <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
+          {({ form }: FieldProps<FormikConnectionFormValues>) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}
               errors={form.errors}
-              namespaceDefinition={namespaceDefinition}
-              namespaceFormat={namespaceFormat}
-              prefix={prefix}
+              namespaceDefinition={form.values.namespaceDefinition}
+              namespaceFormat={form.values.namespaceFormat}
+              prefix={form.values.prefix}
               streamNode={streamNode}
               destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
+              mode={mode}
+              changedSelected={changedStreams.includes(streamNode) && mode === "edit"}
             />
           )}
         </Field>

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Spinner from "components/Spinner";
+import { ProgressBar } from "components";
 
 const SpinnerBlock = styled.div`
   padding: 40px;
@@ -17,9 +17,12 @@ const FetchMessage = styled.div`
   white-space: pre-line;
 `;
 
+// Progress Bar runs 4min for discoveries schema
+const PROGRESS_BAR_TIME = 60 * 4;
+
 const LoadingSchema: React.FC = () => (
   <SpinnerBlock>
-    <Spinner />
+    <ProgressBar runTime={PROGRESS_BAR_TIME} />
     <FetchMessage>
       <FormattedMessage id="onboarding.fetchingSchema" />
     </FetchMessage>

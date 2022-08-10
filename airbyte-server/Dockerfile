@@ -1,13 +1,18 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS server
+ARG JDK_VERSION=19-slim-bullseye
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+FROM ${JDK_IMAGE} AS server
 
 EXPOSE 8000
 
+ARG VERSION=0.40.0-alpha
+
 ENV APPLICATION airbyte-server
+ENV VERSION ${VERSION}
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-0.35.12-alpha.tar /app
+# This is automatically unzipped by Docker
+ADD bin/${APPLICATION}-${VERSION}.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]

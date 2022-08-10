@@ -1,7 +1,9 @@
 'use strict';
 const path = require('path');
 const uuid = require('uuid');
-
+const capitalCase = require('capital-case');
+const changeCase = require('change-case')
+   
 const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
     return `
 🚀 🚀 🚀 🚀 🚀 🚀
@@ -12,9 +14,8 @@ Your ${connectorName} connector has been created at .${path.resolve(outputPath)}
 
 Follow the TODOs in the generated module to implement your connector. 
 
-Questions, comments, or concerns? Let us know at:
-Slack: https://slack.airbyte.io
-Github: https://github.com/airbytehq/airbyte
+Questions, comments, or concerns? Let us know in our connector development forum:
+https://discuss.airbyte.io/c/connector-development/16
 
 We're always happy to provide any support!
 
@@ -26,11 +27,14 @@ module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
 
+  const sourceAcceptanceTestFilesInputRoot = '../source_acceptance_test_files';
+
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
   const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
+  const lowCodeSourceInputRoot = '../source-configuration-based';
   const javaDestinationInput = '../destination-java';
   const pythonDestinationInputRoot = '../destination-python';
 
@@ -42,6 +46,39 @@ module.exports = function (plop) {
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
+  const sourceConnectorImagePrefix = 'airbyte/source-'
+  const sourceConnectorImageTag = 'dev'
+  const defaultSpecPathFolderPrefix = 'source_'
+  const specFileName = 'spec.yaml'
+
+
+  plop.setHelper('capitalCase', function(name) {
+    return capitalCase.capitalCase(name);
+  });
+
+  plop.setHelper('connectorImage', function() {
+    let suffix = ""
+    if (typeof this.connectorImageNameSuffix !== 'undefined') {
+      suffix = this.connectorImageNameSuffix
+    }
+    return `${sourceConnectorImagePrefix}${changeCase.paramCase(this.name)}${suffix}:${sourceConnectorImageTag}`
+  });
+
+  plop.setHelper('specPath', function() {
+    let suffix = ""
+    if (typeof this.specPathFolderSuffix !== 'undefined') {
+      suffix = this.specPathFolderSuffix
+    }
+    let inSubFolder = true
+    if (typeof this.inSubFolder !== 'undefined') {
+      inSubFolder = this.inSubFolder
+    }
+    if (inSubFolder) {
+      return `${defaultSpecPathFolderPrefix}${changeCase.snakeCase(this.name)}${suffix}/${specFileName}`
+    } else {
+      return specFileName
+    }
+  });
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
@@ -81,6 +118,14 @@ module.exports = function (plop) {
         base: httpApiInputRoot,
         templateFiles: `${httpApiInputRoot}/**/**`,
       },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: httpApiOutputRoot,
+        base: sourceAcceptanceTestFilesInputRoot,
+        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+      },
       // plop doesn't add dotfiles by default so we manually add them
       {
         type:'add',
@@ -89,6 +134,36 @@ module.exports = function (plop) {
         path: `${httpApiOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
+  });
+
+  plop.setGenerator('Configuration Based Source', {
+    description: 'Generate a Source that is described using a low code configuration file',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+        actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: lowCodeSourceInputRoot,
+        templateFiles: `${lowCodeSourceInputRoot}/**/**`,
+      },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: sourceAcceptanceTestFilesInputRoot,
+        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${lowCodeSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}
     ]
   });
 
@@ -107,6 +182,18 @@ module.exports = function (plop) {
          destination: singerSourceOutputRoot,
          base: singerSourceInputRoot,
          templateFiles: `${singerSourceInputRoot}/**/**`,
+       },
+       // common acceptance tests
+       {
+         abortOnFail: true,
+         type:'addMany',
+         destination: singerSourceOutputRoot,
+         base: sourceAcceptanceTestFilesInputRoot,
+         templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+         data: {
+          connectorImageNameSuffix: "-singer",
+          specPathFolderSuffix: "_singer"
+        }
        },
        {
          type:'add',
@@ -134,6 +221,14 @@ module.exports = function (plop) {
                 destination: pythonSourceOutputRoot,
                 base: pythonSourceInputRoot,
                 templateFiles: `${pythonSourceInputRoot}/**/**`,
+            },
+            // common acceptance tests
+            {
+              abortOnFail: true,
+              type:'addMany',
+              destination: pythonSourceOutputRoot,
+              base: sourceAcceptanceTestFilesInputRoot,
+              templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
             },
             {
                 type:'add',
@@ -170,11 +265,16 @@ module.exports = function (plop) {
           base: genericSourceInputRoot,
           templateFiles: `${genericSourceInputRoot}/**/**`,
         },
+        // common acceptance tests
         {
-          type:'add',
           abortOnFail: true,
-          templateFile: `${genericSourceInputRoot}/.gitignore.hbs`,
-          path: `${genericSourceOutputRoot}/.gitignore`
+          type:'addMany',
+          destination: genericSourceOutputRoot,
+          base: sourceAcceptanceTestFilesInputRoot,
+          templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+          data: {
+            inSubFolder: false
+          }
         },
         {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
@@ -250,12 +350,6 @@ module.exports = function (plop) {
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/spec.json.hbs`,
         path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
-      },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/destination-definition.json.hbs`,
-        path: `${definitionRoot}/config/STANDARD_DESTINATION_DEFINITION/{{uuid}}.json`
       },
       {
         type: 'append',

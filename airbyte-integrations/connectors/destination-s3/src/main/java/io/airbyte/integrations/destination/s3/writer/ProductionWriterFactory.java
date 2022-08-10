@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.writer;
@@ -26,9 +26,9 @@ public class ProductionWriterFactory implements S3WriterFactory {
 
   @Override
   public DestinationFileWriter create(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+                                      final AmazonS3 s3Client,
+                                      final ConfiguredAirbyteStream configuredStream,
+                                      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 

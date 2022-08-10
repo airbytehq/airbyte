@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_zendesk_support.streams import SourceZendeskException
 
 from .streams import (
     Brands,
@@ -20,7 +21,6 @@ from .streams import (
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
-    SourceZendeskException,
     Tags,
     TicketAudits,
     TicketComments,
@@ -31,7 +31,12 @@ from .streams import (
     Tickets,
     Users,
     UserSettingsStream,
+    UserSubscriptionStream,
 )
+
+# The Zendesk Subscription Plan gains complete access to all the streams
+FULL_ACCESS_PLAN = "Enterprise"
+FULL_ACCESS_ONLY_STREAMS = ["ticket_forms"]
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -51,11 +56,21 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"]["auth_method"] == "access_token":
-            return TokenAuthenticator(token=config["auth_method"]["access_token"])
-        elif config["auth_method"]["auth_method"] == "api_token":
-            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
-        raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
+
+        # old authentication flow support
+        auth_old = config.get("auth_method")
+        if auth_old:
+            if auth_old.get("auth_method") == "api_token":
+                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
+        # new authentication flow
+        auth = config.get("credentials")
+        if auth:
+            if auth.get("credentials") == "oauth2.0":
+                return TokenAuthenticator(token=config["credentials"]["access_token"])
+            elif auth.get("credentials") == "api_token":
+                return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
+            else:
+                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -68,12 +83,12 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        logger.info("available features: %s" % active_features)
+        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the current account"
         return True, None
@@ -94,24 +109,32 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
-        # sorted in alphabet order
-        return [
-            GroupMemberships(**args),
-            Groups(**args),
-            Macros(**args),
-            Organizations(**args),
-            SatisfactionRatings(**args),
-            SlaPolicies(**args),
-            Tags(**args),
-            TicketAudits(**args),
-            TicketComments(**args),
-            TicketFields(**args),
-            TicketForms(**args),
-            TicketMetrics(**args),
-            TicketMetricEvents(**args),
-            Tickets(**args),
-            Users(**args),
-            Brands(**args),
-            CustomRoles(**args),
-            Schedules(**args),
-        ]
+        all_streams_mapping = {
+            # sorted in alphabet order
+            "group_membership": GroupMemberships(**args),
+            "groups": Groups(**args),
+            "macros": Macros(**args),
+            "organizations": Organizations(**args),
+            "satisfaction_ratings": SatisfactionRatings(**args),
+            "sla_policies": SlaPolicies(**args),
+            "tags": Tags(**args),
+            "ticket_audits": TicketAudits(**args),
+            "ticket_comments": TicketComments(**args),
+            "ticket_fields": TicketFields(**args),
+            "ticket_forms": TicketForms(**args),
+            "ticket_metrics": TicketMetrics(**args),
+            "ticket_metric_events": TicketMetricEvents(**args),
+            "tickets": Tickets(**args),
+            "users": Users(**args),
+            "brands": Brands(**args),
+            "custom_roles": CustomRoles(**args),
+            "schedules": Schedules(**args),
+        }
+        # check the users Zendesk Subscription Plan
+        subscription_plan = UserSubscriptionStream(**args).get_subscription_plan()
+        if subscription_plan != FULL_ACCESS_PLAN:
+            # only those the streams that are not listed in FULL_ACCESS_ONLY_STREAMS should be available
+            return [stream_cls for stream_name, stream_cls in all_streams_mapping.items() if stream_name not in FULL_ACCESS_ONLY_STREAMS]
+        else:
+            # all streams should be available for user, otherwise
+            return [stream_cls for stream_cls in all_streams_mapping.values()]

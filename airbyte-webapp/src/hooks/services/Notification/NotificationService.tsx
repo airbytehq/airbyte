@@ -2,27 +2,18 @@ import React, { useContext, useEffect, useMemo } from "react";
 
 import SingletonCard from "components/SingletonCard";
 
-import {
-  Notification,
-  NotificationServiceApi,
-  NotificationServiceState,
-} from "./types";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
+
 import { actions, initialState, notificationServiceReducer } from "./reducer";
+import { Notification, NotificationServiceApi, NotificationServiceState } from "./types";
 
-const notificationServiceContext = React.createContext<NotificationServiceApi | null>(
-  null
-);
+const notificationServiceContext = React.createContext<NotificationServiceApi | null>(null);
 
-function NotificationService({ children }: { children: React.ReactNode }) {
-  const [
-    state,
-    { addNotification, clearAll, deleteNotificationById },
-  ] = useTypesafeReducer<NotificationServiceState, typeof actions>(
-    notificationServiceReducer,
-    initialState,
-    actions
-  );
+const NotificationService = ({ children }: { children: React.ReactNode }) => {
+  const [state, { addNotification, clearAll, deleteNotificationById }] = useTypesafeReducer<
+    NotificationServiceState,
+    typeof actions
+  >(notificationServiceReducer, initialState, actions);
 
   const notificationService: NotificationServiceApi = useMemo(
     () => ({
@@ -30,19 +21,15 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       deleteNotificationById,
       clearAll,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  const firstNotification =
-    state.notifications && state.notifications.length
-      ? state.notifications[0]
-      : null;
+  const firstNotification = state.notifications && state.notifications.length ? state.notifications[0] : null;
 
   return (
     <>
-      <notificationServiceContext.Provider value={notificationService}>
-        {children}
-      </notificationServiceContext.Provider>
+      <notificationServiceContext.Provider value={notificationService}>{children}</notificationServiceContext.Provider>
       {firstNotification ? (
         // Show only first notification
         <SingletonCard
@@ -61,7 +48,7 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       ) : null}
     </>
   );
-}
+};
 
 export const useNotificationService: (
   notification?: Notification,
@@ -73,9 +60,7 @@ export const useNotificationService: (
 } = (notification, dependencies) => {
   const notificationService = useContext(notificationServiceContext);
   if (!notificationService) {
-    throw new Error(
-      "useNotificationService must be used within a NotificationService."
-    );
+    throw new Error("useNotificationService must be used within a NotificationService.");
   }
 
   useEffect(() => {

@@ -1,310 +1,150 @@
-import { useCallback } from "react";
-import { useFetcher, useResource } from "rest-hooks";
-import { useStatefulResource } from "@rest-hooks/legacy";
+import { useMutation, useQueryClient } from "react-query";
 
-import DestinationResource from "core/resources/Destination";
-import ConnectionResource, { Connection } from "core/resources/Connection";
-import { RoutePaths } from "pages/routes";
-import useRouter from "../useRouter";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "./useWorkspace";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import {
-  Destination,
-  DestinationDefinitionSpecification,
-} from "core/domain/connector";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { useInitService } from "services/useInitService";
+import { isDefined } from "utils/common";
 
-type ValuesProps = {
+import { useConfig } from "../../config";
+import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
+
+export const destinationsKeys = {
+  all: [SCOPE_WORKSPACE, "destinations"] as const,
+  lists: () => [...destinationsKeys.all, "list"] as const,
+  list: (filters: string) => [...destinationsKeys.lists(), { filters }] as const,
+  detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
+};
+
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
+}
+
+interface ConnectorProps {
+  name: string;
+  destinationDefinitionId: string;
+}
+
+function useDestinationService() {
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+}
+
+interface DestinationList {
+  destinations: DestinationRead[];
+}
+
+const useDestinationList = (): DestinationList => {
+  const workspace = useCurrentWorkspace();
+  const service = useDestinationService();
+
+  return useSuspenseQuery(destinationsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
-type ConnectorProps = { name: string; destinationDefinitionId: string };
+const useGetDestination = <T extends string | undefined | null>(
+  destinationId: T
+): T extends string ? DestinationRead : DestinationRead | undefined => {
+  const service = useDestinationService();
 
-export const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string | null
-): {
-  isLoading: boolean;
-  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
-  sourceDefinitionError?: Error;
-} => {
-  const {
-    loading: isLoading,
-    error,
-    data: destinationDefinitionSpecification,
-  } = useStatefulResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    destinationDefinitionId
-      ? {
-          destinationDefinitionId,
-        }
-      : null
-  );
-
-  return {
-    destinationDefinitionSpecification,
-    sourceDefinitionError: error,
-    isLoading,
-  };
-};
-
-export const useDestinationDefinitionSpecificationLoadAsync = (
-  destinationDefinitionId: string
-): DestinationDefinitionSpecification => {
-  const definition = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId,
-    }
-  );
-
-  return definition;
-};
-
-type DestinationService = {
-  checkDestinationConnection: ({
-    destinationId,
-    values,
-  }: {
-    destinationId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
-  updateDestination: ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => Promise<Destination>;
-  createDestination: ({
-    values,
-    destinationConnector,
-  }: {
-    values: ValuesProps;
-    destinationConnector?: ConnectorProps;
-  }) => Promise<Destination>;
-  recreateDestination: ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => Promise<Destination>;
-  deleteDestination: ({
-    destination,
-    connectionsWithDestination,
-  }: {
-    destination: Destination;
-    connectionsWithDestination: Connection[];
-  }) => Promise<void>;
-};
-
-const useDestination = (): DestinationService => {
-  const { push } = useRouter();
-  const { workspace } = useWorkspace();
-  const analyticsService = useAnalyticsService();
-  const createDestinationsImplementation = useFetcher(
-    DestinationResource.createShape()
-  );
-
-  const destinationCheckConnectionShape = useFetcher(
-    SchedulerResource.destinationCheckConnectionShape()
-  );
-
-  const updatedestination = useFetcher(
-    DestinationResource.partialUpdateShape()
-  );
-
-  const recreatedestination = useFetcher(DestinationResource.recreateShape());
-
-  const destinationDelete = useFetcher(DestinationResource.deleteShape());
-
-  const updateConnectionsStore = useFetcher(
-    ConnectionResource.updateStoreAfterDeleteShape()
-  );
-
-  const createDestination = async ({
-    values,
-    destinationConnector,
-  }: {
-    values: ValuesProps;
-    destinationConnector?: ConnectorProps;
-  }) => {
-    analyticsService.track("New Destination - Action", {
-      action: "Test a connector",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
-    });
-
-    try {
-      await destinationCheckConnectionShape({
-        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
-      });
-
-      // Try to crete destination
-      const result = await createDestinationsImplementation(
-        {},
-        {
-          name: values.name,
-          destinationDefinitionId:
-            destinationConnector?.destinationDefinitionId,
-          workspaceId: workspace.workspaceId,
-          connectionConfiguration: values.connectionConfiguration,
-        },
-        [
-          [
-            DestinationResource.listShape(),
-            { workspaceId: workspace.workspaceId },
-            (
-              newdestinationId: string,
-              destinationIds: { destinations: string[] }
-            ) => ({
-              destinations: [
-                ...(destinationIds?.destinations || []),
-                newdestinationId,
-              ],
-            }),
-          ],
-        ]
-      );
-
-      analyticsService.track("New Destination - Action", {
-        action: "Tested connector - success",
-        connector_destination: destinationConnector?.name,
-        connector_destination_definition_id:
-          destinationConnector?.destinationDefinitionId,
-      });
-
-      return result;
-    } catch (e) {
-      analyticsService.track("New Destination - Action", {
-        action: "Tested connector - failure",
-        connector_destination: destinationConnector?.name,
-        connector_destination_definition_id:
-          destinationConnector?.destinationDefinitionId,
-      });
-      throw e;
-    }
-  };
-
-  const updateDestination = async ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    await destinationCheckConnectionShape({
-      connectionConfiguration: values.connectionConfiguration,
-      name: values.name,
-      destinationId,
-    });
-
-    return await updatedestination(
-      {
-        destinationId,
-      },
-      {
-        name: values.name,
-        destinationId,
-        connectionConfiguration: values.connectionConfiguration,
-      }
-    );
-  };
-
-  const recreateDestination = async ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    return await recreatedestination(
-      {
-        destinationId,
-      },
-      {
-        name: values.name,
-        destinationId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        destinationDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all destination List to new item in UpdateParams (to change id)
-      [
-        [
-          DestinationResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newdestinationId: string) => ({
-            destinations: [newdestinationId],
-          }),
-        ],
-      ]
-    );
-  };
-
-  const checkDestinationConnection = useCallback(
-    async ({
-      destinationId,
-      values,
-    }: {
-      destinationId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await destinationCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          destinationId: destinationId,
-        });
-      }
-      return await destinationCheckConnectionShape({
-        destinationId: destinationId,
-      });
-    },
-    [destinationCheckConnectionShape]
-  );
-
-  const deleteDestination = async ({
-    destination,
-    connectionsWithDestination,
-  }: {
-    destination: Destination;
-    connectionsWithDestination: Connection[];
-  }) => {
-    await destinationDelete({
-      destinationId: destination.destinationId,
-    });
-
-    // To delete connections with current source from local store
-    connectionsWithDestination.map((item) =>
-      updateConnectionsStore({ connectionId: item.connectionId }, undefined)
-    );
-
-    push(RoutePaths.Destination);
-  };
-
-  return {
-    createDestination,
-    updateDestination,
-    recreateDestination,
-    deleteDestination,
-    checkDestinationConnection,
-  };
-};
-
-const useDestinationList = (): { destinations: Destination[] } => {
-  const { workspace } = useWorkspace();
-  return useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
+  return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
+    enabled: isDefined(destinationId),
   });
 };
 
-export { useDestinationList };
-export default useDestination;
+const useCreateDestination = () => {
+  const service = useDestinationService();
+  const queryClient = useQueryClient();
+  const workspace = useCurrentWorkspace();
+
+  return useMutation(
+    async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
+      const { values, destinationConnector } = createDestinationPayload;
+
+      if (!destinationConnector?.destinationDefinitionId) {
+        throw new Error("No Destination Definition Provided");
+      }
+
+      return service.create({
+        name: values.name,
+        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
+        workspaceId: workspace.workspaceId,
+        connectionConfiguration: values.connectionConfiguration,
+      });
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(destinationsKeys.lists(), (lst: DestinationList | undefined) => ({
+          destinations: [data, ...(lst?.destinations ?? [])],
+        }));
+      },
+    }
+  );
+};
+
+const useDeleteDestination = () => {
+  const service = useDestinationService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+
+  return useMutation(
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
+      service.delete(payload.destination.destinationId),
+    {
+      onSuccess: (_data, ctx) => {
+        analyticsService.track(Namespace.DESTINATION, Action.DELETE, {
+          actionDescription: "Destination deleted",
+          connector_destination: ctx.destination.destinationName,
+          connector_destination_definition_id: ctx.destination.destinationDefinitionId,
+        });
+
+        queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));
+        queryClient.setQueryData(
+          destinationsKeys.lists(),
+          (lst: DestinationList | undefined) =>
+            ({
+              destinations:
+                lst?.destinations.filter((conn) => conn.destinationId !== ctx.destination.destinationId) ?? [],
+            } as DestinationList)
+        );
+
+        // To delete connections with current destination from local store
+        const connectionIds = ctx.connectionsWithDestination.map((item) => item.connectionId);
+
+        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
+        }));
+      },
+    }
+  );
+};
+
+const useUpdateDestination = () => {
+  const service = useDestinationService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (updateDestinationPayload: { values: ValuesProps; destinationId: string }) => {
+      return service.update({
+        name: updateDestinationPayload.values.name,
+        destinationId: updateDestinationPayload.destinationId,
+        connectionConfiguration: updateDestinationPayload.values.connectionConfiguration,
+      });
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(destinationsKeys.detail(data.destinationId), data);
+      },
+    }
+  );
+};
+
+export { useDestinationList, useGetDestination, useCreateDestination, useDeleteDestination, useUpdateDestination };

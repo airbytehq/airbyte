@@ -1,35 +1,31 @@
-import React, { Suspense, useEffect, useState } from "react";
-import styled from "styled-components";
-import { useResource } from "rest-hooks";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Button } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
-import useSource, { useSourceList } from "hooks/services/useSourceHook";
-import useDestination, {
-  useDestinationList,
-} from "hooks/services/useDestinationHook";
-import useConnection, {
-  useConnectionList,
-} from "hooks/services/useConnectionHook";
-import { ConnectionConfiguration } from "core/domain/connection";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useGetStepsConfig from "./useStepsConfig";
-import SourceStep from "./components/SourceStep";
-import DestinationStep from "./components/DestinationStep";
-import ConnectionStep from "./components/ConnectionStep";
-import WelcomeStep from "./components/WelcomeStep";
-import FinalStep from "./components/FinalStep";
-import LetterLine from "./components/LetterLine";
-import { StepType } from "./types";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
+
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
-import { JobInfo } from "../../core/domain/job/Job";
+import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
+
+import { RoutePaths } from "../routePaths";
+import ConnectionStep from "./components/ConnectionStep";
+import DestinationStep from "./components/DestinationStep";
+import FinalStep from "./components/FinalStep";
+import HighlightedText from "./components/HighlightedText";
+import LetterLine from "./components/LetterLine";
+import SourceStep from "./components/SourceStep";
+import StepsCounter from "./components/StepsCounter";
+import TitlesBlock from "./components/TitlesBlock";
+import WelcomeStep from "./components/WelcomeStep";
+import { StepType } from "./types";
+import useGetStepsConfig from "./useStepsConfig";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -59,201 +55,113 @@ const ScreenContent = styled.div`
   position: relative;
 `;
 
+const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
+  [StepType.CREATE_SOURCE]: "FirstSource",
+  [StepType.CREATE_DESTINATION]: "FirstDestination",
+  [StepType.SET_UP_CONNECTION]: "Connection",
+};
+
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   const { push } = useRouterHook();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     analyticsService.page("Onboarding Page");
-  }, []);
+  });
 
-  const { sources } = useSourceList();
-  const { destinations } = useDestinationList();
-  const { connections } = useConnectionList();
-  const { syncConnection } = useConnection();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {}
-  );
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {}
-  );
-
-  const { createSource, recreateSource } = useSource();
-  const { createDestination, recreateDestination } = useDestination();
   const { finishOnboarding } = useWorkspace();
+  const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
-  const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number;
-    response: JobInfo;
-    message: string;
-  } | null>(null);
+  const [animateExit, setAnimateExit] = useState(false);
+  const [hasApiError, setHasApiError] = useState(false);
 
   const afterUpdateStep = () => {
-    setSuccessRequest(false);
-    setErrorStatusRequest(null);
+    setAnimateExit(false);
   };
 
   const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
-    !!sources.length,
-    !!destinations.length,
-    !!connections.length,
+    hasSources,
+    hasDestinations,
+    hasConnections,
     afterUpdateStep
   );
 
-  const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
-
-  const getDestinationDefinitionById = (id: string) =>
-    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
-
   const handleFinishOnboarding = () => {
-    finishOnboarding();
+    finishOnboarding(currentStep);
     push(RoutePaths.Connections);
   };
 
-  const renderStep = () => {
-    if (currentStep === StepType.INSTRUCTION) {
-      const onStart = () => setCurrentStep(StepType.CREATE_SOURCE);
-      //TODO: add username
-      return <WelcomeStep onSubmit={onStart} userName="" />;
-    }
-    if (currentStep === StepType.CREATE_SOURCE) {
-      const onSubmitSourceStep = async (values: {
-        name: string;
-        serviceType: string;
-        sourceId?: string;
-        connectionConfiguration?: ConnectionConfiguration;
-      }) => {
-        setErrorStatusRequest(null);
-        const sourceConnector = getSourceDefinitionById(values.serviceType);
-
-        try {
-          if (!!sources.length) {
-            await recreateSource({
-              values,
-              sourceId: sources[0].sourceId,
-            });
-          } else {
-            await createSource({ values, sourceConnector });
-          }
-
-          setSuccessRequest(true);
-          setTimeout(() => {
-            setSuccessRequest(false);
-            setCurrentStep(StepType.CREATE_DESTINATION);
-          }, 2000);
-        } catch (e) {
-          setErrorStatusRequest(e);
-        }
-      };
-      return (
-        <SourceStep
-          afterSelectConnector={() => setErrorStatusRequest(null)}
-          onSubmit={onSubmitSourceStep}
-          availableServices={sourceDefinitions}
-          hasSuccess={successRequest}
-          error={errorStatusRequest}
-          // source={sources.length && !successRequest ? sources[0] : undefined}
-        />
-      );
-    }
-    if (currentStep === StepType.CREATE_DESTINATION) {
-      const onSubmitDestinationStep = async (values: {
-        name: string;
-        serviceType: string;
-        destinationDefinitionId?: string;
-        connectionConfiguration?: ConnectionConfiguration;
-      }) => {
-        setErrorStatusRequest(null);
-        const destinationConnector = getDestinationDefinitionById(
-          values.serviceType
-        );
-
-        try {
-          if (!!destinations.length) {
-            await recreateDestination({
-              values,
-              destinationId: destinations[0].destinationId,
-            });
-          } else {
-            await createDestination({
-              values,
-              destinationConnector,
-            });
-          }
-
-          setSuccessRequest(true);
-          setTimeout(() => {
-            setSuccessRequest(false);
-            setCurrentStep(StepType.SET_UP_CONNECTION);
-          }, 2000);
-        } catch (e) {
-          setErrorStatusRequest(e);
-        }
-      };
-      return (
-        <DestinationStep
-          afterSelectConnector={() => setErrorStatusRequest(null)}
-          onSubmit={onSubmitDestinationStep}
-          availableServices={destinationDefinitions}
-          hasSuccess={successRequest}
-          error={errorStatusRequest}
-          // destination={
-          //   destinations.length && !successRequest ? destinations[0] : undefined
-          // }
-        />
-      );
-    }
-
-    if (currentStep === StepType.SET_UP_CONNECTION) {
-      return (
-        <ConnectionStep
-          errorStatus={errorStatusRequest?.status}
-          source={sources[0]}
-          destination={destinations[0]}
-          afterSubmitConnection={() => setCurrentStep(StepType.FINAl)}
-        />
-      );
-    }
-
-    const onSync = () => syncConnection(connections[0]);
-
-    return (
-      <FinalStep connectionId={connections[0].connectionId} onSync={onSync} />
-    );
-  };
-
   return (
-    <ScreenContent>
-      {currentStep === StepType.CREATE_SOURCE ? (
-        <LetterLine exit={successRequest} />
-      ) : currentStep === StepType.CREATE_DESTINATION ? (
-        <LetterLine onRight exit={successRequest} />
-      ) : null}
-      <Content
-        big={currentStep === StepType.SET_UP_CONNECTION}
-        medium={
-          currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
-        }
-      >
-        <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-        <StepsCounter steps={steps} currentStep={currentStep} />
-
-        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
-        <Footer>
-          <Button secondary onClick={() => handleFinishOnboarding()}>
-            {currentStep === StepType.FINAl ? (
-              <FormattedMessage id="onboarding.closeOnboarding" />
-            ) : (
-              <FormattedMessage id="onboarding.skipOnboarding" />
+    <ConnectorDocumentationWrapper>
+      <ScreenContent>
+        {!hasApiError && (
+          <>
+            {currentStep === StepType.CREATE_SOURCE ? (
+              <LetterLine exit={animateExit} />
+            ) : currentStep === StepType.CREATE_DESTINATION ? (
+              <LetterLine onRight exit={animateExit} />
+            ) : null}
+          </>
+        )}
+        <Content
+          big={currentStep === StepType.SET_UP_CONNECTION}
+          medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAL}
+        >
+          <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
+          <StepsCounter steps={steps} currentStep={currentStep} />
+          <Suspense fallback={<LoadingPage />}>
+            {TITLE_BY_STEP[currentStep] && (
+              <TitlesBlock
+                title={
+                  <FormattedMessage
+                    id={`onboarding.create${TITLE_BY_STEP[currentStep]}`}
+                    values={{
+                      name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
+                    }}
+                  />
+                }
+              >
+                <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />
+              </TitlesBlock>
             )}
-          </Button>
-        </Footer>
-      </Content>
-    </ScreenContent>
+            <ApiErrorBoundary
+              onError={(error) => {
+                setHasApiError(!!error);
+              }}
+            >
+              {currentStep === StepType.INSTRUCTION && (
+                <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
+              )}
+              {currentStep === StepType.CREATE_SOURCE && (
+                <SourceStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
+                />
+              )}
+              {currentStep === StepType.CREATE_DESTINATION && (
+                <DestinationStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
+                />
+              )}
+              {currentStep === StepType.SET_UP_CONNECTION && (
+                <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAL)} />
+              )}
+              {currentStep === StepType.FINAL && <FinalStep />}
+            </ApiErrorBoundary>
+          </Suspense>
+          <Footer>
+            <Button secondary onClick={() => handleFinishOnboarding()}>
+              {currentStep === StepType.FINAL ? (
+                <FormattedMessage id="onboarding.closeOnboarding" />
+              ) : (
+                <FormattedMessage id="onboarding.skipOnboarding" />
+              )}
+            </Button>
+          </Footer>
+        </Content>
+      </ScreenContent>
+    </ConnectorDocumentationWrapper>
   );
 };
 

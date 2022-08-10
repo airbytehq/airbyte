@@ -1,5 +1,6 @@
-import { RoutePaths } from "pages/routes";
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+
+import { RoutePaths } from "../../../pages/routePaths";
 
 const getPageName = (pathname: string): string => {
   const itemSourcePageRegex = new RegExp(`${RoutePaths.Source}/.*`);

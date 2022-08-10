@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -146,7 +146,7 @@ class DestinationNameTransformer:
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
-        result = self.__normalize_naming_conventions(result)
+        result = self.__normalize_naming_conventions(result, is_column=False)
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
@@ -160,7 +160,7 @@ class DestinationNameTransformer:
     def __normalize_identifier_name(
         self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
-        result = self.__normalize_naming_conventions(column_name)
+        result = self.__normalize_naming_conventions(column_name, is_column=True)
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
@@ -181,22 +181,26 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def apply_quote(self, input: str) -> str:
+    def apply_quote(self, input: str, literal=True) -> str:
+        if literal:
+            input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
-            return f"quote('{input}')"
+            return f"quote({input})"
         elif self.destination_type == DestinationType.CLICKHOUSE:
-            return f"quote('{input}')"
-        return f"adapter.quote('{input}')"
+            return f"quote({input})"
+        return f"adapter.quote({input})"
 
-    def __normalize_naming_conventions(self, input_name: str) -> str:
+    def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name
         if self.destination_type.value == DestinationType.ORACLE.value:
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.BIGQUERY.value:
+            # Can start with number: datasetId, table
+            # Can not start with number: column
             result = transform_standard_naming(result)
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
-            if doesnt_start_with_alphaunderscore:
+            if is_column and doesnt_start_with_alphaunderscore:
                 result = f"_{result}"
         return result
 

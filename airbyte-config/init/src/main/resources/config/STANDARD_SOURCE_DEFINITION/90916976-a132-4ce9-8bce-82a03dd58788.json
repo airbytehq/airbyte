@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "90916976-a132-4ce9-8bce-82a03dd58788",
-  "name": "BambooHR",
-  "dockerRepository": "airbyte/source-bamboo-hr",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bamboo-hr",
-  "icon": "bamboohr.svg"
-}

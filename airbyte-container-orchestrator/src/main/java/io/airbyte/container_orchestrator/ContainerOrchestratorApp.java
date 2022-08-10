@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.container_orchestrator;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
@@ -35,6 +37,9 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import sun.misc.Signal;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -48,32 +53,42 @@ import lombok.extern.slf4j.Slf4j;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ContainerOrchestratorApp {
+
+  public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
 
   private final String application;
   private final Map<String, String> envMap;
   private final JobRunConfig jobRunConfig;
   private final KubePodInfo kubePodInfo;
   private final Configs configs;
+  private final FeatureFlags featureFlags;
 
   public ContainerOrchestratorApp(
                                   final String application,
                                   final Map<String, String> envMap,
                                   final JobRunConfig jobRunConfig,
-                                  final KubePodInfo kubePodInfo) {
+                                  final KubePodInfo kubePodInfo,
+                                  final FeatureFlags featureFlags) {
     this.application = application;
     this.envMap = envMap;
     this.jobRunConfig = jobRunConfig;
     this.kubePodInfo = kubePodInfo;
     this.configs = new EnvConfigs(envMap);
+    this.featureFlags = featureFlags;
   }
 
   private void configureLogging() {
-    for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+    for (final String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
       if (envMap.containsKey(envVar)) {
         System.setProperty(envVar, envMap.get(envVar));
       }
     }
+
+    // make sure the new configuration is picked up
+    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    ctx.reconfigure();
 
     final var logClient = LogClientSingleton.getInstance();
     logClient.setJobMdc(
@@ -93,7 +108,7 @@ public class ContainerOrchestratorApp {
 
       final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags);
 
       if (jobOrchestrator == null) {
         throw new IllegalStateException("Could not find job orchestrator for application: " + application);
@@ -110,7 +125,7 @@ public class ContainerOrchestratorApp {
 
       // required to kill clients with thread pools
       System.exit(0);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }
@@ -140,23 +155,38 @@ public class ContainerOrchestratorApp {
 
   public static void main(final String[] args) {
     try {
+      // otherwise the pod hangs on closing
+      Signal.handle(new Signal("TERM"), sig -> {
+        log.error("Received termination signal, failing...");
+        System.exit(1);
+      });
+
       // wait for config files to be copied
       final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
+      int secondsWaited = 0;
 
-      while (!successFile.toFile().exists()) {
+      while (!successFile.toFile().exists() && secondsWaited < MAX_SECONDS_TO_WAIT_FOR_FILE_COPY) {
         log.info("Waiting for config file transfers to complete...");
         Thread.sleep(1000);
+        secondsWaited++;
+      }
+
+      if (!successFile.toFile().exists()) {
+        log.error("Config files did not transfer within the maximum amount of time ({} seconds)!", MAX_SECONDS_TO_WAIT_FOR_FILE_COPY);
+        System.exit(1);
       }
 
       final var applicationName = JobOrchestrator.readApplicationName();
       final var envMap = JobOrchestrator.readEnvMap();
       final var jobRunConfig = JobOrchestrator.readJobRunConfig();
       final var kubePodInfo = JobOrchestrator.readKubePodInfo();
+      final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
+      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo, featureFlags);
       app.run();
-    } catch (Throwable t) {
-      log.info("Orchestrator failed...", t);
+    } catch (final Throwable t) {
+      log.error("Orchestrator failed...", t);
+      // otherwise the pod hangs on closing
       System.exit(1);
     }
   }
@@ -164,10 +194,11 @@ public class ContainerOrchestratorApp {
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
                                                        final WorkerConfigs workerConfigs,
                                                        final ProcessFactory processFactory,
-                                                       final String application) {
+                                                       final String application,
+                                                       final FeatureFlags featureFlags) {
 
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
@@ -189,7 +220,11 @@ public class ContainerOrchestratorApp {
       // exposed)
       KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs,
+          configs.getJobKubeNamespace(),
+          fabricClient,
+          kubeHeartbeatUrl,
+          false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

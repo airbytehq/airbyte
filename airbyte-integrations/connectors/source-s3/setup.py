@@ -1,23 +1,30 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.28",
-    "pyarrow==4.0.1",
+    "airbyte-cdk",
+    "pyarrow==8.0.0",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.2",
     "dill==0.3.4",
     "pytz",
+    "fastavro==1.4.11",
+    "python-snappy==0.6.1",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
     "pandas==1.3.1",
+    "psutil",
+    "pytest-order",
+    "netifaces~=0.11.0",
+    "docker",
+    "avro==1.11.0",
 ]
 
 setup(

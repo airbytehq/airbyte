@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.cassandra;
@@ -53,8 +53,8 @@ class CassandraMessageConsumerIT {
 
     var catalog = TestDataFactory.createConfiguredAirbyteCatalog(cStream1, cStream2);
 
-    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, message -> {});
     cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {});
     nameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
 

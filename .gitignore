@@ -1,6 +1,5 @@
 .gradle
 .idea
-.vscode
 *.iml
 *.swp
 build
@@ -11,9 +10,9 @@ data
 .classpath
 .project
 .settings
+.vscode
 **/gmon.out
 static_checker_reports/
-.vscode
 
 # Logs
 acceptance_tests_logs/
@@ -65,3 +64,6 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
+
+# Summary.md keeps getting added and we just don't like it
+docs/SUMMARY.md

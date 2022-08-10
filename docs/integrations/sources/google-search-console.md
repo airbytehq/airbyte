@@ -1,51 +1,17 @@
 # Google Search Console
 
-## Overview
+This page contains the setup guide and reference information for the google search console source connector.
 
-The Google Search Console source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-### Output schema
-
-This Source is capable of syncing the following Streams:
-
-* [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-* [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-* [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
-* [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | except Sites and Sitemaps |
-| SSL connection | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/search-console-api-original/v3/limits) documentation.
-
-## Getting started
-
-### Requirements
+## Prerequisites
 
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 
-## How to create the client credentials for Google Search Console, to use with Airbyte?
+
+## Setup guide
+### Step 1: Set up google search console
+
+#### How to create the client credentials for Google Search Console, to use with Airbyte?
 
 You can either:
 
@@ -90,21 +56,79 @@ Follow the Google Documentation for performing [Delegating domain-wide authority
 
 At the end of this process, you should have JSON credentials to this Google Service Account.
 
-You should now be ready to use the Google Workspace Admin Reports API connector in Airbyte.
+## Step 2: Set up the google search console connector in Airbyte
 
-## CHANGELOG
+### For Airbyte Cloud:
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
+4. Click Authenticate your account to sign in with Google and authorize your account. 
+5. Fill in the `site_urls` field.
+5. Fill in the `start date` field.
+6. You should be ready to sync data.
+
+### For Airbyte OSS:
+
+1. Fill in the `service_account_info` and `email` fields for authentication. 
+2. Fill in the `site_urls` field. 
+3. Fill in the `start date` field.
+4. You should be ready to sync data.
+
+
+## Supported sync modes
+
+The google search console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Yes | except Sites and Sitemaps |
+| SSL connection | Yes |  |
+| Namespaces | No |  |
+
+
+## Supported Streams
+
+* [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
+* [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
+* [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
+* [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+
+
+## Performance considerations
+
+This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/search-console-api-original/v3/limits) documentation.
+
+
+## Data type map
+
+| Integration Type | Airbyte Type | Notes |
+| :--- | :--- | :--- |
+| `string` | `string` |  |
+| `number` | `number` |  |
+| `array` | `array` |  |
+| `object` | `object` |  |
+
+
+## Changelog
+
+| Version  | Date | Pull Request | Subject |
+|:---------| :--- | :--- | :--- |
+| `0.1.13`  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
+| `0.1.12`  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | `0.1.11` | 2022-01-05 | [9186](https://github.com/airbytehq/airbyte/pull/9186) [9194](https://github.com/airbytehq/airbyte/pull/9194) | Fix incremental sync: keep all urls in state object |
 | `0.1.10` | 2021-12-23 | [9073](https://github.com/airbytehq/airbyte/pull/9073) | Add slicing by date range |
-| `0.1.9` | 2021-12-22 | [9047](https://github.com/airbytehq/airbyte/pull/9047) | Add 'order' to spec.json props |
-| `0.1.8` | 2021-12-21 | [8248](https://github.com/airbytehq/airbyte/pull/8248) | Enable Sentry for performance and errors tracking |
-| `0.1.7` | 2021-11-26 | [7431](https://github.com/airbytehq/airbyte/pull/7431) | Add default `end_date` param value |
-| `0.1.6` | 2021-09-27 | [6460](https://github.com/airbytehq/airbyte/pull/6460) | Update OAuth Spec File |
-| `0.1.4` | 2021-09-23 | [6394](https://github.com/airbytehq/airbyte/pull/6394) | Update Doc link Spec File |
-| `0.1.3` | 2021-09-23 | [6405](https://github.com/airbytehq/airbyte/pull/6405) | Correct Spec File |
-| `0.1.2` | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222) | Correct Spec File |
-| `0.1.1` | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315) | Verify access to all sites when performing connection check |
-| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
-
+| `0.1.9`  | 2021-12-22 | [9047](https://github.com/airbytehq/airbyte/pull/9047) | Add 'order' to spec.json props |
+| `0.1.8`  | 2021-12-21 | [8248](https://github.com/airbytehq/airbyte/pull/8248) | Enable Sentry for performance and errors tracking |
+| `0.1.7`  | 2021-11-26 | [7431](https://github.com/airbytehq/airbyte/pull/7431) | Add default `end_date` param value |
+| `0.1.6`  | 2021-09-27 | [6460](https://github.com/airbytehq/airbyte/pull/6460) | Update OAuth Spec File |
+| `0.1.4`  | 2021-09-23 | [6394](https://github.com/airbytehq/airbyte/pull/6394) | Update Doc link Spec File |
+| `0.1.3`  | 2021-09-23 | [6405](https://github.com/airbytehq/airbyte/pull/6405) | Correct Spec File |
+| `0.1.2`  | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222) | Correct Spec File |
+| `0.1.1`  | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315) | Verify access to all sites when performing connection check |
+| `0.1.0`  | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |

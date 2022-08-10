@@ -1,0 +1,156 @@
+{
+  "list": [
+    {
+      "coupon": {
+        "id": "cbdemo_earlybird",
+        "name": "Early Bird",
+        "invoice_name": "Early Bird Discount",
+        "discount_type": "fixed_amount",
+        "discount_amount": 1000,
+        "duration_type": "forever",
+        "max_redemptions": 5000,
+        "status": "active",
+        "apply_discount_on": "not_applicable",
+        "apply_on": "invoice_amount",
+        "created_at": 1627671473,
+        "updated_at": 1627671473,
+        "resource_version": 1627671473312,
+        "object": "coupon",
+        "redemptions": 0,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "coupon": {
+        "id": "cbdemo_holidays",
+        "name": "Holidays",
+        "invoice_name": "Happy Holidays!",
+        "discount_type": "percentage",
+        "discount_percentage": 15.0,
+        "duration_type": "limited_period",
+        "duration_month": 12,
+        "status": "active",
+        "apply_discount_on": "not_applicable",
+        "apply_on": "each_specified_item",
+        "created_at": 1627671473,
+        "updated_at": 1627671473,
+        "period": 12,
+        "period_unit": "month",
+        "resource_version": 1627671473419,
+        "object": "coupon",
+        "redemptions": 0,
+        "item_constraints": [
+          {
+            "item_type": "plan",
+            "constraint": "none"
+          },
+          {
+            "item_type": "addon",
+            "constraint": "all"
+          },
+          {
+            "item_type": "charge",
+            "constraint": "none"
+          }
+        ]
+      }
+    },
+    {
+      "coupon": {
+        "id": "cbdemo_specialoffer",
+        "name": "Special Offer",
+        "invoice_name": "Special Discount",
+        "discount_type": "percentage",
+        "discount_percentage": 10.0,
+        "duration_type": "forever",
+        "status": "active",
+        "apply_discount_on": "not_applicable",
+        "apply_on": "invoice_amount",
+        "created_at": 1627671473,
+        "updated_at": 1627671473,
+        "resource_version": 1627671473513,
+        "object": "coupon",
+        "redemptions": 0
+      }
+    },
+    {
+      "coupon": {
+        "id": "cbdemo_launchoffer",
+        "name": "Launch Offer",
+        "invoice_name": "Special Launch Offer",
+        "discount_type": "percentage",
+        "discount_percentage": 30.0,
+        "duration_type": "one_time",
+        "max_redemptions": 1000,
+        "status": "active",
+        "apply_discount_on": "not_applicable",
+        "apply_on": "each_specified_item",
+        "created_at": 1627671473,
+        "updated_at": 1627671473,
+        "resource_version": 1627671473621,
+        "object": "coupon",
+        "redemptions": 0,
+        "item_constraints": [
+          {
+            "item_type": "plan",
+            "constraint": "criteria"
+          },
+          {
+            "item_type": "addon",
+            "constraint": "none"
+          },
+          {
+            "item_type": "charge",
+            "constraint": "none"
+          }
+        ],
+        "item_constraint_criteria": [
+          {
+            "item_type": "plan",
+            "currencies": ["USD"]
+          }
+        ]
+      }
+    },
+    {
+      "coupon": {
+        "id": "cbdemo_usd100",
+        "name": "USD 100 Offer",
+        "invoice_name": "Discount",
+        "discount_type": "fixed_amount",
+        "discount_amount": 10000,
+        "duration_type": "forever",
+        "status": "active",
+        "apply_discount_on": "not_applicable",
+        "apply_on": "each_specified_item",
+        "created_at": 1627671473,
+        "updated_at": 1627671473,
+        "resource_version": 1627671473754,
+        "object": "coupon",
+        "redemptions": 0,
+        "currency_code": "USD",
+        "item_constraints": [
+          {
+            "item_type": "plan",
+            "constraint": "criteria"
+          },
+          {
+            "item_type": "addon",
+            "constraint": "none"
+          },
+          {
+            "item_type": "charge",
+            "constraint": "none"
+          }
+        ],
+        "item_constraint_criteria": [
+          {
+            "item_type": "plan",
+            "item_family_ids": ["cbdemo_pf_analytics"],
+            "item_price_periods": ["1 year"]
+          }
+        ]
+      }
+    }
+  ]
+}

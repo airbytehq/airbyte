@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -304,6 +304,11 @@ class Jobs(GitlabChildStream):
         super().transform(record, stream_slice, **kwargs)
         record["project_id"] = stream_slice["project_id"]
         return record
+
+
+class GroupIssueBoards(GitlabChildStream):
+    path_template = "groups/{id}/boards"
+    flatten_parent_id = True
 
 
 class Users(GitlabChildStream):

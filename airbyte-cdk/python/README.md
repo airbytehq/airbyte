@@ -8,7 +8,7 @@ The Airbyte Python CDK is a framework for rapidly developing production-grade Ai
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding.
 
 ## Getting Started
 
@@ -49,7 +49,7 @@ See the [concepts docs](docs/concepts/) for a tour through what the API offers.
 
 ### First time setup
 
-We assume `python` points to python &gt;=3.7.
+We assume `python` points to python &gt;=3.9.
 
 Setup a virtual env:
 

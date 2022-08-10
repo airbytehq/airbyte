@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -15,19 +15,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceGiveFeedback;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
-import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationReadList;
+import io.airbyte.api.model.generated.SlugRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.WorkspaceCreate;
+import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.WorkspaceRead;
+import io.airbyte.api.model.generated.WorkspaceReadList;
+import io.airbyte.api.model.generated.WorkspaceUpdate;
+import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
@@ -44,6 +45,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -57,6 +59,10 @@ class WorkspacesHandlerTest {
   private Supplier<UUID> uuidSupplier;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
+
+  private static final String TEST_EMAIL = "test@airbyte.io";
+  private static final String TEST_WORKSPACE_NAME = "test workspace";
+  private static final String TEST_WORKSPACE_SLUG = "test-workspace";
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -74,9 +80,9 @@ class WorkspacesHandlerTest {
     return new StandardWorkspace()
         .withWorkspaceId(UUID.randomUUID())
         .withCustomerId(UUID.randomUUID())
-        .withEmail("test@airbyte.io")
-        .withName("test workspace")
-        .withSlug("test-workspace")
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
         .withNews(false)
@@ -93,10 +99,10 @@ class WorkspacesHandlerTest {
             .withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
-  private io.airbyte.api.model.Notification generateApiNotification() {
-    return new io.airbyte.api.model.Notification()
-        .notificationType(io.airbyte.api.model.NotificationType.SLACK)
-        .slackConfiguration(new io.airbyte.api.model.SlackNotificationConfiguration()
+  private io.airbyte.api.model.generated.Notification generateApiNotification() {
+    return new io.airbyte.api.model.generated.Notification()
+        .notificationType(io.airbyte.api.model.generated.NotificationType.SLACK)
+        .slackConfiguration(new io.airbyte.api.model.generated.SlackNotificationConfiguration()
             .webhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
@@ -111,7 +117,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false)
@@ -121,7 +127,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name("new workspace")
         .slug("new-workspace")
         .initialSetupComplete(false)
@@ -148,7 +154,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name(workspace.getName())
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false)
@@ -158,7 +164,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(false)
@@ -255,9 +261,9 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
+        .email(TEST_EMAIL)
+        .name(TEST_WORKSPACE_NAME)
+        .slug(TEST_WORKSPACE_SLUG)
         .initialSetupComplete(false)
         .displaySetupWizard(true)
         .news(false)
@@ -276,7 +282,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
@@ -291,7 +297,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final io.airbyte.api.model.Notification apiNotification = generateApiNotification();
+    final io.airbyte.api.model.generated.Notification apiNotification = generateApiNotification();
     apiNotification.getSlackConfiguration().webhook("updated");
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
         .workspaceId(workspace.getWorkspaceId())
@@ -307,9 +313,9 @@ class WorkspacesHandlerTest {
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
         .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@airbyte.io")
-        .withName("test workspace")
-        .withSlug("test-workspace")
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
         .withAnonymousDataCollection(true)
         .withSecurityUpdates(false)
         .withNews(false)
@@ -324,14 +330,14 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
-    final io.airbyte.api.model.Notification expectedNotificationRead = generateApiNotification();
+    final io.airbyte.api.model.generated.Notification expectedNotificationRead = generateApiNotification();
     expectedNotificationRead.getSlackConfiguration().webhook("updated");
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
+        .email(TEST_EMAIL)
+        .name(TEST_WORKSPACE_NAME)
+        .slug(TEST_WORKSPACE_SLUG)
         .initialSetupComplete(true)
         .displaySetupWizard(false)
         .news(false)
@@ -345,7 +351,52 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+  @DisplayName("Updating workspace name should update name and slug")
+  void testUpdateWorkspaceNoNameUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceUpdateName workspaceUpdate = new WorkspaceUpdateName()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("New Workspace Name");
+
+    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
+        .withWorkspaceId(workspace.getWorkspaceId())
+        .withCustomerId(workspace.getCustomerId())
+        .withEmail(TEST_EMAIL)
+        .withName("New Workspace Name")
+        .withSlug("new-workspace-name")
+        .withAnonymousDataCollection(workspace.getAnonymousDataCollection())
+        .withSecurityUpdates(workspace.getSecurityUpdates())
+        .withNews(workspace.getNews())
+        .withInitialSetupComplete(workspace.getInitialSetupComplete())
+        .withDisplaySetupWizard(workspace.getDisplaySetupWizard())
+        .withTombstone(false)
+        .withNotifications(workspace.getNotifications());
+
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace)
+        .thenReturn(expectedWorkspace);
+
+    final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspaceName(workspaceUpdate);
+
+    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email(TEST_EMAIL)
+        .name("New Workspace Name")
+        .slug("new-workspace-name")
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(List.of(generateApiNotification()));
+
+    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+
+    assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
         .workspaceId(UUID.randomUUID());
 

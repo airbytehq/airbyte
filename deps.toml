@@ -1,0 +1,98 @@
+[versions]
+fasterxml_version = "2.13.0"
+flyway = "7.14.0"
+glassfish_version = "2.31"
+hikaricp = "5.0.1"
+commons_io = "2.7"
+log4j = "2.17.1"
+slf4j = "1.7.30"
+lombok = "1.18.22"
+jooq = "3.13.4"
+junit-jupiter = "5.8.2"
+postgresql = "42.3.5"
+connectors-testcontainers = "1.15.3"
+connectors-testcontainers-cassandra = "1.16.0"
+connectors-testcontainers-mariadb = "1.16.2"
+connectors-testcontainers-pulsar = "1.16.2"
+connectors-testcontainers-scylla = "1.16.2"
+connectors-testcontainers-tidb = "1.16.3"
+connectors-destination-testcontainers-clickhouse = "1.17.3"
+connectors-destination-testcontainers-oracle-xe = "1.17.3"
+connectors-source-testcontainers-clickhouse = "1.17.3"
+platform-testcontainers = "1.17.1"
+
+[libraries]
+fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
+glassfish = { module = "org.glassfish.jersey:jackson-bom", version.ref = "glassfish_version" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "fasterxml_version" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }
+jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "fasterxml_version" }
+jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
+guava = { module = "com.google.guava:guava", version = "30.1.1-jre" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
+apache-commons = { module = "org.apache.commons:commons-compress", version = "1.20" }
+apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version = "1.7.30" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
+jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
+jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
+jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+connectors-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-cassandra = { module = "org.testcontainers:cassandra", version.ref = "connectors-testcontainers-cassandra" }
+connectors-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-db2 = { module = "org.testcontainers:db2", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "connectors-testcontainers-mariadb" }
+connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "connectors-testcontainers-pulsar" }
+connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-scylla" }
+connectors-testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-tidb" }
+connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
+connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
+connectors-source-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-source-testcontainers-clickhouse" }
+connectors-source-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-testcontainers" }
+platform-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "platform-testcontainers" }
+platform-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "platform-testcontainers" }
+platform-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "platform-testcontainers" }
+platform-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "platform-testcontainers" }
+log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
+appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
+aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
+google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
+s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.0.0" }
+assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
+spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
+otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
+otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
+otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
+otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
+micrometer-statsd = {module = "io.micrometer:micrometer-registry-statsd", version = "1.9.2"}
+
+quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
+
+[bundles]
+jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
+apache = ["apache-commons", "apache-commons-lang"]
+log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
+slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
+junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]

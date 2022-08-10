@@ -1,65 +1,45 @@
-import { useFetcher } from "rest-hooks";
+import { getFrequencyConfig } from "config/utils";
+import { Action, Namespace } from "core/analytics";
+import { buildConnectionUpdate } from "core/domain/connection";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
-import ConnectionResource, { Connection } from "core/resources/Connection";
-import useConnection from "hooks/services/useConnectionHook";
-import { Status } from "./types";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
 const useSyncActions = (): {
-  changeStatus: (connection: Connection) => Promise<void>;
-  syncManualConnection: (connection: Connection) => Promise<void>;
+  changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;
+  syncManualConnection: (connection: WebBackendConnectionRead) => Promise<void>;
 } => {
-  const { updateConnection } = useConnection();
-  const SyncConnection = useFetcher(ConnectionResource.syncShape());
+  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: syncConnection } = useSyncConnection();
   const analyticsService = useAnalyticsService();
 
-  const changeStatus = async (connection: Connection) => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      prefix: connection.prefix,
-      schedule: connection.schedule || null,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      operations: connection.operations,
-      status:
-        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
-    });
-
-    const frequency = FrequencyConfig.find(
-      (item) =>
-        JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  const changeStatus = async (connection: WebBackendConnectionRead) => {
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      })
     );
 
-    analyticsService.track("Source - Action", {
-      action:
-        connection.status === "active"
-          ? "Disable connection"
-          : "Reenable connection",
+    const frequency = getFrequencyConfig(connection.schedule);
+
+    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
+
+    analyticsService.track(Namespace.CONNECTION, trackableAction, {
+      frequency: frequency?.type,
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      available_streams: connection.syncCatalog.streams.length,
+      enabled_streams: enabledStreams,
     });
   };
 
-  const syncManualConnection = async (connection: Connection) => {
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
-      frequency: "manual", // Only manual connections have this button
-    });
-
-    await SyncConnection({
-      connectionId: connection.connectionId,
-    });
+  const syncManualConnection = async (connection: WebBackendConnectionRead) => {
+    await syncConnection(connection);
   };
 
   return { changeStatus, syncManualConnection };

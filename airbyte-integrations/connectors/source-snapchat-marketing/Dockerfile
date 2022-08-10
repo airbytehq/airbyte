@@ -1,4 +1,4 @@
-FROM python:3.7.11-alpine3.14 as base
+FROM python:3.9.11-alpine3.15 as base
 FROM base as builder
 
 
@@ -25,5 +25,5 @@ COPY source_snapchat_marketing ./source_snapchat_marketing
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.4
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-snapchat-marketing

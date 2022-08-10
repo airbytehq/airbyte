@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -51,7 +53,14 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .s3Format(S3Format.PARQUET)
+        .timestamp(uploadTimestamp)
+        .fileExtension(S3Format.PARQUET.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
+
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
@@ -78,8 +87,9 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
   public static Configuration getHadoopConfig(final S3DestinationConfig config) {
     final Configuration hadoopConfig = new Configuration();
-    hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
-    hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
+    hadoopConfig.set(Constants.ACCESS_KEY, credentialConfig.getAccessKeyId());
+    hadoopConfig.set(Constants.SECRET_KEY, credentialConfig.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
       hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
     } else {
@@ -137,7 +147,8 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.rockset;
@@ -14,7 +14,7 @@ public class RocksetSQLNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  protected String applyDefaultCase(String input) {
+  public String applyDefaultCase(String input) {
     return input.toLowerCase();
   }
 

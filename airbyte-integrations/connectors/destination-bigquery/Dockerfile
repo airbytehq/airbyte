@@ -13,8 +13,9 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
+ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.6.5
+LABEL io.airbyte.version=1.1.14
 LABEL io.airbyte.name=airbyte/destination-bigquery

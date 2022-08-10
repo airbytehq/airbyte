@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,7 @@ import sys
 import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests import codes, exceptions
+from requests import codes, exceptions  # type: ignore[import]
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,

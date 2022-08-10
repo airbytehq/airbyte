@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -15,28 +15,38 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class JdbcSqlOperations implements SqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";
 
-  @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
-    if (!isSchemaExists(database, schemaName)) {
-      database.execute(createSchemaQuery(schemaName));;
-    }
+  // this adapter modifies record message before inserting them to the destination
+  protected final Optional<DataAdapter> dataAdapter;
+  private final Set<String> schemaSet = new HashSet<>();
+
+  protected JdbcSqlOperations() {
+    this.dataAdapter = Optional.empty();
   }
 
-  private String createSchemaQuery(final String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
+  protected JdbcSqlOperations(final DataAdapter dataAdapter) {
+    this.dataAdapter = Optional.of(dataAdapter);
+  }
+
+  @Override
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+    if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+      database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
+      schemaSet.add(schemaName);
+    }
   }
 
   @Override
@@ -56,20 +66,13 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
-    PrintWriter writer = null;
-    try {
-      writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
-      final var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
-
+    try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
+        final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
       for (final AirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
         final var jsonData = Jsons.serialize(formatData(record.getData()));
         final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
-      }
-    } finally {
-      if (writer != null) {
-        writer.close();
       }
     }
   }
@@ -124,7 +127,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
-    records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
+    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
     insertRecordsInternal(database, records, schemaName, tableName);
   }
 
@@ -133,9 +136,5 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
-
-  protected DataAdapter getDataAdapter() {
-    return new DataAdapter(j -> false, c -> c);
-  }
 
 }

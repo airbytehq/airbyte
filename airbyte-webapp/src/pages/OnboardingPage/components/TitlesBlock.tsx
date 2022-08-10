@@ -1,12 +1,13 @@
 import React from "react";
-import { H1 } from "components/base";
 import styled from "styled-components";
 
-type TitlesBlockProps = {
+import { H1 } from "components/base";
+
+interface TitlesBlockProps {
   title: React.ReactNode;
   children?: React.ReactNode;
   testId?: string;
-};
+}
 
 const TitlesContent = styled.div`
   padding: 42px 0 33px;
@@ -22,11 +23,7 @@ const Text = styled.div`
   text-align: center;
 `;
 
-const TitlesBlock: React.FC<TitlesBlockProps> = ({
-  title,
-  children,
-  testId,
-}) => {
+const TitlesBlock: React.FC<TitlesBlockProps> = ({ title, children, testId }) => {
   return (
     <TitlesContent>
       <H1 center bold data-testid={testId}>

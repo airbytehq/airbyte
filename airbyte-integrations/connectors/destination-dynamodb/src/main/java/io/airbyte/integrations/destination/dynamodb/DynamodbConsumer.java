@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -28,8 +28,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, DynamodbWriter> streamNameAndNamespaceToWriters;
-
-  private AirbyteMessage lastStateMessage = null;
 
   public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
                           final ConfiguredAirbyteCatalog configuredCatalog,
@@ -80,7 +78,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      this.lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
       return;
     } else if (airbyteMessage.getType() != AirbyteMessage.Type.RECORD) {
       return;
@@ -104,10 +102,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) throws Exception {
     for (final DynamodbWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
-    }
-    // DynamoDB stream uploader is all or nothing if a failure happens in the destination.
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 

@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +33,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -47,9 +45,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -72,42 +71,55 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
+  private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
 
-  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
+  protected static final String DATASET_LOCATION = "EU";
+  protected static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users";
-  private static final String TASKS_STREAM_NAME = "tasks";
-  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected static final String USERS_STREAM_NAME = "users";
+  protected static final String TASKS_STREAM_NAME = "tasks";
+  protected static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
+  protected static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
+  private static final NamingConventionTransformer NAMING_RESOLVER = new BigQuerySQLNameTransformer();
 
-  private JsonNode config;
+  protected JsonNode config;
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected ConfiguredAirbyteCatalog catalog;
+  protected boolean tornDown = true;
 
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private ConfiguredAirbyteCatalog catalog;
-
-  private boolean tornDown = true;
+  private static Stream<Arguments> datasetIdResetterProvider() {
+    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
+    return Stream.of(
+        Arguments.arguments(new DatasetIdResetter(config -> {})),
+        Arguments.arguments(new DatasetIdResetter(
+            config -> {
+              final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+              final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+              ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
+                  String.format("%s:%s", projectId, datasetId));
+            })));
+  }
 
   @BeforeEach
   void setup(final TestInfo info) throws IOException {
@@ -119,21 +131,20 @@ class BigQueryDestinationTest {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(credentials)
         .build()
         .getService();
 
-    final String datasetId = Strings.addRandomSuffix("111airbyte_tests", "_", 8);
-    final String datasetLocation = "EU";
+    final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
@@ -141,33 +152,33 @@ class BigQueryDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-            io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
             io.airbyte.protocol.models.Field
-                .of("id", JsonSchemaPrimitive.STRING))
+                .of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
-        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
+        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(DATASET_LOCATION).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
     tornDown = false;
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  if (!tornDown) {
-                    tearDownBigQuery();
-                  }
-                }));
+    addShutdownHook();
+  }
 
+  protected void addShutdownHook() {
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      if (!tornDown) {
+        tearDownBigQuery();
+      }
+    }));
   }
 
   @AfterEach
@@ -179,7 +190,7 @@ class BigQueryDestinationTest {
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
@@ -204,7 +215,7 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
-  void testCheckSuccess(DatasetIdResetter resetDatasetId) {
+  void testCheckSuccess(final DatasetIdResetter resetDatasetId) {
     resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -213,7 +224,7 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
-  void testCheckFailure(DatasetIdResetter resetDatasetId) {
+  void testCheckFailure(final DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
@@ -226,11 +237,12 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
-  void testWriteSuccess(DatasetIdResetter resetDatasetId) throws Exception {
+  void testWriteSuccess(final DatasetIdResetter resetDatasetId) throws Exception {
     resetDatasetId.accept(config);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
@@ -257,7 +269,7 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
-  void testWriteFailure(DatasetIdResetter resetDatasetId) throws Exception {
+  void testWriteFailure(final DatasetIdResetter resetDatasetId) throws Exception {
     resetDatasetId.accept(config);
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
@@ -265,6 +277,7 @@ class BigQueryDestinationTest {
 
     final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
+    consumer.start();
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
@@ -273,7 +286,7 @@ class BigQueryDestinationTest {
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
-        .collect(toList());
+        .toList();
     assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
@@ -320,7 +333,7 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
-  void testWritePartitionOverUnpartitioned(DatasetIdResetter resetDatasetId) throws Exception {
+  void testWritePartitionOverUnpartitioned(final DatasetIdResetter resetDatasetId) throws Exception {
     resetDatasetId.accept(config);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
@@ -328,6 +341,7 @@ class BigQueryDestinationTest {
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
@@ -384,31 +398,18 @@ class BigQueryDestinationTest {
     return false;
   }
 
-  private static class DatasetIdResetter {
+  protected static class DatasetIdResetter {
 
-    private Consumer<JsonNode> consumer;
+    private final Consumer<JsonNode> consumer;
 
-    DatasetIdResetter(Consumer<JsonNode> consumer) {
+    DatasetIdResetter(final Consumer<JsonNode> consumer) {
       this.consumer = consumer;
     }
 
-    public void accept(JsonNode config) {
+    public void accept(final JsonNode config) {
       consumer.accept(config);
     }
 
-  }
-
-  private static Stream<Arguments> datasetIdResetterProvider() {
-    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
-    return Stream.of(
-        Arguments.arguments(new DatasetIdResetter(config -> {})),
-        Arguments.arguments(new DatasetIdResetter(
-            config -> {
-              String projectId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-              String datasetId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-              ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
-                  String.format("%s:%s", projectId, datasetId));
-            })));
   }
 
 }

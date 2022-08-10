@@ -1,15 +1,17 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { JobInfo, JobListItem, Logs } from "core/domain/job/Job";
-import Status from "core/statuses";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import JobLogs from "./components/JobLogs";
+import { AttemptRead, CheckConnectionReadStatus, JobStatus } from "../../core/request/AirbyteClient";
+import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
+import ErrorDetails from "./components/ErrorDetails";
+import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
-import { LogsDetails } from "./components/LogsDetails";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -17,8 +19,7 @@ const Item = styled.div<{ isFailed: boolean }>`
   line-height: 18px;
 
   &:hover {
-    background: ${({ theme, isFailed }) =>
-      isFailed ? theme.dangerTransparentColor : theme.greyColor0};
+    background: ${({ theme, isFailed }) => (isFailed ? theme.dangerTransparentColor : theme.greyColor0)};
   }
 `;
 
@@ -29,44 +30,52 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const isJobEntity = (
-  props: { job: JobListItem } | { jobInfo: JobInfo }
-): props is { job: JobListItem } => {
-  return props.hasOwnProperty("job");
+interface JobItemProps {
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
+}
+
+const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
+  return getJobStatus(job) !== "failed";
 };
 
-const JobCurrentLogs: React.FC<{
-  id: number | string;
-  jobIsFailed?: boolean;
-  logs?: Logs;
-}> = (props) => {
-  const path = ["/tmp/workspace", props.id, "logs.log"].join("/");
-
-  return <LogsDetails {...props} path={path} />;
+export const getJobStatus: (
+  job: SynchronousJobReadWithStatus | JobsWithJobs
+) => JobStatus | CheckConnectionReadStatus = (job) => {
+  return "status" in job ? job.status : job.job.status;
 };
 
-type IProps = {
-  shortInfo?: boolean;
-} & ({ job: JobListItem } | { jobInfo: JobInfo });
+export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) => {
+  return "attempts" in job ? job.attempts : undefined;
+};
 
-const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onExpand = () => setIsOpen(!isOpen);
+export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) => ("id" in job ? job.id : job.job.id);
 
-  const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
-  const isFailed = jobMeta.status === Status.FAILED;
+export const JobItem: React.FC<JobItemProps> = ({ job }) => {
+  const { jobId: linkedJobId } = useAttemptLink();
+  const alreadyScrolled = useRef(false);
+  const [isOpen, setIsOpen] = useState(() => linkedJobId === String(getJobId(job)));
+  const scrollAnchor = useRef<HTMLDivElement>(null);
+
+  const didSucceed = didJobSucceed(job);
+
+  const onExpand = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const onDetailsToggled = useCallback(() => {
+    if (alreadyScrolled.current || linkedJobId !== String(getJobId(job))) {
+      return;
+    }
+    scrollAnchor.current?.scrollIntoView({
+      block: "start",
+    });
+    alreadyScrolled.current = true;
+  }, [job, linkedJobId]);
 
   return (
-    <Item isFailed={isFailed}>
-      <MainInfo
-        shortInfo={shortInfo}
-        isOpen={isOpen}
-        isFailed={isFailed}
-        onExpand={onExpand}
-        job={jobMeta}
-        attempts={isJobEntity(props) ? props.job.attempts : undefined}
-      />
-      <ContentWrapper isOpen={isOpen}>
+    <Item isFailed={!didSucceed} ref={scrollAnchor}>
+      <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
+      <ContentWrapper isOpen={isOpen} onToggled={onDetailsToggled}>
         <div>
           <Suspense
             fallback={
@@ -75,22 +84,15 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
               </LoadLogs>
             }
           >
-            {isOpen ? (
-              isJobEntity(props) ? (
-                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
-              ) : (
-                <JobCurrentLogs
-                  id={jobMeta.id}
-                  jobIsFailed={isFailed}
-                  logs={props.jobInfo.logs}
-                />
-              )
-            ) : null}
+            {isOpen && (
+              <>
+                <ErrorDetails attempts={getJobAttemps(job)} />
+                <JobLogs job={job} jobIsFailed={!didSucceed} />
+              </>
+            )}
           </Suspense>
         </div>
       </ContentWrapper>
     </Item>
   );
 };
-
-export default JobItem;

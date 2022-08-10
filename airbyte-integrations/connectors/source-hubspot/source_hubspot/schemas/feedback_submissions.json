@@ -27,7 +27,8 @@
           "type": ["null", "string"]
         },
         "hs_createdate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_engagement_id": {
           "type": ["null", "string"]

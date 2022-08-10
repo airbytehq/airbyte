@@ -1,55 +1,46 @@
 import React, { useContext, useMemo } from "react";
 import { useLocalStorage } from "react-use";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import casesConfig from "config/casesConfig.json";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-type Context = {
+interface Context {
   feedbackPassed?: boolean;
   passFeedback: () => void;
-  useCases?: string[];
+  visibleUseCases?: string[];
+  useCaseLinks: Record<string, string>;
   skipCase: (skipId: string) => void;
-};
+}
 
-export const OnboardingServiceContext = React.createContext<Context | null>(
-  null
-);
+export const OnboardingServiceContext = React.createContext<Context | null>(null);
 
 export const OnboardingServiceProvider: React.FC = ({ children }) => {
   const workspace = useCurrentWorkspace();
-  const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(
-    `${workspace.workspaceId}/passFeedback`,
-    false
-  );
-  const [useCases, setUseCases] = useLocalStorage<string[]>(
-    `${workspace.workspaceId}/useCases`,
-    casesConfig
+  const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(`${workspace.workspaceId}/passFeedback`, false);
+  const [skippedUseCases, setSkippedUseCases] = useLocalStorage<string[]>(
+    `${workspace.workspaceId}/skippedUseCases`,
+    []
   );
 
   const ctx = useMemo<Context>(
     () => ({
       feedbackPassed,
       passFeedback: () => setFeedbackPassed(true),
-      useCases,
-      skipCase: (skipId: string) =>
-        setUseCases(useCases?.filter((item) => item !== skipId)),
+      visibleUseCases: Object.keys(casesConfig).filter((useCase) => !skippedUseCases?.includes(useCase)),
+      useCaseLinks: casesConfig,
+      skipCase: (skipId: string) => setSkippedUseCases([...(skippedUseCases ?? []), skipId]),
     }),
-    [feedbackPassed, useCases]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [feedbackPassed, skippedUseCases]
   );
 
-  return (
-    <OnboardingServiceContext.Provider value={ctx}>
-      {children}
-    </OnboardingServiceContext.Provider>
-  );
+  return <OnboardingServiceContext.Provider value={ctx}>{children}</OnboardingServiceContext.Provider>;
 };
 
 export const useOnboardingService = (): Context => {
   const onboardingService = useContext(OnboardingServiceContext);
   if (!onboardingService) {
-    throw new Error(
-      "useOnboardingService must be used within a OnboardingServiceProvider."
-    );
+    throw new Error("useOnboardingService must be used within a OnboardingServiceProvider.");
   }
 
   return onboardingService;

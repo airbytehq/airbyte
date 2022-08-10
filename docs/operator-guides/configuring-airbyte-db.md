@@ -58,9 +58,11 @@ CONFIG_DATABASE_URL=jdbc:postgresql://<host>:<port>/<database>?<extra-parameters
 
 ## Initializing the database
 
-{% hint style="info" %}
+:::info
+
 This step is only required when you setup Airbyte with a custom database for the first time.
-{% endhint %}
+
+:::
 
 If you provide an empty database to Airbyte and start Airbyte up for the first time, the server will automatically create the relevant tables in your database, and copy the data. Please make sure:
 
@@ -89,5 +91,13 @@ The following command will allow you to access the database instance using `psql
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
 
-To access the configuration files for sources, destinations, and connections that have been added, simply query the `airbyte-configs` table.
+Following tables are created 
+1. `workspace` : Contains workspace information such as name, notification configuration, etc.
+2. `actor_definition` : Contains the source and destination connector definitions. 
+3. `actor` : Contains source and destination connectors information.
+4. `actor_oauth_parameter` : Contains source and destination oauth parameters.
+5. `operation` : Contains dbt and custom normalization operations.
+6. `connection` : Contains connection configuration such as catalog details, source, destination, etc.
+7. `connection_operation` : Contains the operations configured for a given connection.
+8. `state`. Contains the last saved state for a connection.
 

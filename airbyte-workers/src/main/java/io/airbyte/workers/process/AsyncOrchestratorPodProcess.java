@@ -1,18 +1,24 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -51,16 +57,31 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubePodInfo kubePodInfo;
   private final DocumentStoreClient documentStoreClient;
   private final KubernetesClient kubernetesClient;
+  private final String secretName;
+  private final String secretMountPath;
+  private final String containerOrchestratorImage;
+  private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
+  private final boolean useStreamCapableState;
 
   public AsyncOrchestratorPodProcess(
                                      final KubePodInfo kubePodInfo,
                                      final DocumentStoreClient documentStoreClient,
-                                     final KubernetesClient kubernetesClient) {
+                                     final KubernetesClient kubernetesClient,
+                                     final String secretName,
+                                     final String secretMountPath,
+                                     final String containerOrchestratorImage,
+                                     final String googleApplicationCredentials,
+                                     final boolean useStreamCapableState) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
+    this.secretName = secretName;
+    this.secretMountPath = secretMountPath;
+    this.containerOrchestratorImage = containerOrchestratorImage;
+    this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
+    this.useStreamCapableState = useStreamCapableState;
   }
 
   public Optional<String> getOutput() {
@@ -98,7 +119,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
 
     // If the pod does exist, it may be in a terminal (error or completed) state.
-    final boolean isTerminal = KubePodProcess.isTerminal(pod);
+    final boolean isTerminal = KubePodResourceHelper.isTerminal(pod);
 
     if (isTerminal) {
       // In case the doc store was updated in between when we pulled it and when
@@ -140,6 +161,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final var wasDestroyed = kubernetesClient.pods()
         .inNamespace(getInfo().namespace())
         .withName(getInfo().name())
+        .withPropagationPolicy(DeletionPropagation.FOREGROUND)
         .delete();
 
     if (wasDestroyed) {
@@ -154,13 +176,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     try {
       exitValue();
       return true;
-    } catch (IllegalThreadStateException e) {
+    } catch (final IllegalThreadStateException e) {
       return false;
     }
   }
 
   @Override
-  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+  public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
     if (hasExited())
@@ -168,7 +190,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     if (timeout <= 0)
       return false;
 
-    long deadline = System.nanoTime() + remainingNanos;
+    final long deadline = System.nanoTime() + remainingNanos;
     do {
       Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 100));
       if (hasExited())
@@ -181,7 +203,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   @Override
   public int waitFor() throws InterruptedException {
-    boolean exited = waitFor(10, TimeUnit.DAYS);
+    final boolean exited = waitFor(10, TimeUnit.DAYS);
 
     if (exited) {
       return exitValue();
@@ -223,35 +245,63 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   // but does that mean there won't be a docker equivalent?
-  public void create(final String airbyteVersion,
-                     final Map<String, String> allLabels,
+  public void create(final Map<String, String> allLabels,
                      final ResourceRequirements resourceRequirements,
                      final Map<String, String> fileMap,
                      final Map<Integer, Integer> portMap) {
-    final Volume configVolume = new VolumeBuilder()
+    final List<Volume> volumes = new ArrayList<>();
+    final List<VolumeMount> volumeMounts = new ArrayList<>();
+    final List<EnvVar> envVars = new ArrayList<>();
+
+    volumes.add(new VolumeBuilder()
         .withName("airbyte-config")
         .withNewEmptyDir()
         .withMedium("Memory")
         .endEmptyDir()
-        .build();
+        .build());
 
-    final VolumeMount configVolumeMount = new VolumeMountBuilder()
+    volumeMounts.add(new VolumeMountBuilder()
         .withName("airbyte-config")
         .withMountPath(KubePodProcess.CONFIG_DIR)
-        .build();
+        .build());
 
+    if (secretName != null && secretMountPath != null && googleApplicationCredentials != null) {
+      volumes.add(new VolumeBuilder()
+          .withName("airbyte-secret")
+          .withSecret(new SecretVolumeSourceBuilder()
+              .withSecretName(secretName)
+              .withDefaultMode(420)
+              .build())
+          .build());
+
+      volumeMounts.add(new VolumeMountBuilder()
+          .withName("airbyte-secret")
+          .withMountPath(secretMountPath)
+          .build());
+
+      envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
+
+    }
+
+    final EnvConfigs envConfigs = new EnvConfigs();
+    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, envConfigs.getMetricClient(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, envConfigs.getDDAgentHost(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, envConfigs.getDDDogStatsDPort(), null));
+    envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
+    envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
+    containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
 
     final var mainContainer = new ContainerBuilder()
-        .withName("main")
-        .withImage("airbyte/container-orchestrator:" + airbyteVersion)
+        .withName(KubePodProcess.MAIN_CONTAINER_NAME)
+        .withImage(containerOrchestratorImage)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
+        .withEnv(envVars)
         .withPorts(containerPorts)
-        .withPorts(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null))
-        .withVolumeMounts(configVolumeMount)
+        .withVolumeMounts(volumeMounts)
         .build();
 
-    final Pod pod = new PodBuilder()
+    final Pod podToCreate = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(getInfo().name())
@@ -262,30 +312,30 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
-        .withVolumes(configVolume)
+        .withVolumes(volumes)
         .endSpec()
         .build();
 
     // should only create after the kubernetes API creates the pod
-    final var createdPod = kubernetesClient.pods().createOrReplace(pod);
+    final var createdPod = kubernetesClient.pods()
+        .inNamespace(getInfo().namespace())
+        .createOrReplace(podToCreate);
 
     log.info("Waiting for pod to be running...");
-    try {
-      kubernetesClient.pods()
-          .inNamespace(kubePodInfo.namespace())
-          .withName(kubePodInfo.name())
-          .waitUntilCondition(p -> {
-            return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-          }, 5, TimeUnit.MINUTES);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    kubernetesClient.pods()
+        .inNamespace(kubePodInfo.namespace())
+        .withName(kubePodInfo.name())
+        .waitUntilCondition(p -> {
+          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
+        }, 5, TimeUnit.MINUTES);
 
-    final var containerState = kubernetesClient.pods()
+    final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
         .get()
-        .getStatus()
+        .getStatus();
+
+    final var containerState = podStatus
         .getContainerStatuses()
         .get(0)
         .getState();
@@ -293,6 +343,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     if (containerState.getRunning() == null) {
       throw new RuntimeException("Pod was not running, state was: " + containerState);
     }
+
+    log.info(String.format("Pod %s/%s is running on %s", kubePodInfo.namespace(), kubePodInfo.name(), podStatus.getPodIP()));
 
     final var updatedFileMap = new HashMap<>(fileMap);
     updatedFileMap.put(KUBE_POD_INFO, Jsons.serialize(kubePodInfo));

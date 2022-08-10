@@ -1,28 +1,35 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStats;
-import io.airbyte.api.model.AttemptStatus;
-import io.airbyte.api.model.AttemptStreamStats;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobDebugRead;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobStatus;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SynchronousJobRead;
+import io.airbyte.api.model.generated.AttemptFailureOrigin;
+import io.airbyte.api.model.generated.AttemptFailureReason;
+import io.airbyte.api.model.generated.AttemptFailureSummary;
+import io.airbyte.api.model.generated.AttemptFailureType;
+import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStatus;
+import io.airbyte.api.model.generated.AttemptStreamStats;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobStatus;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.ResetConfig;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
@@ -37,11 +44,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobConverter {
-
-  private static final int LOG_TAIL_SIZE = 1000000;
 
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -54,13 +60,13 @@ public class JobConverter {
   public JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
-  public JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
-                                          final SourceDefinitionRead sourceDefinitionRead,
-                                          final DestinationDefinitionRead destinationDefinitionRead,
-                                          final AirbyteVersion airbyteVersion) {
+  public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
+                                                 final SourceDefinitionRead sourceDefinitionRead,
+                                                 final DestinationDefinitionRead destinationDefinitionRead,
+                                                 final AirbyteVersion airbyteVersion) {
     return new JobDebugRead()
         .id(jobInfoRead.getJob().getId())
         .configId(jobInfoRead.getJob().getConfigId())
@@ -80,10 +86,34 @@ public class JobConverter {
             .id(job.getId())
             .configId(configId)
             .configType(configType)
+            .resetConfig(extractResetConfigIfReset(job).orElse(null))
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+  }
+
+  /**
+   * If the job is of type RESET, extracts the part of the reset config that we expose in the API.
+   * Otherwise, returns empty optional.
+   *
+   * @param job - job
+   * @return api representation of reset config
+   */
+  private static Optional<ResetConfig> extractResetConfigIfReset(final Job job) {
+    if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
+      final ResetSourceConfiguration resetSourceConfiguration = job.getConfig().getResetConnection().getResetSourceConfiguration();
+      if (resetSourceConfiguration == null) {
+        return Optional.empty();
+      }
+      return Optional.ofNullable(
+          new ResetConfig().streamsToReset(job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset()
+              .stream()
+              .map(ProtocolConverters::streamDescriptorToApi)
+              .toList()));
+    } else {
+      return Optional.empty();
+    }
   }
 
   public AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
@@ -110,10 +140,11 @@ public class JobConverter {
         .streamStats(getAttemptStreamStats(attempt))
         .createdAt(attempt.getCreatedAtInSecond())
         .updatedAt(attempt.getUpdatedAtInSecond())
-        .endedAt(attempt.getEndedAtInSecond().orElse(null));
+        .endedAt(attempt.getEndedAtInSecond().orElse(null))
+        .failureSummary(getAttemptFailureSummary(attempt));
   }
 
-  public static AttemptStats getTotalAttemptStats(final Attempt attempt) {
+  private static AttemptStats getTotalAttemptStats(final Attempt attempt) {
     final SyncStats totalStats = attempt.getOutput()
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
@@ -131,7 +162,7 @@ public class JobConverter {
         .recordsCommitted(totalStats.getRecordsCommitted());
   }
 
-  public static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
+  private static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
     final List<StreamSyncStats> streamStats = attempt.getOutput()
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
@@ -147,6 +178,26 @@ public class JobConverter {
                 .stateMessagesEmitted(streamStat.getStats().getStateMessagesEmitted())
                 .recordsCommitted(streamStat.getStats().getRecordsCommitted())))
         .collect(Collectors.toList());
+  }
+
+  private static AttemptFailureSummary getAttemptFailureSummary(final Attempt attempt) {
+    final io.airbyte.config.AttemptFailureSummary failureSummary = attempt.getFailureSummary().orElse(null);
+
+    if (failureSummary == null) {
+      return null;
+    }
+
+    return new AttemptFailureSummary()
+        .failures(failureSummary.getFailures().stream().map(failure -> new AttemptFailureReason()
+            .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
+            .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
+            .externalMessage(failure.getExternalMessage())
+            .internalMessage(failure.getInternalMessage())
+            .stacktrace(failure.getStacktrace())
+            .timestamp(failure.getTimestamp())
+            .retryable(failure.getRetryable()))
+            .collect(Collectors.toList()))
+        .partialSuccess(failureSummary.getPartialSuccess());
   }
 
   public LogRead getLogRead(final Path logPath) {

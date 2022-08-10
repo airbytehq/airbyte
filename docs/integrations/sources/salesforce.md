@@ -1,719 +1,93 @@
 # Salesforce
 
-## Overview
+Setting up the Salesforce source connector involves creating a read-only Salesforce user and configuring the Salesforce connector through the Airbyte UI.
 
-The Salesforce source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+This page guides you through the process of setting up the Salesforce source connector.
 
-The Connector supports `Custom Fields` for each of their available streams
+## Prerequisites
 
-### Output schema
+* [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
+* Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+* (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 
-Several output streams are available from this source. A list of these streams can be found below in the [Streams](salesforce.md#streams) section.
+## Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
-### Features
+While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
+To create a dedicated read only Salesforce user:
 
-### Performance considerations
+1. [Log into Salesforce](https://login.salesforce.com/) with an admin account.
+2. On the top right of the screen, click the gear icon and then click **Setup**.
+3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
+4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
+5. Click **Save**. The Profiles page is displayed. Click **Edit**.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+7. Scroll to the top and click **Save**.
+8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
+9. Fill out the required fields:
+    1. For License, select **Salesforce**.
+    2. For Profile, select **Airbyte Read Only User**.
+    3. For Email, make sure to use an email address that you can access.
+10. Click **Save**.
+11. Copy the Username and keep it accessible.
+12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
-The connector is restricted by daily Salesforce rate limiting.
-The connector uses as much rate limit as it can every day, then ends the sync early with success status and continues the sync from where it left the next time.
-Note that, picking up from where it ends will work only for incremental sync.
+## Step 2: Set up Salesforce as a Source in Airbyte
 
-## Getting started
+### For Airbyte Cloud
 
-### Requirements
+To set up Salesforce as a source in Airbyte Cloud:
 
-* Salesforce Account
-* Salesforce OAuth credentials
-* Dedicated Salesforce user (optional)
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown. 
+4. For Name, enter a name for the Salesforce connector.
+5. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
+8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
+9. Click **Set up source**.
 
-**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
+### For Airbyte OSS
 
-### Setup guide
+To set up Salesforce as a source in Airbyte Open Source:
 
-We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
+1. Follow this [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
-Suggested edits:
+    1. If your Salesforce URL’s is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+    2. When running a curl command, run it with the `-L` option to follow any redirects.
+    3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
-1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`. 
-2. When running a `curl` command, always run it with the `-L` option to follow any redirects.
+2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
 
-#### is\_sandbox
+## Supported sync modes
 
-If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then the value is false. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then the value should be true. If this is Greek to you, then this value should probably be false.
+The Salesforce source connector supports the following sync modes:
 
-## Streams
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-**Note**: The connector supports reading not only standard streams \(listed below\), but also reading `Custom Objects`.
+### Incremental Deletes Sync
 
-List of available streams:
+The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
 
-* AIApplication
-* AIApplicationConfig
-* AIInsightAction
-* AIInsightFeedback
-* AIInsightReason
-* AIInsightValue
-* AIRecordInsight
-* AcceptedEventRelation
-* Account
-* AccountCleanInfo
-* AccountContactRole
-* AccountFeed
-* AccountHistory
-* AccountPartner
-* AccountShare
-* ActionLinkGroupTemplate
-* ActionLinkTemplate
-* ActiveFeatureLicenseMetric
-* ActivePermSetLicenseMetric
-* ActiveProfileMetric
-* ActiveScratchOrg
-* ActiveScratchOrgFeed
-* ActiveScratchOrgHistory
-* ActiveScratchOrgShare
-* AdditionalNumber
-* AlternativePaymentMethod
-* AlternativePaymentMethodShare
-* ApexClass
-* ApexComponent
-* ApexEmailNotification
-* ApexLog
-* ApexPage
-* ApexPageInfo
-* ApexTestQueueItem
-* ApexTestResult
-* ApexTestResultLimits
-* ApexTestRunResult
-* ApexTestSuite
-* ApexTrigger
-* ApiAnomalyEventStore
-* ApiAnomalyEventStoreFeed
-* ApiEvent
-* AppAnalyticsQueryRequest
-* AppDefinition
-* AppMenuItem
-* AppUsageAssignment
-* AppointmentSchedulingPolicy
-* AppointmentTopicTimeSlot
-* AppointmentTopicTimeSlotFeed
-* AppointmentTopicTimeSlotHistory
-* Asset
-* AssetAction
-* AssetActionSource
-* AssetFeed
-* AssetHistory
-* AssetRelationship
-* AssetRelationshipFeed
-* AssetRelationshipHistory
-* AssetShare
-* AssetStatePeriod
-* AssignedResource
-* AssignedResourceFeed
-* AssignmentRule
-* AssociatedLocation
-* AssociatedLocationHistory
-* AsyncApexJob
-* Attachment
-* AuraDefinition
-* AuraDefinitionBundle
-* AuraDefinitionBundleInfo
-* AuraDefinitionInfo
-* AuthConfig
-* AuthConfigProviders
-* AuthProvider
-* AuthSession
-* AuthorizationForm
-* AuthorizationFormConsent
-* AuthorizationFormConsentHistory
-* AuthorizationFormConsentShare
-* AuthorizationFormDataUse
-* AuthorizationFormDataUseHistory
-* AuthorizationFormDataUseShare
-* AuthorizationFormHistory
-* AuthorizationFormShare
-* AuthorizationFormText
-* AuthorizationFormTextFeed
-* AuthorizationFormTextHistory
-* BackgroundOperation
-* BrandTemplate
-* BrandingSet
-* BrandingSetProperty
-* BulkApiResultEventStore
-* BusinessHours
-* BusinessProcess
-* Calendar
-* CalendarView
-* CalendarViewShare
-* CallCenter
-* CallCoachingMediaProvider
-* Campaign
-* CampaignFeed
-* CampaignHistory
-* CampaignMember
-* CampaignMemberStatus
-* CampaignShare
-* CardPaymentMethod
-* Case
-* CaseComment
-* CaseContactRole
-* CaseFeed
-* CaseHistory
-* CaseShare
-* CaseSolution
-* CaseStatus
-* CaseTeamMember
-* CaseTeamRole
-* CaseTeamTemplate
-* CaseTeamTemplateMember
-* CaseTeamTemplateRecord
-* CategoryData
-* CategoryNode
-* ChatterActivity
-* ChatterExtension
-* ChatterExtensionConfig
-* ClientBrowser
-* CollaborationGroup
-* CollaborationGroupFeed
-* CollaborationGroupMember
-* CollaborationGroupMemberRequest
-* CollaborationInvitation
-* CommSubscription
-* CommSubscriptionChannelType
-* CommSubscriptionChannelTypeFeed
-* CommSubscriptionChannelTypeHistory
-* CommSubscriptionChannelTypeShare
-* CommSubscriptionConsent
-* CommSubscriptionConsentFeed
-* CommSubscriptionConsentHistory
-* CommSubscriptionConsentShare
-* CommSubscriptionFeed
-* CommSubscriptionHistory
-* CommSubscriptionShare
-* CommSubscriptionTiming
-* CommSubscriptionTimingFeed
-* CommSubscriptionTimingHistory
-* Community
-* ConferenceNumber
-* ConnectedApplication
-* ConsumptionRate
-* ConsumptionRateHistory
-* ConsumptionSchedule
-* ConsumptionScheduleFeed
-* ConsumptionScheduleHistory
-* ConsumptionScheduleShare
-* Contact
-* ContactCleanInfo
-* ContactFeed
-* ContactHistory
-* ContactPointAddress
-* ContactPointAddressHistory
-* ContactPointAddressShare
-* ContactPointConsent
-* ContactPointConsentHistory
-* ContactPointConsentShare
-* ContactPointEmail
-* ContactPointEmailHistory
-* ContactPointEmailShare
-* ContactPointPhone
-* ContactPointPhoneHistory
-* ContactPointPhoneShare
-* ContactPointTypeConsent
-* ContactPointTypeConsentHistory
-* ContactPointTypeConsentShare
-* ContactRequest
-* ContactRequestShare
-* ContactShare
-* ContentAsset
-* ContentDistribution
-* ContentDistributionView
-* ContentDocument
-* ContentDocumentFeed
-* ContentDocumentHistory
-* ContentDocumentSubscription
-* ContentFolder
-* ContentFolderLink
-* ContentNotification
-* ContentTagSubscription
-* ContentUserSubscription
-* ContentVersion
-* ContentVersionComment
-* ContentVersionHistory
-* ContentVersionRating
-* ContentWorkspace
-* ContentWorkspaceDoc
-* ContentWorkspaceMember
-* ContentWorkspacePermission
-* ContentWorkspaceSubscription
-* Contract
-* ContractContactRole
-* ContractFeed
-* ContractHistory
-* ContractStatus
-* ConversationEntry
-* CorsWhitelistEntry
-* CredentialStuffingEventStore
-* CredentialStuffingEventStoreFeed
-* CreditMemo
-* CreditMemoFeed
-* CreditMemoHistory
-* CreditMemoLine
-* CreditMemoLineFeed
-* CreditMemoLineHistory
-* CreditMemoShare
-* CronJobDetail
-* CronTrigger
-* CspTrustedSite
-* CustomBrand
-* CustomBrandAsset
-* CustomHelpMenuItem
-* CustomHelpMenuSection
-* CustomHttpHeader
-* CustomNotificationType
-* CustomObjectUserLicenseMetrics
-* CustomPermission
-* CustomPermissionDependency
-* DandBCompany
-* Dashboard
-* DashboardComponent
-* DashboardComponentFeed
-* DashboardFeed
-* DataAssessmentFieldMetric
-* DataAssessmentMetric
-* DataAssessmentValueMetric
-* DataAssetSemanticGraphEdge
-* DataAssetUsageTrackingInfo
-* DataUseLegalBasis
-* DataUseLegalBasisHistory
-* DataUseLegalBasisShare
-* DataUsePurpose
-* DataUsePurposeHistory
-* DataUsePurposeShare
-* DatacloudCompany
-* DatacloudContact
-* DatacloudOwnedEntity
-* DatacloudPurchaseUsage
-* DeclinedEventRelation
-* DeleteEvent
-* DigitalWallet
-* Document
-* DocumentAttachmentMap
-* Domain
-* DomainSite
-* DuplicateRecordItem
-* DuplicateRecordSet
-* DuplicateRule
-* EmailCapture
-* EmailDomainFilter
-* EmailDomainKey
-* EmailMessage
-* EmailMessageRelation
-* EmailRelay
-* EmailServicesAddress
-* EmailServicesFunction
-* EmailTemplate
-* EmbeddedServiceDetail
-* EmbeddedServiceLabel
-* EngagementChannelType
-* EngagementChannelTypeFeed
-* EngagementChannelTypeHistory
-* EngagementChannelTypeShare
-* EnhancedLetterhead
-* EnhancedLetterheadFeed
-* EntityDefinition
-* EntitySubscription
-* Event
-* EventBusSubscriber
-* EventFeed
-* EventLogFile
-* EventRelation
-* ExpressionFilter
-* ExpressionFilterCriteria
-* ExternalDataSource
-* ExternalDataUserAuth
-* ExternalEvent
-* ExternalEventMapping
-* ExternalEventMappingShare
-* FeedAttachment
-* FeedComment
-* FeedItem
-* FeedPollChoice
-* FeedPollVote
-* FeedRevision
-* FieldPermissions
-* FieldSecurityClassification
-* FileSearchActivity
-* FinanceBalanceSnapshot
-* FinanceBalanceSnapshotShare
-* FinanceTransaction
-* FinanceTransactionShare
-* FiscalYearSettings
-* FlowDefinitionView
-* FlowInterview
-* FlowInterviewLog
-* FlowInterviewLogEntry
-* FlowInterviewLogShare
-* FlowInterviewShare
-* FlowRecordRelation
-* FlowStageRelation
-* Folder
-* FormulaFunction
-* FormulaFunctionAllowedType
-* FormulaFunctionCategory
-* GrantedByLicense
-* Group
-* GroupMember
-* GtwyProvPaymentMethodType
-* Holiday
-* IPAddressRange
-* Idea
-* IdentityProviderEventStore
-* IdentityVerificationEvent
-* IdpEventLog
-* IframeWhiteListUrl
-* Image
-* ImageFeed
-* ImageHistory
-* ImageShare
-* Individual
-* IndividualHistory
-* IndividualShare
-* InstalledMobileApp
-* Invoice
-* InvoiceFeed
-* InvoiceHistory
-* InvoiceLine
-* InvoiceLineFeed
-* InvoiceLineHistory
-* InvoiceShare
-* KnowledgeableUser
-* Lead
-* LeadCleanInfo
-* LeadFeed
-* LeadHistory
-* LeadShare
-* LeadStatus
-* LegalEntity
-* LegalEntityFeed
-* LegalEntityHistory
-* LegalEntityShare
-* LightningExitByPageMetrics
-* LightningExperienceTheme
-* LightningOnboardingConfig
-* LightningToggleMetrics
-* LightningUriEvent
-* LightningUsageByAppTypeMetrics
-* LightningUsageByBrowserMetrics
-* LightningUsageByFlexiPageMetrics
-* LightningUsageByPageMetrics
-* ListEmail
-* ListEmailIndividualRecipient
-* ListEmailRecipientSource
-* ListEmailShare
-* ListView
-* ListViewChart
-* ListViewEvent
-* LiveChatSensitiveDataRule
-* Location
-* LocationFeed
-* LocationHistory
-* LocationShare
-* LoginAsEvent
-* LoginEvent
-* LoginGeo
-* LoginHistory
-* LoginIp
-* LogoutEvent
-* MLField
-* MLPredictionDefinition
-* Macro
-* MacroHistory
-* MacroInstruction
-* MacroShare
-* MacroUsage
-* MacroUsageShare
-* MailmergeTemplate
-* MatchingInformation
-* MatchingRule
-* MatchingRuleItem
-* MessagingChannel
-* MessagingChannelSkill
-* MessagingConfiguration
-* MessagingDeliveryError
-* MessagingEndUser
-* MessagingEndUserHistory
-* MessagingEndUserShare
-* MessagingLink
-* MessagingSession
-* MessagingSessionFeed
-* MessagingSessionHistory
-* MessagingSessionShare
-* MessagingTemplate
-* MetadataPackage
-* MetadataPackageVersion
-* MobileApplicationDetail
-* MsgChannelLanguageKeyword
-* MutingPermissionSet
-* MyDomainDiscoverableLogin
-* NamedCredential
-* NamespaceRegistry
-* NamespaceRegistryFeed
-* NamespaceRegistryHistory
-* Note
-* OauthCustomScope
-* OauthCustomScopeApp
-* OauthToken
-* ObjectPermissions
-* OnboardingMetrics
-* OperatingHours
-* OperatingHoursFeed
-* Opportunity
-* OpportunityCompetitor
-* OpportunityContactRole
-* OpportunityFeed
-* OpportunityFieldHistory
-* OpportunityHistory
-* OpportunityLineItem
-* OpportunityPartner
-* OpportunityShare
-* OpportunityStage
-* Order
-* OrderFeed
-* OrderHistory
-* OrderItem
-* OrderItemFeed
-* OrderItemHistory
-* OrderShare
-* OrderStatus
-* OrgDeleteRequest
-* OrgDeleteRequestShare
-* OrgMetric
-* OrgMetricScanResult
-* OrgMetricScanSummary
-* OrgWideEmailAddress
-* Organization
-* PackageLicense
-* PackagePushError
-* PackagePushJob
-* PackagePushRequest
-* PackageSubscriber
-* Partner
-* PartnerRole
-* PartyConsent
-* PartyConsentFeed
-* PartyConsentHistory
-* PartyConsentShare
-* Payment
-* PaymentAuthAdjustment
-* PaymentAuthorization
-* PaymentGateway
-* PaymentGatewayLog
-* PaymentGatewayProvider
-* PaymentGroup
-* PaymentLineInvoice
-* PaymentMethod
-* Period
-* PermissionSet
-* PermissionSetAssignment
-* PermissionSetGroup
-* PermissionSetGroupComponent
-* PermissionSetLicense
-* PermissionSetLicenseAssign
-* PermissionSetTabSetting
-* PlatformCachePartition
-* PlatformCachePartitionType
-* PlatformEventUsageMetric
-* Pricebook2
-* Pricebook2History
-* PricebookEntry
-* PricebookEntryHistory
-* ProcessDefinition
-* ProcessException
-* ProcessExceptionShare
-* ProcessInstance
-* ProcessInstanceNode
-* ProcessInstanceStep
-* ProcessInstanceWorkitem
-* ProcessNode
-* Product2
-* Product2Feed
-* Product2History
-* ProductConsumptionSchedule
-* Profile
-* Prompt
-* PromptAction
-* PromptActionShare
-* PromptError
-* PromptErrorShare
-* PromptVersion
-* Publisher
-* PushTopic
-* QueueSobject
-* QuickText
-* QuickTextHistory
-* QuickTextShare
-* QuickTextUsage
-* QuickTextUsageShare
-* RecentlyViewed
-* Recommendation
-* RecordAction
-* RecordActionHistory
-* RecordType
-* RedirectWhitelistUrl
-* Refund
-* RefundLinePayment
-* Report
-* ReportAnomalyEventStore
-* ReportAnomalyEventStoreFeed
-* ReportEvent
-* ReportFeed
-* ResourceAbsence
-* ResourceAbsenceFeed
-* ResourceAbsenceHistory
-* ResourcePreference
-* ResourcePreferenceFeed
-* ResourcePreferenceHistory
-* ReturnOrder
-* ReturnOrderFeed
-* ReturnOrderHistory
-* ReturnOrderItemAdjustment
-* ReturnOrderItemTax
-* ReturnOrderLineItem
-* ReturnOrderLineItemFeed
-* ReturnOrderLineItemHistory
-* ReturnOrderShare
-* SPSamlAttributes
-* SamlSsoConfig
-* Scontrol
-* ScratchOrgInfo
-* ScratchOrgInfoFeed
-* ScratchOrgInfoHistory
-* ScratchOrgInfoShare
-* SearchPromotionRule
-* SecureAgent
-* SecureAgentPlugin
-* SecureAgentPluginProperty
-* SecureAgentsCluster
-* SecurityCustomBaseline
-* ServiceAppointment
-* ServiceAppointmentFeed
-* ServiceAppointmentHistory
-* ServiceAppointmentShare
-* ServiceAppointmentStatus
-* ServiceResource
-* ServiceResourceFeed
-* ServiceResourceHistory
-* ServiceResourceShare
-* ServiceResourceSkill
-* ServiceResourceSkillFeed
-* ServiceResourceSkillHistory
-* ServiceSetupProvisioning
-* ServiceTerritory
-* ServiceTerritoryFeed
-* ServiceTerritoryHistory
-* ServiceTerritoryMember
-* ServiceTerritoryMemberFeed
-* ServiceTerritoryMemberHistory
-* ServiceTerritoryShare
-* ServiceTerritoryWorkType
-* ServiceTerritoryWorkTypeFeed
-* ServiceTerritoryWorkTypeHistory
-* SessionHijackingEventStore
-* SessionHijackingEventStoreFeed
-* SessionPermSetActivation
-* SetupAssistantStep
-* SetupAuditTrail
-* SetupEntityAccess
-* Site
-* SiteFeed
-* SiteHistory
-* SiteIframeWhiteListUrl
-* SiteRedirectMapping
-* Skill
-* SkillRequirement
-* SkillRequirementFeed
-* SkillRequirementHistory
-* Solution
-* SolutionFeed
-* SolutionHistory
-* SolutionStatus
-* Stamp
-* StampAssignment
-* StaticResource
-* StreamingChannel
-* StreamingChannelShare
-* TabDefinition
-* Task
-* TaskFeed
-* TaskPriority
-* TaskStatus
-* TenantUsageEntitlement
-* TestSuiteMembership
-* ThirdPartyAccountLink
-* ThreatDetectionFeedback
-* ThreatDetectionFeedbackFeed
-* TimeSlot
-* TodayGoal
-* TodayGoalShare
-* Topic
-* TopicAssignment
-* TopicFeed
-* TopicUserEvent
-* TransactionSecurityPolicy
-* Translation
-* UiFormulaCriterion
-* UiFormulaRule
-* UndecidedEventRelation
-* UriEvent
-* User
-* UserAppInfo
-* UserAppMenuCustomization
-* UserAppMenuCustomizationShare
-* UserAppMenuItem
-* UserEmailPreferredPerson
-* UserEmailPreferredPersonShare
-* UserFeed
-* UserLicense
-* UserListView
-* UserListViewCriterion
-* UserLogin
-* UserPackageLicense
-* UserPermissionAccess
-* UserPreference
-* UserProvAccount
-* UserProvAccountStaging
-* UserProvMockTarget
-* UserProvisioningConfig
-* UserProvisioningLog
-* UserProvisioningRequest
-* UserProvisioningRequestShare
-* UserRole
-* UserSetupEntityAccess
-* UserShare
-* VerificationHistory
-* VisualforceAccessMetrics
-* WaveAutoInstallRequest
-* WaveCompatibilityCheckItem
-* WebLink
-* WorkType
-* WorkTypeFeed
-* WorkTypeGroup
-* WorkTypeGroupFeed
-* WorkTypeGroupHistory
-* WorkTypeGroupMember
-* WorkTypeGroupMemberFeed
-* WorkTypeGroupMemberHistory
-* WorkTypeGroupShare
-* WorkTypeHistory
-* WorkTypeShare
+## Performance considerations
 
-**Note**: Using the BULK API is not possible to receive data from the following streams:
+The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) sync mode.
+
+## Supported Objects
+
+The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
+
+Airbyte fetches and handles all the possible and available streams dynamically based on:
+
+* If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
+
+* If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
+
+**Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
 
 * AcceptedEventRelation
 * AssetTokenEvent
@@ -733,31 +107,51 @@ List of available streams:
 * TaskPriority
 * TaskStatus
 * TaskWhoRelation
-* UndecidedEventRelation
+
+## Salesforce tutorials
+
+Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
+
+* [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
+* [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                   |
-|:--------|:-----------| :--- |:--------------------------------------------------------------------------|
-| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
-| 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757) | Parse CSV with "unix" dialect |
-| 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
-| 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478) | Add available stream filtering by `queryable` flag |
-| 0.1.17  | 2022-01-19 | [9302](https://github.com/airbytehq/airbyte/pull/9302) | Deprecate API Type parameter                                             |
-| 0.1.16  | 2022-01-18 | [9151](https://github.com/airbytehq/airbyte/pull/9151) | Fix pagination in REST API streams                                       |
-| 0.1.15  | 2022-01-11 | [9409](https://github.com/airbytehq/airbyte/pull/9409) | Correcting the presence of an extra `else` handler in the error handling |
-| 0.1.14  | 2022-01-11 | [9386](https://github.com/airbytehq/airbyte/pull/9386) | Handling 400 error, while `sobject` doesn't support `query` or `queryAll` requests |
-| 0.1.13  | 2022-01-11 | [8797](https://github.com/airbytehq/airbyte/pull/8797) | Switched from authSpecification to advanced_auth in specefication         |
-| 0.1.12  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871) | Fix `examples` for new field in specification                             |
-| 0.1.11  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871) | Add the ability to filter streams by user                                 |
-| 0.1.10  | 2021-12-23 | [9005](https://github.com/airbytehq/airbyte/pull/9005) | Handling 400 error when a stream is not queryable                         |
-| 0.1.9   | 2021-12-07 | [8405](https://github.com/airbytehq/airbyte/pull/8405) | Filter 'null' byte(s) in HTTP responses                                   |
-| 0.1.8   | 2021-11-30 | [8191](https://github.com/airbytehq/airbyte/pull/8191) | Make `start_date` optional and change its format to `YYYY-MM-DD`          |
-| 0.1.7   | 2021-11-24 | [8206](https://github.com/airbytehq/airbyte/pull/8206) | Handling 400 error when trying to create a job for sync using Bulk API.   |
-| 0.1.6   | 2021-11-16 | [8009](https://github.com/airbytehq/airbyte/pull/8009) | Fix retring of BULK jobs                                                  |
-| 0.1.5   | 2021-11-15 | [7885](https://github.com/airbytehq/airbyte/pull/7885) | Add `Transform` for output records                                        |
-| 0.1.4   | 2021-11-09 | [7778](https://github.com/airbytehq/airbyte/pull/7778) | Fix types for `anyType` fields                                            |
-| 0.1.3   | 2021-11-06 | [7592](https://github.com/airbytehq/airbyte/pull/7592) | Fix getting `anyType` fields using BULK API                               |
-| 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
-| 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209) | Fix bug with pagination for BULK API                                      |
-| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector                                       |
+| Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
+|:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.11   | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)     | Improve configuration field descriptions   |
+| 1.0.10   | 2022-06-09 | [13658](https://github.com/airbytehq/airbyte/pull/13658)     | Correct logic to sync stream larger than page size   |
+| 1.0.9   | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)     | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions                                                     |
+| 1.0.8   | 2022-05-04 | [12576](https://github.com/airbytehq/airbyte/pull/12576)     | Decode responses as utf-8 and fallback to ISO-8859-1 if needed                                                                   |
+| 1.0.7   | 2022-05-03 | [12552](https://github.com/airbytehq/airbyte/pull/12552)     | Decode responses as ISO-8859-1 instead of utf-8                                                                                  |
+| 1.0.6   | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335)     | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                          |
+| 1.0.5   | 2022-04-25 | [12304](https://github.com/airbytehq/airbyte/pull/12304)     | Add `Describe` stream                                                                                                            |
+| 1.0.4   | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230)     | Update connector to use a `spec.yaml`                                                                                            |
+| 1.0.3   | 2022-04-04 | [11692](https://github.com/airbytehq/airbyte/pull/11692)     | Optimised memory usage for `BULK` API calls                                                                                      |
+| 1.0.2   | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751)     | Fix broken link anchor in connector configuration                                                                                |
+| 1.0.1   | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679)     | Reorganize input parameter order on the UI                                                                                       |
+| 1.0.0   | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516)     | Speed up schema discovery by using parallelism                                                                                   |
+| 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141)     | Processing of failed jobs                                                                                                        |
+| 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012)     | Increase CSV field_size_limit                                                                                                    |
+| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499)       | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
+| 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757)       | Parse CSV with "unix" dialect                                                                                                    |
+| 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617)       | Update connector fields title/description                                                                                        |
+| 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478)       | Add available stream filtering by `queryable` flag                                                                               |
+| 0.1.17  | 2022-01-19 | [9302](https://github.com/airbytehq/airbyte/pull/9302)       | Deprecate API Type parameter                                                                                                     |
+| 0.1.16  | 2022-01-18 | [9151](https://github.com/airbytehq/airbyte/pull/9151)       | Fix pagination in REST API streams                                                                                               |
+| 0.1.15  | 2022-01-11 | [9409](https://github.com/airbytehq/airbyte/pull/9409)       | Correcting the presence of an extra `else` handler in the error handling                                                         |
+| 0.1.14  | 2022-01-11 | [9386](https://github.com/airbytehq/airbyte/pull/9386)       | Handling 400 error, while `sobject` doesn't support `query` or `queryAll` requests                                               |
+| 0.1.13  | 2022-01-11 | [8797](https://github.com/airbytehq/airbyte/pull/8797)       | Switched from authSpecification to advanced_auth in specefication                                                                |
+| 0.1.12  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871)       | Fix `examples` for new field in specification                                                                                    |
+| 0.1.11  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871)       | Add the ability to filter streams by user                                                                                        |
+| 0.1.10  | 2021-12-23 | [9005](https://github.com/airbytehq/airbyte/pull/9005)       | Handling 400 error when a stream is not queryable                                                                                |
+| 0.1.9   | 2021-12-07 | [8405](https://github.com/airbytehq/airbyte/pull/8405)       | Filter 'null' byte(s) in HTTP responses                                                                                          |
+| 0.1.8   | 2021-11-30 | [8191](https://github.com/airbytehq/airbyte/pull/8191)       | Make `start_date` optional and change its format to `YYYY-MM-DD`                                                                 |
+| 0.1.7   | 2021-11-24 | [8206](https://github.com/airbytehq/airbyte/pull/8206)       | Handling 400 error when trying to create a job for sync using Bulk API.                                                          |
+| 0.1.6   | 2021-11-16 | [8009](https://github.com/airbytehq/airbyte/pull/8009)       | Fix retring of BULK jobs                                                                                                         |
+| 0.1.5   | 2021-11-15 | [7885](https://github.com/airbytehq/airbyte/pull/7885)       | Add `Transform` for output records                                                                                               |
+| 0.1.4   | 2021-11-09 | [7778](https://github.com/airbytehq/airbyte/pull/7778)       | Fix types for `anyType` fields                                                                                                   |
+| 0.1.3   | 2021-11-06 | [7592](https://github.com/airbytehq/airbyte/pull/7592)       | Fix getting `anyType` fields using BULK API                                                                                      |
+| 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)       | Annotate Oauth2 flow initialization parameters in connector specification                                                        |
+| 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209)       | Fix bug with pagination for BULK API                                                                                             |
+| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619)       | Salesforce Aitbyte-Native Connector                                                                                              |

@@ -1,165 +1,104 @@
-import React from "react";
-import {
-  FormattedDateParts,
-  FormattedMessage,
-  FormattedTimeParts,
-} from "react-intl";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
+import React from "react";
+import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
+import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
-import { Button, StatusIcon } from "components";
+
+import { AttemptRead, JobStatus } from "core/request/AirbyteClient";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+
+import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
-import Status from "core/statuses";
-import { useCancelJob } from "../../../services/job/JobService";
+import styles from "./MainInfo.module.scss";
 
-const MainView = styled(Row)<{
-  isOpen?: boolean;
-  isFailed?: boolean;
-}>`
-  cursor: pointer;
-  height: 59px;
-  padding: 10px 44px 10px 40px;
-  justify-content: space-between;
-  border-bottom: 1px solid
-    ${({ theme, isOpen, isFailed }) =>
-      !isOpen
-        ? "none"
-        : isFailed
-        ? theme.dangerTransparentColor
-        : theme.greyColor20};
-`;
+const getJobConfig = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).configType ?? (job as JobsWithJobs).job.configType;
 
-const Title = styled.div<{ isFailed?: boolean }>`
-  position: relative;
-  color: ${({ theme, isFailed }) =>
-    isFailed ? theme.dangerColor : theme.darkPrimaryColor};
-`;
+const getJobCreatedAt = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).createdAt ?? (job as JobsWithJobs).job.createdAt;
 
-const ErrorSign = styled(StatusIcon)`
-  position: absolute;
-  left: -30px;
-`;
-
-const AttemptCount = styled.div`
-  font-size: 12px;
-  line-height: 15px;
-  color: ${({ theme }) => theme.dangerColor};
-`;
-
-const CancelButton = styled(Button)`
-  margin-right: 10px;
-  padding: 3px 7px;
-  z-index: 1;
-`;
-
-const InfoCell = styled(Cell)`
-  flex: none;
-`;
-
-const Arrow = styled.div<{
-  isOpen?: boolean;
-  isFailed?: boolean;
-}>`
-  transform: ${({ isOpen }) => !isOpen && "rotate(-90deg)"};
-  transition: 0.3s;
-  font-size: 22px;
-  line-height: 22px;
-  height: 22px;
-  color: ${({ theme, isFailed }) =>
-    isFailed ? theme.dangerColor : theme.darkPrimaryColor};
-  position: absolute;
-  right: 18px;
-  top: calc(50% - 11px);
-  opacity: 0;
-
-  div:hover > div > &,
-  div:hover > div > div > &,
-  div:hover > & {
-    opacity: 1;
+const partialSuccessCheck = (attempts: AttemptRead[]) => {
+  if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {
+    return attempts.some((attempt) => attempt.failureSummary && attempt.failureSummary.partialSuccess);
   }
-`;
+  return false;
+};
 
-type IProps = {
-  job: JobApiItem | JobInfo;
-  attempts?: Attempt[];
+interface MainInfoProps {
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
+  attempts?: AttemptRead[];
   isOpen?: boolean;
   onExpand: () => void;
   isFailed?: boolean;
-  shortInfo?: boolean;
-};
+}
 
-const MainInfo: React.FC<IProps> = ({
-  job,
-  attempts = [],
-  isOpen,
-  onExpand,
-  isFailed,
-  shortInfo,
-}) => {
-  const cancelJob = useCancelJob();
+const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
+  const jobStatus = getJobStatus(job);
+  const isPartialSuccess = partialSuccessCheck(attempts);
 
-  const onCancelJob = async (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    return cancelJob(job.id);
+  const statusIcon = () => {
+    switch (true) {
+      case jobStatus === JobStatus.cancelled:
+        return <StatusIcon status="error" />;
+      case jobStatus === JobStatus.running:
+        return <StatusIcon status="loading" />;
+      case jobStatus === JobStatus.succeeded:
+        return <StatusIcon status="success" />;
+      case isPartialSuccess:
+        return <StatusIcon status="warning" />;
+      case !isPartialSuccess && isFailed:
+        return <StatusIcon status="error" />;
+      default:
+        return null;
+    }
   };
 
-  const isNotCompleted =
-    job.status &&
-    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
-
   return (
-    <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
-      <InfoCell>
-        <Title isFailed={isFailed}>
-          {isFailed && !shortInfo && <ErrorSign />}
-          <FormattedMessage id={`sources.${job.status}`} />
-          {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
-          {attempts.length && !shortInfo ? (
-            <AttemptDetails
-              attempt={attempts[attempts.length - 1]}
-              configType={job.configType}
-            />
-          ) : null}
-        </Title>
-      </InfoCell>
-      <InfoCell>
-        {!shortInfo && isNotCompleted && (
-          <CancelButton secondary onClick={onCancelJob}>
-            <FormattedMessage id="form.cancel" />
-          </CancelButton>
-        )}
-        <FormattedTimeParts
-          value={job.createdAt * 1000}
-          hour="numeric"
-          minute="2-digit"
-        >
-          {(parts) => (
-            <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>
+    <Row
+      className={classNames(styles.mainView, { [styles.failed]: isFailed, [styles.open]: isOpen })}
+      onClick={onExpand}
+    >
+      <Cell className={styles.titleCell}>
+        <div className={styles.statusIcon}>{statusIcon()}</div>
+        <div className={styles.justification}>
+          {isPartialSuccess ? (
+            <FormattedMessage id="sources.partialSuccess" />
+          ) : (
+            <FormattedMessage id={`sources.${getJobStatus(job)}`} />
           )}
-        </FormattedTimeParts>
-        <FormattedDateParts
-          value={job.createdAt * 1000}
-          month="2-digit"
-          day="2-digit"
-        >
-          {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
-        </FormattedDateParts>
-        {attempts.length > 1 && (
-          <AttemptCount>
-            <FormattedMessage
-              id="sources.countAttempts"
-              values={{ count: attempts.length }}
-            />
-          </AttemptCount>
-        )}
-        <Arrow isOpen={isOpen} isFailed={isFailed}>
-          <FontAwesomeIcon icon={faAngleDown} />
-        </Arrow>
-      </InfoCell>
-    </MainView>
+          {attempts.length && (
+            <>
+              {attempts.length > 1 && (
+                <div className={styles.lastAttempt}>
+                  <FormattedMessage id="sources.lastAttempt" />
+                </div>
+              )}
+              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+            </>
+          )}
+        </div>
+      </Cell>
+      <Cell className={styles.timestampCell}>
+        <div>
+          <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
+            {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
+          </FormattedTimeParts>
+          <FormattedDateParts value={getJobCreatedAt(job) * 1000} month="2-digit" day="2-digit">
+            {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
+          </FormattedDateParts>
+          {attempts.length > 1 && (
+            <div className={styles.attemptCount}>
+              <FormattedMessage id="sources.countAttempts" values={{ count: attempts.length }} />
+            </div>
+          )}
+        </div>
+        <FontAwesomeIcon className={styles.arrow} icon={faAngleDown} />
+      </Cell>
+    </Row>
   );
 };
 

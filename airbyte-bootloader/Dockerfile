@@ -1,10 +1,15 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim
+ARG JDK_VERSION=19-slim-bullseye
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+FROM ${JDK_IMAGE}
+
+ARG VERSION=0.40.0-alpha
 
 ENV APPLICATION airbyte-bootloader
+ENV VERSION ${VERSION}
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-0.35.12-alpha.tar /app
+ADD bin/${APPLICATION}-${VERSION}.tar /app
 
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"]
+
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]

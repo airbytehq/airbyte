@@ -1,20 +1,19 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
-import {
-  BottomBlock,
-  FieldItem,
-  Form,
-} from "packages/cloud/views/auth/components/FormComponents";
-import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import HeadTitle from "components/HeadTitle";
+
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
+import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
+
+import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -22,13 +21,14 @@ const LoginPageValidationSchema = yup.object().shape({
 });
 
 const LoginPage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const { location, replace } = useRouter();
+  const { query, replace } = useRouter();
 
   return (
     <div>
-      <FormTitle bold>
+      <HeadTitle titles={[{ id: "login.login" }]} />
+      <FormTitle>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
 
@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
         validationSchema={LoginPageValidationSchema}
         onSubmit={async (values, { setFieldError }) => {
           return login(values)
-            .then((_) => replace(location.state?.from ?? "/"))
+            .then(() => replace(query.from ?? "/"))
             .catch((err) => {
               if (err instanceof FieldError) {
                 setFieldError(err.field, err.message);
@@ -65,11 +65,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -85,11 +81,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -98,12 +90,13 @@ const LoginPage: React.FC = () => {
               <>
                 <Link
                   to={CloudRoutes.ResetPassword}
+                  className={styles.forgotPassword}
                   $light
                   data-testid="reset-password-link"
                 >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton type="submit" isLoading={isSubmitting}>
+                <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
                 </LoadingButton>
               </>

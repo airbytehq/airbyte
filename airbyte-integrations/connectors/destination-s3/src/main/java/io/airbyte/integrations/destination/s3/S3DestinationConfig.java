@@ -1,97 +1,138 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
 
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.FILE_NAME_PATTERN;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ENDPOINT;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_PATH_FORMAT;
+
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3CredentialType;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
- * delicate data syncing to S3) and {@code partSize} (used by certain bulk-load database
- * operations).
+ * delicate data syncing to S3)
  */
 public class S3DestinationConfig {
 
-  // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
-  // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
-  // WARNING: Too large a part size can cause potential OOM errors.
-  public static final int DEFAULT_PART_SIZE_MB = 10;
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3DestinationConfig.class);
 
   private final String endpoint;
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
-  private final String accessKeyId;
-  private final String secretAccessKey;
-  private final Integer partSize;
+  private final String pathFormat;
+  private final S3CredentialConfig credentialConfig;
   private final S3FormatConfig formatConfig;
+  private String fileNamePattern;
 
-  /**
-   * The part size should not matter in any use case that depends on this constructor. So the default
-   * 10 MB is used.
-   */
-  public S3DestinationConfig(final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String accessKeyId,
-                             final String secretAccessKey,
-                             final S3FormatConfig formatConfig) {
-    this(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, DEFAULT_PART_SIZE_MB, formatConfig);
-  }
+  private final Object lock = new Object();
+  private AmazonS3 s3Client;
 
   public S3DestinationConfig(final String endpoint,
                              final String bucketName,
                              final String bucketPath,
                              final String bucketRegion,
-                             final String accessKeyId,
-                             final String secretAccessKey,
-                             final Integer partSize,
-                             final S3FormatConfig formatConfig) {
+                             final String pathFormat,
+                             final S3CredentialConfig credentialConfig,
+                             final S3FormatConfig formatConfig,
+                             final AmazonS3 s3Client) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
-    this.accessKeyId = accessKeyId;
-    this.secretAccessKey = secretAccessKey;
+    this.pathFormat = pathFormat;
+    this.credentialConfig = credentialConfig;
     this.formatConfig = formatConfig;
-    this.partSize = partSize;
+    this.s3Client = s3Client;
+  }
+
+  public S3DestinationConfig(final String endpoint,
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String pathFormat,
+                             final S3CredentialConfig credentialConfig,
+                             final S3FormatConfig formatConfig,
+                             final AmazonS3 s3Client,
+                             final String fileNamePattern) {
+    this.endpoint = endpoint;
+    this.bucketName = bucketName;
+    this.bucketPath = bucketPath;
+    this.bucketRegion = bucketRegion;
+    this.pathFormat = pathFormat;
+    this.credentialConfig = credentialConfig;
+    this.formatConfig = formatConfig;
+    this.s3Client = s3Client;
+    this.fileNamePattern = fileNamePattern;
+  }
+
+  public static Builder create(final String bucketName, final String bucketPath, final String bucketRegion) {
+    return new Builder(bucketName, bucketPath, bucketRegion);
+  }
+
+  public static Builder create(final S3DestinationConfig config) {
+    return new Builder(config.getBucketName(), config.getBucketPath(), config.getBucketRegion())
+        .withEndpoint(config.getEndpoint())
+        .withCredentialConfig(config.getS3CredentialConfig())
+        .withFormatConfig(config.getFormatConfig());
   }
 
   public static S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-    var partSize = DEFAULT_PART_SIZE_MB;
-    if (config.get("part_size") != null) {
-      partSize = config.get("part_size").asInt();
+    Builder builder = create(
+        config.get(S_3_BUCKET_NAME).asText(),
+        "",
+        config.get(S_3_BUCKET_REGION).asText());
+
+    if (config.has(S_3_BUCKET_PATH)) {
+      builder = builder.withBucketPath(config.get(S_3_BUCKET_PATH).asText());
     }
-    String bucketPath = null;
-    if (config.get("s3_bucket_path") != null) {
-      bucketPath = config.get("s3_bucket_path").asText();
+
+    if (config.has(FILE_NAME_PATTERN)) {
+      builder = builder.withFileNamePattern(config.get(FILE_NAME_PATTERN).asText());
     }
+
+    if (config.has(S_3_PATH_FORMAT)) {
+      builder = builder.withPathFormat(config.get(S_3_PATH_FORMAT).asText());
+    }
+
+    if (config.has(S_3_ENDPOINT)) {
+      builder = builder.withEndpoint(config.get(S_3_ENDPOINT).asText());
+    }
+
+    final S3CredentialConfig credentialConfig;
+    if (config.has(ACCESS_KEY_ID)) {
+      credentialConfig = new S3AccessKeyCredentialConfig(config.get(ACCESS_KEY_ID).asText(), config.get(SECRET_ACCESS_KEY).asText());
+    } else {
+      credentialConfig = new S3AWSDefaultProfileCredentialConfig();
+    }
+    builder = builder.withCredentialConfig(credentialConfig);
+
     // In the "normal" S3 destination, this is never null. However, the Redshift and Snowflake copy
     // destinations don't set a Format config.
-    S3FormatConfig format = null;
-    if (config.get("format") != null) {
-      format = S3FormatConfigs.getS3FormatConfig(config);
+    if (config.has("format")) {
+      builder = builder.withFormatConfig(S3FormatConfigs.getS3FormatConfig(config));
     }
-    return new S3DestinationConfig(
-        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
-        config.get("s3_bucket_name").asText(),
-        bucketPath,
-        config.get("s3_bucket_region").asText(),
-        config.get("access_key_id") == null ? "" : config.get("access_key_id").asText(),
-        config.get("secret_access_key") == null ? "" : config.get("secret_access_key").asText(),
-        partSize,
-        format);
+
+    return builder.get();
   }
 
   public String getEndpoint() {
@@ -106,20 +147,20 @@ public class S3DestinationConfig {
     return bucketPath;
   }
 
+  public String getPathFormat() {
+    return pathFormat;
+  }
+
   public String getBucketRegion() {
     return bucketRegion;
   }
 
-  public String getAccessKeyId() {
-    return accessKeyId;
+  public String getFileNamePattern() {
+    return fileNamePattern;
   }
 
-  public String getSecretAccessKey() {
-    return secretAccessKey;
-  }
-
-  public Integer getPartSize() {
-    return partSize;
+  public S3CredentialConfig getS3CredentialConfig() {
+    return credentialConfig;
   }
 
   public S3FormatConfig getFormatConfig() {
@@ -127,22 +168,40 @@ public class S3DestinationConfig {
   }
 
   public AmazonS3 getS3Client() {
-    final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-
-    if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty()
-        || !accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
-      throw new RuntimeException("Either both accessKeyId and secretAccessKey should be provided, or neither");
+    synchronized (lock) {
+      if (s3Client == null) {
+        return resetS3Client();
+      }
+      return s3Client;
     }
+  }
 
-    if (accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+  AmazonS3 resetS3Client() {
+    synchronized (lock) {
+      if (s3Client != null) {
+        s3Client.shutdown();
+      }
+      s3Client = createS3Client();
+      return s3Client;
+    }
+  }
+
+  protected AmazonS3 createS3Client() {
+    LOGGER.info("Creating S3 client...");
+
+    final AWSCredentialsProvider credentialsProvider = credentialConfig.getS3CredentialsProvider();
+    final S3CredentialType credentialType = credentialConfig.getCredentialType();
+
+    if (S3CredentialType.DEFAULT_PROFILE == credentialType) {
       return AmazonS3ClientBuilder.standard()
-          .withCredentials(new InstanceProfileCredentialsProvider(false))
+          .withRegion(bucketRegion)
+          .withCredentials(credentialsProvider)
           .build();
     }
 
-    else if (endpoint == null || endpoint.isEmpty()) {
+    if (null == endpoint || endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .withCredentials(credentialsProvider)
           .withRegion(bucketRegion)
           .build();
     }
@@ -150,25 +209,12 @@ public class S3DestinationConfig {
     final ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-    return AmazonS3ClientBuilder
-        .standard()
+    return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
         .withPathStyleAccessEnabled(true)
         .withClientConfiguration(clientConfiguration)
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .withCredentials(credentialsProvider)
         .build();
-  }
-
-  public S3DestinationConfig cloneWithFormatConfig(final S3FormatConfig formatConfig) {
-    return new S3DestinationConfig(
-        this.endpoint,
-        this.bucketName,
-        this.bucketPath,
-        this.bucketRegion,
-        this.accessKeyId,
-        this.secretAccessKey,
-        this.partSize,
-        formatConfig);
   }
 
   @Override
@@ -182,15 +228,97 @@ public class S3DestinationConfig {
     final S3DestinationConfig that = (S3DestinationConfig) o;
     return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
         bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
-        && Objects.equals(accessKeyId,
-            that.accessKeyId)
-        && Objects.equals(secretAccessKey, that.secretAccessKey) && Objects.equals(partSize, that.partSize)
+        && Objects.equals(credentialConfig, that.credentialConfig)
         && Objects.equals(formatConfig, that.formatConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, partSize, formatConfig);
+    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, formatConfig);
+  }
+
+  public static class Builder {
+
+    private String endpoint = "";
+    private String pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT;
+
+    private String bucketName;
+    private String bucketPath;
+    private String bucketRegion;
+    private S3CredentialConfig credentialConfig;
+    private S3FormatConfig formatConfig;
+    private AmazonS3 s3Client;
+    private String fileNamePattern;
+
+    private Builder(final String bucketName, final String bucketPath, final String bucketRegion) {
+      this.bucketName = bucketName;
+      this.bucketPath = bucketPath;
+      this.bucketRegion = bucketRegion;
+    }
+
+    public Builder withBucketName(final String bucketName) {
+      this.bucketName = bucketName;
+      return this;
+    }
+
+    public Builder withFileNamePattern(final String fileNamePattern) {
+      this.fileNamePattern = fileNamePattern;
+      return this;
+    }
+
+    public Builder withBucketPath(final String bucketPath) {
+      this.bucketPath = bucketPath;
+      return this;
+    }
+
+    public Builder withBucketRegion(final String bucketRegion) {
+      this.bucketRegion = bucketRegion;
+      return this;
+    }
+
+    public Builder withPathFormat(final String pathFormat) {
+      this.pathFormat = pathFormat;
+      return this;
+    }
+
+    public Builder withEndpoint(final String endpoint) {
+      this.endpoint = endpoint;
+      return this;
+    }
+
+    public Builder withFormatConfig(final S3FormatConfig formatConfig) {
+      this.formatConfig = formatConfig;
+      return this;
+    }
+
+    public Builder withAccessKeyCredential(final String accessKeyId, final String secretAccessKey) {
+      this.credentialConfig = new S3AccessKeyCredentialConfig(accessKeyId, secretAccessKey);
+      return this;
+    }
+
+    public Builder withCredentialConfig(final S3CredentialConfig credentialConfig) {
+      this.credentialConfig = credentialConfig;
+      return this;
+    }
+
+    public Builder withS3Client(final AmazonS3 s3Client) {
+      this.s3Client = s3Client;
+      return this;
+    }
+
+    public S3DestinationConfig get() {
+      return new S3DestinationConfig(
+          endpoint,
+          bucketName,
+          bucketPath,
+          bucketRegion,
+          pathFormat,
+          credentialConfig,
+          formatConfig,
+          s3Client,
+          fileNamePattern);
+    }
+
   }
 
 }

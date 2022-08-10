@@ -1,18 +1,18 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 import Spinner from "components/Spinner";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const Controls = styled.div`
   margin-top: 34px;
@@ -39,14 +39,7 @@ const SpinnerContainer = styled.div`
   top: 10px;
 `;
 
-const EditControls: React.FC<IProps> = ({
-  isSubmitting,
-  isValid,
-  dirty,
-  resetForm,
-  successMessage,
-  errorMessage,
-}) => {
+const EditControls: React.FC<IProps> = ({ isSubmitting, isValid, dirty, resetForm, successMessage, errorMessage }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {
       return (
@@ -70,13 +63,8 @@ const EditControls: React.FC<IProps> = ({
         <FormattedMessage id="form.saveChanges" />
       </Button>
       <ButtonContainer>
-        <Button
-          type="button"
-          secondary
-          disabled={isSubmitting || !dirty}
-          onClick={resetForm}
-        >
-          <FormattedMessage id={`form.cancel`} />
+        <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={resetForm}>
+          <FormattedMessage id="form.cancel" />
         </Button>
       </ButtonContainer>
       {showStatusMessage()}

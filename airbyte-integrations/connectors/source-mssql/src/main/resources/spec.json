@@ -5,12 +5,12 @@
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
         "title": "Host",
-        "type": "string"
+        "type": "string",
+        "order": 0
       },
       "port": {
         "description": "The port of the database.",
@@ -18,24 +18,34 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "examples": ["1433"]
+        "examples": ["1433"],
+        "order": 1
       },
       "database": {
         "description": "The name of the database.",
         "title": "Database",
         "type": "string",
-        "examples": ["master"]
+        "examples": ["master"],
+        "order": 2
       },
       "username": {
         "description": "The username which is used to access the database.",
         "title": "Username",
-        "type": "string"
+        "type": "string",
+        "order": 3
       },
       "password": {
         "description": "The password associated with the username.",
         "title": "Password",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 5
       },
       "ssl_method": {
         "title": "SSL Method",
@@ -45,7 +55,6 @@
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["ssl_method"],
             "properties": {
@@ -59,7 +68,6 @@
           },
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "properties": {
@@ -73,7 +81,6 @@
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
@@ -93,12 +100,58 @@
           }
         ]
       },
-      "replication_method": {
-        "type": "string",
+      "replication": {
+        "type": "object",
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"]
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["replication_type"],
+            "properties": {
+              "replication_type": {
+                "type": "string",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "required": ["replication_type"],
+            "properties": {
+              "replication_type": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              },
+              "data_to_sync": {
+                "title": "Data to Sync",
+                "type": "string",
+                "default": "Existing and New",
+                "enum": ["Existing and New", "New Changes Only"],
+                "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC.",
+                "order": 1
+              },
+              "snapshot_isolation": {
+                "title": "Initial Snapshot Isolation Level",
+                "type": "string",
+                "default": "Snapshot",
+                "enum": ["Snapshot", "Read Committed"],
+                "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
+                "order": 2
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
@@ -10,6 +10,8 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 public class S3ParquetFormatConfig implements S3FormatConfig {
+
+  public static final String PARQUET_SUFFIX = ".parquet";
 
   private final CompressionCodecName compressionCodec;
   private final int blockSize;
@@ -40,9 +42,8 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
   }
 
   @Override
-  public Long getPartSize() {
-    // not applicable for Parquet format
-    return null;
+  public String getFileExtension() {
+    return PARQUET_SUFFIX;
   }
 
   public CompressionCodecName getCompressionCodec() {

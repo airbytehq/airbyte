@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers.helpers;
 
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionSearch;
 import org.apache.logging.log4j.util.Strings;
 
 public class ConnectionMatcher implements Matchable<ConnectionRead> {
@@ -26,7 +26,7 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.connectionId(search.getConnectionId() == null ? query.getConnectionId() : search.getConnectionId());
     fromSearch.destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
-    fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || search.getNamespaceFormat().equals("null")
+    fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || "null".equals(search.getNamespaceFormat())
         ? query.getNamespaceFormat()
         : search.getNamespaceFormat());
     fromSearch.namespaceDefinition(
@@ -40,6 +40,7 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.resourceRequirements(query.getResourceRequirements());
     fromSearch.syncCatalog(query.getSyncCatalog());
     fromSearch.operationIds(query.getOperationIds());
+    fromSearch.sourceCatalogId(query.getSourceCatalogId());
 
     return fromSearch;
   }

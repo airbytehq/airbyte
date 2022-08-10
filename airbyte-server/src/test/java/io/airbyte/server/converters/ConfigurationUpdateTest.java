@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -17,11 +17,13 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -32,20 +34,19 @@ class ConfigurationUpdateTest {
 
   private static final String IMAGE_REPOSITORY = "foo";
   private static final String IMAGE_TAG = "bar";
-  private static final String IMAGE_NAME = IMAGE_REPOSITORY + ":" + IMAGE_TAG;
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final JsonNode SPEC = CatalogHelpers.fieldsToJsonSchema(
-      Field.of("username", JsonSchemaPrimitive.STRING),
-      Field.of("password", JsonSchemaPrimitive.STRING));
+      Field.of(JdbcUtils.USERNAME_KEY, JsonSchemaType.STRING),
+      Field.of(JdbcUtils.PASSWORD_KEY, JsonSchemaType.STRING));
   private static final ConnectorSpecification CONNECTOR_SPECIFICATION = new ConnectorSpecification().withConnectionSpecification(SPEC);
   private static final JsonNode ORIGINAL_CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "abc")
+      .put(JdbcUtils.USERNAME_KEY, "airbyte")
+      .put(JdbcUtils.PASSWORD_KEY, "abc")
       .build());
   private static final JsonNode NEW_CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "xyz")
+      .put(JdbcUtils.USERNAME_KEY, "airbyte")
+      .put(JdbcUtils.PASSWORD_KEY, "xyz")
       .build());
   private static final StandardSourceDefinition SOURCE_DEFINITION = new StandardSourceDefinition()
       .withDockerRepository(IMAGE_REPOSITORY)
@@ -73,20 +74,22 @@ class ConfigurationUpdateTest {
       .withConfiguration(NEW_CONFIGURATION);
 
   private ConfigRepository configRepository;
+  private SecretsRepositoryReader secretsRepositoryReader;
   private JsonSecretsProcessor secretsProcessor;
   private ConfigurationUpdate configurationUpdate;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
-    configurationUpdate = new ConfigurationUpdate(configRepository, secretsProcessor);
+    configurationUpdate = new ConfigurationUpdate(configRepository, secretsRepositoryReader, secretsProcessor);
   }
 
   @Test
   void testSourceUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
+    when(secretsRepositoryReader.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
     when(configRepository.getStandardSourceDefinition(UUID2)).thenReturn(SOURCE_DEFINITION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
@@ -97,7 +100,7 @@ class ConfigurationUpdateTest {
 
   @Test
   void testDestinationUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
+    when(secretsRepositoryReader.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
     when(configRepository.getStandardDestinationDefinition(UUID2)).thenReturn(DESTINATION_DEFINITION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 

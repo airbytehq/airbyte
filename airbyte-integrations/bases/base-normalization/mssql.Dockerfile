@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.21.1
+FROM fishtownanalytics/dbt:1.0.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install curl & gnupg dependencies
@@ -53,8 +53,8 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-# Based of https://github.com/dbt-msft/dbt-sqlserver/tree/v0.21.1
-RUN pip install dbt-sqlserver==0.21.1
+# Based of https://github.com/dbt-msft/dbt-sqlserver/tree/v1.0.0
+RUN pip install dbt-sqlserver==1.0.0
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies

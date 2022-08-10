@@ -1,30 +1,42 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -53,29 +65,29 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
+            .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
-                String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
+            .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
   @Override
@@ -89,11 +101,11 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", ReplicationMethod.CDC)
         .build());
 
@@ -122,15 +134,16 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
         SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));
@@ -142,6 +155,33 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
+  }
+
+  @Test
+  public void testIncrementalSyncShouldNotFailIfBinlogIsDeleted() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    // only sync incremental streams
+    configuredCatalog.setStreams(
+        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
+
+    final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
+    final List<AirbyteStateMessage> stateMessages = airbyteMessages
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+    assertFalse(recordMessages.isEmpty(), "Expected the first incremental sync to produce records");
+    assertFalse(stateMessages.isEmpty(), "Expected incremental sync to produce STATE messages");
+
+    // when we run incremental sync again there should be no new records. Run a sync with the latest
+    // state message and assert no records were emitted.
+    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
+    // RESET MASTER removes all binary log files that are listed in the index file,
+    // leaving only a single, empty binary log file with a numeric suffix of .000001
+    executeQuery("RESET MASTER;");
+
+    assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
   }
 
 }

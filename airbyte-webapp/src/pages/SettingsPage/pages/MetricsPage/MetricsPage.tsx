@@ -1,31 +1,25 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
-import HeadTitle from "components/HeadTitle";
-import MetricsForm from "./components/MetricsForm";
-import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
+import HeadTitle from "components/HeadTitle";
+
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 import { Content, SettingsCard } from "../SettingsComponents";
+import MetricsForm from "./components/MetricsForm";
 
 const MetricsPage: React.FC = () => {
-  const { workspace } = useWorkspace();
-
-  const {
-    errorMessage,
-    successMessage,
-    loading,
-    updateData,
-  } = useWorkspaceEditor();
+  const workspace = useCurrentWorkspace();
+  const { errorMessage, successMessage, loading, updateData } = useWorkspaceEditor();
 
   const onChange = async (data: { anonymousDataCollection: boolean }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({ ...workspace, ...data, news: !!workspace.news, securityUpdates: !!workspace.securityUpdates });
   };
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.metrics" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.metrics" }]} />
       <SettingsCard title={<FormattedMessage id="settings.metricsSettings" />}>
         <Content>
           <MetricsForm

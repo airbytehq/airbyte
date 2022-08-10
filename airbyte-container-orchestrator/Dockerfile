@@ -1,5 +1,6 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS sync-attempt
+ARG JDK_VERSION=19-slim-bullseye
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+FROM ${JDK_IMAGE} AS sync-attempt
 
 ARG DOCKER_BUILD_ARCH=amd64
 
@@ -12,10 +13,11 @@ RUN apt-get update && apt-get install -y \
                           gnupg-agent \
                           software-properties-common
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-RUN add-apt-repository \
-       "deb [arch=${DOCKER_BUILD_ARCH}] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) \
-       stable"
+# arch var used to detect architecture of container. Architecture should be spcified to get proper binaries from repo.
+RUN arch=$(dpkg --print-architecture) && \
+       add-apt-repository \
+       "deb [arch=${arch}] https://download.docker.com/linux/debian \
+       $(lsb_release -cs) stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 # Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
@@ -23,15 +25,19 @@ RUN apt-get update && apt-get install -y docker-ce-cli jq
 # The following commands were taken from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-RUN apt-get update && apt-get install -y kubectl
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl
+
+# Don't change this manually.  Bump version expects to make moves based on this string
+ARG VERSION=0.40.0-alpha
 
 ENV APPLICATION airbyte-container-orchestrator
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"
+ENV VERSION=${VERSION}
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-${VERSION}/bin/${APPLICATION}"
 
 WORKDIR /app
 
 # Move orchestrator app
-ADD bin/${APPLICATION}-0.35.12-alpha.tar /app
+ADD bin/${APPLICATION}-${VERSION}.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-${VERSION}/bin/${APPLICATION}"]
