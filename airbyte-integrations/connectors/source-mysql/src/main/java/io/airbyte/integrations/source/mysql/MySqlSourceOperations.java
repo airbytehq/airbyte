@@ -28,6 +28,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +133,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
       case DECIMAL, DECIMAL_UNSIGNED -> setDecimal(preparedStatement, parameterIndex, value);
       case DATE -> setDate(preparedStatement, parameterIndex, value);
-      case DATETIME, TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case DATETIME -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
       case TIME -> setTime(preparedStatement, parameterIndex, value);
       case YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> setString(preparedStatement, parameterIndex, value);
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
@@ -207,4 +211,40 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     };
   }
 
+  @Override
+  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+  }
+
+  @Override
+  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    }
+  }
+
+  private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    }
+  }
+
+  @Override
+  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    }
+  }
 }
