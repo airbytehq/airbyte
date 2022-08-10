@@ -161,7 +161,7 @@ class Events(IncrementalAmplitudeStream):
             with zip_file.open(gzip_filename) as file:
                 print("Reading SUB_ZIP Response....")
                 for record in self._parse_zip_file(file):
-                    print(f'Reading ZIPPED Record: {record["uuid"]}')
+                    # print(f'Reading ZIPPED Record: {record["uuid"]}')
                     if record[self.cursor_field] >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
@@ -217,6 +217,7 @@ class Events(IncrementalAmplitudeStream):
         params = self.base_params
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
+        print(params)
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
