@@ -24,6 +24,9 @@ image:
   pullPolicy: IfNotPresent
   tag: "1.7.0"
 
+## @param temporal.externalHost The external postgresql host for temporal instance
+externalHost: ""
+
 ## @param temporal.service.type The Kubernetes Service Type
 ## @param temporal.service.port The temporal port and exposed kubernetes port
 service:
