@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import HeadTitle from "components/HeadTitle";
 
 import { OAuthLogin } from "../OAuthLogin";
-import { SignupForm } from "./components/SignupForm";
+import { Disclaimer, SignupForm } from "./components/SignupForm";
 import SpecialBlock from "./components/SpecialBlock";
 import styles from "./SignupPage.module.scss";
 
@@ -31,6 +31,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
       <SpecialBlock />
       <SignupForm />
       <OAuthLogin />
+      <Disclaimer />
     </div>
   );
 };
