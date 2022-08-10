@@ -610,7 +610,7 @@ public class AirbyteAcceptanceTestHarness {
         dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
+        dbConfig.put(JdbcUtils.HOST_KEY, psql.getHost());
       }
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
@@ -624,7 +624,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put(JdbcUtils.PORT_KEY, 5432);
+    dbConfig.put(JdbcUtils.PORT_KEY, psql.getExposedPorts().get(0));
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
     // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
