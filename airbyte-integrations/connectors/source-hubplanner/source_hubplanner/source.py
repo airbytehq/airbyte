@@ -90,45 +90,6 @@ class HubplannerAuthenticator(HttpAuthenticator):
         return {self.auth_header: f"{self._token}"}
 
 
-# Source
-class SourceHubplanner(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-
-        url_base = "https://api.hubplanner.com/v1"
-
-        try:
-            url = f"{url_base}/project"
-
-            authenticator = HubplannerAuthenticator(token=config["api_key"])
-
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-
-            return True, None
-        except requests.exceptions.RequestException as e:
-            return False, e
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        authenticator = HubplannerAuthenticator(token=config["api_key"])
-        return [
-            BillingRates(authenticator=authenticator),
-            Bookings(authenticator=authenticator),
-            Clients(authenticator=authenticator),
-            Events(authenticator=authenticator),
-            Holidays(authenticator=authenticator),
-            Projects(authenticator=authenticator),
-            Resources(authenticator=authenticator),
-        ]
-
-
 class BillingRates(HubplannerStream):
     primary_key = "_id"
 
@@ -246,3 +207,42 @@ class Resources(HubplannerStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
+
+
+# Source
+class SourceHubplanner(AbstractSource):
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        """
+        :param config:  the user-input config object conforming to the connector's spec.json
+        :param logger:  logger object
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        """
+
+        url_base = "https://api.hubplanner.com/v1"
+
+        try:
+            url = f"{url_base}/project"
+
+            authenticator = HubplannerAuthenticator(token=config["api_key"])
+
+            session = requests.get(url, headers=authenticator.get_auth_header())
+            session.raise_for_status()
+
+            return True, None
+        except requests.exceptions.RequestException as e:
+            return False, e
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
+        authenticator = HubplannerAuthenticator(token=config["api_key"])
+        return [
+            BillingRates(authenticator=authenticator),
+            Bookings(authenticator=authenticator),
+            Clients(authenticator=authenticator),
+            Events(authenticator=authenticator),
+            Holidays(authenticator=authenticator),
+            Projects(authenticator=authenticator),
+            Resources(authenticator=authenticator),
+        ]
