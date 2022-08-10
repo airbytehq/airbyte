@@ -121,6 +121,8 @@ Verifies when a discover operation is run on the connector using the given confi
 | `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
 | `timeout_seconds` | int | 30 | Test execution timeout in seconds |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version` | string | None | Disable the backward compatibility test for a specific version (expects a version following semantic versioning). |
 
 ## Test Basic Read
 
