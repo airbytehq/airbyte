@@ -705,6 +705,7 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 | Version | Date       | Description                                                                           | PR                                                          |
 | ------- | ---------- | --------------------------------------------------------------------------------------| ----------------------------------------------------------- |
+| 0.40.0  | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
 | 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
