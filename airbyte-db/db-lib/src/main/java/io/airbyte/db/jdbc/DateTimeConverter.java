@@ -4,6 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
+import static io.airbyte.db.DataTypeUtils.DATE_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
@@ -101,10 +102,7 @@ public class DateTimeConverter {
       return resolveEra(d, localDate.toString());
     } else if (date instanceof LocalDate d) {
       // Incremental mode
-      if (isBce(d)) {
-        d = d.minusYears(1);
-      }
-      return resolveEra(d, d.toString());
+      return resolveEra(d, d.format(DATE_FORMATTER));
     } else {
       final LocalDate localDate = LocalDate.parse(date.toString());
       return resolveEra(localDate, localDate.toString());
