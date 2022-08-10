@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ad_group.name": {
+      "type": ["null", "string"]
+    },
+    "click_view.gclid": {
+      "type": ["null", "string"]
+    },
+    "click_view.ad_group_ad": {
+      "type": ["null", "string"]
+    },
+    "click_view.keyword": {
+      "type": ["null", "string"]
+    },
+    "click_view.keyword_info.match_type": {
+      "type": ["null", "string"]
+    },
+    "click_view.keyword_info.text": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
+    },
+    "customer.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign.name": {
+      "type": ["null", "string"]
+    },
+    "segments.ad_network_type": {
+      "type": ["null", "string"]
+    },
+    "campaign.network_settings.target_content_network": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_google_search": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_partner_search_network": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_search_network": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
