@@ -15,7 +15,7 @@ WORKDIR /airbyte
 ENV APPLICATION destination-s3
 
 COPY --from=build /airbyte /airbyte
-RUN /bin/bash -c 'set -ex && \
+RUN /bin/bash -c 'set -e && \
     ARCH=`uname -m` && \
     if [ "$ARCH" == "x86_64" ] || [ "$ARCH" = "amd64" ]; then \
        echo "$ARCH" && \
@@ -37,7 +37,6 @@ RUN /bin/bash -c 'set -ex && \
       sdk use java 8.0.342-librca; \
       cd /usr/lib/hadoop/lib/hadoop-lzo/ && C_INCLUDE_PATH=/usr/local/lzo-2.10/include LIBRARY_PATH=/usr/local/lzo-2.10/lib mvn clean package; \
       find /usr/lib/hadoop/lib/hadoop-lzo/ -name '*libgplcompression*' -exec cp {} /usr/lib/ \; ;\
-      cd /usr/lib/ && ls -al; \
     else \
        echo "unknown arch" ;\
     fi'
