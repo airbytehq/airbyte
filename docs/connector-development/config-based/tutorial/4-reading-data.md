@@ -42,11 +42,13 @@ rm source_exchange_rates_tutorial/schemas/employees.json
 Next, we'll update the record selection to wrap the single record returned by the source in an array in `source_exchange_rates_tutorial/exchange_rates_tutorial.yamlsource_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
 ```
-selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "[_]" # wrap the single record returned by the API in an array
+definitions:
+  <...>
+  selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "[_]" # wrap the single record returned by the API in an array
 ```
 
 The transform is defined using the `Jello` syntax, which is a Python-based JQ alternative. More details on Jello can be found [here](https://github.com/kellyjonbrazil/jello).
@@ -54,49 +56,51 @@ The transform is defined using the `Jello` syntax, which is a Python-based JQ al
 Here is the complete connector definition for convenience:
 
 ```
-schema_loader:
-  type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
-selector:
-  type: RecordSelector
-  extractor:
-    type: JelloExtractor
-    transform: "[_]"
-requester:
-  type: HttpRequester
-  name: "{{ options['name'] }}"
-  http_method: "GET"
-  authenticator:
-    type: ApiKeyAuthenticator
-    header: "apikey"
-    api_token: "{{ config['access_key'] }}"
-  request_options_provider:
-    request_parameters:
-      base: "{{ config['base'] }}"
-retriever:
-  type: SimpleRetriever
-  $options:
-    url_base: "https://api.exchangeratesapi.io/v1/"
-  name: "{{ options['name'] }}"
-  primary_key: "{{ options['primary_key'] }}"
-  record_selector:
-    $ref: "*ref(selector)"
-  paginator:
-    type: NoPagination
-rates_stream:
-  type: DeclarativeStream
-  $options:
-    name: "rates"
-  primary_key: "date"
+version: "0.1.0"
+
+definitions:
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    type: JsonSchema
+    file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "[_]" # wrap the single record returned by the API in an array
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['access_key'] }}"
+    request_options_provider:
+      request_parameters:
+        base: "{{ config['base'] }}"
   retriever:
-    $ref: "*ref(retriever)"
-    requester:
-      $ref: "*ref(requester)"
-      path: "/exchangerates_data/latest"
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.apilayer.com"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+
 streams:
-  - "*ref(rates_stream)"
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+    primary_key: "rates"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/exchangerates_data/latest"
 check:
   type: CheckStream
   stream_names: ["rates"]
