@@ -8,7 +8,7 @@ from multiprocessing import context
 import jsonschema
 from airbyte_cdk.models import ConnectorSpecification
 from deepdiff import DeepDiff
-from hypothesis import Verbosity, given, settings
+from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
 from source_acceptance_test.utils import SecretDict
 
@@ -155,7 +155,7 @@ def validate_previous_configs(
     2. Validate a fake previous config against the actual connector specification json schema."""
 
     @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
-    @settings(max_examples=number_of_configs_to_generate, verbosity=Verbosity.quiet)
+    @settings(max_examples=number_of_configs_to_generate, verbosity=Verbosity.quiet, suppress_health_check=(HealthCheck.too_slow,))
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
         if isinstance(fake_previous_config, dict):  # Looks like hypothesis-jsonschema not only generate dict objects...
             fake_previous_config = SecretDict(fake_previous_config)
