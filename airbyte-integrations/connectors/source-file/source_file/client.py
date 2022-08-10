@@ -182,6 +182,12 @@ class URLFile:
 
         if credentials:
             credentials = service_account.Credentials.from_service_account_info(credentials)
+            # client_account.Credentials.from_authorized_user_info(info=credentials)
+            # auth_type = credentials.pop("auth_type")
+            # if auth_type == "Service":
+            #     return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
+            # elif auth_type == "Client":
+            #     return client_account.Credentials.from_authorized_user_info(info=credentials)
             client = GCSClient(credentials=credentials, project=credentials._project_id)
         else:
             client = GCSClient.create_anonymous_client()

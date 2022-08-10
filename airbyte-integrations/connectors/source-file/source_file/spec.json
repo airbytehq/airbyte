@@ -62,10 +62,61 @@
                 "title": "Storage",
                 "const": "GCS"
               },
-              "service_account_json": {
-                "type": "string",
-                "title": "Service Account JSON",
-                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
+              "credentials": {
+                "title": "Google Credentials",
+                "description": "Google APIs use the OAuth 2.0 protocol for authentication and authorization. The Source supports <a href=\"https://developers.google.com/identity/protocols/oauth2#webserver\" target=\"_blank\">Web server application</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2#serviceaccount\" target=\"_blank\">Service accounts</a> scenarios.",
+                "type": "object",
+                "oneOf": [
+                  {
+                    "title": "Sign in via Google (OAuth)",
+                    "description": "For these scenario user only needs to give permission to read Google Directory data.",
+                    "type": "object",
+                    "required": ["client_id", "client_secret", "refresh_token"],
+                    "properties": {
+                      "auth_type": {
+                        "type": "string",
+                        "description": "Authentication Scenario",
+                        "const": "oauth"
+                      },
+                      "client_id": {
+                        "title": "Client ID",
+                        "type": "string",
+                        "description": "The Client ID of the developer application.",
+                        "airbyte_secret": true
+                      },
+                      "client_secret": {
+                        "title": "Client secret",
+                        "type": "string",
+                        "description": "The Client Secret of the developer application.",
+                        "airbyte_secret": true
+                      },
+                      "refresh_token": {
+                        "title": "Refresh Token",
+                        "type": "string",
+                        "description": "The Token for obtaining a new access token.",
+                        "airbyte_secret": true
+                      }
+                    }
+                  },
+                  {
+                    "title": "Service Account JSON",
+                    "description": "For these scenario user should obtain service account's credentials from the Google API Console",
+                    "type": "object",
+                    "required": ["service_account_json"],
+                    "properties": {
+                      "auth_type": {
+                        "type": "string",
+                        "description": "Authentication Scenario",
+                        "const": "service"
+                      },
+                      "service_account_json": {
+                        "type": "string",
+                        "title": "Service Account JSON",
+                        "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -232,6 +283,14 @@
           }
         ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["provider", 1, "credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
