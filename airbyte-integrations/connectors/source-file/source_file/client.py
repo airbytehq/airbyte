@@ -320,6 +320,9 @@ class Client:
                 reader_options["index_col"] = 0
 
             yield from reader(fp, **reader_options)
+        elif self._reader_options == "excel":
+            reader_options["engine"] = "pyxlsb"
+            yield from reader(fp, **reader_options)
         else:
             yield reader(fp, **reader_options)
 
