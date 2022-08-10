@@ -38,7 +38,7 @@
             "order": 3,
             "description": "The token for obtaining a new access token. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD",
             "airbyte_secret": true
-          },
+          }
         }
       },
       "customer_id": {
