@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class MySqlCdcProperties {
 
-  static Properties getDebeziumProperties(JsonNode config) {
+  static Properties getDebeziumProperties(final JsonNode config) {
     final Properties props = new Properties();
 
     // debezium engine configuration
@@ -26,8 +26,13 @@ public class MySqlCdcProperties {
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
 
     // snapshot config
-    // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-mode
-    props.setProperty("snapshot.mode", "when_needed");
+    if (config.has("snapshot_mode")) {
+      //The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip initial snapshot
+      props.setProperty("snapshot.mode", config.get("snapshot_mode").asText());
+    } else {
+      // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-mode
+      props.setProperty("snapshot.mode", "when_needed");
+    }
     // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-locking-mode
     // This is to make sure other database clients are allowed to write to a table while Airbyte is
     // taking a snapshot. There is a risk involved that

@@ -248,13 +248,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("timestamp")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
-            .addExpectedValues(null, null, null, null, "2022-08-09T10:17:16.000000Z")
-            .build());
+    addTimestampDataTypeTest();
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -384,13 +378,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(StringUtils.leftPad("0", 1048000, "0"), "test")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("json")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'", "'{\"fóo\": \"bär\"}'", "'{\"春江潮水连海平\": \"海上明月共潮生\"}'")
-            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}", "{\"fóo\": \"bär\"}", "{\"春江潮水连海平\": \"海上明月共潮生\"}")
-            .build());
+    addJsonDataTypeTest();
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -410,6 +398,26 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+  }
+
+  protected void addJsonDataTypeTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("json")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'", "'{\"fóo\": \"bär\"}'", "'{\"春江潮水连海平\": \"海上明月共潮生\"}'")
+            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}", "{\"fóo\": \"bär\"}", "{\"春江潮水连海平\": \"海上明月共潮生\"}")
+            .build());
+  }
+
+  protected void addTimestampDataTypeTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamp")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
+            .addExpectedValues(null, null, null, null, "2022-08-09T10:17:16.000000Z")
+            .build());
   }
 
   private String getLogString(final int length) {

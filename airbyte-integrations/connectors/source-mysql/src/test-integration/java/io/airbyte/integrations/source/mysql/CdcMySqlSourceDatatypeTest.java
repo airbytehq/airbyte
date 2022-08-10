@@ -37,6 +37,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest 
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", MySqlSource.ReplicationMethod.CDC)
+        .put("snapshot_mode", "initial_only")
         .build());
 
     dslContext = DSLContextFactory.create(
