@@ -22,5 +22,8 @@
   },
   "job_stages": {
     "updated_after": "2022-08-08T00:00:00.000Z"
+  },
+  "interviews": {
+    "updated_after": "2022-08-08T00:00:00.000Z"
   }
 }

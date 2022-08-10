@@ -213,13 +213,16 @@ class Departments(GreenhouseStream):
     """
 
 
-class Interviews(GreenhouseStream):
+class Interviews(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews
     """
 
     def path(self, **kwargs) -> str:
         return "scheduled_interviews"
+
+    cursor_field = "updated_after"
+    benchmark_field = "updated_at"
 
 
 class JobPosts(IncrementalGreenhouseStream):

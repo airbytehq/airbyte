@@ -58,7 +58,7 @@ class SourceGreenhouse(AbstractSource):
             CustomFields(authenticator=auth),
             Degrees(authenticator=auth),
             Departments(authenticator=auth),
-            Interviews(authenticator=auth),
+            Interviews(authenticator=auth, replication_start_date=config["replication_start_date"]),
             JobPosts(authenticator=auth, replication_start_date=config["replication_start_date"]),
             JobStages(authenticator=auth, replication_start_date=config["replication_start_date"]),
             Jobs(authenticator=auth, replication_start_date=config["replication_start_date"]),
