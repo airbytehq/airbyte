@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
+
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
@@ -11,6 +13,7 @@ import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.api.client.model.generated.ConnectionStateType;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -41,9 +44,9 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState = airbyteApiClient.getConnectionApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
-
           final StateType newStateType = maybeStateWrapper.get().getStateType();
-          if (isMigration(newStateType, previousState) && newStateType == StateType.STREAM) {
+          final StateType prevStateType = Enums.convertTo(previousState.getStateType(), StateType.class);
+          if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
             validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
           }
 
@@ -73,10 +76,6 @@ public class PersistStateActivityImpl implements PersistStateActivity {
                 + ". Job must be retried in order to properly store state.");
       }
     });
-  }
-
-  private Boolean isMigration(final StateType currentStateType, final ConnectionState previousState) {
-    return previousState.getStateType() != null && previousState.getStateType() == ConnectionStateType.LEGACY && currentStateType != StateType.LEGACY;
   }
 
 }
