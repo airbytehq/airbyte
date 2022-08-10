@@ -175,7 +175,7 @@
               "data_source_type": {
                 "type": "string",
                 "enum": ["Azure_Blob_Storage"],
-                "default": "Azure Blob Storage",
+                "default": "Azure_Blob_Storage",
                 "order": 0
               },
               "azure_blob_storage_endpoint_domain_name": {
