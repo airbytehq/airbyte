@@ -76,7 +76,7 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
             .put(JdbcUtils.USERNAME_KEY, usernameKey)
             .put(JdbcUtils.DATABASE_KEY, databaseKey)
             .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-            .put(JdbcUtils.SSL_KEY, sslKey)
+            //.put(JdbcUtils.SSL_KEY, sslKey)
             .build());
   }
 
