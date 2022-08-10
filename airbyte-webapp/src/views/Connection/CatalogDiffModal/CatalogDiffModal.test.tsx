@@ -67,8 +67,6 @@ describe("catalog diff modal", () => {
   afterEach(cleanup);
 
   test("it renders the correct section for each type of transform", () => {
-    //todo: should this render w the modal service here or not?
-
     mockCatalogDiff.transforms.push(...addedItems, ...removedItems, ...updatedItems);
 
     render(

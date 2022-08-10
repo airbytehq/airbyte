@@ -1,5 +1,5 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
-import { useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 
 import Modal from "components/Modal";
 
@@ -11,10 +11,8 @@ export default {
 } as ComponentMeta<typeof CatalogDiffModal>;
 
 const Template: ComponentStory<typeof CatalogDiffModal> = (args) => {
-  const { formatMessage } = useIntl();
-
   return (
-    <Modal title={formatMessage({ id: "connection.updateSchema.completed" })}>
+    <Modal title={<FormattedMessage id="connection.updateSchema.completed" />}>
       <CatalogDiffModal
         catalogDiff={args.catalogDiff}
         catalog={args.catalog}
