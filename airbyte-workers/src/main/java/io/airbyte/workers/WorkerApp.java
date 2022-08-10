@@ -222,6 +222,8 @@ public class WorkerApp {
   private void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
+    // Note that the configuration injected here is for the normalization orchestrator, and not the normalisation pod itself.
+    // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
@@ -385,14 +387,12 @@ public class WorkerApp {
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
     final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
     final WorkerConfigs replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
-    final WorkerConfigs normalizationWorkerConfigs = WorkerConfigs.buildNormalizationWorkerConfigs(configs);
 
     final ProcessFactory defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
     final ProcessFactory specProcessFactory = getJobProcessFactory(configs, specWorkerConfigs);
     final ProcessFactory checkProcessFactory = getJobProcessFactory(configs, checkWorkerConfigs);
     final ProcessFactory discoverProcessFactory = getJobProcessFactory(configs, discoverWorkerConfigs);
     final ProcessFactory replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
-    final ProcessFactory normalizationProcessFactory = getJobProcessFactory(configs, normalizationWorkerConfigs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
