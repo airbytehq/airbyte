@@ -762,4 +762,4 @@ jobs:
 
       - name: Check variables
         run: |
-        echo "!!!GITHUB_TOKEN= ${{ secrets.GITHUB_TOKEN }}"
+        echo "!!!GITHUB_TOKEN="
