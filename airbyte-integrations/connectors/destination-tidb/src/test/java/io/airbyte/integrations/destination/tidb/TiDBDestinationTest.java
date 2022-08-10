@@ -16,8 +16,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,10 +57,10 @@ public class TiDBDestinationTest {
     private JsonNode getConfig() {
         return Jsons.jsonNode(ImmutableMap.of(
                 JdbcUtils.HOST_KEY, "127.0.0.1",
-                JdbcUtils.PORT_KEY,  HostPortResolver.resolvePort(container),
+                JdbcUtils.PORT_KEY, container.getFirstMappedPort(),
                 JdbcUtils.USERNAME_KEY, "root",
-                JdbcUtils.DATABASE_KEY, "test",
-                JdbcUtils.SSL_KEY, false
+                JdbcUtils.DATABASE_KEY, "test"
+//                JdbcUtils.SSL_KEY, false
         ));
     }
 

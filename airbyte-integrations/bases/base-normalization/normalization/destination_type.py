@@ -7,6 +7,7 @@ from enum import Enum
 
 
 class DestinationType(Enum):
+    TIDB = "tidb"
     BIGQUERY = "bigquery"
     CLICKHOUSE = "clickhouse"
     MSSQL = "mssql"

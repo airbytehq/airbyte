@@ -74,7 +74,7 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
-    if (JdbcUtils.useSsl(config)) {
+    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       return DEFAULT_SSL_JDBC_PARAMETERS;
     } else {
       return DEFAULT_JDBC_PARAMETERS;

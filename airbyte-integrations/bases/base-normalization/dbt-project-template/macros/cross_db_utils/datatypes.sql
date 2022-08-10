@@ -40,6 +40,10 @@
     String
 {% endmacro %}
 
+{%- macro tidb__type_json() -%}
+    json
+{%- endmacro -%}
+
 
 {# string ------------------------------------------------- #}
 
@@ -64,6 +68,10 @@
     text
 {%- endmacro -%}
 
+{%- macro tidb__type_string() -%}
+    char(1000)
+{%- endmacro -%}
+
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
     float
@@ -77,6 +85,9 @@
     Float64
 {% endmacro %}
 
+{% macro tidb__type_float() %}
+    float
+{% endmacro %}
 
 {# int  ------------------------------------------------- #}
 {% macro default__type_int() %}
@@ -95,6 +106,9 @@
     INT
 {% endmacro %}
 
+{% macro tidb__type_int() %}
+    signed
+{% endmacro %}
 
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
@@ -109,6 +123,9 @@
     BIGINT
 {% endmacro %}
 
+{% macro tidb__type_bigint() %}
+    signed
+{% endmacro %}
 
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
@@ -119,6 +136,9 @@
     Float64
 {% endmacro %}
 
+{% macro tidb__type_numeric() %}
+    float
+{% endmacro %}
 
 {# very_large_integer --------------------------------------- --#}
 {#
@@ -146,6 +166,10 @@ so this macro needs to be called very_large_integer.
     decimal128(0)
 {% endmacro %}
 
+{% macro tidb__type_very_large_integer() %}
+    decimal(38, 0)
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
@@ -161,6 +185,9 @@ so this macro needs to be called very_large_integer.
     DateTime64
 {% endmacro %}
 
+{% macro tidb__type_timestamp() %}
+    time
+{% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
 
@@ -198,6 +225,9 @@ so this macro needs to be called very_large_integer.
     DateTime64
 {% endmacro %}
 
+{%- macro tidb__type_timestamp_with_timezone() -%}
+    char(1000)
+{%- endmacro -%}
 
 {# timestamp without time zone  -------------------------------------------------     #}
 
@@ -250,6 +280,10 @@ so this macro needs to be called very_large_integer.
     String
 {% endmacro %}
 
+{% macro tidb__type_time_without_timezone() %}
+    char(1000)
+{% endmacro %}
+
 
 {# time with time zone  -------------------------------------------------     #}
 
@@ -289,6 +323,9 @@ so this macro needs to be called very_large_integer.
     String
 {% endmacro %}
 
+{%- macro tidb__type_time_with_timezone() -%}
+    char(1000)
+{%- endmacro -%}
 
 {# date  -------------------------------------------------     #}
 
