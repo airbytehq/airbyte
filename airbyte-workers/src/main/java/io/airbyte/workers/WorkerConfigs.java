@@ -164,26 +164,6 @@ public class WorkerConfigs {
         configs.getJobDefaultEnvMap());
   }
 
-  public static WorkerConfigs buildNormalizationWorkerConfigs(final Configs configs) {
-    return new WorkerConfigs(
-        configs.getWorkerEnvironment(),
-        new ResourceRequirements()
-            .withCpuRequest(configs.getNormalizationJobMainContainerCpuRequest())
-            .withCpuLimit(configs.getNormalizationJobMainContainerCpuLimit())
-            .withMemoryRequest(configs.getNormalizationJobMainContainerMemoryRequest())
-            .withMemoryLimit(configs.getNormalizationJobMainContainerMemoryLimit()),
-        configs.getJobKubeTolerations(),
-        configs.getJobKubeNodeSelectors(),
-        configs.getJobKubeAnnotations(),
-        configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getJobKubeMainContainerImagePullPolicy(),
-        configs.getJobKubeSidecarContainerImagePullPolicy(),
-        configs.getJobKubeSocatImage(),
-        configs.getJobKubeBusyboxImage(),
-        configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap());
-  }
-
   public Configs.WorkerEnvironment getWorkerEnvironment() {
     return workerEnvironment;
   }

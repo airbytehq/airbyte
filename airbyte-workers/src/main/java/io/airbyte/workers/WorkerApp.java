@@ -120,7 +120,6 @@ public class WorkerApp {
   private final ProcessFactory checkProcessFactory;
   private final ProcessFactory discoverProcessFactory;
   private final ProcessFactory replicationProcessFactory;
-  private final ProcessFactory normalizationProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final WorkflowClient workflowClient;
   private final ConfigRepository configRepository;
@@ -132,7 +131,6 @@ public class WorkerApp {
   private final WorkerConfigs checkWorkerConfigs;
   private final WorkerConfigs discoverWorkerConfigs;
   private final WorkerConfigs replicationWorkerConfigs;
-  private final WorkerConfigs normlizationWorkerConfigs;
   private final String airbyteVersion;
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
@@ -224,9 +222,7 @@ public class WorkerApp {
   private void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        normlizationWorkerConfigs,
-        normalizationProcessFactory);
+    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
         defaultWorkerConfigs,
@@ -489,7 +485,6 @@ public class WorkerApp {
         checkProcessFactory,
         discoverProcessFactory,
         replicationProcessFactory,
-        normalizationProcessFactory,
         secretsHydrator,
         workflowClient,
         configRepository,
@@ -501,7 +496,6 @@ public class WorkerApp {
         checkWorkerConfigs,
         discoverWorkerConfigs,
         replicationWorkerConfigs,
-        normalizationWorkerConfigs,
         configs.getAirbyteVersionOrWarning(),
         jobFactory,
         jobPersistence,
