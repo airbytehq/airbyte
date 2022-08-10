@@ -47,6 +47,7 @@ from .streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
     Workflows,
 )
@@ -190,8 +191,8 @@ class SourceGithub(AbstractSource):
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
 
-        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date),
-        workflow_jobs_stream = WorkflowJobs(parent=workflow_runs_stream, **repository_args),
+        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
+        workflow_jobs_stream = WorkflowJobs(parent=workflow_runs_stream, **repository_args)
 
         return [
             Assignees(**repository_args),
