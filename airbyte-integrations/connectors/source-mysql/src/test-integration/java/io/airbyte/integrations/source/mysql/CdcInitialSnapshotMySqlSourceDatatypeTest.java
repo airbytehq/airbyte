@@ -90,4 +90,9 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
     }
   }
 
+  @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
 }

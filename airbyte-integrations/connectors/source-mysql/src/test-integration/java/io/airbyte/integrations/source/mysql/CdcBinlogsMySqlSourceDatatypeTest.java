@@ -142,11 +142,16 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
   }
 
   @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
+  @Override
   protected void addTimestampDataTypeTest() {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'", "'2022-08-09T10:17:16.161342Z'")
             .addExpectedValues(null, "1970-01-01T00:00:00.000000Z", "1970-01-01T00:00:00.000000Z", "1970-01-01T00:00:00.000000Z",
                 "2022-08-09T10:17:16.000000Z")

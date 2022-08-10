@@ -188,7 +188,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonSchemaType getJsonType(MysqlType mysqlType) {
+  public JsonSchemaType getJsonType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
@@ -199,6 +199,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
       case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaType.STRING_BASE_64;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case DATETIME -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case DATE -> JsonSchemaType.STRING_DATE;
       default -> JsonSchemaType.STRING;
     };
   }
