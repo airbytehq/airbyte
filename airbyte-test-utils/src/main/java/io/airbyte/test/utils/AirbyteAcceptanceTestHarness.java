@@ -111,6 +111,7 @@ import org.testcontainers.utility.MountableFile;
  * <li>kubernetes client</li>
  * <li>lists of UUIDS representing IDs of sources, destinations, connections, and operations</li>
  */
+@SuppressWarnings("PMD")
 public class AirbyteAcceptanceTestHarness {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteAcceptanceTestHarness.class);
@@ -607,7 +608,7 @@ public class AirbyteAcceptanceTestHarness {
     if (isKube) {
       if (isMinikube) {
         // used with minikube driver=none instance
-        dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
+        dbConfig.put(JdbcUtils.HOST_KEY, "0.0.0.0");
       } else {
         // used on a single node with docker driver
         dbConfig.put(JdbcUtils.HOST_KEY, psql.getHost());
@@ -624,7 +625,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put(JdbcUtils.PORT_KEY, psql.getExposedPorts().get(0));
+    dbConfig.put(JdbcUtils.PORT_KEY, 5432);
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
     // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
