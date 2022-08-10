@@ -1,5 +1,7 @@
-name: "Shared Pull Requests"
+name: "Github Labeler PR Edition"
 on:
+  branch:
+    - toph_adds_PAT_rotation_to_GH_issues_part2
   pull_request_target:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
@@ -31,8 +33,8 @@ jobs:
     steps:
       - uses: nick-fields/private-action-loader@v3
         with:
-          pal-repo-token: ${{ needs.find_valid_pat.outputs.pat }}
+          pal-repo-token: "${{ needs.find_valid_pat.outputs.pat }}"
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
-          token: ${{ needs.find_valid_pat.outputs.pat }}
+          token: "${{ needs.find_valid_pat.outputs.pat }}"
           command: "pull"

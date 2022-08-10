@@ -1,10 +1,12 @@
-name: "Shared Issues"
+name: "Github Labeler Issues Edition"
 on:
+  branch: toph_adds_PAT_rotation_to_GH_issues_part2
   issues:
     types: [opened, labeled, unlabeled]
 
 jobs:
   shared-issues:
+    name: "Adds github labels for shared issues"
     runs-on: ubuntu-latest
     steps:
       - uses: nick-fields/private-action-loader@v3
