@@ -8272,7 +8272,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.11"
+- dockerImage: "airbyte/source-salesforce:1.0.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -8312,7 +8312,7 @@
           title: "Refresh Token"
           description: "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\"\
             >Salesforce Refresh Token</a> used for Airbyte to access your Salesforce\
-            \ account. "
+            \ account."
           type: "string"
           airbyte_secret: true
           order: 4

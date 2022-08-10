@@ -150,7 +150,7 @@ class SalesforceStream(HttpStream, ABC):
 
 class BulkSalesforceStream(SalesforceStream):
     page_size = 15000
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400 # 24-hour bulk job running time
+    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
