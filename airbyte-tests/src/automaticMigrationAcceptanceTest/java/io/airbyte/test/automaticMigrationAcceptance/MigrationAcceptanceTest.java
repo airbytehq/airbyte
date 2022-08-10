@@ -5,53 +5,38 @@
 package io.airbyte.test.automaticMigrationAcceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
-import com.google.common.io.Resources;
-import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.DestinationDefinitionApi;
 import io.airbyte.api.client.generated.HealthApi;
 import io.airbyte.api.client.generated.SourceDefinitionApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
-import io.airbyte.api.client.model.generated.ImportRead;
-import io.airbyte.api.client.model.generated.ImportRead.StatusEnum;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.api.client.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.concurrency.WaitingUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import java.io.File;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.utility.ComparableVersion;
 
 /**
  * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
- * - upgrading from 0.32.0 to the latest version should work.
- * - This test previously tested upgrading from even older versions, which has since been removed
+ * - upgrading from 0.32.0 to the latest version should work. - This test previously tested
+ * upgrading from even older versions, which has since been removed
  * <p>
  * This test runs on the current code version and expects local images with the `dev` tag to be
  * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
@@ -158,7 +143,7 @@ class MigrationAcceptanceTest {
   private static void assertDataFromApi(final ApiClient apiClient) throws ApiException {
     if (workspaceIdRequestBody != null) {
       assertEquals(assertWorkspaceInformation(apiClient).getWorkspaceId(), workspaceIdRequestBody.getWorkspaceId());
-    }else{
+    } else {
       workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
     }
 
