@@ -1,0 +1,18 @@
+{
+  "host": "test_host",
+  "port": 1433,
+  "database": "test_vm_db",
+  "password": {
+    "_secret": "airbyte_workspace_test_sercet"
+  },
+  "username": "test_usr",
+  "ssl_method": {
+    "ssl_method": "unencrypted"
+  },
+  "replication": {
+    "replication_type": "STANDARD"
+  },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "ssl": false,
+  "host": "test-host",
+  "port": 3306,
+  "database": "test",
+  "password": {
+    "_secret": "airbyte_workspace_test_secret"
+  },
+  "username": "test_usr",
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": "CDC"
+}
