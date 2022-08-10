@@ -86,11 +86,11 @@ class IncrementalOktaStream(OktaStream, ABC):
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        lowest_cursor_value = self.min_id if self.min_id else str(pendulum.datetime.min)
+        min_cursor_value = self.min_id if self.min_id else str(pendulum.datetime.min)
         return {
             self.cursor_field: max(
-                latest_record.get(self.cursor_field, lowest_cursor_value),
-                current_stream_state.get(self.cursor_field, lowest_cursor_value),
+                latest_record.get(self.cursor_field, min_cursor_value),
+                current_stream_state.get(self.cursor_field, min_cursor_value),
             )
         }
 
