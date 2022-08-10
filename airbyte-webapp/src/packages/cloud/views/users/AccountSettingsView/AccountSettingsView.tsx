@@ -23,7 +23,7 @@ const AccountSettingsView: React.FC = () => {
     <>
       <NameSection />
       <EmailSection />
-      <PasswordSection />
+      {authService.providers?.includes("password") && <PasswordSection />}
       <SettingsCard
         title={
           <Header>

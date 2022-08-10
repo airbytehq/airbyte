@@ -49,7 +49,7 @@ interface AuthContextApi {
   emailVerified: boolean;
   isLoading: boolean;
   loggedOut: boolean;
-  provider: string | null;
+  providers: string[] | null;
   login: AuthLogin;
   loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
@@ -116,7 +116,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         loggedIn({
           user,
           emailVerified: currentUser.emailVerified,
-          provider: currentUser.providerData[0]?.providerId ?? "",
+          providers: currentUser.providerData.map(({ providerId }) => providerId),
         });
       } catch (e) {
         if (isCommonRequestError(e) && e.status === 404) {
@@ -160,7 +160,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       isLoading: state.loading,
       emailVerified: state.emailVerified,
       loggedOut: state.loggedOut,
-      provider: state.provider,
+      providers: state.providers,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
