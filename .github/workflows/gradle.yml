@@ -760,4 +760,4 @@ jobs:
 
       - name: Debbug
         run: |
-          echo "!!! DEBBUG !!! ${{ needs.find_valid_pat.outputs.pat }}"
+          echo "!!! DEBBUG !!! ${{ github.event_name }}"
