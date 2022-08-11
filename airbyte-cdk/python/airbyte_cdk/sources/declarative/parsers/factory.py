@@ -133,6 +133,7 @@ class DeclarativeComponentFactory:
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
 
         if self.instantiate:
+            print(f"instantiate: {class_} with {updated_kwargs}")
             return create(class_, config=config, **updated_kwargs)
         else:
             # generate the schema for the current class (include a subcall to remap the interface to the a union)
@@ -150,10 +151,15 @@ class DeclarativeComponentFactory:
             # return component_func
 
             # Validate using the component definition (not sure why it can't validate instances saying they're not objects)
-            component_definition = {**updated_kwargs, **{k: v for k, v in updated_kwargs[OPTIONS_STR].items() if k not in updated_kwargs}}
+            component_definition = {
+                **updated_kwargs,
+                **{k: v for k, v in updated_kwargs.get(OPTIONS_STR, {}).items() if k not in updated_kwargs},
+            }
             component_definition["config"] = config
             # schema['type'] = 'dict'
+            print(f"valdiating {component_definition} with {schema}")
             validate(component_definition, schema)
+            return lambda: component_definition
 
     @staticmethod
     def _get_class_from_fully_qualified_class_name(class_name: str):
@@ -204,7 +210,7 @@ class DeclarativeComponentFactory:
                 )
                 for sub in definition
             ]
-        else:
+        elif self.instantiate:
             expected_type = self.get_default_type(key, parent_class)
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
@@ -218,8 +224,7 @@ class DeclarativeComponentFactory:
                         return expected_type(definition, options=options)
                 except Exception as e:
                     raise Exception(f"failed to instantiate type {expected_type}. {e}")
-            else:
-                return definition
+        return definition
 
     @staticmethod
     def is_object_definition_with_class_name(definition):

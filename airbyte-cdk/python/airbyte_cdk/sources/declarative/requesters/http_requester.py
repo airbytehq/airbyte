@@ -38,8 +38,8 @@ class HttpRequester(Requester, JsonSchemaMixin):
     """
 
     name: str
-    url_base: InterpolatedString
-    path: InterpolatedString
+    url_base: Union[str, InterpolatedString]
+    path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
