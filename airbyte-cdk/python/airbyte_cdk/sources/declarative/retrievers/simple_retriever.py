@@ -178,7 +178,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """
         # url encode string values
         return {
-            k: _url_encode(v)
+            _url_encode(k): _url_encode(v)
             for k, v in self._get_request_options(
                 stream_slice,
                 next_page_token,

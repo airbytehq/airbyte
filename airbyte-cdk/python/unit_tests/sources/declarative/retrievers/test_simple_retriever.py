@@ -282,7 +282,7 @@ def test_request_params_are_urlencoded():
     paginator = MagicMock()
     requester = MagicMock()
 
-    base_mapping = {"key": "this is a value"}
+    base_mapping = {"this is key": "this is a value"}
     requester.get_request_params.return_value = base_mapping
 
     record_selector = MagicMock()
@@ -291,7 +291,7 @@ def test_request_params_are_urlencoded():
     )
 
     actual_mapping = retriever.request_params(None, None, None)
-    expected_mapping = {"key": "this%20is%20a%20value"}
+    expected_mapping = {"this%20is%20a%20key": "this%20is%20a%20value"}
     assert expected_mapping == actual_mapping
 
 
