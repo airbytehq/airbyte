@@ -40,6 +40,7 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
     ) -> List[Record]:
         all_records = self.extractor.extract_records(response)
         if not all_records:
+          # any falsey values e.g: None, {}, or [] should all be treated as not receiving a response
             return []
         # Some APIs don't wrap single records in a list
         if not isinstance(all_records, list):
