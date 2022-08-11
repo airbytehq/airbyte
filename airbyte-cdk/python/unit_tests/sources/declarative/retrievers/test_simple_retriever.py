@@ -277,6 +277,24 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
                 pass
 
 
+def test_request_params_are_urlencoded():
+    # This test is separate from the other request options because request headers must be strings
+    paginator = MagicMock()
+    requester = MagicMock()
+
+    base_mapping = {"key": "this is a value"}
+    requester.get_request_params.return_value = base_mapping
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever(
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, paginator=paginator, options={}
+    )
+
+    actual_mapping = retriever.request_params(None, None, None)
+    expected_mapping = {"key": "this%20is%20a%20value"}
+    assert expected_mapping == actual_mapping
+
+
 @pytest.mark.parametrize(
     "test_name, requester_body_data, paginator_body_data, expected_body_data",
     [

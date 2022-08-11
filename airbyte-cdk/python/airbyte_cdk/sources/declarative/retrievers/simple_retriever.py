@@ -4,6 +4,7 @@
 
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import quote
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -175,13 +176,28 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        return self._get_request_options(
-            stream_slice,
-            next_page_token,
-            self.requester.get_request_params,
-            self.paginator.get_request_params,
-            self.stream_slicer.get_request_params,
-        )
+        # url encode string values
+        params = {
+            k: v
+            for k, v in self._get_request_options(
+                stream_slice,
+                next_page_token,
+                self.requester.get_request_params,
+                self.paginator.get_request_params,
+                self.stream_slicer.get_request_params,
+            ).items()
+        }
+        print(f"params: {params}")
+        return {
+            k: (quote(v) if isinstance(v, str) else v)
+            for k, v in self._get_request_options(
+                stream_slice,
+                next_page_token,
+                self.requester.get_request_params,
+                self.paginator.get_request_params,
+                self.stream_slicer.get_request_params,
+            ).items()
+        }
 
     def request_body_data(
         self,
