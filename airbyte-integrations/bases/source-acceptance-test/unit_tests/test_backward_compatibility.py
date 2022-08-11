@@ -518,7 +518,7 @@ VALID_SPEC_TRANSITIONS = [
             connectionSpecification={
                 "type": "object",
                 "required": ["my_required_string"],
-                "additionalProperties": "false",
+                "additionalProperties": False,
                 "properties": {
                     "my_required_string": {"type": "string"},
                 },
@@ -528,13 +528,13 @@ VALID_SPEC_TRANSITIONS = [
             connectionSpecification={
                 "type": "object",
                 "required": ["my_required_string"],
-                "additionalProperties": "true",
+                "additionalProperties": True,
                 "properties": {
                     "my_required_string": {"type": "string"},
                 },
             }
         ),
-        name="Not changing a spec should not fail",
+        name="Changing the value of a boolean field should not fail",
         should_fail=False,
     ),
     Transition(
