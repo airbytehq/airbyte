@@ -6,8 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 
-// eslint-disable-next-line css-modules/no-unused-class
-import styles from "./Markdown.module.scss";
+import "./styles.scss";
 
 interface Props {
   content?: string;
@@ -15,12 +14,12 @@ interface Props {
   rehypePlugins?: PluggableList;
 }
 
-const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
+export const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
   return (
     <ReactMarkdown
       // Open everything except fragment only links in a new tab
       linkTarget={(href) => (href.startsWith("#") ? undefined : "_blank")}
-      className={classNames(styles.markdown, className)}
+      className={classNames("airbyte-markdown", className)}
       skipHtml
       // @ts-expect-error remarkFrontmatter currently has type conflicts due to duplicate vfile dependencies
       // This is not actually causing any issues, but requires to disable TS on this for now.
@@ -30,5 +29,3 @@ const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
     />
   );
 };
-
-export default Markdown;

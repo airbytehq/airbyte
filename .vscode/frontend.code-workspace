@@ -5,6 +5,9 @@
     },
     {
       "path": "../airbyte-webapp-e2e-tests"
+    },
+    {
+      "path": "../docs"
     }
   ],
   "extensions": {
