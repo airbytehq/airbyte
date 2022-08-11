@@ -1407,7 +1407,7 @@ paths:
       tags:
         - connection
         - internal
-      summary: Create or update the state for a connection. INTERNAL-ONLY.
+      summary: Create or update the state for a connection.
       operationId: createOrUpdateState
       requestBody:
         content:
