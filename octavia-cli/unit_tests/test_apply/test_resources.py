@@ -832,7 +832,7 @@ class TestConnection:
         assert configuration["schedule_type"] == ConnectionScheduleType(
             connection_configuration_with_manual_schedule["configuration"]["schedule_type"]
         )
-        assert not configuration["schedule_data"]
+        assert configuration["schedule_data"] is None
 
     def test__deserialize_operations(self, mock_api_client, connection_configuration):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
