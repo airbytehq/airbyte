@@ -11,8 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: "0"
+    # helm.sh/hook: pre-install,pre-upgrade
     {{- if .Values.podAnnotations }}
       {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 4 }}
     {{- end }}
@@ -71,8 +70,23 @@ spec:
               name: {{ .Values.global.configMapName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
         {{- end }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: bootloader-secrets
+              key: {{ $k }}
+        {{- end }}
+        {{- end }}
+
+        # Values from env
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
         {{- end }}
 
       resources: {{- toYaml .Values.resources | nindent 8 }}
