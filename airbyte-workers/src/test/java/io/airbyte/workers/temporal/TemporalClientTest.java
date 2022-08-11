@@ -748,7 +748,7 @@ class TemporalClientTest {
     }
 
     @Test
-    private void testRestartFailed() {
+    void testRestartFailed() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
 
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
@@ -756,7 +756,7 @@ class TemporalClientTest {
       final Set<UUID> workflowIds = Set.of(connectionId);
 
       doReturn(workflowIds)
-          .when(temporalClient).fetchWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+          .when(temporalClient).fetchWorkflowsByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
       doReturn(workflowIds)
           .when(temporalClient).filterOutRunningWorkspaceId(workflowIds);
       mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
