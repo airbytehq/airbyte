@@ -27,8 +27,7 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
-    # destinations_to_test = dbt_test_utils.get_test_targets()
-    destinations_to_test = ['tidb']
+    destinations_to_test = dbt_test_utils.get_test_targets()
     # set clean-up args to clean target destination after the test
     clean_up_args = {
         "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
@@ -61,8 +60,11 @@ def setup_test_path(request):
     yield
     os.chdir(request.config.invocation_dir)
 
+
+# TODO wq clean
 def test_tidb():
     test_normalization(DestinationType.TIDB, "test_nested_streams", setup_test_path)
+
 
 @pytest.mark.parametrize(
     "test_resource_name",
@@ -78,7 +80,7 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     if (
-        destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value) #, DestinationType.TIDB.value)
+        destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
         and test_resource_name == "test_nested_streams"
     ):
         pytest.skip(f"Destinations {destination_type} does not support nested streams")

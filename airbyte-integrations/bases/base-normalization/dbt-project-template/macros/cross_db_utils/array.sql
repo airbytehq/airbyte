@@ -189,3 +189,7 @@ joined as (
         where numbers.generated_number <= json_length({{ column_col }})
     )
 {%- endmacro %}
+
+{% macro tidb__unnest_cte(from_table, stream_name, column_col) -%}
+    {{ mysql__unnest_cte(from_table, stream_name, column_col) }}
+{%- endmacro %}
