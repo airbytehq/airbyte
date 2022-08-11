@@ -747,7 +747,5 @@ jobs:
         uses: actions/checkout@v2
       # Pull request based workflows.
       - name: Debbug
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "!!! DEBBUG !!! ${{ github.event.inputs.gitref }}"
