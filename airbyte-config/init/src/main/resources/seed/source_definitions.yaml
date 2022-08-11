@@ -276,6 +276,13 @@
   icon: file.svg
   sourceType: file
   releaseStage: alpha
+- name: Freshcaller
+  sourceDefinitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
+  dockerRepository: airbyte/source-freshcaller
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/freshcaller
+  sourceType: api
+  releaseStage: alpha
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
