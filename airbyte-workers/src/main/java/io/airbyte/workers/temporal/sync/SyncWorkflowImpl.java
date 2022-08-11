@@ -121,6 +121,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         .withCatalog(syncOutput.getOutputCatalog())
         .withResourceRequirements(resourceReqs);
   }
+
   private ActivityOptions setTaskQueue(final ActivityOptions activityOptions, final String taskQueue) {
     return ActivityOptions.newBuilder(activityOptions).setTaskQueue(taskQueue).build();
   }
