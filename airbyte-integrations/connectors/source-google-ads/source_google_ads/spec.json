@@ -23,7 +23,8 @@
             "type": "string",
             "title": "Client ID",
             "order": 1,
-            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD",
+            "airbyte_secret": true
           },
           "client_secret": {
             "type": "string",
