@@ -13,10 +13,9 @@ export const remarkAdmonitionsPlugin: Plugin<[], Root> = () => (tree) => {
     }
 
     const data = node.data ?? (node.data = {});
-    const tagName = node.type === "textDirective" ? "span" : "div";
     const className = `admonition admonition--${node.name}`;
 
-    data.hName = tagName;
+    data.hName = "div";
     data.hProperties = { class: className };
   });
 };
