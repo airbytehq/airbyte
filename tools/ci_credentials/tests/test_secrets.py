@@ -3,7 +3,6 @@ import json
 import re
 import shutil
 import tempfile
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -180,4 +179,4 @@ def test_validate_mask_values(connector_name, dict_json_value, expected_secret, 
     loader = SecretsLoader(connector_name=connector_name, gsm_credentials={})
     json_value = json.loads(dict_json_value)
     loader.mask_secrets_from_action_log(None, json_value)
-    assert expected_secret in capsys.readouterr().out 
+    assert expected_secret in capsys.readouterr().out

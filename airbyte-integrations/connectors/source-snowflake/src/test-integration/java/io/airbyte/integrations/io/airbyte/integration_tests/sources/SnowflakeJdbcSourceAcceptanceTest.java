@@ -111,11 +111,11 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_WITHOUT_PK,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
