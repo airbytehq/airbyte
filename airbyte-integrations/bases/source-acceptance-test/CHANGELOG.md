@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.0
+Finish backward compatibility syntactic tests implementation: check that cursor fields were not changed. [#15520](https://github.com/airbytehq/airbyte/pull/15520/)
+
 ## 0.1.62
 Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
 
