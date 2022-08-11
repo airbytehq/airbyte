@@ -39,6 +39,7 @@ class BaseDiffChecker(ABC):
         type_values_changed = [change for change in self._diff.get("values_changed", []) if change.path(output_format="list")[-1] == "type"]
 
         # Detect type value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
+        # Skip changes to additionalProperties because it's not a spec property
         type_values_changed_in_list = [
             change
             for change in self._diff.get("values_changed", [])
