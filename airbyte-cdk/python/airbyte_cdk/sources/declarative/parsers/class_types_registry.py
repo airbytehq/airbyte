@@ -8,7 +8,6 @@ from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, Basi
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -52,7 +51,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "HttpRequester": HttpRequester,
     "InterpolatedBoolean": InterpolatedBoolean,
     "InterpolatedString": InterpolatedString,
-    "JelloExtractor": JelloExtractor,
     "JsonSchema": JsonSchema,
     "LimitPaginator": LimitPaginator,
     "ListStreamSlicer": ListStreamSlicer,
