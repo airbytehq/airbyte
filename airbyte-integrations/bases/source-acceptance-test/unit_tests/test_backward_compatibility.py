@@ -966,7 +966,7 @@ VALID_JSON_SCHEMA_TRANSITIONS_PARAMS = [
 def test_validate_previous_configs(previous_connector_spec, actual_connector_spec, should_fail):
     expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
     with expectation:
-        validate_previous_configs(previous_connector_spec, actual_connector_spec, 100)
+        validate_previous_configs(previous_connector_spec, actual_connector_spec, 200)
 
 
 FAILING_CATALOG_TRANSITIONS = [
