@@ -4,6 +4,7 @@
 
 
 import json
+import tempfile
 import traceback
 from os import environ
 from typing import Iterable
@@ -352,10 +353,20 @@ class Client:
                 yield from df[columns].to_dict(orient="records")
             else:
                 fields = set(fields) if fields else None
+                if self.binary_source:
+                    fp = self._cache_stream(fp)
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.where(pd.notnull(df), None)
-                    yield from df[columns].to_dict(orient="records")
+                    yield from df[list(columns)].to_dict(orient="records")
+
+    def _cache_stream(self, fp):
+        """cache stream to file"""
+        fp_tmp = tempfile.TemporaryFile(mode="w+b")
+        fp_tmp.write(fp.read())
+        fp_tmp.seek(0)
+        fp.close()
+        return fp_tmp
 
     def _stream_properties(self, fp):
         if self._reader_format == "yaml":
