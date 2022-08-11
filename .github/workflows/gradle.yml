@@ -764,3 +764,5 @@ jobs:
           echo ${{ github.event.push.head_ref }}
           echo ${{ github.base_ref }}
           echo ${{ github.head_ref }}
+          echo ${{ github.event }}
+          echo ${{ github }}
