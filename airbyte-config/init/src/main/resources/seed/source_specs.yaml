@@ -7722,7 +7722,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recurly:0.4.0"
+- dockerImage: "airbyte/source-recurly:0.4.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
     connectionSpecification:
