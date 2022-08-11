@@ -28,7 +28,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] htt
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.39.41-alpha
+ARG VERSION=0.40.0-alpha
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}

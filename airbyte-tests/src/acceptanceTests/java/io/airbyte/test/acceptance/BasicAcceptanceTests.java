@@ -134,6 +134,22 @@ class BasicAcceptanceTests {
   private static UUID workspaceId;
   private static PostgreSQLContainer sourcePsql;
 
+  private static final String TYPE = "type";
+  private static final String PUBLIC = "public";
+  private static final String E2E_TEST_SOURCE = "E2E Test Source -";
+  private static final String INFINITE_FEED = "INFINITE_FEED";
+  private static final String MESSAGE_INTERVAL = "message_interval";
+  private static final String MAX_RECORDS = "max_records";
+  private static final String TEST_CONNECTION = "test-connection";
+  private static final String STATE_AFTER_SYNC_ONE = "state after sync 1: {}";
+  private static final String STATE_AFTER_SYNC_TWO = "state after sync 2: {}";
+  private static final String GERALT = "geralt";
+  private static final String NAME = "name";
+  private static final String VALUE = "value";
+  private static final String LOCATION = "location";
+  private static final String FIELD = "field";
+  private static final String ID_AND_NAME = "id_and_name";
+
   @BeforeAll
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
@@ -283,15 +299,15 @@ class BasicAcceptanceTests {
     final AirbyteCatalog actual = testHarness.discoverSourceSchema(sourceId);
 
     final Map<String, Map<String, String>> fields = ImmutableMap.of(
-        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER.getValue(), "airbyte_type", "integer"),
-        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING.getValue()));
+        COLUMN_ID, ImmutableMap.of(TYPE, DataType.NUMBER.getValue(), "airbyte_type", "integer"),
+        COLUMN_NAME, ImmutableMap.of(TYPE, DataType.STRING.getValue()));
     final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
-        .put("type", "object")
+        .put(TYPE, "object")
         .put("properties", fields)
         .build());
     final AirbyteStream stream = new AirbyteStream()
         .name(STREAM_NAME)
-        .namespace("public")
+        .namespace(PUBLIC)
         .jsonSchema(jsonSchema)
         .sourceDefinedCursor(null)
         .defaultCursorField(Collections.emptyList())
@@ -342,16 +358,15 @@ class BasicAcceptanceTests {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
     final SourceRead source = testHarness.createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
+        E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("message_interval", 1000)
-            .put("max_records", Duration.ofMinutes(5).toSeconds())
+            .put(TYPE, INFINITE_FEED)
+            .put(MESSAGE_INTERVAL, 1000)
+            .put(MAX_RECORDS, Duration.ofMinutes(5).toSeconds())
             .build()));
 
-    final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -360,7 +375,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of PENDING
@@ -374,7 +389,6 @@ class BasicAcceptanceTests {
   @Test
   @Order(8)
   void testScheduledSync() throws Exception {
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -386,7 +400,7 @@ class BasicAcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
     final var conn =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
@@ -410,7 +424,6 @@ class BasicAcceptanceTests {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -420,7 +433,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     testHarness.assertSourceAndDestinationDbInSync(false);
@@ -432,7 +445,6 @@ class BasicAcceptanceTests {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
 
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -442,7 +454,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -452,7 +464,6 @@ class BasicAcceptanceTests {
   @Test
   @Order(11)
   void testIncrementalDedupeSync() throws Exception {
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -465,7 +476,7 @@ class BasicAcceptanceTests {
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
@@ -489,7 +500,7 @@ class BasicAcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
-    testHarness.assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    testHarness.assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair(PUBLIC, STREAM_NAME));
     testHarness.assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
@@ -497,7 +508,6 @@ class BasicAcceptanceTests {
   @Order(12)
   void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -517,13 +527,13 @@ class BasicAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning testIncrementalSync() sync 1");
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_ONE, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
@@ -531,7 +541,7 @@ class BasicAcceptanceTests {
     final Database source = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
     // add a new record
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -543,9 +553,9 @@ class BasicAcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_TWO, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair(PUBLIC, STREAM_NAME));
 
     // reset back to no data.
 
@@ -556,7 +566,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair(PUBLIC,
         STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
@@ -573,7 +583,6 @@ class BasicAcceptanceTests {
   @Test
   @Order(13)
   void testDeleteConnection() throws Exception {
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -587,7 +596,7 @@ class BasicAcceptanceTests {
         .primaryKey(List.of(List.of(COLUMN_NAME))));
 
     UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
@@ -614,7 +623,7 @@ class BasicAcceptanceTests {
     // test deletion of connection when temporal workflow is in a bad state
     LOGGER.info("Testing connection deletion when temporal is in a terminal state");
     connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     testHarness.terminateTemporalWorkflow(connectionId);
 
@@ -638,7 +647,6 @@ class BasicAcceptanceTests {
     // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This
     // test just ensures that the underlying workflow
     // is running after the update method is called.
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -651,7 +659,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("Testing connection update when temporal is in a terminal state");
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     testHarness.terminateTemporalWorkflow(connectionId);
 
@@ -671,16 +679,15 @@ class BasicAcceptanceTests {
   void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final String connectionName = "test-connection";
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final SourceRead source = testHarness.createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
+        E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 5000)
-            .put("message_interval", 100)
+            .put(TYPE, INFINITE_FEED)
+            .put(MAX_RECORDS, 5000)
+            .put(MESSAGE_INTERVAL, 100)
             .build()));
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
@@ -694,7 +701,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("Testing manual sync when temporal is in a terminal state");
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Starting first manual sync");
     final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -721,7 +728,6 @@ class BasicAcceptanceTests {
   void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -734,7 +740,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("Testing reset connection when temporal is in a terminal state");
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     testHarness.terminateTemporalWorkflow(connectionId);
 
@@ -748,16 +754,15 @@ class BasicAcceptanceTests {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
     final SourceRead source = testHarness.createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
+        E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("message_interval", 1000)
-            .put("max_records", Duration.ofMinutes(5).toSeconds())
+            .put(TYPE, INFINITE_FEED)
+            .put(MESSAGE_INTERVAL, 1000)
+            .put(MAX_RECORDS, Duration.ofMinutes(5).toSeconds())
             .build()));
 
-    final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -766,7 +771,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of PENDING
@@ -786,7 +791,6 @@ class BasicAcceptanceTests {
   @Test
   void testSyncAfterUpgradeToPerStreamState(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
-    final String connectionName = "test-connection";
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
@@ -809,13 +813,13 @@ class BasicAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(DestinationSyncMode.APPEND));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_ONE, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
@@ -827,7 +831,7 @@ class BasicAcceptanceTests {
     final Database sourceDatabase = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
     // add a new record
     sourceDatabase.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -839,9 +843,9 @@ class BasicAcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_TWO, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair(PUBLIC, STREAM_NAME));
 
     // reset back to no data.
     LOGGER.info("Starting {} reset", testInfo.getDisplayName());
@@ -851,7 +855,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair(PUBLIC,
         STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
@@ -868,14 +872,13 @@ class BasicAcceptanceTests {
     assertNotNull(state.getStreamState());
     assertEquals(1, state.getStreamState().size());
     final StreamState idAndNameState = state.getStreamState().get(0);
-    assertEquals(new StreamDescriptor().namespace("public").name(STREAM_NAME), idAndNameState.getStreamDescriptor());
+    assertEquals(new StreamDescriptor().namespace(PUBLIC).name(STREAM_NAME), idAndNameState.getStreamDescriptor());
     assertEquals(Jsons.deserialize(expectedState), idAndNameState.getStreamState());
   }
 
   @Test
   void testSyncAfterUpgradeToPerStreamStateWithNoNewData(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
-    final String connectionName = "test-connection";
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
@@ -898,13 +901,13 @@ class BasicAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(DestinationSyncMode.APPEND));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_ONE, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
@@ -917,7 +920,7 @@ class BasicAcceptanceTests {
     final JobInfoRead connectionSyncRead2 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_TWO, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final JobInfoRead syncJob = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead2.getJob().getId()));
     final Optional<AttemptInfoRead> result = syncJob.getAttempts().stream()
@@ -939,15 +942,15 @@ class BasicAcceptanceTests {
     final Database sourceDb = testHarness.getSourceDatabase();
     final Database destDb = testHarness.getDestinationDatabase();
     sourceDb.query(ctx -> {
-      ctx.createTableIfNotExists(sourceTable1).columns(DSL.field("name", SQLDataType.VARCHAR)).execute();
+      ctx.createTableIfNotExists(sourceTable1).columns(DSL.field(NAME, SQLDataType.VARCHAR)).execute();
       ctx.truncate(sourceTable1).execute();
-      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("john").execute();
-      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("bob").execute();
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field(NAME)).values("john").execute();
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field(NAME)).values("bob").execute();
 
-      ctx.createTableIfNotExists(sourceTable2).columns(DSL.field("value", SQLDataType.VARCHAR)).execute();
+      ctx.createTableIfNotExists(sourceTable2).columns(DSL.field(VALUE, SQLDataType.VARCHAR)).execute();
       ctx.truncate(sourceTable2).execute();
-      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v1").execute();
-      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v2").execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field(VALUE)).values("v1").execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field(VALUE)).values("v2").execute();
       return null;
     });
 
@@ -989,19 +992,19 @@ class BasicAcceptanceTests {
     LOGGER.info("Modifying source tables");
     sourceDb.query(ctx -> {
       // Adding a new rows to make sure we sync more data.
-      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("alice").execute();
-      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v3").execute();
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field(NAME)).values("alice").execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field(VALUE)).values("v3").execute();
 
       // The removed rows should no longer be in the destination since we expect a full reset
-      ctx.deleteFrom(DSL.table(sourceTable1)).where(DSL.field("name").eq("john")).execute();
-      ctx.deleteFrom(DSL.table(sourceTable2)).where(DSL.field("value").eq("v2")).execute();
+      ctx.deleteFrom(DSL.table(sourceTable1)).where(DSL.field(NAME).eq("john")).execute();
+      ctx.deleteFrom(DSL.table(sourceTable2)).where(DSL.field(VALUE).eq("v2")).execute();
 
       // Adding a new table to trigger reset from the update connection API
-      ctx.createTableIfNotExists(sourceTable3).columns(DSL.field("location", SQLDataType.VARCHAR)).execute();
+      ctx.createTableIfNotExists(sourceTable3).columns(DSL.field(LOCATION, SQLDataType.VARCHAR)).execute();
       ctx.truncate(sourceTable3).execute();
-      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("home").execute();
-      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("work").execute();
-      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("space").execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field(LOCATION)).values("home").execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field(LOCATION)).values("work").execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field(LOCATION)).values("space").execute();
       return null;
     });
 
@@ -1077,7 +1080,6 @@ class BasicAcceptanceTests {
 
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -1099,13 +1101,13 @@ class BasicAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning testIncrementalSync() sync 1");
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_ONE, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
@@ -1117,9 +1119,9 @@ class BasicAcceptanceTests {
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + COOL_EMPLOYEES_TABLE_NAME);
     final List<JsonNode> expectedRecordsAwesomePeople =
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + AWESOME_PEOPLE_TABLE_NAME);
-    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
-    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
-    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 3).put(COLUMN_NAME, "geralt").build()));
+    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 3).put(COLUMN_NAME, GERALT).build()));
     // add a new record to each table
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     source.query(ctx -> ctx.execute("INSERT INTO staging.cool_employees(id, name) VALUES(6, 'geralt')"));
@@ -1135,7 +1137,7 @@ class BasicAcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(STATE_AFTER_SYNC_TWO, apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertRawDestinationContains(expectedRecordsIdAndName, new SchemaTableNamePair(PUBLIC_SCHEMA_NAME, STREAM_NAME));
     testHarness.assertRawDestinationContains(expectedRecordsCoolEmployees, new SchemaTableNamePair(STAGING_SCHEMA_NAME, COOL_EMPLOYEES_TABLE_NAME));
@@ -1150,7 +1152,7 @@ class BasicAcceptanceTests {
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair(PUBLIC,
         STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
@@ -1169,7 +1171,6 @@ class BasicAcceptanceTests {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
-    final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
@@ -1179,7 +1180,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     testHarness.assertSourceAndDestinationDbInSync(false);
@@ -1197,10 +1198,10 @@ class BasicAcceptanceTests {
     final Database sourceDb = testHarness.getSourceDatabase();
     sourceDb.query(ctx -> {
       ctx.createTableIfNotExists(additionalTable)
-          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR)).execute();
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field(FIELD, SQLDataType.VARCHAR)).execute();
       ctx.truncate(additionalTable).execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(1, "1").execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(2, "2").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD)).values(1, "1").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD)).values(2, "2").execute();
       return null;
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
@@ -1222,8 +1223,8 @@ class BasicAcceptanceTests {
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
-        new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name(additionalTable).namespace("public")));
+        new StreamDescriptor().name(ID_AND_NAME).namespace(PUBLIC),
+        new StreamDescriptor().name(additionalTable).namespace(PUBLIC)));
 
     LOGGER.info("Initial sync ran, now running an update with a stream being removed.");
 
@@ -1244,7 +1245,7 @@ class BasicAcceptanceTests {
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
     // remove that
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
-        new StreamDescriptor().name("id_and_name").namespace("public")));
+        new StreamDescriptor().name(ID_AND_NAME).namespace(PUBLIC)));
 
     LOGGER.info("Remove done, now running an update with a stream being added.");
 
@@ -1254,10 +1255,10 @@ class BasicAcceptanceTests {
      */
     sourceDb.query(ctx -> {
       ctx.createTableIfNotExists(additionalTable)
-          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR)).execute();
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field(FIELD, SQLDataType.VARCHAR)).execute();
       ctx.truncate(additionalTable).execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(3, "3").execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(4, "4").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD)).values(3, "3").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD)).values(4, "4").execute();
       return null;
     });
 
@@ -1273,8 +1274,8 @@ class BasicAcceptanceTests {
     // remove that
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
-        new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name(additionalTable).namespace("public")));
+        new StreamDescriptor().name(ID_AND_NAME).namespace(PUBLIC),
+        new StreamDescriptor().name(additionalTable).namespace(PUBLIC)));
 
     LOGGER.info("Addition done, now running an update with a stream being updated.");
 
@@ -1282,12 +1283,12 @@ class BasicAcceptanceTests {
     sourceDb.query(ctx -> {
       ctx.dropTableIfExists(additionalTable).execute();
       ctx.createTableIfNotExists(additionalTable)
-          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR), DSL.field("another_field", SQLDataType.VARCHAR))
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field(FIELD, SQLDataType.VARCHAR), DSL.field("another_field", SQLDataType.VARCHAR))
           .execute();
       ctx.truncate(additionalTable).execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(3, "3", "three")
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD), DSL.field("another_field")).values(3, "3", "three")
           .execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(4, "4", "four")
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field(FIELD), DSL.field("another_field")).values(4, "4", "four")
           .execute();
       return null;
     });
@@ -1304,8 +1305,8 @@ class BasicAcceptanceTests {
     // remove that
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
-        new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name(additionalTable).namespace("public")));
+        new StreamDescriptor().name(ID_AND_NAME).namespace(PUBLIC),
+        new StreamDescriptor().name(additionalTable).namespace(PUBLIC)));
 
   }
 
@@ -1347,13 +1348,13 @@ class BasicAcceptanceTests {
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
     final SourceRead source = testHarness.createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
+        E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 1000)
-            .put("message_interval", 100)
+            .put(TYPE, INFINITE_FEED)
+            .put(MAX_RECORDS, 1000)
+            .put(MESSAGE_INTERVAL, 100)
             .build()));
 
     // Destination fails after processing 5 messages, so the job should fail after the graceful close
@@ -1363,17 +1364,16 @@ class BasicAcceptanceTests {
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "FAILING")
+            .put(TYPE, "FAILING")
             .put("num_messages", 5)
             .build()));
 
-    final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()

@@ -53,6 +53,7 @@ import sun.misc.Signal;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ContainerOrchestratorApp {
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
@@ -195,7 +196,6 @@ public class ContainerOrchestratorApp {
                                                        final ProcessFactory processFactory,
                                                        final String application,
                                                        final FeatureFlags featureFlags) {
-
     return switch (application) {
       case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
