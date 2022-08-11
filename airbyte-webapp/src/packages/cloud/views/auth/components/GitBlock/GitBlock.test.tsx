@@ -2,8 +2,8 @@ import { render } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 
 import { ConfigContext, defaultConfig } from "config";
+import en from "locales/en.json";
 
-import en from "../../../../locales/en.json";
 import { GitBlock, GitBlockProps } from "./GitBlock";
 
 const renderGitBlock = (props?: GitBlockProps) =>

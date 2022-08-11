@@ -2,7 +2,8 @@ import { renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import { IntlProvider } from "react-intl";
 
-import messages from "../locales/en.json";
+import messages from "locales/en.json";
+
 import { AirbyteConnectorData, useTranslateDataType } from "./useTranslateDataType";
 
 const wrapper: React.FC = ({ children }) => (

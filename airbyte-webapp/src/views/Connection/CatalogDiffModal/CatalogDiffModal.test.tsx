@@ -9,8 +9,8 @@ import {
   StreamTransform,
   SyncMode,
 } from "core/request/AirbyteClient";
+import messages from "locales/en.json";
 
-import messages from "../../../locales/en.json";
 import { CatalogDiffModal } from "./CatalogDiffModal";
 
 const mockCatalogDiff: CatalogDiff = {
