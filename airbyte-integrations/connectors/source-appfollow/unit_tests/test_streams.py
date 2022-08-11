@@ -15,10 +15,11 @@ def patch_base_class(mocker):
     def __init__(self):
         self.ext_id = "00000"
         self.cid = "000000"
+
     mocker.patch.object(AppfollowStream, "__init__", __init__)
     mocker.patch.object(AppfollowStream, "path", "v0/example_endpoint")
     mocker.patch.object(AppfollowStream, "primary_key", "test_primary_key")
-    mocker.patch.object(AppfollowStream, "__abstractmethods__", set())    
+    mocker.patch.object(AppfollowStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -26,6 +27,7 @@ def test_request_params(patch_base_class):
     inputs = {"stream_state": "test_stream_state"}
     expected_params = {"ext_id": "00000", "cid": "000000"}
     assert stream.request_params(**inputs) == expected_params
+
 
 def test_parse_response(patch_base_class):
     stream = AppfollowStream()

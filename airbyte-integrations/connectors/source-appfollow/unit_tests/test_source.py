@@ -1,9 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import requests_mock
 
-from requests.exceptions import HTTPError
 from unittest.mock import MagicMock
 
 from source_appfollow.source import SourceAppfollow
@@ -21,6 +19,7 @@ def test_check_connection(mocker, requests_mock):
     requests_mock.get("https://api.appfollow.io/ratings", status_code=500)
     ok, err = source.check_connection(logger_mock, config_mock)
     assert (ok, type(err)) == (False, str)
+
 
 def test_streams(mocker):
     source = SourceAppfollow()

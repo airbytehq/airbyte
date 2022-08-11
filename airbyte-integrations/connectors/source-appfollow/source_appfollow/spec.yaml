@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - ext_id
+    - country
     - cid
     - api_secret
   additionalProperties: true
@@ -22,3 +23,7 @@ connectionSpecification:
       title: api secret
       description: api secret provided by Appfollow
       airbyte_secret: true
+    country:
+      type: string
+      title: country
+      description: getting data by Country
