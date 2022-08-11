@@ -15,9 +15,14 @@ configuration:
     cpu_request: "" # OPTIONAL
     memory_limit: "" # OPTIONAL
     memory_request: "" # OPTIONAL
-  schedule: # OPTIONAL | object
-    time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
-    units: 1 # REQUIRED | integer
+  schedule_type: basic # OPTIONAL | string | Allowed values: basic, cron, manual
+  schedule_data: # OPTIONAL | object
+    basic_schedule:
+      time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
+      units: 1 # REQUIRED | integer
+    # cron:
+    #   cron_time_zone: "UTC" # REQUIRED | string
+    #   cron_expression: "* */2 * * * ?" # REQUIRED | string
   sync_catalog: # OPTIONAL | object | 🚨 ONLY edit streams.config, streams.stream should not be edited as schema cannot be changed.
     streams:
       - config:
