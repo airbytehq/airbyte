@@ -1,7 +1,7 @@
 # Scylla
 
 ## Prerequisites
-- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0` or newer and upgrade your Scylla connector to version `0.1.3` or newer
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Scylla connector to version `0.1.3` or newer
 
 ## Sync overview
 ### Output schema
