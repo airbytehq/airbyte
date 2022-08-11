@@ -1,4 +1,7 @@
-@use "../../CatalogTree/CatalogTree.module.scss";
+%headerCell {
+  font-size: 10px;
+  line-height: 13px;
+}
 
 .checkboxCell {
   @extend %headerCell;
