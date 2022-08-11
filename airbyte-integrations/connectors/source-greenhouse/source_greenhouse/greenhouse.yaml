@@ -35,7 +35,7 @@ definitions:
       page_token_option:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
-  applications_stream:
+  base_stream:
     $options:
       name: "applications"
     primary_key: "id"
@@ -45,62 +45,39 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "applications"
+  applications_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "applications"
+      path: "applications"
+    primary_key: "id"
   candidates_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "candidates"
+      path: "candidates"
     primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "candidates"
   close_reasons_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "close_reasons"
+      path: "close_reasons"
     primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "close_reasons"
   degrees_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "degrees"
-    primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "degrees"
+      path: "degrees"
   departments_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "departments"
-    primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "departments"
+      path: "departments"
   jobs_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "jobs"
-    primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "jobs"
+      path: "jobs"
   jobs_openings_stream:
     $options:
       name: "jobs_openings"
