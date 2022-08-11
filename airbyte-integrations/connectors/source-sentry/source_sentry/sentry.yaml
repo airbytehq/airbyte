@@ -72,7 +72,7 @@ streams:
             statsPeriod: ""
             query: ""
       paginator:
-        type: NoPagination
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
     $options:
       name: "projects"
@@ -87,7 +87,7 @@ streams:
         $ref: "*ref(definitions.requester)"
         path: "projects/"
       paginator:
-        type: NoPagination
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
     $options:
       name: "project_detail"
