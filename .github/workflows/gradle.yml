@@ -744,7 +744,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
