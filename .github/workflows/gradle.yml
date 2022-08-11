@@ -754,3 +754,4 @@ jobs:
         run: |
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_branch.outputs.branch }}
+          echo ${{ github.base_ref }}
