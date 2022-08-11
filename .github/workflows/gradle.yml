@@ -748,4 +748,5 @@ jobs:
       # Pull request based workflows.
       - name: Debbug
         run: |
-          echo "!!! DEBBUG !!! ${{ github.event.inputs.gitref }}"
+          echo "!!! DEBBUG !!! "
+          echo ${{ github.event.inputs.gitref }}
