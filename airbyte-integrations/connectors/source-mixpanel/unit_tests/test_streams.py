@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import datetime
 from datetime import timedelta
 from unittest.mock import MagicMock
 
@@ -447,4 +447,5 @@ def test_export_stream_request_params():
 
     request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
     assert "where" in request_params
-    assert request_params.get("where") == "properties[\"$time\"]>=datetime(1623888000)"
+    timestamp = int(datetime.datetime.fromisoformat("2021-06-16T17:00:00").timestamp())
+    assert request_params.get("where") == f"properties[\"$time\"]>=datetime({timestamp})"
