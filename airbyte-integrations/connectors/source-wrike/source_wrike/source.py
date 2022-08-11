@@ -13,7 +13,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
-
 # Basic full refresh stream
 class WrikeStream(HttpStream, ABC):
     url_base = "https://app-us2.wrike.com/api/v4/"
@@ -38,17 +37,11 @@ class WrikeStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
+
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
+
         resp = response.json()
         for task in resp['data']:
             yield task
@@ -57,9 +50,16 @@ class WrikeStream(HttpStream, ABC):
 class Tasks(WrikeStream):
 
     primary_key = "id"
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        return {"fields": "[customFields,parentIds,authorIds,responsibleIds,description,briefDescription,superTaskIds]"}
 
     def path(self, **kwargs) -> str:
         return "tasks"
+
 
 class Customfields(WrikeStream):
     primary_key = "id"
@@ -68,6 +68,8 @@ class Customfields(WrikeStream):
         return "customfields"
 
 # Source
+
+
 class SourceWrike(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
