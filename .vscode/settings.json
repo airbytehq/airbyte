@@ -31,6 +31,6 @@
   },
   "[json]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

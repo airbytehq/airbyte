@@ -4,10 +4,17 @@ connectionSpecification:
   title: Wrike Spec
   type: object
   required:
-    - TODO
+    - access_token 
+    - wrike_instance
   additionalProperties: false
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    access_token:
       type: string
-      description: describe me
+      description: >-
+        Permanent access token. You can find documentation on how to acquire a permanent access token 
+        at <a href="https://developers.wrike.com/oauth-20-authorization/">here</a>
+      airbyte_secret: true
+    wrike_instance:
+      type: string
+      description: Wrike's instance such as `app-us2.wrike.com`
+      default: app-us2.wrike.com
