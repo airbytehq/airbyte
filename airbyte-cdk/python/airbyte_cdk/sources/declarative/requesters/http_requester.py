@@ -48,6 +48,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
     error_handler: Optional[ErrorHandler] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
+        self.url_base = InterpolatedString.create(self.url_base, options=options)
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
         elif isinstance(self.request_options_provider, dict):
