@@ -17,6 +17,8 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.io.IOException;
+
 public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   protected static MySqlUtils.Certificate certs;
@@ -28,7 +30,7 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     addTestData(container);
-    certs = MySqlUtils.getCertificate(container, true);
+    certs = getCertificates();
 
     var sslMode = getSslConfig();
 
@@ -43,6 +45,8 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
   }
+
+  public abstract MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException;
 
   public abstract ImmutableMap getSslConfig();
 
