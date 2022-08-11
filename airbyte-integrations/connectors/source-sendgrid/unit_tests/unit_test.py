@@ -51,8 +51,8 @@ def test_messages_stream_request_params(mock_pendulum_now):
     stream = get_stream("messages")
     state = {"last_event_time": 1558359000}
     expected_params = {
-        "query": "last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T06%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222021-12-31T16%3A00%3A00Z%22",
-        "limit": "1000",
+        "query": 'last_event_time BETWEEN TIMESTAMP "2019-05-20T06:30:00Z" AND TIMESTAMP "2021-12-31T16:00:00Z"',
+        "limit": 1000,
     }
     request_params = stream.retriever.request_params(
         stream_state=state, stream_slice={"start_time": "2019-05-20T06:30:00Z", "end_time": "2021-12-31T16:00:00Z"}
