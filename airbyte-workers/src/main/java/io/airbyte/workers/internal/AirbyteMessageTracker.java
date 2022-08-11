@@ -131,10 +131,8 @@ public class AirbyteMessageTracker implements MessageTracker {
    * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
-    log.info("source emitted state message");
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     totalSourceEmittedStateMessages.incrementAndGet();
-    log.info("total source emitted state messages " + totalSourceEmittedStateMessages.get());
     final int stateHash = getStateHashCode(stateMessage);
     try {
       if (!unreliableCommittedCounts) {
@@ -154,9 +152,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
-    log.info("destination emitted state message");
     totalDestinationEmittedStateMessages.incrementAndGet();
-    log.info("total destination emitted state messages " + totalDestinationEmittedStateMessages.get());
     stateAggregator.ingest(stateMessage);
     destinationOutputState.set(stateAggregator.getAggregated());
     try {
