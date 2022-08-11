@@ -157,7 +157,6 @@ class Events(IncrementalAmplitudeStream):
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
-                    # print(f'Reading ZIPPED Record: {record["uuid"]}')
                     if record[self.cursor_field] >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
@@ -198,7 +197,6 @@ class Events(IncrementalAmplitudeStream):
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
             records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            print("Yielding Records...")
             yield from records
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
@@ -213,7 +211,6 @@ class Events(IncrementalAmplitudeStream):
         params = self.base_params
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
-        print(params)
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
