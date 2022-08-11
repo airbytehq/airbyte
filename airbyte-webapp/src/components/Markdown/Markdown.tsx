@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 
 import { remarkAdmonitionsPlugin } from "./remarkAdmonitionsPlugin";
 
-import "./styles.scss";
+import "./Markdown.styles.scss";
 
 interface MarkdownProps {
   content?: string;
