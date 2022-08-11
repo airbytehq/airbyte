@@ -55,7 +55,6 @@ setup(
         "vcrpy",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
-        "jello~=1.5.2",
     ],
     python_requires=">=3.9",
     extras_require={
