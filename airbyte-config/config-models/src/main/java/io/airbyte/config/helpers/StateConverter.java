@@ -68,6 +68,14 @@ public class StateConverter {
 
   }
 
+  public static StateType convertClientStateTypeToInternal(final @Nullable io.airbyte.api.client.model.generated.ConnectionStateType connectionStateType) {
+    if (connectionStateType == null || connectionStateType.equals(io.airbyte.api.client.model.generated.ConnectionStateType.NOT_SET)) {
+      return null;
+    } else {
+      return Enums.convertTo(connectionStateType, StateType.class);
+    }
+  }
+
   /**
    * Convert to API representation of state type. API has an additional type (NOT_SET). This
    * represents the case where no state is saved so we do not know the state type.
