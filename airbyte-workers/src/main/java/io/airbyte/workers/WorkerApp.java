@@ -104,6 +104,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 @AllArgsConstructor
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
@@ -222,9 +223,10 @@ public class WorkerApp {
   private void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
+    // Note that the configuration injected here is for the normalization orchestrator, and not the
+    // normalization pod itself.
+    // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
+    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
         defaultWorkerConfigs,
@@ -313,6 +315,15 @@ public class WorkerApp {
         airbyteVersion);
   }
 
+  /**
+   * Return either a docker or kubernetes process factory depending on the environment in
+   * {@link WorkerConfigs}
+   *
+   * @param configs used to determine which process factory to create.
+   * @param workerConfigs used to create the process factory.
+   * @return either a {@link DockerProcessFactory} or a {@link KubeProcessFactory}.
+   * @throws IOException
+   */
   private static ProcessFactory getJobProcessFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -340,14 +351,14 @@ public class WorkerApp {
         .build();
   }
 
-  public static record ContainerOrchestratorConfig(
-                                                   String namespace,
-                                                   DocumentStoreClient documentStoreClient,
-                                                   KubernetesClient kubernetesClient,
-                                                   String secretName,
-                                                   String secretMountPath,
-                                                   String containerOrchestratorImage,
-                                                   String googleApplicationCredentials) {}
+  public record ContainerOrchestratorConfig(
+                                            String namespace,
+                                            DocumentStoreClient documentStoreClient,
+                                            KubernetesClient kubernetesClient,
+                                            String secretName,
+                                            String secretMountPath,
+                                            String containerOrchestratorImage,
+                                            String googleApplicationCredentials) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {

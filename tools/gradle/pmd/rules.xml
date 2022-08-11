@@ -101,12 +101,6 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AssignmentInOperand"/>
-        <exclude name="AvoidAccessibilityAlteration"/>
-        <exclude name="AvoidBranchingStatementAsLastInLoop"/>
-        <exclude name="AvoidCatchingNPE"/>
-        <exclude name="AvoidCatchingThrowable"/>
-        <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidFieldNameMatchingTypeName"/>
         <exclude name="AvoidInstanceofChecksInCatchClause"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
@@ -128,13 +122,12 @@
         <exclude name="UseEqualsToCompareStrings"/>
         <exclude name="UseProperClassLoader"/>
     </rule>
-    <!-- uncomment when this rule is applied -->
-<!--    <rule ref="category/java/errorprone.xml/AssignmentInOperand">-->
-<!--        <properties>-->
-<!--            <property name="allowFor" value="true" />-->
-<!--            <property name="allowWhile" value="true" />-->
-<!--        </properties>-->
-<!--    </rule>-->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowFor" value="true" />
+            <property name="allowWhile" value="true" />
+        </properties>
+    </rule>
     <rule ref="category/java/multithreading.xml">
         <!-- exclude permanently -->
         <exclude name="DoNotUseThreads"/>
