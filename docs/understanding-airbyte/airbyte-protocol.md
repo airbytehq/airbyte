@@ -152,7 +152,7 @@ The following are fields that still exist in the specification but are slated to
 * `supportsIncremental` is deprecated and can be ignored. It is vestigial from when full refresh / incremental was specified at the Actor level.
 * `supportsNormalization` determines whether the Destination supports Basic Normalization
 * `supportsDBT` - determines whether the Destination supports Basic Normalization
-* `authSpecification` and `advanced_auth` will be removed from the protocol and as such are not documented. Information on their use can be found here.
+* `authSpecification` will be removed from the protocol and as such are not documented. Information on their use can be found here.
 
 ```yaml
   ConnectorSpecification:
