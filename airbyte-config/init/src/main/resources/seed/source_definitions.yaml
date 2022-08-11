@@ -271,7 +271,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -513,6 +513,14 @@
   icon: linkedin.svg
   sourceType: api
   releaseStage: generally_available
+- name: LinkedIn Pages
+  sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
+  dockerRepository: airbyte/source-linkedin-pages
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/linkedin-pages
+  icon: linkedin.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Linnworks
   sourceDefinitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
   dockerRepository: airbyte/source-linnworks
@@ -802,7 +810,7 @@
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/recurly
   icon: recurly.svg
   sourceType: api
@@ -937,7 +945,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.35
+  dockerImageTag: 0.1.36
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
