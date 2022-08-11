@@ -746,7 +746,11 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       # Pull request based workflows.
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          echo ${{ github.event.inputs.gitref }}
+          echo ${{ steps.extract_branch.outputs.branch }}
