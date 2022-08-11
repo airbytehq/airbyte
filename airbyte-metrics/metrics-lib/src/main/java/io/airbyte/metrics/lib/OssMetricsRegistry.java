@@ -87,6 +87,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_active_conn_per_workspace",
       "number of active connections per workspace"),
+  NUM_ABNORMAL_SCHEDULED_SYNCS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_abnormal_scheduled_syncs",
+      "number of abnormal syncs that have skipped at least 1 scheduled run recently."),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
@@ -96,18 +100,18 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "overall_job_runtime_in_last_hour_by_terminal_state_secs",
       "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states."),
-
   TEMPORAL_WORKFLOW_ATTEMPT(MetricEmittingApps.WORKER,
       "temporal_workflow_attempt",
       "count of the number of workflow attempts"),
-
   TEMPORAL_WORKFLOW_SUCCESS(MetricEmittingApps.WORKER,
       "temporal_workflow_success",
       "count of the number of successful workflow syncs."),
-
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
-      "count of the number of workflow failures");
+      "count of the number of workflow failures"),
+  NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
+      "record_schema_validation_error",
+      "number of record schema validation errors");
 
   private final MetricEmittingApp application;
   private final String metricName;

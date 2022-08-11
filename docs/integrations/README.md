@@ -216,4 +216,5 @@ For more information about the grading system, see [Product Release Stages](http
 | [Scylla](destinations/scylla.md)                           | Alpha                | Yes                 |
 | [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
 | [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
+| [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
 | [Streamr](destinations/streamr.md)                         | Alpha                | No                  |

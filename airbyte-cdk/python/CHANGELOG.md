@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.73
+- Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
+
+## 0.1.72
+- Bugfix: Fix bug in DatetimeStreamSlicer's format method
+
 ## 0.1.71
 - Refactor declarative package to dataclasses
 - Bugfix: Requester header always converted to string

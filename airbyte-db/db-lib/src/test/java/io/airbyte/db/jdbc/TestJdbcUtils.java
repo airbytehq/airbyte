@@ -45,6 +45,7 @@ import org.testcontainers.utility.MountableFile;
 class TestJdbcUtils {
 
   private String dbName;
+  private static final String ONE_POINT_0 = "1.0,";
 
   private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
       Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
@@ -261,11 +262,11 @@ class TestJdbcUtils {
         + "1,"
         + "1,"
         + "1,"
-        + "1.0,"
-        + "1.0,"
-        + "1.0,"
+        + ONE_POINT_0
+        + ONE_POINT_0
+        + ONE_POINT_0
         + "1,"
-        + "1.0,"
+        + ONE_POINT_0
         + "'a',"
         + "'a',"
         + "'2020-11-01',"
