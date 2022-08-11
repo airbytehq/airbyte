@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.tidb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +58,6 @@ public class TiDBDestinationTest {
                 JdbcUtils.PORT_KEY, container.getFirstMappedPort(),
                 JdbcUtils.USERNAME_KEY, "root",
                 JdbcUtils.DATABASE_KEY, "test"
-//                JdbcUtils.SSL_KEY, false
         ));
     }
 

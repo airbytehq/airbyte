@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.tidb;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,8 +44,6 @@ public class TiDBSqlOperations extends JdbcSqlOperations {
                         filePath, schemaName, tmpTableName);
 
                 try (final Statement stmt = connection.createStatement()) {
-                    // TiDB always enable local_infile, don't need to enable here.
-                    // stmt.execute("set global local_infile=true");
                     stmt.execute(query);
                 }
 

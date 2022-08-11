@@ -16,10 +16,14 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -37,10 +41,9 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     return "airbyte/destination-tidb:dev";
   }
 
-  // TODO: support dbt
   @Override
   protected boolean supportsDBT() {
-    return false;
+    return true;
   }
 
   @Override
@@ -48,10 +51,9 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     return true;
   }
 
-  // TODO
   @Override
   protected boolean supportsNormalization() {
-    return false;
+    return true;
   }
 
   @Override
@@ -70,13 +72,18 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new TiDBTestDataComparator();
+  }
+
+  @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
             .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
             .put(JdbcUtils.USERNAME_KEY, usernameKey)
             .put(JdbcUtils.DATABASE_KEY, databaseKey)
             .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-            //.put(JdbcUtils.SSL_KEY, sslKey)
+            .put(JdbcUtils.SSL_KEY, sslKey)
             .build());
   }
 
@@ -138,6 +145,20 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+          throws Exception {
+    // normalization-tidb does not support resolve array_object.
+    if (messagesFilename.contains("array_object")) {
+      return;
+    }
+
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
   @Override

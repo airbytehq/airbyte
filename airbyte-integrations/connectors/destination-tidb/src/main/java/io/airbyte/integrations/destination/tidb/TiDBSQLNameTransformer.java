@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.tidb;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -12,9 +16,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
  *  Index	            64
  *  View	            64
  *  Sequence	        64
- */
-
-/**
+ *
  * TiDBSQLNameTransformer is reference to io.airbyte.integrations.destination.mysql.MySQLNameTransformer.
  * */
 public class TiDBSQLNameTransformer extends ExtendedNameTransformer {

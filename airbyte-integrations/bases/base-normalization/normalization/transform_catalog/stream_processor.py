@@ -531,8 +531,8 @@ where 1 = 1
             if self.destination_type == DestinationType.MYSQL and is_datetime_without_timezone(definition):
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_datetime_format_statement(column_name)
-            if self.destination_type == DestinationType.TIDB and is_datetime_without_timezone(definition):
-                return self.generate_mysql_datetime_format_statement(column_name)
+            # if self.destination_type == DestinationType.TIDB and is_datetime_without_timezone(definition):
+            #     return self.generate_mysql_datetime_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
