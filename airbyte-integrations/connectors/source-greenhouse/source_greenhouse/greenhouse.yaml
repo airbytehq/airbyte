@@ -2,7 +2,6 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
-    type: JsonSchema
     file_path: "./source_greenhouse/schemas/{{ options['name'] }}.json"
   selector:
     type: RecordSelector
@@ -37,7 +36,6 @@ definitions:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
   applications_stream:
-    type: DeclarativeStream
     $options:
       name: "applications"
     primary_key: "id"
@@ -49,7 +47,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "applications"
   candidates_stream:
-    type: DeclarativeStream
     $options:
       name: "candidates"
     primary_key: "id"
@@ -61,7 +58,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "candidates"
   close_reasons_stream:
-    type: DeclarativeStream
     $options:
       name: "close_reasons"
     primary_key: "id"
@@ -73,7 +69,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "close_reasons"
   degrees_stream:
-    type: DeclarativeStream
     $options:
       name: "degrees"
     primary_key: "id"
@@ -85,7 +80,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "degrees"
   departments_stream:
-    type: DeclarativeStream
     $options:
       name: "departments"
     primary_key: "id"
@@ -97,7 +91,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "departments"
   jobs_stream:
-    type: DeclarativeStream
     $options:
       name: "jobs"
     primary_key: "id"
@@ -109,7 +102,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "jobs"
   jobs_openings_stream:
-    type: DeclarativeStream
     $options:
       name: "jobs_openings"
     primary_key: "id"
@@ -127,7 +119,6 @@ definitions:
             parent_key: "id"
             stream_slice_field: "parent_id"
   applications_demographics_answers_stream:
-    type: DeclarativeStream
     $options:
       name: "applications_demographics_answers"
     primary_key: "id"
@@ -145,7 +136,6 @@ definitions:
             parent_key: "id"
             stream_slice_field: "parent_id"
   applications_interviews_stream:
-    type: DeclarativeStream
     $options:
       name: "applications_interviews"
     primary_key: "id"
@@ -163,7 +153,6 @@ definitions:
             parent_key: "id"
             stream_slice_field: "parent_id"
   custom_fields_stream:
-    type: DeclarativeStream
     $options:
       name: "custom_fields"
     primary_key: "id"
@@ -175,7 +164,6 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "custom_fields"
   questions_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_questions"
       primary_key: "id"
@@ -187,7 +175,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "demographics/questions"
   demographics_answers_answer_options_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_answers_answer_options"
       primary_key: "id"
@@ -205,7 +192,6 @@ definitions:
               parent_key: "id"
               stream_slice_field: "parent_id"
   demographics_question_sets_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_question_sets"
       primary_key: "id"
@@ -217,7 +203,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "demographics/question_sets"
   demographics_question_sets_questions_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_question_sets_questions"
       primary_key: "id"
@@ -235,7 +220,6 @@ definitions:
               parent_key: "id"
               stream_slice_field: "parent_id"
   interviews_stream:
-    type: DeclarativeStream
     $options:
       name: "interviews"
       primary_key: "id"
@@ -247,7 +231,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "scheduled_interviews"
   job_posts_stream:
-    type: DeclarativeStream
     $options:
       name: "job_posts"
       primary_key: "id"
@@ -259,7 +242,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "job_posts"
   job_stages_stream:
-    type: DeclarativeStream
     $options:
       name: "job_stages"
       primary_key: "id"
@@ -271,7 +253,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "job_stages"
   jobs_stages_stream:
-    type: DeclarativeStream
     $options:
       name: "jobs_stages"
       primary_key: "id"
@@ -289,7 +270,6 @@ definitions:
               parent_key: "id"
               stream_slice_field: "parent_id"
   offers_stream:
-    type: DeclarativeStream
     $options:
       name: "offers"
       primary_key: "id"
@@ -301,7 +281,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "offers"
   rejection_reasons_stream:
-    type: DeclarativeStream
     $options:
       name: "rejection_reasons"
       primary_key: "id"
@@ -313,7 +292,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "rejection_reasons"
   scorecards_stream:
-    type: DeclarativeStream
     $options:
       name: "scorecards"
       primary_key: "id"
@@ -325,7 +303,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "scorecards"
   sources_stream:
-    type: DeclarativeStream
     $options:
       name: "sources"
       primary_key: "id"
@@ -337,7 +314,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "sources"
   users_stream:
-    type: DeclarativeStream
     $options:
       name: "users"
       primary_key: "id"
@@ -349,7 +325,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "users"
   demographics_answers_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_answers"
       primary_key: "id"
@@ -361,7 +336,6 @@ definitions:
           $ref: "*ref(definitions.requester)"
           path: "demographics/answers"
   demographics_answer_options_stream:
-    type: DeclarativeStream
     $options:
       name: "demographics_answer_options"
       primary_key: "id"
