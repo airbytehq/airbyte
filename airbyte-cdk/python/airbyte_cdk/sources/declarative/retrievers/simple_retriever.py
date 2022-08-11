@@ -178,7 +178,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """
         # url encode string values
         return {
-            k: (quote(v) if isinstance(v, str) else v)
+            k: _url_encode(v)
             for k, v in self._get_request_options(
                 stream_slice,
                 next_page_token,
@@ -380,3 +380,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
+
+
+def _url_encode(v):
+    return quote(v) if isinstance(v, str) else v
