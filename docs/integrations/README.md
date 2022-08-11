@@ -88,6 +88,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
+| [LinkedIn Pages](sources/linkedin-pages.md)                                                 | Alpha                | Yes                 |
 | [Linnworks](sources/linnworks.md)                                                           | Alpha                | Yes                 |
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
