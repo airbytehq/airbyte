@@ -477,6 +477,13 @@ class TestConnection:
         }
 
     @pytest.fixture
+    def connection_configuration_with_manual_schedule(self, connection_configuration):
+        connection_configuration_with_manual_schedule = deepcopy(connection_configuration)
+        connection_configuration_with_manual_schedule["configuration"]["schedule_type"] = "manual"
+        connection_configuration_with_manual_schedule["configuration"]["schedule_data"] = None
+        return connection_configuration_with_manual_schedule
+
+    @pytest.fixture
     def connection_configuration_with_normalization(self, connection_configuration):
         connection_configuration_with_normalization = deepcopy(connection_configuration)
         connection_configuration_with_normalization["configuration"]["operations"] = [
@@ -793,7 +800,7 @@ class TestConnection:
         assert update_result == resource._create_or_update.return_value
         resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload)
 
-    def test__deserialize_raw_configuration(self, mock_api_client, connection_configuration):
+    def test__deserialize_raw_configuration(self, mock_api_client, connection_configuration, connection_configuration_with_manual_schedule):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         configuration = resource._deserialize_raw_configuration()
         assert isinstance(configuration["sync_catalog"], AirbyteCatalog)
@@ -819,6 +826,13 @@ class TestConnection:
             "status",
             "resource_requirements",
         ]
+
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_manual_schedule, "bar.yaml")
+        configuration = resource._deserialize_raw_configuration()
+        assert configuration["schedule_type"] == ConnectionScheduleType(
+            connection_configuration_with_manual_schedule["configuration"]["schedule_type"]
+        )
+        assert not configuration["schedule_data"]
 
     def test__deserialize_operations(self, mock_api_client, connection_configuration):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
