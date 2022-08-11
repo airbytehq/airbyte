@@ -20,6 +20,11 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
 
+    If the field pointer points to an array, that array is returned.
+    If the field pointer points to an object, that object is returned wrapped as an array.
+    If the field pointer points to an empty object, an empty array is returned.
+    If the field pointer points to a non-existing path, an empty array is returned.
+
     Examples of instantiating this transform:
     ```
       extractor:
@@ -37,7 +42,7 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
           - "{{ options['field'] }}"
     ```
 
-        ```
+    ```
       extractor:
         type: DpathExtractor
         field_pointer: []
