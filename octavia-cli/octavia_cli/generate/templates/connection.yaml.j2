@@ -21,8 +21,8 @@ configuration:
       time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
       units: 1 # REQUIRED | integer
     # cron:
-    #   cron_time_zone: "UTC" # REQUIRED | string 
-    #   cron_expression: "* */2 * * * ?" # REQUIRED | string 
+    #   cron_time_zone: "UTC" # REQUIRED | string
+    #   cron_expression: "* */2 * * * ?" # REQUIRED | string
   {%- if supports_normalization or supports_dbt%}
   # operations:
   {%- endif %}
