@@ -128,9 +128,9 @@
                 "title": "Storage",
                 "const": "BOX"
               },
-              "box_developer_access_token": {
+              "access_token": {
                 "type": "string",
-                "title": "BOX Developer Token",
+                "title": "BOX Access Token",
                 "description": "In order to access private Buckets stored on BOX Cloud, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
                 "airbyte_secret": true
               }
