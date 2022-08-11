@@ -271,7 +271,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -409,6 +409,13 @@
   dockerRepository: airbyte/source-hellobaton
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/hellobaton
+  sourceType: api
+  releaseStage: alpha
+- name: Hubplanner
+  sourceDefinitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
+  dockerRepository: airbyte/source-hubplanner
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/hubplanner
   sourceType: api
   releaseStage: alpha
 - name: HubSpot
@@ -762,7 +769,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
