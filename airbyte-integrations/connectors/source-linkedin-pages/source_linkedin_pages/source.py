@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -24,7 +24,6 @@ class LinkedinPagesStream(HttpStream, ABC):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
 
-
     @property
     def org(self):
         """Property to return the user Organization Id from input"""
@@ -38,10 +37,7 @@ class LinkedinPagesStream(HttpStream, ABC):
         return None
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
     ) -> Iterable[Mapping]:
         return [response.json()]
 
@@ -57,61 +53,43 @@ class LinkedinPagesStream(HttpStream, ABC):
             self.logger.error(error_message)
         return super().should_retry(response)
 
-class OrganizationLookup(LinkedinPagesStream):
 
+class OrganizationLookup(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         path = f"organizations/{self.org}"
         return path
 
-class FollowerStatistics(LinkedinPagesStream):
 
+class FollowerStatistics(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
         return path
 
-class PageStatistics(LinkedinPagesStream):
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
+        yield from response.json().get("elements")
 
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"organizationPageStatistics?q=organization&organization=urn%3Ali%3Aorganization%3A{self.org}"
-        return path
 
 class ShareStatistics(LinkedinPagesStream):
-
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
         return path
 
-class Shares(LinkedinPagesStream):
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
+        yield from response.json().get("elements")
 
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=50"
-        return path
 
 class TotalFollowerCount(LinkedinPagesStream):
-
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
         return path
-
-class UgcPosts(LinkedinPagesStream):
-
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"ugcPosts?q=authors&authors=List(urn%3Ali%3Aorganization%3A{self.org})&sortBy=LAST_MODIFIED&count=50"
-        return path
-
-    def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
-        """
-        If org_ids are specified as user's input from configuration,
-        we must use MODIFIED header: {'X-RestLi-Protocol-Version': '2.0.0'}
-        """
-        return {"X-RestLi-Protocol-Version": "2.0.0"} if self.org else {}
 
 
 class SourceLinkedinPages(AbstractSource):
@@ -169,9 +147,6 @@ class SourceLinkedinPages(AbstractSource):
         return [
             OrganizationLookup(config),
             FollowerStatistics(config),
-            PageStatistics(config),
             ShareStatistics(config),
-            Shares(config),
             TotalFollowerCount(config),
-            UgcPosts(config)
         ]

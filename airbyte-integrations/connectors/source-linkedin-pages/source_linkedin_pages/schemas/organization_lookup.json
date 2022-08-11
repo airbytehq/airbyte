@@ -1,8 +1,7 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
   "properties": {
     "vanityName": {
       "type": [

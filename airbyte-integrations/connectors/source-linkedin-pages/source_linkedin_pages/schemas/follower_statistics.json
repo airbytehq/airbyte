@@ -1,76 +1,30 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "elements": {
-      "type": [
-        "null",
-        "array"
-      ],
+    "followerCountsByStaffCountRange": {
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "properties": {
-          "followerCountsByAssociationType": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsByRegion": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsBySeniority": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsByIndustry": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsByFunction": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsByStaffCountRange": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "followerCountsByCountry": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {}
-          },
-          "organizationalEntity": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
+        "type": ["null", "object"]
+      }
+    },
+    "followerCountsByFunction": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "followerCountsByAssociationType": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "followerCountsBySeniority": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
       }
     }
   }

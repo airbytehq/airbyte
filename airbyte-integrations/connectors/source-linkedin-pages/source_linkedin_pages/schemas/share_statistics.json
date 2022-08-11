@@ -1,27 +1,40 @@
 {
-  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "paging": {
+    "totalShareStatistics": {
       "type": ["null", "object"],
       "properties": {
-        "start": {
+        "uniqueImpressionsCount": {
           "type": ["null", "integer"]
         },
-        "count": {
+        "clickCount": {
           "type": ["null", "integer"]
         },
-        "links": {
-          "type": ["null", "array"],
-          "items": {}
+        "engagement": {
+          "type": ["null", "number"]
         },
-        "total": {
+        "likeCount": {
+          "type": ["null", "integer"]
+        },
+        "commentCount": {
+          "type": ["null", "integer"]
+        },
+        "shareCount": {
+          "type": ["null", "integer"]
+        },
+        "commentMentionsCount": {
+          "type": ["null", "integer"]
+        },
+        "impressionCount": {
+          "type": ["null", "integer"]
+        },
+        "shareMentionsCount": {
           "type": ["null", "integer"]
         }
       }
     },
-    "elements": {
-      "type": ["null", "array"],
-      "items": {}
-    }
+    "organizationalEntity": {"type": ["null", "string"]}
   }
 }
