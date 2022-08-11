@@ -1,51 +1,51 @@
 import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
 
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { H5 } from "components";
+
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";
 
-const SectionTitle = styled.div`
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 17px;
-`;
-
 interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
   onStartEditTransformation?: () => void;
   onEndEditTransformation?: () => void;
+  wrapper: React.ComponentType;
 }
 
 export const OperationsSection: React.FC<OperationsSectionProps> = ({
   destDefinition,
   onStartEditTransformation,
   onEndEditTransformation,
+  wrapper: Wrapper,
 }) => {
   const { formatMessage } = useIntl();
-  const { hasFeature } = useFeatureService();
 
   const { supportsNormalization } = destDefinition;
-  const supportsTransformations = destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+  const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && destDefinition.supportsDbt;
 
   const defaultTransformation = useDefaultTransformation();
 
+  if (!supportsNormalization && !supportsTransformations) {
+    return null;
+  }
+
   return (
-    <>
+    <Wrapper>
       {supportsNormalization || supportsTransformations ? (
-        <SectionTitle>
+        <H5 bold>
           {[
             supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
             supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
           ]
             .filter(Boolean)
             .join(" & ")}
-        </SectionTitle>
+        </H5>
       ) : null}
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
@@ -60,6 +60,6 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
           )}
         </FieldArray>
       )}
-    </>
+    </Wrapper>
   );
 };

@@ -48,9 +48,11 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
+  private static final String BEFORE = "before: {}";
 
   @Test
   void testAsyncExecute() throws Exception {
@@ -190,7 +192,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
@@ -231,7 +233,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
@@ -311,14 +313,15 @@ class TemporalUtilsTest {
         this.callable = callable;
       }
 
+      @Override
       public void activity() {
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
         try {
           callable.call();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }
@@ -377,16 +380,17 @@ class TemporalUtilsTest {
         this.timesReachedEnd = timesReachedEnd;
       }
 
-      public void activity(String arg) {
-        LOGGER.info("before: {}", ACTIVITY1);
-        ActivityExecutionContext context = Activity.getExecutionContext();
+      @Override
+      public void activity(final String arg) {
+        LOGGER.info(BEFORE, ACTIVITY1);
+        final ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {
               if (timesReachedEnd.get() == 0) {
-                if (arg.equals("runtime")) {
+                if ("runtime".equals(arg)) {
                   throw new RuntimeException("failed");
-                } else if (arg.equals("timeout")) {
+                } else if ("timeout".equals(arg)) {
                   Thread.sleep(10000);
                   return null;
                 } else {
@@ -398,7 +402,7 @@ class TemporalUtilsTest {
             },
             () -> context);
         timesReachedEnd.incrementAndGet();
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }

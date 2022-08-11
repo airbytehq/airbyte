@@ -81,15 +81,16 @@ public class StatePersistence {
    * @param state
    * @throws IOException
    */
-  public void updateOrCreateState(final UUID connectionId, final StateWrapper state) throws IOException {
+  public void updateOrCreateState(final UUID connectionId, final StateWrapper state)
+      throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
-    final boolean isMigration = previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
-        state.getStateType() != StateType.LEGACY;
+    final StateType currentStateType = state.getStateType();
+    final boolean isMigration = isMigration(connectionId, currentStateType, previousState);
 
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
-    if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != state.getStateType()) {
-      throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + state.getStateType() +
+    if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != currentStateType) {
+      throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + currentStateType +
           "'. Migration of StateType need to go through an explicit reset.");
     }
 
@@ -104,6 +105,12 @@ public class StatePersistence {
       }
       return null;
     });
+  }
+
+  public Boolean isMigration(final UUID connectionId, final StateType currentStateType, final Optional<StateWrapper> previousState)
+      throws IOException {
+    return previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
+        currentStateType != StateType.LEGACY;
   }
 
   private static void clearLegacyState(final DSLContext ctx, final UUID connectionId) {

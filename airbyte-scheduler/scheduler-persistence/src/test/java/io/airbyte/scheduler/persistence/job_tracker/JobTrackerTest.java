@@ -39,10 +39,13 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
@@ -64,6 +67,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobTrackerTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -78,6 +82,12 @@ class JobTrackerTest {
   private static final String DESTINATION_DEF_NAME = "bigquery";
   private static final String CONNECTOR_REPOSITORY = "test/test";
   private static final String CONNECTOR_VERSION = "test";
+  private static final String JOB_TYPE = "job_type";
+  private static final String JOB_ID_KEY = "job_id";
+  private static final String ATTEMPT_ID = "attempt_id";
+  private static final String METADATA = "metadata";
+  private static final String SOME = "some";
+
   private static final long SYNC_START_TIME = 1000L;
   private static final long SYNC_END_TIME = 10000L;
   private static final long SYNC_DURATION = 9L; // in sync between end and start time
@@ -111,6 +121,9 @@ class JobTrackerTest {
       .put("table_prefix", false)
       .put("operation_count", 0)
       .build();
+  private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers
+      .createConfiguredAirbyteCatalog("stream_name", "stream_namespace",
+          Field.of("int_field", JsonSchemaType.NUMBER));
 
   private static final ConnectorSpecification SOURCE_SPEC;
   private static final ConnectorSpecification DESTINATION_SPEC;
@@ -163,9 +176,9 @@ class JobTrackerTest {
   @Test
   void testTrackCheckConnectionSource() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.CHECK_CONNECTION_SOURCE)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
+        .put(JOB_TYPE, ConfigType.CHECK_CONNECTION_SOURCE)
+        .put(JOB_ID_KEY, JOB_ID.toString())
+        .put(ATTEMPT_ID, 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
         .put("connector_source_docker_repository", CONNECTOR_REPOSITORY)
@@ -193,9 +206,9 @@ class JobTrackerTest {
   @Test
   void testTrackCheckConnectionDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.CHECK_CONNECTION_DESTINATION)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
+        .put(JOB_TYPE, ConfigType.CHECK_CONNECTION_DESTINATION)
+        .put(JOB_ID_KEY, JOB_ID.toString())
+        .put(ATTEMPT_ID, 0)
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
         .put("connector_destination_docker_repository", CONNECTOR_REPOSITORY)
@@ -223,9 +236,9 @@ class JobTrackerTest {
   @Test
   void testTrackDiscover() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.DISCOVER_SCHEMA)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
+        .put(JOB_TYPE, ConfigType.DISCOVER_SCHEMA)
+        .put(JOB_ID_KEY, JOB_ID.toString())
+        .put(ATTEMPT_ID, 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
         .put("connector_source_docker_repository", CONNECTOR_REPOSITORY)
@@ -241,7 +254,7 @@ class JobTrackerTest {
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata, false);
+    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata);
   }
 
   @Test
@@ -268,7 +281,9 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
@@ -279,7 +294,7 @@ class JobTrackerTest {
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
-        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false).withCatalog(CATALOG)
             .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
@@ -344,47 +359,35 @@ class JobTrackerTest {
 
   void testAsynchronousAttemptWithFailures(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final JsonNode configFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+    final LinkedHashMap<String, Object> linkedHashMap = new LinkedHashMap<>();
+    linkedHashMap.put("failureOrigin", "source");
+    linkedHashMap.put("failureType", "config_error");
+    linkedHashMap.put("internalMessage", "Internal config error error msg");
+    linkedHashMap.put("externalMessage", "Config error related msg");
+    linkedHashMap.put(METADATA, ImmutableMap.of(SOME, METADATA));
+    linkedHashMap.put("retryable", true);
+    linkedHashMap.put("timestamp", 1010);
+    final JsonNode configFailureJson = Jsons.jsonNode(linkedHashMap);
 
-      {
-        put("failureOrigin", "source");
-        put("failureType", "config_error");
-        put("internalMessage", "Internal config error error msg");
-        put("externalMessage", "Config error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1010);
-      }
+    final LinkedHashMap<String, Object> linkedHashMap1 = new LinkedHashMap<>();
+    linkedHashMap1.put("failureOrigin", "replication");
+    linkedHashMap1.put("failureType", "system_error");
+    linkedHashMap1.put("internalMessage", "Internal system error error msg");
+    linkedHashMap1.put("externalMessage", "System error related msg");
+    linkedHashMap1.put(METADATA, ImmutableMap.of(SOME, METADATA));
+    linkedHashMap1.put("retryable", true);
+    linkedHashMap1.put("timestamp", 1100);
+    final JsonNode systemFailureJson = Jsons.jsonNode(linkedHashMap1);
 
-    });
-
-    final JsonNode systemFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
-
-      {
-        put("failureOrigin", "replication");
-        put("failureType", "system_error");
-        put("internalMessage", "Internal system error error msg");
-        put("externalMessage", "System error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1100);
-      }
-
-    });
-
-    final JsonNode unknownFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
-
-      {
-        put("failureOrigin", null);
-        put("failureType", null);
-        put("internalMessage", "Internal unknown error error msg");
-        put("externalMessage", "Unknown error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1110);
-      }
-
-    });
+    final LinkedHashMap<String, Object> linkedHashMap2 = new LinkedHashMap<>();
+    linkedHashMap2.put("failureOrigin", null);
+    linkedHashMap2.put("failureType", null);
+    linkedHashMap2.put("internalMessage", "Internal unknown error error msg");
+    linkedHashMap2.put("externalMessage", "Unknown error related msg");
+    linkedHashMap2.put(METADATA, ImmutableMap.of(SOME, METADATA));
+    linkedHashMap2.put("retryable", true);
+    linkedHashMap2.put("timestamp", 1110);
+    final JsonNode unknownFailureJson = Jsons.jsonNode(linkedHashMap2);
 
     final Map<String, Object> failureMetadata = ImmutableMap.of(
         "failure_reasons", Jsons.arrayNode().addAll(Arrays.asList(configFailureJson, systemFailureJson, unknownFailureJson)).toString(),
@@ -398,7 +401,8 @@ class JobTrackerTest {
 
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, LONG_JOB_ID);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(LONG_JOB_ID)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -508,7 +512,7 @@ class JobTrackerTest {
         .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
         .withRetryable(true)
-        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withMetadata(new Metadata().withAdditionalProperty(SOME, METADATA))
         .withExternalMessage("Config error related msg")
         .withInternalMessage("Internal config error error msg")
         .withStacktrace("Don't include stacktrace in call to track")
@@ -522,14 +526,14 @@ class JobTrackerTest {
         .withFailureOrigin(FailureReason.FailureOrigin.REPLICATION)
         .withFailureType(FailureReason.FailureType.SYSTEM_ERROR)
         .withRetryable(true)
-        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withMetadata(new Metadata().withAdditionalProperty(SOME, METADATA))
         .withExternalMessage("System error related msg")
         .withInternalMessage("Internal system error error msg")
         .withStacktrace("Don't include stacktrace in call to track")
         .withTimestamp(SYNC_START_TIME + 100);
     final FailureReason unknownFailureReason = new FailureReason()
         .withRetryable(true)
-        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withMetadata(new Metadata().withAdditionalProperty(SOME, METADATA))
         .withExternalMessage("Unknown error related msg")
         .withInternalMessage("Internal unknown error error msg")
         .withStacktrace("Don't include stacktrace in call to track")
@@ -552,9 +556,9 @@ class JobTrackerTest {
 
   private ImmutableMap<String, Object> getJobMetadata(final ConfigType configType, final long jobId) {
     return ImmutableMap.<String, Object>builder()
-        .put("job_type", configType)
-        .put("job_id", String.valueOf(jobId))
-        .put("attempt_id", 700)
+        .put(JOB_TYPE, configType)
+        .put(JOB_ID_KEY, String.valueOf(jobId))
+        .put(ATTEMPT_ID, 700)
         .put("connection_id", CONNECTION_ID)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
@@ -567,6 +571,7 @@ class JobTrackerTest {
         .put("namespace_definition", NamespaceDefinitionType.SOURCE)
         .put("table_prefix", false)
         .put("operation_count", 0)
+        .put("number_of_streams", 1)
         .build();
   }
 
@@ -600,10 +605,6 @@ class JobTrackerTest {
     }
   }
 
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata) {
-    assertCorrectMessageForEachState(jobStateConsumer, expectedMetadata, true);
-  }
-
   /**
    * Tests that the tracker emits the correct message for when the job starts, succeeds, and fails.
    *
@@ -612,8 +613,7 @@ class JobTrackerTest {
    * @param expectedMetadata - expected metadata (except job state).
    */
   private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,
-                                                final Map<String, Object> expectedMetadata,
-                                                final boolean workspaceSet) {
+                                                final Map<String, Object> expectedMetadata) {
     jobStateConsumer.accept(JobState.STARTED);
     assertCorrectMessageForStartedState(expectedMetadata);
     jobStateConsumer.accept(JobState.SUCCEEDED);

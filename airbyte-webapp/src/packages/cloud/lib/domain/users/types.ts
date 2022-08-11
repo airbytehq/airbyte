@@ -3,6 +3,7 @@ export type UserStatus = "invited" | "registered" | "disabled";
 export interface User {
   email: string;
   name: string;
+  authUserId: string;
   userId: string;
   status?: UserStatus;
   intercomHash: string;

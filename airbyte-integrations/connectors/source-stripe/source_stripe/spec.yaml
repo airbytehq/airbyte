@@ -7,7 +7,6 @@ connectionSpecification:
     - client_secret
     - account_id
     - start_date
-  additionalProperties: false
   properties:
     account_id:
       type: string

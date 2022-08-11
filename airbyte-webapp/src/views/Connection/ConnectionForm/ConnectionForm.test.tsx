@@ -88,7 +88,7 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders relevant items", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
@@ -109,7 +109,7 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders only relevant items for the mode", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
     test("pointer events are turned off in the fieldset", async () => {

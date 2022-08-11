@@ -56,6 +56,7 @@ public class FailureHelper {
     }
     return new FailureReason()
         .withInternalMessage(m.getError().getInternalMessage())
+        .withExternalMessage(m.getError().getMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
         .withFailureType(failureType)
@@ -70,8 +71,7 @@ public class FailureHelper {
 
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.SOURCE)
-        .withExternalMessage(m.getError().getMessage());
+        .withFailureOrigin(FailureOrigin.SOURCE);
   }
 
   public static FailureReason destinationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -82,11 +82,13 @@ public class FailureHelper {
 
   public static FailureReason destinationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.DESTINATION)
-        .withExternalMessage(m.getError().getMessage());
+        .withFailureOrigin(FailureOrigin.DESTINATION);
   }
 
-  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
+  public static FailureReason checkFailure(final Throwable t,
+                                           final Long jobId,
+                                           final Integer attemptNumber,
+                                           final FailureReason.FailureOrigin origin) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(origin)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
@@ -111,6 +113,12 @@ public class FailureHelper {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.NORMALIZATION)
         .withExternalMessage("Something went wrong during normalization");
+  }
+
+  public static FailureReason normalizationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.NORMALIZATION)
+        .withExternalMessage(m.getError().getMessage());
   }
 
   public static FailureReason dbtFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -162,13 +170,13 @@ public class FailureHelper {
                                                                    final Throwable t,
                                                                    final Long jobId,
                                                                    final Integer attemptNumber) {
-    if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
+    if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_REPLICATE.equals(activityType)) {
       return replicationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_PERSIST.equals(activityType)) {
       return persistenceFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_NORMALIZE)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_NORMALIZE.equals(activityType)) {
       return normalizationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_DBT_RUN)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_DBT_RUN.equals(activityType)) {
       return dbtFailure(t, jobId, attemptNumber);
     } else {
       return unknownOriginFailure(t, jobId, attemptNumber);
