@@ -760,5 +760,7 @@ jobs:
           echo ${{ steps.extract_current_branch.outputs.branch }}
           echo ${{ steps.extract_target_branch.outputs.branch }}
           echo ${{ github.event.pull_request.base.ref }}
+          echo ${{ github.event.push.base.ref }}
+          echo ${{ github.event.push.head_ref }}
           echo ${{ github.base_ref }}
           echo ${{ github.head_ref }}
