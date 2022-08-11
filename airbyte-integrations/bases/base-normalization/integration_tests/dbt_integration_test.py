@@ -398,8 +398,6 @@ class DbtIntegrationTest(object):
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
-        # elif destination_type.value == DestinationType.TIDB.value:
-        #     profiles_config["database"] = self.target_schema
         elif destination_type.value == DestinationType.REDSHIFT.value:
             profiles_config["schema"] = self.target_schema
             if random_schema:
