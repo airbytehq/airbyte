@@ -534,7 +534,7 @@ VALID_SPEC_TRANSITIONS = [
                 },
             }
         ),
-        name="Changing the value of a boolean field should not fail",
+        name="Changing the value of additionalProperties should not fail",
         should_fail=False,
     ),
     Transition(
