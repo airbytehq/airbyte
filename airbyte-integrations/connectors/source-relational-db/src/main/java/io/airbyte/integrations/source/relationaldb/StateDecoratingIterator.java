@@ -111,7 +111,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   public AirbyteMessage createStateMessage(final boolean isFinalState) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor, maxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
-    LOGGER.info("State report for stream \"{}\": original cursor \"{}\": value \"{}\" (record count {}) -> new cursor \"{}\" - value \"{}\" (record count {})",
+    LOGGER.info("State report for stream \"{}\": original cursor \"{}\": value \"{}\" (record count {}) -> new cursor \"{}\": value \"{}\" (record count {})",
         pair,
         cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
         cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
