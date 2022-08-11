@@ -278,7 +278,6 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
 
 
 def test_request_params_are_urlencoded():
-    # This test is separate from the other request options because request headers must be strings
     paginator = MagicMock()
     requester = MagicMock()
 
