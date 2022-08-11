@@ -25,7 +25,6 @@ import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
@@ -69,7 +68,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
 
-  private final JobPersistence jobPersistence; // todo remove after part 3 covered by xiaohan
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final boolean useStreamCapableState;
@@ -81,12 +79,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final JobPersistence jobPersistence, // todo remove after part 3 covered by xiaohan
-                                 final AirbyteApiClient airbyteApiClient, // todo remove after part 3 covered by xiaohan
+                                 final AirbyteApiClient airbyteApiClient,
                                  final String airbyteVersion,
                                  final boolean useStreamCapableState) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), jobPersistence, airbyteApiClient, airbyteVersion, useStreamCapableState);
+        new AirbyteConfigValidator(), airbyteApiClient, airbyteVersion, useStreamCapableState);
   }
 
   @VisibleForTesting
@@ -98,7 +95,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
-                          final JobPersistence jobPersistence, // todo remove after part 3 covered by xiaohan
                           final AirbyteApiClient airbyteApiClient,
                           final String airbyteVersion,
                           final boolean useStreamCapableState) {
@@ -110,7 +106,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.validator = validator;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence; // todo remove after part 3 covered by xiaohan
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
     this.useStreamCapableState = useStreamCapableState;

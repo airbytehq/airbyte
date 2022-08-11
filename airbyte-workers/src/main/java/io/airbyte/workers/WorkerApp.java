@@ -305,7 +305,6 @@ public class WorkerApp {
         workspaceRoot,
         workerEnvironment,
         logConfigs,
-        jobPersistence,
         airbyteApiClient,
         airbyteVersion,
         featureFlags.useStreamCapableState());
