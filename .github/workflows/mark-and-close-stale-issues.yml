@@ -10,7 +10,7 @@ jobs:
       - uses: actions/stale@v5
         with:
           stale-issue-message: 'This issue was marked as stale and going to be closed soon'
-          stale-pr-message: 'This PR was marked as stale and going to be closed soon'
+          stale-pr-message: 'This PR was marked as stale due to inactivity and going to be closed soon.  You may re-open the PR if you still want to merge it.  Please consider tagging another reviewer if you are having trouble getting a review'
           days-before-stale: 15
           days-before-close: 5
           exempt-issue-labels: "needs-triage"
