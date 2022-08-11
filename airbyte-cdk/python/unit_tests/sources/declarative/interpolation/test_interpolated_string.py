@@ -17,6 +17,7 @@ kwargs = {"c": "airbyte"}
         ("test_eval_from_options", "{{ options['hello'] }}", "world"),
         ("test_eval_from_config", "{{ config['field'] }}", "value"),
         ("test_eval_from_kwargs", "{{ kwargs['c'] }}", "airbyte"),
+        ("test_eval_from_kwargs", "{{ kwargs['c'] }}", "airbyte"),
     ],
 )
 def test_interpolated_string(test_name, input_string, expected_value):

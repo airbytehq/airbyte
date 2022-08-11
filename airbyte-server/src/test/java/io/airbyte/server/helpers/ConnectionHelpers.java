@@ -45,16 +45,17 @@ public class ConnectionHelpers {
   private static final long BASIC_SCHEDULE_UNITS = 1L;
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
   private static final long BASIC_SCHEDULE_DATA_UNITS = 1L;
+  private static final String ONE_HUNDRED_G = "100g";
 
   public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
   // only intended for unit tests, so intentionally set very high to ensure they aren't being used
   // elsewhere
   public static final io.airbyte.config.ResourceRequirements TESTING_RESOURCE_REQUIREMENTS = new io.airbyte.config.ResourceRequirements()
-      .withCpuLimit("100g")
-      .withCpuRequest("100g")
-      .withMemoryLimit("100g")
-      .withMemoryRequest("100g");
+      .withCpuLimit(ONE_HUNDRED_G)
+      .withCpuRequest(ONE_HUNDRED_G)
+      .withMemoryLimit(ONE_HUNDRED_G)
+      .withMemoryRequest(ONE_HUNDRED_G);
 
   public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();

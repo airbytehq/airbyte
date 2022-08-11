@@ -1,0 +1,82 @@
+@use "../../scss/colors";
+
+.airbyte-markdown {
+  * {
+    color: colors.$dark-blue;
+    line-height: 24px;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  h1 {
+    font-size: 48px;
+    line-height: 56px;
+    font-weight: bold;
+  }
+
+  h2 {
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: bold;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  h4 {
+    font-weight: bold;
+  }
+
+  a {
+    color: colors.$blue;
+    text-decoration: none;
+    line-height: 24px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid colors.$grey-100;
+    margin: 0;
+    padding: 8px 16px;
+  }
+
+  th {
+    background: colors.$grey-50;
+  }
+
+  blockquote {
+    border-left: 4px solid colors.$grey-100;
+    padding-left: 16px;
+    margin-left: 25px;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  code {
+    white-space: break-spaces;
+    background: colors.$grey-50;
+
+    &.language-sql,
+    &.language-text {
+      display: block;
+      padding: 15px;
+      overflow: auto;
+    }
+  }
+
+  img {
+    max-width: 100%;
+  }
+}

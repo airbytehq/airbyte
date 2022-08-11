@@ -3,11 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Optional
 
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
+@dataclass
 class RecordTransformation(ABC):
     """
     Implementations of this class define transformations that can be applied to records of a stream.

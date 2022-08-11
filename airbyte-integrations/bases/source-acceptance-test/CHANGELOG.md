@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.1
+Don't fail on updating `additionalProperties`: fix IndexError [#15532](https://github.com/airbytehq/airbyte/pull/15532/)
+
+## 0.2.0
+Finish backward compatibility syntactic tests implementation: check that cursor fields were not changed. [#15520](https://github.com/airbytehq/airbyte/pull/15520/)
+
+## 0.1.62
+Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
+
+## 0.1.61
+Add unit tests coverage computation [#15443](https://github.com/airbytehq/airbyte/pull/15443/).
+
+## 0.1.60
+Backward compatibility tests: validate fake previous config against current connector specification. [#15367](https://github.com/airbytehq/airbyte/pull/15367)
+
+## 0.1.59
+Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
+
 ## 0.1.58
 Bootstrap spec backward compatibility tests. Add fixtures to retrieve a previous connector version spec [#14954](https://github.com/airbytehq/airbyte/pull/14954/).
 

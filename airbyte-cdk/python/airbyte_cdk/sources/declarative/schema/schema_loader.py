@@ -3,9 +3,11 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Mapping
 
 
+@dataclass
 class SchemaLoader(ABC):
     """Describes a stream's schema"""
 

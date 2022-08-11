@@ -306,8 +306,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
           catalog,
           state,
-          // We can assume that there will be only 1 replication slot cause before the sync starts for Postgres CDC,
-          // we run all the check operations and one of the check validates that the replication slot exists and has only 1 entry
+          // We can assume that there will be only 1 replication slot cause before the sync starts for
+          // Postgres CDC,
+          // we run all the check operations and one of the check validates that the replication slot exists
+          // and has only 1 entry
           getReplicationSlot(database, sourceConfig).get(0),
           sourceConfig);
 
