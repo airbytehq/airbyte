@@ -44,4 +44,5 @@ class JelloExtractor(RecordExtractor, JsonSchemaMixin):
         try:
             return jello_lib.pyquery(response_body, script)
         except KeyError:
+          # if the requested key is not found then we consider it an empty response instead of failing the sync
             return []
