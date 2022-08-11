@@ -40,7 +40,9 @@ class BaseDiffChecker(ABC):
 
         # Detect type value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
         type_values_changed_in_list = [
-            change for change in self._diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
+            change
+            for change in self._diff.get("values_changed", [])
+            if len(change.path(output_format="list")) > 1 and change.path(output_format="list")[-2] == "type"
         ]
         if type_values_changed or type_values_changed_in_list:
             self._raise_error("The'type' field value was changed.")
