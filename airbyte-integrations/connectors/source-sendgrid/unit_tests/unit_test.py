@@ -43,7 +43,7 @@ def test_source_wrong_credentials():
     assert not status
 
 
-def test_messages_stream(mock_pendulum_now):
+def test_messages_stream_request_params(mock_pendulum_now):
     start_time = 1558359837
     stream = Messages(start_time)
     state = {"last_event_time": 1558359000}
