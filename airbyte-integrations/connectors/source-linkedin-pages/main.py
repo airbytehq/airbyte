@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 import sys
 
 from airbyte_cdk.entrypoint import launch
