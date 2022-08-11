@@ -51,6 +51,8 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
               isCursorEnabled={props.shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
               onPrimaryKeyChange={props.onPkSelect}
               onCursorChange={props.onCursorSelect}
+              airbyte_type={field.airbyte_type}
+              format={field.format}
             />
           </TreeRowWrapper>
         ))}

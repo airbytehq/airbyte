@@ -3,7 +3,8 @@ export interface SyncSchemaField {
   type: string;
   key: string;
   path: string[];
-
+  airbyte_type?: string;
+  format?: string;
   fields?: SyncSchemaField[];
 }
 
