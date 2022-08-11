@@ -7,8 +7,9 @@ definitions:
   result_selector:
     type: RecordSelector
     extractor:
-      type: JelloExtractor
-      transform: "_.result"
+      type: DpathExtractor
+      field_pointer:
+        - "result"
   results_selector:
     type: RecordSelector
     extractor:
