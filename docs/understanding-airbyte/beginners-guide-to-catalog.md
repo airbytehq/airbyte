@@ -10,7 +10,7 @@ The goal of the `AirbyteCatalog` is to describe _what_ data is available in a so
 
 This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](beginners-guide-to-catalog.md#Database-Example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
 
-* [Postgres Example](beginners-guide-to-catalog.md#Database-Example)
+* [Postgres Example](#Database-Example)
 * [API Example](beginners-guide-to-catalog.md#API-Examples)
   * [Static Streams Example](beginners-guide-to-catalog.md#Static-Streams-Example)
   * [Dynamic Streams Example](beginners-guide-to-catalog.md#Dynamic-Streams-Example)
