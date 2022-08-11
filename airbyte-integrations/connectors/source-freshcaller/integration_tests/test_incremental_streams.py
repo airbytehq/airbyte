@@ -64,7 +64,7 @@ def test_get_updated_state(streams_dict, fixture_name):
 
 
 @pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
-def test_get_updated_state(streams_dict, fixture_name):
+def test_get_updated_state_2(streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     current_stream_state = {"created_time": pendulum.now().add(days=-40)}
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": current_stream_state}

@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
