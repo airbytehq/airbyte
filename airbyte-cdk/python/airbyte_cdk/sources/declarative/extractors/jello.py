@@ -40,4 +40,7 @@ class JelloExtractor(JsonSchemaMixin):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
         script = self.transform.eval(self.config)
-        return jello_lib.pyquery(response_body, script)
+        try:
+            return jello_lib.pyquery(response_body, script)
+        except KeyError:
+            return []

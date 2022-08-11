@@ -22,6 +22,7 @@ decoder = JsonDecoder(options={})
         ("test_field_in_config", "_.{{ config['field'] }}", {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_field_in_options", "_.{{ options['options_field'] }}", {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_default", "_{{kwargs['field']}}", [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
+        ("test_field_does_not_exist", "_.record", {"id": 1}, []),
         (
             "test_remove_fields_from_records",
             "[{k:v for k,v in d.items() if k != 'value_to_remove'} for d in _.data]",
