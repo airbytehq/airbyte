@@ -37,6 +37,7 @@ definitions:
 streams:
   - type: DeclarativeStream
     $options:
+      # https://docs.sentry.io/api/events/list-a-projects-events/
       name: "events"
     primary_key: "id"
     schema_loader:
