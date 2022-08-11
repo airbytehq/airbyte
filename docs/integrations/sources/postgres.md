@@ -371,6 +371,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------------------|
+| 1.0.2   | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
 | 1.0.1   | 2022-08-10 | [15496](https://github.com/airbytehq/airbyte/pull/15496) | Fix state emission in incremental sync |
 |         | 2022-08-10 | [15481](https://github.com/airbytehq/airbyte/pull/15481) | Fix data handling from WAL logs in CDC mode |
 | 1.0.0   | 2022-08-05 | [15380](https://github.com/airbytehq/airbyte/pull/15380) | Change connector label to generally_available                                                                   |
