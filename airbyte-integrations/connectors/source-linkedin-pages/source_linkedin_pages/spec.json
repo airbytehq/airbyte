@@ -10,6 +10,7 @@
       "org_id": {
         "title": "Organization ID",
         "type": "integer",
+        "airbyte_secret": true,
         "description": "Specify the Organization ID",
         "examples": [123456789]
       },
