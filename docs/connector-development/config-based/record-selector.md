@@ -2,17 +2,55 @@
 
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
 
-The current record selector implementation uses Jello to select records from the json-decoded HTTP response.
-The record selection uses Python syntax, where `_` means top of the object. See [common recipes](#common-recipes).
-More information on Jello can be found at https://github.com/kellyjonbrazil/jello
+The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
 
 ## Common recipes:
 
-1. Selecting the whole json object can be done with `_`
-2. Wrapping the whole json object in an array can be done with `[_]`
-3. Inner fields can be selected by referring to it with the dot-notation: `_.data` will return the data field
+Here are some common patterns:
 
-Given a json object of the form
+### Selecting the whole response
+
+If the root of the response is an array containing the records, the records can be extracted using the following definition:
+
+```yaml
+selector:
+  extractor:
+    field_pointer: [ ]
+```
+
+If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
+
+For example,
+
+Given a response body of the form
+
+```json
+{
+  "id": 1
+}
+```
+
+and a selector
+
+```yaml
+selector:
+  extractor:
+    field_pointer: [ ]
+```
+
+The selected records will be
+
+```json
+[
+  {
+    "id": 1
+  }
+]
+```
+
+### Selecting a field
+
+Given a response body of the form
 
 ```
 {
@@ -21,10 +59,67 @@ Given a json object of the form
 }
 ```
 
-and a selector `_.data`, will produce the following:
+and a selector
 
+```yaml
+selector:
+  extractor:
+    field_pointer: [ "data" ]
 ```
-[{"id": 0}, {"id": 1}]
+
+The selected records will be
+
+```json
+[
+  {
+    "id": 0
+  },
+  {
+    "id": 1
+  }
+]
+```
+
+### Selecting an inner field
+
+Given a response body of the form
+
+```json
+{
+  "data": {
+    "records": [
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      }
+    ]
+  }
+}
+```
+
+and a selector
+
+```yaml
+selector:
+  extractor:
+    field_pointer:
+      - "data"
+      - "records"
+```
+
+The selected records will be
+
+```json
+[
+  {
+    "id": 1
+  },
+  {
+    "id": 2
+  }
+]
 ```
 
 ## Filtering records
@@ -37,7 +132,7 @@ In this example, all records with a `created_at` field greater than the stream s
 ```yaml
 selector:
   extractor:
-    transform: "[_]"
+    field_pointer: [ ]
   record_filter:
     condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
 ```
