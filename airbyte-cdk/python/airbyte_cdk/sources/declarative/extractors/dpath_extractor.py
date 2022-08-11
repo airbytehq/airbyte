@@ -24,7 +24,7 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     ```
       extractor:
         type: DpathExtractor
-        transform:
+        field_pointer:
           - "root"
           - "data"
     ```
@@ -32,9 +32,15 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     ```
       extractor:
         type: DpathExtractor
-        transform:
+        field_pointer:
           - "root"
           - "{{ options['field'] }}"
+    ```
+
+        ```
+      extractor:
+        type: DpathExtractor
+        field_pointer: []
     ```
 
     Attributes:
@@ -55,4 +61,7 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        return dpath.util.get(response_body, [pointer.eval(self.config) for pointer in self.field_pointer], default=[])
+        if len(self.field_pointer) == 0:
+            return response_body
+        else:
+            return dpath.util.get(response_body, [pointer.eval(self.config) for pointer in self.field_pointer], default=[])
