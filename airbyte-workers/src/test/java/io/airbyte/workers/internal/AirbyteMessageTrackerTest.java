@@ -58,7 +58,7 @@ class AirbyteMessageTrackerTest {
 
     assertEquals(3, messageTracker.getTotalRecordsEmitted());
     assertEquals(3L * Jsons.getEstimatedByteSize(r1.getRecord().getData()), messageTracker.getTotalBytesEmitted());
-    assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
+    assertEquals(2, messageTracker.getTotalSourceStateMessagesEmitted());
   }
 
   @Test

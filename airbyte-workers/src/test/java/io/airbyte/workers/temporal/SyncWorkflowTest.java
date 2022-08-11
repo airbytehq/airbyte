@@ -100,7 +100,8 @@ class SyncWorkflowTest {
 
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-        .withCatalog(syncInput.getCatalog());
+        .withCatalog(syncInput.getCatalog())
+        .withResourceRequirements(new ResourceRequirements());
 
     operatorDbtInput = new OperatorDbtInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())

@@ -14,7 +14,8 @@ public class PostgresCdcProperties {
     final Properties props = commonProperties();
     props.setProperty("plugin.name", PostgresUtils.getPluginValue(config.get("replication_method")));
     if (config.has("snapshot_mode")) {
-      //The parameter `snapshot_mode` is passed in test to simulate reading the WAL Logs directly and skip initial snapshot
+      // The parameter `snapshot_mode` is passed in test to simulate reading the WAL Logs directly and
+      // skip initial snapshot
       props.setProperty("snapshot.mode", config.get("snapshot_mode").asText());
     } else {
       props.setProperty("snapshot.mode", "initial");
