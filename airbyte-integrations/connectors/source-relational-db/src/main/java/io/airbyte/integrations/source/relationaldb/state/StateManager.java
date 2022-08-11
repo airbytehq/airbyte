@@ -78,6 +78,10 @@ public interface StateManager<T, S> {
     return getCursorInfo(pair).map(CursorInfo::getCursorField);
   }
 
+  default Optional<Integer> getCursorRecordCount(final AirbyteStreamNameNamespacePair pair) {
+    return getCursorInfo(pair).map(CursorInfo::getCursorRecordCount);
+  }
+
   /**
    * Retrieves an {@link Optional} possibly containing the original cursor value tracked in the state
    * associated with the provided stream name/namespace tuple.
@@ -100,6 +104,10 @@ public interface StateManager<T, S> {
    */
   default Optional<String> getOriginalCursorField(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getOriginalCursorField);
+  }
+
+  default Optional<Integer> getOriginalCursorRecordCount(final AirbyteStreamNameNamespacePair pair) {
+    return getCursorInfo(pair).map(CursorInfo::getOriginalCursorRecordCount);
   }
 
   /**

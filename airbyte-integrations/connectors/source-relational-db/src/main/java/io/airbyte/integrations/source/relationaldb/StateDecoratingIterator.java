@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private final String initialCursor;
   private String maxCursor;
+  private int maxCursorRecordCount = 0;
   private boolean hasEmittedFinalState;
 
   // The intermediateStateMessage is set to the latest state message.
@@ -80,13 +82,17 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = getCursorCandidate(message);
-        if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
+        final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
+        if (cursorComparison < 0) {
           if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
             // Only emit an intermediate state when it is not the first or last record message,
             // because the last state message will be taken care of in a different branch.
             intermediateStateMessage = createStateMessage(false);
           }
           maxCursor = cursorCandidate;
+          maxCursorRecordCount = 1;
+        } else if (cursorComparison == 0) {
+          ++maxCursorRecordCount;
         }
       }
 
@@ -103,13 +109,16 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   }
 
   public AirbyteMessage createStateMessage(final boolean isFinalState) {
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
-    LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor value {}, cursor field: {}, new cursor value: {}",
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor, maxCursorRecordCount);
+    final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
+    LOGGER.info("State report for stream \"{}\": original cursor \"{}\": value \"{}\" (record count {}) -> new cursor \"{}\" - value \"{}\" (record count {})",
         pair,
-        stateManager.getOriginalCursorField(pair).orElse(null),
-        stateManager.getOriginalCursor(pair).orElse(null),
-        stateManager.getCursorField(pair).orElse(null),
-        stateManager.getCursor(pair).orElse(null));
+        cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
 
     if (isFinalState) {
       hasEmittedFinalState = true;
