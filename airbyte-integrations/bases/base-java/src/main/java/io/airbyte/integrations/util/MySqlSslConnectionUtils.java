@@ -31,7 +31,6 @@ public class MySqlSslConnectionUtils {
   public static final String CUSTOM_TRUST_STORE = "customtruststore.jks";
   public static final String CUSTOM_KEY_STORE = "customkeystore.jks";
   public static final String SSL_MODE = "sslMode";
-  public static final String DISABLE = "disable";
   public static final String VERIFY_CA = "VERIFY_CA";
   public static final String VERIFY_IDENTITY = "VERIFY_IDENTITY";
   public static final String ROOT_CERTIFICARE_NAME = "ca-cert.pem";
@@ -51,10 +50,10 @@ public class MySqlSslConnectionUtils {
       }
       switch (method) {
         case VERIFY_CA -> {
-          additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, keyStorePassword));
+          additionalParameters.putAll(obtainConnectionCaOptions(encryption, keyStorePassword));
         }
         case VERIFY_IDENTITY -> {
-          additionalParameters.putAll(obtainConnectionFullOptions(encryption, method, keyStorePassword));
+          additionalParameters.putAll(obtainConnectionFullOptions(encryption, keyStorePassword));
         }
       }
     }
@@ -62,7 +61,6 @@ public class MySqlSslConnectionUtils {
   }
 
   private static Map<String, String> obtainConnectionFullOptions(final JsonNode encryption,
-                                                                 final String method,
                                                                  final String clientKeyPassword) {
     Map<String, String> additionalParameters = new HashMap<>();
     try {
@@ -72,22 +70,21 @@ public class MySqlSslConnectionUtils {
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
+    var trustStorePassword = RandomStringUtils.randomAlphanumeric(10);
     additionalParameters.put(TRUST_KEY_STORE_URL, "file:" + CUSTOM_TRUST_STORE);
-    additionalParameters.put(TRUST_KEY_STORE_PASS, clientKeyPassword);
+    additionalParameters.put(TRUST_KEY_STORE_PASS, trustStorePassword);
     additionalParameters.put(CLIENT_KEY_STORE_URL, "file:" + CUSTOM_KEY_STORE);
     additionalParameters.put(CLIENT_KEY_STORE_PASS, clientKeyPassword);
     additionalParameters.put(SSL_MODE, VERIFY_IDENTITY);
 
-    String result = CUSTOM_KEY_STORE;
-    updateTrustStoreSystemProperty(clientKeyPassword);
-    System.setProperty("javax.net.ssl.keyStore", result);
+    updateTrustStoreSystemProperty(trustStorePassword);
+    System.setProperty("javax.net.ssl.keyStore", CUSTOM_KEY_STORE);
     System.setProperty("javax.net.ssl.keyStorePassword", clientKeyPassword);
 
     return additionalParameters;
   }
 
   private static Map<String, String> obtainConnectionCaOptions(final JsonNode encryption,
-                                                               final String method,
                                                                final String clientKeyPassword) {
     Map<String, String> additionalParameters = new HashMap<>();
     try {
@@ -141,8 +138,7 @@ public class MySqlSslConnectionUtils {
   }
 
   private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {
-    String result = CUSTOM_TRUST_STORE;
-    System.setProperty("javax.net.ssl.trustStore", result);
+    System.setProperty("javax.net.ssl.trustStore", CUSTOM_TRUST_STORE);
     System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
   }
 

@@ -4,13 +4,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnectionOptions;
-import static java.util.stream.Collectors.toList;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -37,6 +30,9 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,8 +42,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnectionOptions;
+import static java.util.stream.Collectors.toList;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
@@ -156,21 +156,17 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        if (DISABLE.equals(config.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText())) {
-          jdbcUrl.append(JdbcUtils.AMPERSAND).append("sslMode=DISABLE");
+        additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
+        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+                .append(JdbcUtils.AMPERSAND);
+        if (additionalParameters.isEmpty()) {
+          jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
         } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
-          jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-              .append(JdbcUtils.AMPERSAND);
-          if (additionalParameters.isEmpty()) {
-            jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
-          } else {
-            jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
-          }
+          jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
         }
       } else {
         jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-            .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
       }
     }
 
