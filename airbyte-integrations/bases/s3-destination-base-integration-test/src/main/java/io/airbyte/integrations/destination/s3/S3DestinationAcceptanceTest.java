@@ -137,7 +137,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         .put("s3_bucket_path", testBucketPath)
         .set("format", getFormatConfig());
     this.configJson = configJson;
-    this.config = S3DestinationConfig.getS3DestinationConfig(configJson);
+    this.config = S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider());
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
@@ -185,6 +185,10 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   @Override
   protected boolean supportObjectDataTypeTest() {
     return true;
+  }
+
+  public StorageProvider storageProvider() {
+    return StorageProvider.AWS_S3;
   }
 
 }
