@@ -139,6 +139,8 @@ class DeclarativeComponentFactory:
             # generate the schema for the current class (include a subcall to remap the interface to the a union)
             self._transform_interface_to_union(class_)
             schema = class_.json_schema()
+            if "required" in schema.keys():
+                schema["required"] = [f for f in schema["required"] if not f.startswith("_")]
 
             # Hack to properly override the schema to check enum type. Ideally would not do this sort of thing
             # if transformed_schema is HttpRequester:
