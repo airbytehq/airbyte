@@ -196,7 +196,6 @@ public class ContainerOrchestratorApp {
                                                        final ProcessFactory processFactory,
                                                        final String application,
                                                        final FeatureFlags featureFlags) {
-
     return switch (application) {
       case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
