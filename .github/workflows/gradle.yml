@@ -761,4 +761,3 @@ jobs:
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! ${{ GITHUB_REF }}"
-          echo "!!! DEBBUG !!! ${{ GITHUB_SHA }}"
