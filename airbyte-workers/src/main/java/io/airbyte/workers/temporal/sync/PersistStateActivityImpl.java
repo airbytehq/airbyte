@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.config.helpers.StateConverter.convertClientStateTypeToInternal;
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -43,10 +44,13 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState = airbyteApiClient.getConnectionApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
-          final StateType newStateType = maybeStateWrapper.get().getStateType();
-          final StateType prevStateType = Enums.convertTo(previousState.getStateType(), StateType.class);
-          if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
-            validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+          if (previousState != null) {
+            final StateType newStateType = maybeStateWrapper.get().getStateType();
+            final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
+
+            if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
+              validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+            }
           }
 
           airbyteApiClient.getConnectionApi().createOrUpdateState(
