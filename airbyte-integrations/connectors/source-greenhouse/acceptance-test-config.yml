@@ -4,8 +4,6 @@ connector_image: airbyte/source-greenhouse:dev
 tests:
   spec:
     - spec_path: "source_greenhouse/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.7"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
