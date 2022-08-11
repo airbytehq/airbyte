@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 factory = DeclarativeComponentFactory()
 
@@ -75,6 +76,11 @@ def test_interpolate_config():
         interpolated_body_field: "{{ config['apikey'] }}"
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["authenticator"], input_config)
+
+    factory.instantiate = True
     authenticator = factory.create_component(config["authenticator"], input_config)()
     assert authenticator.client_id.eval(input_config) == "some_client_id"
     assert authenticator.client_secret.string == "some_client_secret"
@@ -94,6 +100,11 @@ def test_list_based_stream_slicer_with_values_refd():
       cursor_field: repository
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+    factory.instantiate = True
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer.slice_values
 
@@ -109,6 +120,11 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
         field_name: repository
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+    factory.instantiate = True
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer.slice_values
     assert stream_slicer.request_option.inject_into == RequestOptionType.header
@@ -118,28 +134,29 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_create_substream_slicer():
     content = """
     schema_loader:
-      file_path: "./source_sendgrid/schemas/{{ options['stream_name'] }}.yaml"
+      file_path: "./source_sendgrid/schemas/{{ options['name'] }}.yaml"
       name: "{{ options['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ options['stream_name'] }}"
-        path: "/v3"
+        name: "{{ options['name'] }}"
+        type: "HttpRequester"
+        path: "kek"
       record_selector:
         extractor:
           transform: "_"
     stream_A:
       type: DeclarativeStream
       $options:
-        stream_name: "A"
-        stream_primary_key: "id"
+        name: "A"
+        primary_key: "id"
         retriever: "*ref(retriever)"
         url_base: "https://airbyte.io"
         schema_loader: "*ref(schema_loader)"
     stream_B:
       type: DeclarativeStream
       $options:
-        stream_name: "B"
-        stream_primary_key: "id"
+        name: "B"
+        primary_key: "id"
         retriever: "*ref(retriever)"
         url_base: "https://airbyte.io"
         schema_loader: "*ref(schema_loader)"
@@ -157,6 +174,11 @@ def test_create_substream_slicer():
           stream_slice_field: word_id
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+    factory.instantiate = True
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     parent_stream_configs = stream_slicer.parent_stream_configs
     assert len(parent_stream_configs) == 2
@@ -191,6 +213,12 @@ def test_create_cartesian_stream_slicer():
         - "*ref(stream_slicer_B)"
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+    factory.instantiate = True
+
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     underlying_slicers = stream_slicer.stream_slicers
     assert len(underlying_slicers) == 2
@@ -220,6 +248,11 @@ def test_datetime_stream_slicer():
     """
 
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+    factory.instantiate = True
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert type(stream_slicer) == DatetimeStreamSlicer
     assert stream_slicer._timezone == datetime.timezone.utc
@@ -276,7 +309,7 @@ requester:
     api_token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
   error_handler:
-    type: DefaultErrorHandler
+    type: NoPagination
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
@@ -298,7 +331,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
-      transform: "_.result"
+      transform: "_.result" # <- change here for chaos
   retriever:
     $ref: "*ref(retriever)"
     requester:
@@ -316,6 +349,10 @@ check:
     """
     config = parser.parse(content)
 
+    factory.instantiate = False
+    factory.create_component(config["list_stream"], input_config)
+
+    factory.instantiate = True
     stream_config = config["list_stream"]
     assert stream_config["class_name"] == "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
     assert stream_config["cursor_field"] == []
@@ -361,6 +398,11 @@ def test_create_record_selector():
         transform: "_.result"
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["selector"], input_config)
+
+    factory.instantiate = True
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, JelloExtractor)
@@ -382,11 +424,16 @@ def test_create_requester():
       password: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
-        page_size: 10
+        a_parameter: "something_here"
       request_headers:
         header: header_value
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["requester"], input_config)
+
+    factory.instantiate = True
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
     assert isinstance(component.error_handler, DefaultErrorHandler)
@@ -396,7 +443,7 @@ def test_create_requester():
     assert component.authenticator._username.eval(input_config) == "lists"
     assert component.authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
-    assert component._request_options_provider._parameter_interpolator._interpolator.mapping["page_size"] == 10
+    assert component._request_options_provider._parameter_interpolator._interpolator.mapping["a_parameter"] == "something_here"
     assert component._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
     assert component.name == "lists"
 
@@ -414,6 +461,11 @@ def test_create_composite_error_handler():
                   action: RETRY
     """
     config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["error_handler"], input_config)
+
+    factory.instantiate = True
     component = factory.create_component(config["error_handler"], input_config)()
     assert len(component.error_handlers) == 2
     assert isinstance(component.error_handlers[0], DefaultErrorHandler)
@@ -461,6 +513,10 @@ def test_config_with_defaults():
     """
     config = parser.parse(content)
 
+    factory.instantiate = False
+    factory.create_component(config["lists_stream"], input_config)
+
+    factory.instantiate = True
     stream_config = config["lists_stream"]
     stream = factory.create_component(stream_config, input_config)()
     assert type(stream) == DeclarativeStream
@@ -496,6 +552,10 @@ def test_create_limit_paginator():
     """
     config = parser.parse(content)
 
+    factory.instantiate = False
+    factory.create_component(config["paginator"], input_config)
+
+    factory.instantiate = True
     paginator_config = config["paginator"]
     paginator = factory.create_component(paginator_config, input_config)()
     assert isinstance(paginator, LimitPaginator)
@@ -580,3 +640,102 @@ class TestCreateTransformations:
             )
         ]
         assert expected == component.transformations
+
+
+def test_validation_wrong_input_type():
+    content = """
+    extractor:
+      type: JelloExtractor
+      transform: "_.result"
+    selector:
+      class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+      record_filter:
+        class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
+        condition: "{{ record['id'] > stream_state['id'] }}"
+      extractor:
+        $ref: "*ref(extractor)"
+        transform: 408
+    """
+    config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["selector"], input_config)
+
+
+def test_validation_type_missing_required_fields():
+    content = """
+    stream_slicer:
+        type: DatetimeStreamSlicer
+        $options:
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_time'] }}"
+          min_datetime: "{{ config['start_time'] + day_delta(2) }}"
+        end_datetime: "{{ config['end_time'] }}"
+        step: "10d"
+        cursor_field: "created"
+        lookback_window: "5d"
+        start_time_option:
+          inject_into: request_parameter
+          field_name: created[gte]
+    """
+
+    config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["stream_slicer"], input_config)
+
+
+# It's sort of a bother that this does not "actually" test the type, it just does a if it has fields that look like they type
+# then it's a-okay by me... This sort of works, but isn't exactly what we want either since it's not that descriptive. Hence why this works,
+# when it really shouldn't
+def test_validation_wrong_object_type():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response._metadata.next }}"
+        decoder:
+          type: "MinMaxDatetime"
+          datetime: "{{ response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["paginator"], input_config)
+
+
+def test_validation_wrong_interface_type():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "MinMaxDatetime"
+          datetime: "{{ response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    factory.instantiate = False
+    factory.create_component(config["paginator"], input_config)
+
+
+def test_demo_schema_generation():
+    # declarative_source = YamlDeclarativeSource("test_factory.py")
+    schema = YamlDeclarativeSource.generate_schema()
+    print("\n" + schema)

@@ -14,7 +14,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ParentStreamConfig:
+class ParentStreamConfig(JsonSchemaMixin):
     """
     Describes how to create a stream slice from a parent stream
 

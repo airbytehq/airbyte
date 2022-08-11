@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import enum
 import importlib
+from dataclasses import fields
 from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import OPTIONS_STR, create
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
+from jsonschema.validators import validate
 
 ComponentDefinition: Union[Literal, Mapping, List]
 
@@ -96,8 +98,9 @@ class DeclarativeComponentFactory:
 
     """
 
-    def __init__(self):
+    def __init__(self, instantiate: bool = True):
         self._interpolator = JinjaInterpolation()
+        self.instantiate = instantiate
 
     def create_component(self, component_definition: ComponentDefinition, config: Config):
         """
@@ -128,7 +131,29 @@ class DeclarativeComponentFactory:
             kwargs[OPTIONS_STR] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs[OPTIONS_STR].items()}
 
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
-        return create(class_, config=config, **updated_kwargs)
+
+        if self.instantiate:
+            return create(class_, config=config, **updated_kwargs)
+        else:
+            # generate the schema for the current class (include a subcall to remap the interface to the a union)
+            self._transform_interface_to_union(class_)
+            schema = class_.json_schema()
+
+            # Hack to properly override the schema to check enum type. Ideally would not do this sort of thing
+            # if transformed_schema is HttpRequester:
+            #     schema['properties']['http_method']['anyOf'][1] = {"enum": [HttpMethod.GET, HttpMethod.POST]}
+
+            # Validate against the concrete object as a result of invoking the create function
+            # component_func = create(class_, config=config, **updated_kwargs)
+            # component = component_func()
+            # validate(component.to_dict(), schema)
+            # return component_func
+
+            # Validate using the component definition (not sure why it can't validate instances saying they're not objects)
+            component_definition = {**updated_kwargs, **{k: v for k, v in updated_kwargs[OPTIONS_STR].items() if k not in updated_kwargs}}
+            component_definition["config"] = config
+            # schema['type'] = 'dict'
+            validate(component_definition, schema)
 
     @staticmethod
     def _get_class_from_fully_qualified_class_name(class_name: str):
@@ -238,3 +263,22 @@ class DeclarativeComponentFactory:
         if not cls:
             return False
         return cls.__module__ == "builtins"
+
+    @staticmethod
+    # def _transform_interface_to_union(cls: type, cache: Mapping[type, List[type]]):
+    def _transform_interface_to_union(cls: type):
+        og_bases = cls.__bases__
+        og_dict = dict(cls.__dict__)
+        copy_cls = type(cls.__name__, og_bases, og_dict)
+        # needed if we accidentally pull in nondeclarative interface implementers like legacy NoAuth (fixed now actually)
+        # if not dataclasses.is_dataclass(copy_cls):
+        #     return copy_cls
+        class_fields = fields(copy_cls)
+        for field in class_fields:
+            some_field = field.type
+            module = some_field.__module__
+            if module != "builtins" and module != "typing":
+                subclasses = some_field.__subclasses__()
+                if subclasses:
+                    copy_cls.__annotations__[field.name] = Union[tuple(subclasses)]
+        # return copy_cls
