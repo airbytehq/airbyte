@@ -13,8 +13,7 @@ from airbyte_cdk.sources.declarative.types import Record
 @dataclass
 class RecordExtractor(ABC):
     """
-    Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
-    records based on a heuristic.
+    Responsible for translating an HTTP response into a list of records by extracting records from the response.
     """
 
     @abstractmethod
