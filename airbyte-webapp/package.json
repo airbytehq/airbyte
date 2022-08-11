@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.39.41-alpha",
+  "version": "0.40.0-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -28,6 +28,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@fullstory/browser": "^1.5.1",
+    "@headlessui/react": "^1.6.5",
     "@monaco-editor/react": "^4.4.5",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",

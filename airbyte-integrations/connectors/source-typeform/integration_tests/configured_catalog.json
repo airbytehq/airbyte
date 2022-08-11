@@ -4,10 +4,12 @@
       "stream": {
         "name": "forms",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -15,37 +17,56 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["submitted_at"]
+        "default_cursor_field": ["submitted_at"],
+        "source_defined_primary_key": [["response_id"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["response_id"]]
     },
     {
       "stream": {
         "name": "workspaces",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "images",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "themes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "webhooks",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     }
   ]
 }

@@ -9,8 +9,7 @@ global:
 
   secretName: "airbyte-secrets"
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
+    secretValue: ""
     host: "test"
     port: "5432"
   logs:
@@ -144,7 +143,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.41-alpha
+    tag: 0.40.0-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -420,7 +419,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.41-alpha
+    tag: 0.40.0-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -548,7 +547,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.41-alpha
+    tag: 0.40.0-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -667,7 +666,7 @@ airbyte-bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.41-alpha
+    tag: 0.40.0-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
