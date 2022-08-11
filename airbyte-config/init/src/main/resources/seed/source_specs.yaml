@@ -2255,7 +2255,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.16"
+- dockerImage: "airbyte/source-file:0.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -7722,7 +7722,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recurly:0.4.0"
+- dockerImage: "airbyte/source-recurly:0.4.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
     connectionSpecification:
@@ -9345,7 +9345,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.35"
+- dockerImage: "airbyte/source-stripe:0.1.36"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -9389,6 +9389,23 @@
             \ is frequently updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\"\
             >here</a>"
           order: 3
+        slice_range:
+          type: "integer"
+          title: "Data request time increment in days (Optional)"
+          default: 365
+          minimum: 1
+          examples:
+          - 1
+          - 3
+          - 10
+          - 30
+          - 180
+          - 360
+          description: "The time increment used by the connector when requesting data\
+            \ from the Stripe API. The bigger the value is,  the less requests will\
+            \ be made and faster the sync will be. On the other hand, the more seldom\
+            \  the state is persisted."
+          order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
