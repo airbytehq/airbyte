@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.62
+Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
+
+## 0.1.61
+Add unit tests coverage computation [#15443](https://github.com/airbytehq/airbyte/pull/15443/).
+
+## 0.1.60
+Backward compatibility tests: validate fake previous config against current connector specification. [#15367](https://github.com/airbytehq/airbyte/pull/15367)
+
 ## 0.1.59
 Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
 

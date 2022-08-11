@@ -7,6 +7,6 @@
       "description": "The email address."
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "A project's sender email address."
 }

@@ -8,6 +8,7 @@ from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.streams import Stream
@@ -15,6 +16,8 @@ from airbyte_cdk.sources.streams import Stream
 
 class YamlDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a yaml file"""
+
+    VALID_TOP_LEVEL_FIELDS = {"definitions", "streams", "check", "version"}
 
     def __init__(self, path_to_yaml):
         """
@@ -24,6 +27,11 @@ class YamlDeclarativeSource(DeclarativeSource):
         self._factory = DeclarativeComponentFactory()
         self._path_to_yaml = path_to_yaml
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
+
+        # Stopgap to protect the top-level namespace until it's validated through the schema
+        unknown_fields = [key for key in self._source_config.keys() if key not in self.VALID_TOP_LEVEL_FIELDS]
+        if unknown_fields:
+            raise InvalidConnectorDefinitionException(f"Found unknown top-level fields: {unknown_fields}")
 
     @property
     def connection_checker(self) -> ConnectionChecker:
