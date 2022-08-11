@@ -1020,7 +1020,8 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
         for reaction in comment["reactions"]["nodes"]:
             reaction["repository"] = self._get_name(repository)
             reaction["comment_id"] = comment["id"]
-            reaction["user"]["type"] = "User"
+            if reaction["user"]:
+                reaction["user"]["type"] = "User"
             yield reaction
 
     def _get_reactions_from_review(self, review, repository):
