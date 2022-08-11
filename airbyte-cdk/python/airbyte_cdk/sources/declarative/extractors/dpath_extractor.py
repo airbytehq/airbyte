@@ -62,10 +62,13 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
         if len(self.field_pointer) == 0:
-            return response_body
+            extracted = response_body
         else:
-            extracted = dpath.util.get(response_body, [pointer.eval(self.config) for pointer in self.field_pointer], default=[])
-            if isinstance(extracted, list):
-                return extracted
-            else:
-                return [extracted]
+            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
+            extracted = dpath.util.get(response_body, pointer, default=[])
+        if isinstance(extracted, list):
+            return extracted
+        elif extracted:
+            return [extracted]
+        else:
+            return []
