@@ -1,2 +1,7 @@
-.venv
-.pytest_cache
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_freshcaller
+!setup.py
+!secrets
