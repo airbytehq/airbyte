@@ -759,5 +759,7 @@ jobs:
           done
 
       - name: Debbug
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "!!! DEBBUG !!!"
+          echo "!!! DEBBUG !!! ${{ GITHUB_REF }}"
