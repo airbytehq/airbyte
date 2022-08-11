@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +14,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -30,16 +31,21 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("KafkaRecordConsumer")
-public class KafkaRecordConsumerTest {
+@ExtendWith(MockitoExtension.class)
+public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
 
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String TOPIC_NAME = "test.topic";
@@ -53,16 +59,27 @@ public class KafkaRecordConsumerTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))));
 
+  @Mock
+  private Consumer<AirbyteMessage> outputRecordCollector;
+
+  private KafkaRecordConsumer consumer;
+
   private static final StandardNameTransformer NAMING_RESOLVER = new StandardNameTransformer();
+
+  @BeforeEach
+  public void init() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    consumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+  }
 
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
   public void testBuildTopicMap(final String topicPattern, final String expectedTopic) {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
-    final KafkaRecordConsumer recordConsumer = new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
+    consumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
 
-    final Map<AirbyteStreamNameNamespacePair, String> topicMap = recordConsumer.buildTopicMap();
+    final Map<AirbyteStreamNameNamespacePair, String> topicMap = consumer.buildTopicMap();
     assertEquals(1, topicMap.size());
 
     final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
@@ -72,8 +89,6 @@ public class KafkaRecordConsumerTest {
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
-    final KafkaRecordConsumer consumer = new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();
@@ -131,6 +146,16 @@ public class KafkaRecordConsumerTest {
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
 
+  }
+
+  @Override
+  protected Consumer<AirbyteMessage> getMockedConsumer() {
+    return outputRecordCollector;
+  }
+
+  @Override
+  protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
+    return consumer;
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {

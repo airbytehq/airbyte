@@ -17,6 +17,8 @@ spec_path: str = Field(
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
+SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
+
 
 class BaseConfig(BaseModel):
     class Config:
@@ -25,10 +27,10 @@ class BaseConfig(BaseModel):
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
     previous_connector_version: str = Field(
-        default="latest", description="Previous connector version to use for backward compatibility tests."
+        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests."
     )
-    disable_backward_compatibility_tests_for_version: Optional[str] = Field(
-        default=None, description="Disable backward compatibility tests for a specific connector version."
+    disable_for_version: Optional[str] = Field(
+        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version."
     )
 
 
@@ -55,6 +57,9 @@ class ConnectionTestConfig(BaseConfig):
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+    )
 
 
 class ExpectedRecordsConfig(BaseModel):

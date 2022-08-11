@@ -12,11 +12,12 @@ class WebUrlHelperTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
+  private static final String LOCALHOST_8000 = "http://localhost:8000";
 
   @Test
   void testGetBaseUrl() {
-    final WebUrlHelper webUrlHelper = new WebUrlHelper("http://localhost:8000");
-    Assertions.assertEquals("http://localhost:8000", webUrlHelper.getBaseUrl());
+    final WebUrlHelper webUrlHelper = new WebUrlHelper(LOCALHOST_8000);
+    Assertions.assertEquals(LOCALHOST_8000, webUrlHelper.getBaseUrl());
   }
 
   @Test
@@ -27,7 +28,7 @@ class WebUrlHelperTest {
 
   @Test
   void testGetWorkspaceUrl() {
-    final WebUrlHelper webUrlHelper = new WebUrlHelper("http://localhost:8000");
+    final WebUrlHelper webUrlHelper = new WebUrlHelper(LOCALHOST_8000);
     final String workspaceUrl = webUrlHelper.getWorkspaceUrl(WORKSPACE_ID);
     final String expectedUrl = String.format("http://localhost:8000/workspaces/%s", WORKSPACE_ID);
     Assertions.assertEquals(expectedUrl, workspaceUrl);
@@ -35,7 +36,7 @@ class WebUrlHelperTest {
 
   @Test
   void testGetConnectionUrl() {
-    final WebUrlHelper webUrlHelper = new WebUrlHelper("http://localhost:8000");
+    final WebUrlHelper webUrlHelper = new WebUrlHelper(LOCALHOST_8000);
     final String connectionUrl = webUrlHelper.getConnectionUrl(WORKSPACE_ID, CONNECTION_ID);
     final String expectedUrl = String.format("http://localhost:8000/workspaces/%s/connections/%s", WORKSPACE_ID, CONNECTION_ID);
     Assertions.assertEquals(expectedUrl, connectionUrl);
