@@ -13,3 +13,5 @@ jobs:
           stale-pr-message: 'This PR was marked as stale and going to be closed soon'
           days-before-stale: 15
           days-before-close: 5
+          exempt-issue-labels: "needs-triage"
+          exempt-pr-labels: "do-not-stale"
