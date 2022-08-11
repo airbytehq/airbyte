@@ -4,13 +4,13 @@ This page guides you through setting up the Appfollow source connector to sync d
 
 ## Prerequisite
 
-To set up the Appfollow source connector, you'll need your Amplitude `ext_id`, `cid`, `api_secret` and `Country`.
+To set up the Appfollow source connector, you'll need your Appfollow `ext_id`, `cid`, `api_secret` and `Country`.
 
-## Set up the Amplitude source connector
+## Set up the Appfollow source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Amplitude** from the Source type dropdown.
+3. On the Set up the source page, select **Appfollow** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **ext_id**, **cid**, **api_secret** and **Country**, enter the Appfollow ext_id, cid, api_secret and country.
 6. Click **Set up source**.
