@@ -177,7 +177,7 @@ def test__read_from_private_box(box_credentials, private_box_file):
         "reader_options": json.dumps({"sep": ",", "nrows": 2}),
         "provider": {
             "storage": "BOX",
-            "box_developer_access_token": box_credentials["box_developer_access_token"],
+            "access_token": box_credentials["access_token"],
         },
     }
     check_read(config, expected_columns=4, expected_rows=2)

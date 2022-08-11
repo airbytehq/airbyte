@@ -89,7 +89,7 @@ In order to run integrations tests in this connector, you need:
    1. Create a file at `secrets/box_config.json`
         ```
         {
-            "box_developer_access_token": "XXXXXXX"
+            "access_token": "XXXXXXX"
         }
        ```
 

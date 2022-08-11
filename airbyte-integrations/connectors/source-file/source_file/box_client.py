@@ -45,10 +45,10 @@ class BoxURLDownload:
 
     """
 
-    def __init__(self, raw_url: str, developer_access_token: str):
+    def __init__(self, raw_url: str, access_token: str):
         self.box_base_url = "https://api.box.com"
         self.raw_url = raw_url
-        self.developer_access_token = developer_access_token
+        self.access_token = access_token
 
     @property
     def _prepare_file_id_from_link(self) -> str:
@@ -66,7 +66,7 @@ class BoxURLDownload:
         """
         parsed_file_id = self._prepare_file_id_from_link
         url = self._get_box_download_endpoint(file_id=parsed_file_id)
-        headers = {"Authorization": "Bearer {0}".format(self.developer_access_token)}
+        headers = {"Authorization": "Bearer {0}".format(self.access_token)}
 
         response = requests.get(url=url, headers=headers, allow_redirects=False)
         if response.status_code != HTTP_STATUS_302:
