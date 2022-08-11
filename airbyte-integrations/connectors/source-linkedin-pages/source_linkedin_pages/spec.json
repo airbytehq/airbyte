@@ -9,10 +9,10 @@
     "properties": {
       "org_id": {
         "title": "Organization ID",
-        "type": "integer",
+        "type": "string",
         "airbyte_secret": true,
         "description": "Specify the Organization ID",
-        "examples": [123456789]
+        "examples": ["123456789"]
       },
       "credentials": {
         "title": "Authentication *",
