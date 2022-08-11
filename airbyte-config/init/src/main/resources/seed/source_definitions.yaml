@@ -281,6 +281,11 @@
   dockerRepository: airbyte/source-freshcaller
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshcaller
+- name: Flexport
+  sourceDefinitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
+  dockerRepository: airbyte/source-flexport
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/file
   sourceType: api
   releaseStage: alpha
 - name: Freshdesk
