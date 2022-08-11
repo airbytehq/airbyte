@@ -153,8 +153,8 @@ definitions:
   selector:
     type: RecordSelector
     extractor:
-      type: JelloExtractor
-      transform: "_"
+      type: DpathExtractor
+      field_pointer: []
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
