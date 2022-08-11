@@ -75,6 +75,13 @@ class StripeStream(HttpStream, ABC):
             yield {"created[gte]": start, "created[lte]": end}
 
 
+class SingleEmptySliceMixin(object):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [{}]
+
+
 class IncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
@@ -167,7 +174,7 @@ class Charges(IncrementalStripeStream):
         return "charges"
 
 
-class CustomerBalanceTransactions(StripeStream):
+class CustomerBalanceTransactions(SingleEmptySliceMixin, StripeStream):
     """
     API docs: https://stripe.com/docs/api/customer_balance_transactions/list
     """
@@ -177,11 +184,6 @@ class CustomerBalanceTransactions(StripeStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         customer_id = stream_slice["customer_id"]
         return f"customers/{customer_id}/balance_transactions"
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{}]
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
@@ -224,7 +226,7 @@ class Events(IncrementalStripeStream):
         return "events"
 
 
-class StripeSubStream(StripeStream, ABC):
+class StripeSubStream(SingleEmptySliceMixin, StripeStream, ABC):
     """
     Research shows that records related to SubStream can be extracted from Parent streams which already
     contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
@@ -290,11 +292,6 @@ class StripeSubStream(StripeStream, ABC):
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
           If the stream has no primary keys, return None.
         """
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{}]
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
@@ -498,7 +495,7 @@ class BankAccounts(StripeSubStream):
         return params
 
 
-class CheckoutSessions(IncrementalStripeStream):
+class CheckoutSessions(SingleEmptySliceMixin, IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/list
     """
@@ -518,11 +515,6 @@ class CheckoutSessions(IncrementalStripeStream):
     def path(self, **kwargs):
         return "checkout/sessions"
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{}]
-
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         since_date = self.get_start_timestamp(stream_state)
         for item in super().parse_response(response, **kwargs):
@@ -532,7 +524,7 @@ class CheckoutSessions(IncrementalStripeStream):
                 yield item
 
 
-class CheckoutSessionsLineItems(IncrementalStripeStream):
+class CheckoutSessionsLineItems(SingleEmptySliceMixin, IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/line_items
     """
@@ -551,11 +543,6 @@ class CheckoutSessionsLineItems(IncrementalStripeStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"checkout/sessions/{stream_slice['checkout_session_id']}/line_items"
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{}]
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -613,17 +600,12 @@ class PromotionCodes(IncrementalStripeStream):
         return "promotion_codes"
 
 
-class ExternalAccount(StripeStream, ABC):
+class ExternalAccount(SingleEmptySliceMixin, StripeStream, ABC):
     """
     Bank Accounts and Cards are separate streams because they have different schemas
     """
 
     object = ""
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{}]
 
     def path(self, **kwargs):
         return f"accounts/{self.account_id}/external_accounts"
