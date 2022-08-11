@@ -24,7 +24,8 @@ definitions:
       inject_into: "request_parameter"
       field_name: ""
     page_token_option:
-      inject_into: "path"
+      inject_into: "request_parameter"
+      field_name: "cursor"
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ headers.link.next.cursor }}"
