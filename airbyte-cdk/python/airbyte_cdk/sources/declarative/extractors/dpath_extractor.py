@@ -18,12 +18,27 @@ from dataclasses_jsonschema import JsonSchemaMixin
 @dataclass
 class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     """
-    Record extractor that evaluates a Jello query to extract records from a decoded response.
+    Record extractor that searches a decoded response over a path defined as an array of fields.
 
-    More information on Jello can be found at https://github.com/kellyjonbrazil/jello
+    Examples of instantiating this transform:
+    ```
+      extractor:
+        type: DpathExtractor
+        transform:
+          - "root"
+          - "data"
+    ```
+
+    ```
+      extractor:
+        type: DpathExtractor
+        transform:
+          - "root"
+          - "{{ options['field'] }}"
+    ```
 
     Attributes:
-        transform (Union[InterpolatedString, str]): The Jello query to evaluate on the decoded response
+        transform (Union[InterpolatedString, str]): Pointer to the field that should be extracted
         config (Config): The user-provided configuration as specified by the source's spec
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
     """
