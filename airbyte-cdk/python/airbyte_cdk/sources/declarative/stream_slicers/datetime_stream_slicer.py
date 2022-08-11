@@ -5,7 +5,7 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
 import dateutil
 from airbyte_cdk.models import SyncMode
@@ -49,10 +49,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for
     """
 
-    start_datetime: MinMaxDatetime
-    end_datetime: MinMaxDatetime
+    start_datetime: Union[str, MinMaxDatetime]
+    end_datetime: Union[str, MinMaxDatetime]
     step: str
-    cursor_field: InterpolatedString
+    cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     config: Config
     options: InitVar[Mapping[str, Any]]
@@ -62,7 +62,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     end_time_option: Optional[RequestOption] = None
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
-    lookback_window: Optional[InterpolatedString] = None
+    lookback_window: Optional[Union[InterpolatedString, str]] = None
 
     timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
@@ -75,6 +75,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
 
+        if not isinstance(self.start_datetime, MinMaxDatetime):
+            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+        if not isinstance(self.end_datetime, MinMaxDatetime):
+            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self.start_datetime.datetime_format:
             self.start_datetime.datetime_format = self.datetime_format
