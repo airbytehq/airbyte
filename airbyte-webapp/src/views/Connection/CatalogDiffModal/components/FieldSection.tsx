@@ -32,15 +32,7 @@ export const FieldSection: React.FC<FieldSectionProps> = ({ streams, diffVerb })
       </div>
       <div className={styles.fieldRowsContainer}>
         {streams.length > 0 && (
-          <ul
-            aria-label={formatMessage(
-              { id: "connection.updateSchema.changed" },
-              {
-                value: streams.length,
-                item: formatMessage({ id: "connection.updateSchema.stream" }, { count: streams.length }),
-              }
-            )}
-          >
+          <ul>
             {streams.map((stream) => {
               return (
                 <li key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}>

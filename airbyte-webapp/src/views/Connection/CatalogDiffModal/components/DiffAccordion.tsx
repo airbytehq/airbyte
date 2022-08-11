@@ -23,7 +23,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
       <Disclosure>
         {({ open }) => (
           <>
-            <Disclosure.Button className={styles.accordionButton} aria-label="toggle accordion">
+            <Disclosure.Button className={styles.accordionButton}>
               <DiffAccordionHeader
                 streamDescriptor={streamTransform.streamDescriptor}
                 removedCount={removedItems.length}

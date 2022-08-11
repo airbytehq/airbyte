@@ -19,13 +19,13 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
           num={removedCount}
           color="red"
           light
-          ariaLabel={`${formatMessage(
+          ariaLabel={`${removedCount} ${formatMessage(
             {
               id: "connection.updateSchema.removed",
             },
             {
               value: removedCount,
-              item: formatMessage({ id: "connection.updateSchema.field" }, { count: removedCount }),
+              item: formatMessage({ id: "field" }, { values: { count: removedCount } }),
             }
           )}`}
         />
@@ -35,13 +35,13 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
           num={newCount}
           color="green"
           light
-          ariaLabel={`${formatMessage(
+          ariaLabel={`${newCount} ${formatMessage(
             {
               id: "connection.updateSchema.new",
             },
             {
               value: newCount,
-              item: formatMessage({ id: "connection.updateSchema.field" }, { count: newCount }),
+              item: formatMessage({ id: "field" }, { values: { count: newCount } }),
             }
           )}`}
         />
@@ -51,13 +51,13 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
           num={changedCount}
           color="blue"
           light
-          ariaLabel={`${formatMessage(
+          ariaLabel={`${changedCount} ${formatMessage(
             {
               id: "connection.updateSchema.changed",
             },
             {
               value: changedCount,
-              item: formatMessage({ id: "connection.updateSchema.field" }, { count: changedCount }),
+              item: formatMessage({ id: "field" }, { values: { count: changedCount } }),
             }
           )}`}
         />
