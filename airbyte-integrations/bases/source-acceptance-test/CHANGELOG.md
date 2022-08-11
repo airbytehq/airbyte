@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.63
+Don't fail on updating `additionalProperties`: fix IndexError [#15532](https://github.com/airbytehq/airbyte/pull/15532/)
+
 ## 0.1.62
 Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
 

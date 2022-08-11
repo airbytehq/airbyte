@@ -534,7 +534,31 @@ VALID_SPEC_TRANSITIONS = [
                 },
             }
         ),
-        name="Changing the value of additionalProperties should not fail",
+        name="Top level: Changing the value of additionalProperties should not fail",
+        should_fail=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_nested_object": {"type": "object", "properties": {"my_property": {"type": ["integer"]}}},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_nested_object": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {"my_property": {"type": ["integer"]}},
+                    },
+                },
+            }
+        ),
+        name="Nested level: Changing the value of additionalProperties should not fail",
         should_fail=False,
     ),
     Transition(
