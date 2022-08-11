@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, Union
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config, Record
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -15,7 +16,7 @@ from jello import lib as jello_lib
 
 
 @dataclass
-class JelloExtractor(JsonSchemaMixin):
+class JelloExtractor(RecordExtractor, JsonSchemaMixin):
     """
     Record extractor that evaluates a Jello query to extract records from a decoded response.
 
@@ -40,4 +41,7 @@ class JelloExtractor(JsonSchemaMixin):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
         script = self.transform.eval(self.config)
-        return jello_lib.pyquery(response_body, script)
+        try:
+            return jello_lib.pyquery(response_body, script)
+        except KeyError:
+            return []
