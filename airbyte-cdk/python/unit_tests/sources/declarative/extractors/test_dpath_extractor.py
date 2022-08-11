@@ -20,6 +20,7 @@ decoder = JsonDecoder(options={})
     [
         ("test_extract_from_array", ["data"], {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_extract_single_record", ["data"], {"data": {"id": 1}}, [{"id": 1}]),
+        ("test_extract_single_record_from_root", [], {"id": 1}, [{"id": 1}]),
         ("test_extract_from_root_array", [], [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
         ("test_nested_field", ["data", "records"], {"data": {"records": [{"id": 1}, {"id": 2}]}}, [{"id": 1}, {"id": 2}]),
         ("test_field_in_config", ["{{ config['field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
