@@ -257,6 +257,9 @@ so this macro needs to be called very_large_integer.
     TIMESTAMP
 {% endmacro %}
 
+{% macro tidb__type_timestamp_without_timezone() %}
+    datetime
+{% endmacro %}
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -281,7 +284,7 @@ so this macro needs to be called very_large_integer.
 {% endmacro %}
 
 {% macro tidb__type_time_without_timezone() %}
-    char(1000)
+    time
 {% endmacro %}
 
 

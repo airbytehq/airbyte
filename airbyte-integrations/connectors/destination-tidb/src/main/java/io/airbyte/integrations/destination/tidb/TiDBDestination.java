@@ -27,12 +27,6 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-//          // zero dates by default cannot be parsed into java date objects (they will throw an error)
-//          // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
-//          // and can't
-//          // remove zero date values.
-//          // since zero dates are placeholders, we convert them to null by default
-//          "zeroDateTimeBehavior", "convertToNull",
           "allowLoadLocalInfile", "true");
 
   static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
