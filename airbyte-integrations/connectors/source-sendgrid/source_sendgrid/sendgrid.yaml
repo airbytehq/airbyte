@@ -13,13 +13,14 @@ definitions:
   results_selector:
     type: RecordSelector
     extractor:
-      type: JelloExtractor
-      transform: "_.results"
+      type: DpathExtractor
+      field_pointer:
+        - "results"
   selector:
     type: RecordSelector
     extractor:
-      type: JelloExtractor
-      transform: "_ or []"
+      type: DpathExtractor
+      field_pointer: []
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
