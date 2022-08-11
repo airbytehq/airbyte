@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1
+Don't fail on updating `additionalProperties`: fix IndexError [#15532](https://github.com/airbytehq/airbyte/pull/15532/)
+
 ## 0.2.0
 Finish backward compatibility syntactic tests implementation: check that cursor fields were not changed. [#15520](https://github.com/airbytehq/airbyte/pull/15520/)
 
