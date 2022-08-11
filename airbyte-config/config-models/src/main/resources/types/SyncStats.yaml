@@ -13,7 +13,7 @@ properties:
     type: integer
   bytesEmitted:
     type: integer
-  sourceStateMessagesEmitted: # TODO make required once per-stream state messages are supported in V2
+  sourceStateMessagesEmitted:
     description: Number of State messages emitted by the Source Connector
     type: integer
   destinationStateMessagesEmitted:

@@ -110,7 +110,7 @@ public class TrackingMetadata {
             metadata.put("volume_mb", syncSummary.getBytesSynced());
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
             metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
-            metadata.put("count_destination_messages_from_source", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
+            metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
           }
         }
 

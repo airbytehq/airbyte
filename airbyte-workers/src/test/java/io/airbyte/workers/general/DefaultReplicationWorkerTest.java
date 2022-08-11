@@ -442,7 +442,7 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getTotalSourceStateMessagesEmitted()).thenReturn(3L);
-    when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(3L);
+    when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(1L);
     when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(STREAM1, 100L));
     when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
 
@@ -466,7 +466,7 @@ class DefaultReplicationWorkerTest {
                 .withRecordsEmitted(12L)
                 .withBytesEmitted(100L)
                 .withSourceStateMessagesEmitted(3L)
-                .withDestinationStateMessagesEmitted(3L)
+                .withDestinationStateMessagesEmitted(1L)
                 .withRecordsCommitted(12L)) // since success, should use emitted count
             .withStreamStats(Collections.singletonList(
                 new StreamSyncStats()
