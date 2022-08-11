@@ -236,6 +236,7 @@ streams:
     $options:
       name: "blocks"
       primary_key: "email"
+      stream_cursor_field: "created"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
