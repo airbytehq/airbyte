@@ -582,28 +582,32 @@ public class WorkerApp {
 
     final Date now = new Date();
     final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(expiryLengthSeconds));
+    try {
+      // Build the JWT payload
+      final JWTCreator.Builder token = JWT.create()
+          .withIssuedAt(now)
+          // Expires after 'expiryLength' seconds
+          .withExpiresAt(expTime)
+          // Must match 'issuer' in the security configuration in your
+          // swagger spec (e.g. service account email)
+          .withIssuer(saEmail)
+          // Must be either your Endpoints service name, or match the value
+          // specified as the 'x-google-audience' in the OpenAPI document
+          .withAudience(audience)
+          // Subject and email should match the service account's email
+          .withSubject(saEmail)
+          .withClaim("email", saEmail);
 
-    // Build the JWT payload
-    final JWTCreator.Builder token = JWT.create()
-        .withIssuedAt(now)
-        // Expires after 'expiryLength' seconds
-        .withExpiresAt(expTime)
-        // Must match 'issuer' in the security configuration in your
-        // swagger spec (e.g. service account email)
-        .withIssuer(saEmail)
-        // Must be either your Endpoints service name, or match the value
-        // specified as the 'x-google-audience' in the OpenAPI document
-        .withAudience(audience)
-        // Subject and email should match the service account's email
-        .withSubject(saEmail)
-        .withClaim("email", saEmail);
-
-    // Sign the JWT with a service account
-    final FileInputStream stream = new FileInputStream(saKeyfile);
-    final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
-    final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
-    final Algorithm algorithm = Algorithm.RSA256(null, key);
-    return token.sign(algorithm);
+      // Sign the JWT with a service account
+      final FileInputStream stream = new FileInputStream(saKeyfile);
+      final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
+      final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
+      final Algorithm algorithm = Algorithm.RSA256(null, key);
+      return token.sign(algorithm);
+    } catch (Exception e) {
+      LOGGER.error("Error occurred while generating JWT", e);
+      return "";
+    }
   }
 
   public static void main(final String[] args) {
