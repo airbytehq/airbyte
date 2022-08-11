@@ -98,11 +98,13 @@ public interface MessageTracker {
   Optional<Long> getTotalRecordsCommitted();
 
   /**
-   * Get the overall emitted state message count.
+   * Get the count of state messages emitted from the source connector.
    *
-   * @return returns the total count of emitted state messages.
+   * @return returns the total count of state messages emitted from the source.
    */
-  Long getTotalStateMessagesEmitted();
+  Long getTotalSourceStateMessagesEmitted();
+
+  Long getTotalDestinationStateMessagesEmitted();
 
   AirbyteTraceMessage getFirstDestinationErrorTraceMessage();
 
