@@ -67,7 +67,7 @@ def azblob_credentials() -> Mapping:
 
 @pytest.fixture(scope="session")
 def box_credentials() -> Mapping:
-    filename = HERE.parent / "secrets/box_config.json"
+    filename = HERE.parent / "secrets/box.json"
     with open(filename) as json_file:
         return json.load(json_file)
 

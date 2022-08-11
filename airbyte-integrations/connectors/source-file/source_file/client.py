@@ -227,14 +227,11 @@ class URLFile:
         url = f"{self.storage_scheme}{self.url}"
         return smart_open.open(url, transport_params=dict(client=client), **self.args)
 
-    def _open_box_url(self, binary):
-        mode = "rb" if binary else "r"
-        box_developer_access_token = self._provider.get("box_developer_access_token")
-
-        download_client = BoxURLDownload(raw_url=self.url, developer_access_token=box_developer_access_token)
-        url = download_client.get_download_url()
-        result = smart_open.open(url, mode=mode)
-        return result
+    def _open_box_url(self):
+        access_token = self._provider.get("access_token")
+        box = BoxURLDownload(access_token=access_token)
+        url = box.get_download_url(self.url)
+        return smart_open.open(url, **self.args)
 
 
 class Client:
@@ -378,6 +375,7 @@ class Client:
     def _cache_stream(self, fp):
         """cache stream to file"""
         fp_tmp = tempfile.TemporaryFile(mode="w+b")
+        fp_tmp.write(fp.read(2))
         fp_tmp.write(fp.read())
         fp_tmp.seek(0)
         fp.close()

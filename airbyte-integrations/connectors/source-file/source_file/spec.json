@@ -121,7 +121,7 @@
           },
           {
             "title": "BOX: Cloud Content Management",
-            "required": ["storage"],
+            "required": ["storage", "access_token"],
             "properties": {
               "storage": {
                 "type": "string",

@@ -86,7 +86,7 @@ In order to run integrations tests in this connector, you need:
        ```
 
 1. Testing BOX Cloud Storage
-   1. Create a file at `secrets/box_config.json`
+   1. Create a file at `secrets/box.json`
         ```
         {
             "access_token": "XXXXXXX"
