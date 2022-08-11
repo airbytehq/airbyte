@@ -64,4 +64,8 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
         if len(self.field_pointer) == 0:
             return response_body
         else:
-            return dpath.util.get(response_body, [pointer.eval(self.config) for pointer in self.field_pointer], default=[])
+            extracted = dpath.util.get(response_body, [pointer.eval(self.config) for pointer in self.field_pointer], default=[])
+            if isinstance(extracted, list):
+                return extracted
+            else:
+                return [extracted]
