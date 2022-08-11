@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.AvoidReassigningParameters")
+@SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
 public class Jsons {
 
   // Object Mapper is thread-safe
@@ -181,7 +181,7 @@ public class Jsons {
   }
 
   private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
-    Preconditions.checkArgument(keys.size() > 0, "Must pass at least one key");
+    Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
   }

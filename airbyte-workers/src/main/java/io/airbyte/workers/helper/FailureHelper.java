@@ -115,6 +115,12 @@ public class FailureHelper {
         .withExternalMessage("Something went wrong during normalization");
   }
 
+  public static FailureReason normalizationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.NORMALIZATION)
+        .withExternalMessage(m.getError().getMessage());
+  }
+
   public static FailureReason dbtFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.DBT)
@@ -164,13 +170,13 @@ public class FailureHelper {
                                                                    final Throwable t,
                                                                    final Long jobId,
                                                                    final Integer attemptNumber) {
-    if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
+    if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_REPLICATE.equals(activityType)) {
       return replicationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_PERSIST.equals(activityType)) {
       return persistenceFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_NORMALIZE)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_NORMALIZE.equals(activityType)) {
       return normalizationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_DBT_RUN)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_DBT_RUN.equals(activityType)) {
       return dbtFailure(t, jobId, attemptNumber);
     } else {
       return unknownOriginFailure(t, jobId, attemptNumber);

@@ -83,6 +83,8 @@ import org.slf4j.LoggerFactory;
 class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
+  private static final String TYPE = "type";
+  private static final String COLUMN1 = "column1";
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
@@ -133,7 +135,7 @@ class AdvancedAcceptanceTests {
   void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -157,7 +159,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "EXCEPTION_AFTER_N")
+            .put(TYPE, "EXCEPTION_AFTER_N")
             .put("throw_after_n_records", 100)
             .build()));
 
@@ -165,7 +167,7 @@ class AdvancedAcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
+        Jsons.jsonNode(ImmutableMap.of(TYPE, "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -205,10 +207,10 @@ class AdvancedAcceptanceTests {
     // nature, we can't guarantee exactly what checkpoint will be registered. what we can do is send
     // enough messages to make sure that we checkpoint at least once.
     assertNotNull(connectionState.getState());
-    assertTrue(connectionState.getState().get("column1").isInt());
-    LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
-    assertTrue(connectionState.getState().get("column1").asInt() > 0);
-    assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
+    assertTrue(connectionState.getState().get(COLUMN1).isInt());
+    LOGGER.info("state value: {}", connectionState.getState().get(COLUMN1).asInt());
+    assertTrue(connectionState.getState().get(COLUMN1).asInt() > 0);
+    assertEquals(0, connectionState.getState().get(COLUMN1).asInt() % 5);
   }
 
   @RetryingTest(3)
@@ -219,7 +221,7 @@ class AdvancedAcceptanceTests {
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
         Charset.defaultCharset());
 
-    assertTrue(serverLogLines.size() > 0);
+    assertFalse(serverLogLines.isEmpty());
 
     boolean hasRedacted = false;
 
@@ -246,7 +248,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
+            .put(TYPE, "INFINITE_FEED")
             .put("max_records", 5000)
             .build()));
 
@@ -255,7 +257,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "THROTTLED")
+            .put(TYPE, "THROTTLED")
             .put("millis_per_record", 1)
             .build()));
 

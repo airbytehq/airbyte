@@ -40,6 +40,7 @@ import org.testcontainers.containers.output.OutputFrame;
  * { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also
  * handles the nuances of configuring the Airbyte docker-compose configuration in test containers.
  */
+@SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class AirbyteTestContainer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTestContainer.class);
@@ -70,7 +71,9 @@ public class AirbyteTestContainer {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void startAsync() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
-    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
+    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile)
+        .withEnv(env);
+
     // Only expose logs related to db migrations.
     serviceLogConsumer(dockerComposeContainer, "init");
     serviceLogConsumer(dockerComposeContainer, "bootloader");
@@ -155,10 +158,11 @@ public class AirbyteTestContainer {
         final String message = prependService(service, log.replace("\n", ""));
         switch (c.getType()) {
           // prefer matching log levels from docker containers with log levels in logger.
-          case STDOUT -> LOGGER.info(message);
           case STDERR -> LOGGER.error(message);
           // assumption that this is an empty frame that connotes the container exiting.
           case END -> LOGGER.error(service + " stopped!!!");
+          // default includes STDOUT and anything else
+          default -> LOGGER.info(message);
         }
       }
     };

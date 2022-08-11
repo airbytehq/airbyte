@@ -37,6 +37,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -284,20 +285,22 @@ public class JobTracker {
         operationUsage.put(OPERATION + operation.getOperatorType(), usageCount + 1);
       }
     }
-    return MoreMaps.merge(TrackingMetadata.generateSyncMetadata(standardSync), operationUsage);
+
+    final Map<String, Object> streamCountData = new HashMap<>();
+    final Integer streamCount = standardSync.getCatalog().getStreams().size();
+    streamCountData.put("number_of_streams", streamCount);
+
+    return MoreMaps.merge(TrackingMetadata.generateSyncMetadata(standardSync), operationUsage, streamCountData);
   }
 
   private static ImmutableMap<String, Object> generateStateMetadata(final JobState jobState) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
-    switch (jobState) {
-      case STARTED -> {
-        metadata.put("attempt_stage", "STARTED");
-      }
-      case SUCCEEDED, FAILED -> {
-        metadata.put("attempt_stage", "ENDED");
-        metadata.put("attempt_completion_status", jobState);
-      }
+    if (JobState.STARTED.equals(jobState)) {
+      metadata.put("attempt_stage", "STARTED");
+    } else if (List.of(JobState.SUCCEEDED, JobState.FAILED).contains(jobState)) {
+      metadata.put("attempt_stage", "ENDED");
+      metadata.put("attempt_completion_status", jobState);
     }
 
     return metadata.build();

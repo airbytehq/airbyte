@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +12,9 @@ import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -35,10 +36,10 @@ import org.junit.jupiter.api.Test;
 
 public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
+  private static final String DATABASE_NAME = "test";
+  private static final String COLLECTION_NAME = "acceptance_test";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-
-  protected static final String DATABASE_NAME = "test";
-  protected static final String COLLECTION_NAME = "acceptance_test";
+  private static final String INSTANCE_TYPE = "instance_type";
 
   protected JsonNode config;
   protected MongoDatabase database;
@@ -65,25 +66,24 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", STANDALONE.getType())
-        .put("host", credentialsJson.get("host").asText())
-        .put("port", credentialsJson.get("port").asInt())
+        .put("instance", MongoInstanceType.ATLAS.getType())
+        .put("cluster_url", credentialsJson.get("cluster_url").asText())
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("user", credentialsJson.get("user").asText())
-        .put("password", credentialsJson.get("password").asText())
-        .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(INSTANCE_TYPE, instanceConfig)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
 
-    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&directConnection=false&ssl=true",
-        config.get("user").asText(),
-        config.get("password").asText(),
-        config.get("instance_type").get("host").asText(),
-        config.get("instance_type").get("port").asText(),
-        config.get("database").asText());
+    var credentials = String.format("%s:%s@", config.get("user").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText());
+    final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",
+        credentials,
+        config.get(INSTANCE_TYPE).get("cluster_url").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
@@ -100,7 +100,9 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    database.getDatabase().getCollection(COLLECTION_NAME).drop();
+    for (final String collectionName : database.getCollectionNames()) {
+      database.getDatabase().getCollection(collectionName).drop();
+    }
     database.close();
   }
 

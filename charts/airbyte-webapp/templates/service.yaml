@@ -16,3 +16,6 @@ spec:
     name: http
   selector:
     airbyte: webapp
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}

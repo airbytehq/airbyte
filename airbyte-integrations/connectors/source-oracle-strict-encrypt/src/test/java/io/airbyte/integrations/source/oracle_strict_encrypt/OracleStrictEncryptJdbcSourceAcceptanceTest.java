@@ -23,12 +23,16 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.oracle.OracleSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -38,6 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
@@ -256,6 +261,35 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     assertEquals(expected, actual);
   }
 
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
+    return new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+  }
+
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
@@ -282,6 +316,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
   }
+
   @Test
   void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
@@ -293,53 +328,53 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     });
 
     final DbState state = new DbState()
-            .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-            .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
+        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
-            .filter(r -> r.getType() == AirbyteMessage.Type.STATE).findFirst();
+        .filter(r -> r.getType() == AirbyteMessage.Type.STATE).findFirst();
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
     database.execute(connection -> {
       connection.createStatement().execute(
-              String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
-                      getFullyQualifiedTableName(TABLE_NAME)));
+          String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
+              getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
-              String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
-                      getFullyQualifiedTableName(TABLE_NAME)));
+          String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
+              getFullyQualifiedTableName(TABLE_NAME)));
     });
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
-            .toList(source.read(config, configuredCatalog,
-                    stateAfterFirstSyncOptional.get().getState().getData()));
+        .toList(source.read(config, configuredCatalog,
+            stateAfterFirstSyncOptional.get().getState().getData()));
 
     Assertions.assertEquals(2,
-            (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == AirbyteMessage.Type.RECORD).count());
+        (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == AirbyteMessage.Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-                    .withData(Jsons.jsonNode(ImmutableMap
-                            .of(COL_ID, ID_VALUE_4,
-                                    COL_NAME, "riker",
-                                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap
+                .of(COL_ID, ID_VALUE_4,
+                    COL_NAME, "riker",
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-                    .withData(Jsons.jsonNode(ImmutableMap
-                            .of(COL_ID, ID_VALUE_5,
-                                    COL_NAME, "data",
-                                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap
+                .of(COL_ID, ID_VALUE_5,
+                    COL_NAME, "data",
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
     expectedMessages.add(new AirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(new AirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                    .withData(Jsons.jsonNode(new DbState()
-                            .withCdc(false)
-                            .withStreams(Lists.newArrayList(new DbStreamState()
-                                    .withStreamName(streamName)
-                                    .withStreamNamespace(namespace)
-                                    .withCursorField(ImmutableList.of(COL_ID))
-                                    .withCursor("5")))))));
+        .withType(AirbyteMessage.Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+            .withData(Jsons.jsonNode(new DbState()
+                .withCdc(false)
+                .withStreams(Lists.newArrayList(new DbStreamState()
+                    .withStreamName(streamName)
+                    .withStreamNamespace(namespace)
+                    .withCursorField(ImmutableList.of(COL_ID))
+                    .withCursor("5")))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
@@ -356,4 +391,5 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
         "2006-10-19T00:00:00.000000Z",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
+
 }

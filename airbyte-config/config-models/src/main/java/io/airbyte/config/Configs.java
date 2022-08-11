@@ -332,16 +332,40 @@ public interface Configs {
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Defaults to
+   * Define the check job container's minimum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Defaults to
+   * Define the check job container's maximum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
+
+  /**
+   * Define the normalization job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuRequest();
+
+  /**
+   * Define the normalization job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuLimit();
+
+  /**
+   * Define the normalization job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryRequest();
+
+  /**
+   * Define the normalization job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryLimit();
 
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
@@ -460,6 +484,12 @@ public interface Configs {
    * for Airbyte internal use.
    */
   String getDDDogStatsDPort();
+
+  /**
+   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
+   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
+   */
+  List<String> getDDConstantTags();
 
   /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.

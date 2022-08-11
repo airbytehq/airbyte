@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
+  private static final String BEFORE = "before: {}";
 
   @Test
   void testAsyncExecute() throws Exception {
@@ -314,13 +315,13 @@ class TemporalUtilsTest {
 
       @Override
       public void activity() {
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
         try {
           callable.call();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }
@@ -381,15 +382,15 @@ class TemporalUtilsTest {
 
       @Override
       public void activity(final String arg) {
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
         final ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {
               if (timesReachedEnd.get() == 0) {
-                if (arg.equals("runtime")) {
+                if ("runtime".equals(arg)) {
                   throw new RuntimeException("failed");
-                } else if (arg.equals("timeout")) {
+                } else if ("timeout".equals(arg)) {
                   Thread.sleep(10000);
                   return null;
                 } else {
@@ -401,7 +402,7 @@ class TemporalUtilsTest {
             },
             () -> context);
         timesReachedEnd.incrementAndGet();
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }
