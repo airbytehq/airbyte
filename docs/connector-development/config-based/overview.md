@@ -1,6 +1,6 @@
 # Config-based connectors overview
 
-:warning: This framework is in alpha stage. Support is not in production and is available only to selected users.
+:warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
 When you're ready to start building a connector, you can start with [the tutorial](../../../config-based/tutorial/0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)

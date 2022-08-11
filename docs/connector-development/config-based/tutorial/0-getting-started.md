@@ -1,6 +1,6 @@
 # Getting Started
 
-:warning: This framework is in alpha stage. Support is not in production and is available only to selected users.
+:warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
 
 ## Summary
 
