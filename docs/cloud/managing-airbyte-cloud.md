@@ -109,7 +109,7 @@ To view the sync log summary:
 
 3. Under Sync History, a list of syncs for that connection is displayed.
 
-    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).  
+    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](#sync-log-summary).  
 
 4. For more information about a sync, click the sync log dropdown.  
  
