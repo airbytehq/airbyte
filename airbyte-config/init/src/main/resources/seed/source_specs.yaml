@@ -2534,6 +2534,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-flexport:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/flexport"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Flexport Spec"
+      additionalProperties: true
+      type: "object"
+      required:
+      - "api_key"
+      - "start_date"
+      properties:
+        api_key:
+          order: 0
+          type: "string"
+          title: "API Key"
+          airbyte_secret: true
+        start_date:
+          order: 1
+          title: "Start Date"
+          type: "string"
+          format: "date-time"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-freshdesk:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
@@ -3531,7 +3556,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.2.7"
+- dockerImage: "airbyte/source-greenhouse:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/greenhouse"
     connectionSpecification:
@@ -3540,13 +3565,15 @@
       type: "object"
       required:
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_key:
+          title: "API Key"
           type: "string"
           description: "Greenhouse API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/greenhouse\"\
             >docs</a> for more information on how to generate this key."
           airbyte_secret: true
+          order: 0
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8619,7 +8646,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.8"
+- dockerImage: "airbyte/source-sendgrid:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -8628,7 +8655,7 @@
       type: "object"
       required:
       - "apikey"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         apikey:
           title: "Sendgrid API key"
@@ -10741,7 +10768,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.1"
+- dockerImage: "airbyte/source-sentry:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sentry"
     connectionSpecification:
@@ -10752,7 +10779,7 @@
       - "auth_token"
       - "organization"
       - "project"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         auth_token:
           type: "string"
