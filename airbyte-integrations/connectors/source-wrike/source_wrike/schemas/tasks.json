@@ -16,10 +16,36 @@
     },
     "importance": {
       "type":  ["null","string"]
-    },    
+    },   
+    "briefDescription": {
+      "type":  ["null","string"]
+    },  
+    "description": {
+      "type":  ["null","string"]
+    },           
     "createdDate": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "responsibleIds": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "customFields": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string"]
+          },
+          "value": {
+            "type": ["string", "null"]
+          }      
+        }
+      }
     },
     "updatedDate": {
       "type": ["null", "string"],
