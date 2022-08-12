@@ -224,8 +224,7 @@ definitions:
     required:
       - name
       - json_schema
-      # todo (cgardens) - make required once sources are migrated
-      # - supported_sync_modes
+      - supported_sync_modes
     properties:
       name:
         type: string
@@ -235,7 +234,9 @@ definitions:
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       supported_sync_modes:
+        description: List of sync modes supported by this stream.
         type: array
+        minItems: 1
         items:
           "$ref": "#/definitions/SyncMode"
       source_defined_cursor:

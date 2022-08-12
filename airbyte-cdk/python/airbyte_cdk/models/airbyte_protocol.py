@@ -205,7 +205,7 @@ class AirbyteStream(BaseModel):
 
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
-    supported_sync_modes: Optional[List[SyncMode]] = None
+    supported_sync_modes: List[SyncMode] = Field(..., description="List of sync modes supported by this stream.", min_items=1)
     source_defined_cursor: Optional[bool] = Field(
         None,
         description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
