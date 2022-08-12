@@ -7,19 +7,18 @@ import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-
 import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
-import { AttemptRead, JobStatus } from "core/request/AirbyteClient";
-import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 
-const getJobConfig = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
-  (job as SynchronousJobReadWithStatus).configType ?? (job as JobsWithJobs).job.configType;
+const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
+  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
 
-const getJobCreatedAt = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
-  (job as SynchronousJobReadWithStatus).createdAt ?? (job as JobsWithJobs).job.createdAt;
+const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
+  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
   if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {
@@ -29,7 +28,7 @@ const partialSuccessCheck = (attempts: AttemptRead[]) => {
 };
 
 interface MainInfoProps {
-  job: SynchronousJobReadWithStatus | JobsWithJobs;
+  job: SynchronousJobRead | JobsWithJobs;
   attempts?: AttemptRead[];
   isOpen?: boolean;
   onExpand: () => void;
