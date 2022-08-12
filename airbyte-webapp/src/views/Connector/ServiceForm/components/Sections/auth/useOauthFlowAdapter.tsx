@@ -3,6 +3,7 @@ import get from "lodash/get";
 import isEmpty from "lodash/isEmpty";
 import merge from "lodash/merge";
 import pick from "lodash/pick";
+import { useState } from "react";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
@@ -14,9 +15,11 @@ import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../..
 function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   loading: boolean;
   done?: boolean;
+  hasRun: boolean;
   run: () => Promise<void>;
 } {
   const { values, setValues, errors, setFieldTouched } = useFormikContext<ServiceFormValues>();
+  const [hasRun, setHasRun] = useState(false);
 
   const { getValues } = useServiceForm();
 
@@ -38,13 +41,16 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
     }
 
     setValues(newValues);
+    setHasRun(true);
   };
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
+  const connectionObjectEmpty = !!Object.keys((values?.connectionConfiguration as object) ?? {}).length;
 
   return {
     loading,
-    done,
+    done: done || !connectionObjectEmpty,
+    hasRun,
     run: async () => {
       const oauthInputProperties =
         (
