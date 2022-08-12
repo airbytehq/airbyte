@@ -35,6 +35,16 @@ definitions:
       page_token_option:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+    step: "30d"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   base_stream:
     $options:
       name: "applications"
@@ -50,6 +60,18 @@ definitions:
     $options:
       name: "applications"
       path: "applications"
+      stream_cursor_field: "last_activity_at"
+      cursor_field: "last_activity_at"
+      start_time_option:
+        field_name: "last_activity_after"
+        inject_into: "request_parameter"
+      end_time_option:
+        field_name: "created_before"
+        inject_into: "request_parameter"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
     primary_key: "id"
   candidates_stream:
     $ref: "*ref(definitions.base_stream)"
