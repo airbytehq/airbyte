@@ -32,7 +32,7 @@ More information on bearer authentication can be found [here](https://swagger.io
 ### BasicHttpAuthenticator
 
 The `BasicHttpAuthenticator` set the "Authorization" header with a (USER ID/password) pair, encoded using base64 as per [RFC 7617](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme).
-The following definition will set the header "Authorization" with a value "Basic <encoded credentials>"
+The following definition will set the header "Authorization" with a value "Basic {encoded credentials}"
 
 ```yaml
 authenticator:
