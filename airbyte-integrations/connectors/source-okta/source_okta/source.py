@@ -78,7 +78,7 @@ class OktaStream(HttpStream, ABC):
 
 
 class IncrementalOktaStream(OktaStream, ABC):
-    min_id = ''
+    min_id = ""
 
     @property
     @abstractmethod
@@ -243,7 +243,7 @@ class Users(IncrementalOktaStream):
 class ResourceSets(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
-    min_id = 'iam00000000000000000' 
+    min_id = "iam00000000000000000"
 
     def path(self, **kwargs) -> str:
         return "iam/resource-sets"
