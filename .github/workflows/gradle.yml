@@ -752,11 +752,10 @@ jobs:
         id: extract_current_branch
       - name: Extract changed files
         shell: bash
-        run: echo "##[set-output name=files;]$(git diff --name-only master...${steps.extract_current_branch.outputs.branch})"
+        run: echo "##[set-output name=files;]$(git diff --name-only master...${{steps.extract_current_branch.outputs.branch}})"
         id: extract_changed_files
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_current_branch.outputs.branch }}
           echo ${{ steps.extract_changed_files.outputs.files }}
-
