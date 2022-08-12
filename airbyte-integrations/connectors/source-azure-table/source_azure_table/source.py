@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import AbstractSource
@@ -71,10 +72,13 @@ class SourceAzureTable(AbstractSource):
         streams = []
         for table in tables:
             stream_name = table.name
-            stream = AirbyteStream(name=stream_name, json_schema=self.get_typed_schema)
-            stream.supported_sync_modes = ["full_refresh", "incremental"]
-            stream.source_defined_cursor = True
-            stream.default_cursor_field = ["PartitionKey"]
+            stream = AirbyteStream(
+                name=stream_name,
+                json_schema=self.get_typed_schema,
+                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                source_defined_cursor=True,
+                default_cursor_field=["PartitionKey"],
+            )
             streams.append(stream)
         logger.info(f"Total {streams.count} streams found.")
 
