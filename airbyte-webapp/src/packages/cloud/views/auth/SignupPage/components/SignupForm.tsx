@@ -7,6 +7,8 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { useExperiment } from "hooks/services/Experiment";
+import { Experiments } from "hooks/services/Experiment/experiments";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -22,14 +24,6 @@ interface FormValues {
   news: boolean;
   security: boolean;
 }
-
-const SignupPageValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error").required("form.empty.error"),
-  password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
-  name: yup.string().required("form.empty.error"),
-  companyName: yup.string().required("form.empty.error"),
-  security: yup.boolean().oneOf([true], "form.empty.error"),
-});
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -194,8 +188,30 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
+const useExperimentallyHiddenField = (experimentKey: keyof Experiments) => {
+  const hideField = useExperiment(experimentKey, false);
+  let fieldSchema = yup.string();
+  if (!hideField) {
+    fieldSchema = fieldSchema.required("form.empty.error");
+  }
+  return { hideField, fieldSchema };
+};
+
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
+
+  const { hideField: hideName, fieldSchema: nameSchema } = useExperimentallyHiddenField("authPage.signup.hideName");
+  const { hideField: hideCompanyName, fieldSchema: companyNameSchema } = useExperimentallyHiddenField(
+    "authPage.signup.hideCompanyName"
+  );
+
+  const SignupPageValidationSchema = yup.object().shape({
+    email: yup.string().email("form.email.error").required("form.empty.error"),
+    password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
+    name: nameSchema,
+    companyName: companyNameSchema,
+    security: yup.boolean().oneOf([true], "form.empty.error"),
+  });
 
   return (
     <Formik<FormValues>
@@ -222,10 +238,12 @@ export const SignupForm: React.FC = () => {
     >
       {({ isValid, isSubmitting, values, status }) => (
         <Form>
-          <RowFieldItem>
-            <NameField />
-            <CompanyNameField />
-          </RowFieldItem>
+          {(!hideName || !hideCompanyName) && (
+            <RowFieldItem>
+              {!hideName && <NameField />}
+              {!hideCompanyName && <CompanyNameField />}
+            </RowFieldItem>
+          )}
 
           <FieldItem>
             <EmailField />
