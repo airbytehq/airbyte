@@ -2,10 +2,11 @@
 
 Connectors are defined as a yaml configuration describing the connector's Source.
 
-2 top-level fields are required:
+3 top-level fields are required:
 
-1. `streams`: list of streams that are part of the source
-2. `check`: component describing how to check the connection.
+1. `streams`: List of streams that are part of the source
+2. `check`: Component describing how to check the connection.
+3. `version`: The framework version.
 
 The configuration will be validated against this JSON Schema, which defines the set of valid properties.
 
