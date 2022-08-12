@@ -64,7 +64,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
         .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
     publisher = Publisher.newBuilder(topic)
-        .setEnableMessageOrdering(true)
         .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final Map<String, String> attrs = Maps.newHashMap();
