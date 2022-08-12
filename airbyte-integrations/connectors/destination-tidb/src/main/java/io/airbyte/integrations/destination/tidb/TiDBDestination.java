@@ -27,13 +27,13 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-          "allowLoadLocalInfile", "true");
+      "allowLoadLocalInfile", "true");
 
   static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
           "useSSL", "true",
           "requireSSL", "true",
           "verifyServerCertificate", "false"),
-          DEFAULT_JDBC_PARAMETERS);
+      DEFAULT_JDBC_PARAMETERS);
 
   public TiDBDestination() {
     super(DRIVER_CLASS, new TiDBSQLNameTransformer(), new TiDBSqlOperations());
@@ -55,8 +55,8 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
     } finally {
       try {
         DataSourceFactory.close(dataSource);
@@ -78,13 +78,13 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()));
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-            .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-            .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());

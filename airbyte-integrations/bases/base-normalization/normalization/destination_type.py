@@ -7,7 +7,6 @@ from enum import Enum
 
 
 class DestinationType(Enum):
-    TIDB = "tidb"
     BIGQUERY = "bigquery"
     CLICKHOUSE = "clickhouse"
     MSSQL = "mssql"
@@ -16,6 +15,7 @@ class DestinationType(Enum):
     POSTGRES = "postgres"
     REDSHIFT = "redshift"
     SNOWFLAKE = "snowflake"
+    TIDB = "tidb"
 
     @classmethod
     def from_string(cls, string_value: str) -> "DestinationType":

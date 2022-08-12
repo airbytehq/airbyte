@@ -18,8 +18,6 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation libs.connectors.testcontainers.tidb
 
-//    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-tidb')
 

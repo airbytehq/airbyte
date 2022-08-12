@@ -16,14 +16,11 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
-import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -79,24 +76,24 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-            .put(JdbcUtils.USERNAME_KEY, usernameKey)
-            .put(JdbcUtils.DATABASE_KEY, databaseKey)
-            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-            .put(JdbcUtils.SSL_KEY, sslKey)
-            .build());
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.USERNAME_KEY, usernameKey)
+        .put(JdbcUtils.DATABASE_KEY, databaseKey)
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.SSL_KEY, sslKey)
+        .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-            .put(JdbcUtils.USERNAME_KEY, usernameKey)
-            .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-            .put(JdbcUtils.DATABASE_KEY, databaseKey)
-            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-            .put(JdbcUtils.SSL_KEY, sslKey)
-            .build());
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.USERNAME_KEY, usernameKey)
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.DATABASE_KEY, databaseKey)
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.SSL_KEY, sslKey)
+        .build());
   }
 
   @Override
@@ -109,62 +106,48 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+      String streamName,
+      String namespace,
+      JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-            .stream()
-            .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
-            .collect(Collectors.toList());
+        .stream()
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
+        .collect(Collectors.toList());
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     try (final DSLContext dslContext = DSLContextFactory.create(
-            usernameKey,
-            passwordKey,
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                    container.getHost(),
-                    container.getFirstMappedPort(),
-                    databaseKey),
-            SQLDialect.MYSQL)) {
+        usernameKey,
+        passwordKey,
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+            container.getHost(),
+            container.getFirstMappedPort(),
+            databaseKey),
+        SQLDialect.MYSQL)) {
       return new Database(dslContext).query(
-              ctx -> ctx
-                      .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                              JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                      .stream()
-                      .map(this::getJsonFromRecord)
-                      .collect(Collectors.toList()));
+          ctx -> ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(this::getJsonFromRecord)
+              .collect(Collectors.toList()));
     }
   }
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
-          throws Exception {
+      throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  @ParameterizedTest
-  @ArgumentsSource(DataTypeTestArgumentProvider.class)
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-          throws Exception {
-    // normalization-tidb does not support resolve array_object.
-    if (messagesFilename.contains("array_object")) {
-      return;
-    }
-
-    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
-  }
-
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-            .withExposedPorts(4000);
+        .withExposedPorts(4000);
     container.start();
   }
 
