@@ -9,4 +9,6 @@ export interface Experiments {
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.oauth.google": boolean;
   "authPage.oauth.github": boolean;
+  "authPage.oauth.google.signUpPage": boolean;
+  "authPage.oauth.github.signUpPage": boolean;
 }

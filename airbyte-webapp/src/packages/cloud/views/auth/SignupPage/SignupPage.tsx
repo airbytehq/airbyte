@@ -30,7 +30,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
       </h1>
       <SpecialBlock />
       <SignupForm />
-      <OAuthLogin />
+      <OAuthLogin isSignUpPage />
       <Disclaimer />
     </div>
   );

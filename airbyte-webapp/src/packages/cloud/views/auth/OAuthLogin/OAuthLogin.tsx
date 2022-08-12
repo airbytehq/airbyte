@@ -14,7 +14,7 @@ import styles from "./OAuthLogin.module.scss";
 
 const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
-    <button className={styles.github} onClick={onClick}>
+    <button className={styles.github} onClick={onClick} data-testid="githubOauthLogin">
       <img src={githubLogo} alt="" />
       <FormattedMessage id="login.oauth.github" tagName="span" />
     </button>
@@ -23,14 +23,18 @@ const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 const GoogleButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
-    <button className={styles.google} onClick={onClick}>
+    <button className={styles.google} onClick={onClick} data-testid="googleOauthLogin">
       <img src={googleLogo} alt="" />
       <FormattedMessage id="login.oauth.google" tagName="span" />
     </button>
   );
 };
 
-export const OAuthLogin: React.FC = () => {
+interface OAuthLoginProps {
+  isSignUpPage?: boolean;
+}
+
+export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
   const { formatMessage } = useIntl();
   const { loginWithOAuth } = useAuthService();
   const stateSubscription = useRef<Subscription>();
@@ -39,8 +43,13 @@ export const OAuthLogin: React.FC = () => {
 
   const isGitHubLoginEnabled = useExperiment("authPage.oauth.github", false);
   const isGoogleLoginEnabled = useExperiment("authPage.oauth.google", false);
+  const isGitHubEnabledOnSignUp = useExperiment("authPage.oauth.github.signUpPage", true);
+  const isGoogleEnabledOnSignUp = useExperiment("authPage.oauth.google.signUpPage", true);
 
-  const isAnyOauthEnabled = isGitHubLoginEnabled || isGoogleLoginEnabled;
+  const showGoogleLogin = isGoogleLoginEnabled && (!isSignUpPage || isGoogleEnabledOnSignUp);
+  const showGitHubLogin = isGitHubLoginEnabled && (!isSignUpPage || isGitHubEnabledOnSignUp);
+
+  const isAnyOauthEnabled = showGoogleLogin || showGitHubLogin;
 
   useUnmount(() => {
     stateSubscription.current?.unsubscribe();
@@ -99,8 +108,8 @@ export const OAuthLogin: React.FC = () => {
       )}
       {!isLoading && (
         <div className={styles.buttons}>
-          {isGoogleLoginEnabled && <GoogleButton onClick={() => login("google")} />}
-          {isGitHubLoginEnabled && <GitHubButton onClick={() => login("github")} />}
+          {showGoogleLogin && <GoogleButton onClick={() => login("google")} />}
+          {showGitHubLogin && <GitHubButton onClick={() => login("github")} />}
         </div>
       )}
       {errorMessage && <div className={styles.error}>{errorMessage}</div>}
