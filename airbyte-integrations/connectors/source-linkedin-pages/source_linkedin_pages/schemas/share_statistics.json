@@ -35,6 +35,6 @@
         }
       }
     },
-    "organizationalEntity": {"type": ["null", "string"]}
+    "organizationalEntity": { "type": ["null", "string"] }
   }
 }
