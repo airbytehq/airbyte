@@ -83,6 +83,8 @@ The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` 
 
 This cursor value can be used to request the next page of record.
 
+#### Cursor paginator in request parameters
+
 In this example, the next page of record is defined by setting the `from` request parameter to the id of the last record read:
 
 ```yaml
@@ -101,6 +103,8 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data`
 Assuming the id of the last record fetched is 1000,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=1000`
+
+#### Cursor paginator in path
 
 Some APIs directly point to the URL of the next page to fetch. In this example, the URL of the next page is extracted from the response headers:
 
