@@ -520,11 +520,16 @@ public class WorkerApp {
             webUrlHelper,
             jobErrorReportingClient);
 
-    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank() ? "bearer" : configs.getAirbyteApiAuthHeaderName();
-    final var authToken = generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
-        configs.getDataPlaneServiceAccountEmail(),
-        configs.getControlPlaneGoogleEndpoint(),
-        JWT_TTL_SECONDS);
+    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
+        ? "bearer"
+        : configs.getAirbyteApiAuthHeaderName();
+
+    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
+        ? generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
+            configs.getDataPlaneServiceAccountEmail(),
+            configs.getControlPlaneGoogleEndpoint(),
+            JWT_TTL_SECONDS)
+        : configs.getAirbyteApiAuthHeaderValue();
 
     LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
         configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
