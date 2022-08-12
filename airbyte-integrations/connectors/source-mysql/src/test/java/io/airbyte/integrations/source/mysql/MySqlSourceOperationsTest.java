@@ -172,7 +172,6 @@ public class MySqlSourceOperationsTest {
         }
       }
     }
-    Assertions.assertEquals(4, actualRecords.size());
   }
 
   @Test
