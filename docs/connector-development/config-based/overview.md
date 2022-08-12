@@ -117,7 +117,7 @@ The only implementation as of now is `CheckStream`, which tries to read a record
 Any builtin components can be overloaded by a custom Python class.
 To create a custom component, define a new class in a new file in the connector's module.
 The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
-The class must also be a dataclass where each field represent an argument to configure from the yaml file, and an `InitVar` named options.
+The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named options.
 
 For example:
 
