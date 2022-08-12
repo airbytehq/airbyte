@@ -1,7 +1,9 @@
 name: Changed connector
+
 on:
-  pull_request_target:
-    types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
+  push:
+    branches-ignore:
+      - "gitbook/v1"
 
 jobs:
   show-affected-connectors:
