@@ -34,21 +34,23 @@ interface JobItemProps {
   job: SynchronousJobReadWithStatus | JobsWithJobs;
 }
 
-const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
-  return getJobStatus(job) !== "failed";
-};
+const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs): boolean =>
+  "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
 
 export const getJobStatus: (
   job: SynchronousJobReadWithStatus | JobsWithJobs
-) => JobStatus | CheckConnectionReadStatus = (job) => {
-  return "status" in job ? job.status : job.job.status;
-};
+) => JobStatus | CheckConnectionReadStatus = (job) =>
+  "succeeded" in job
+    ? job.succeeded
+      ? CheckConnectionReadStatus.succeeded
+      : CheckConnectionReadStatus.failed
+    : job.job.status;
 
-export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) => {
-  return "attempts" in job ? job.attempts : undefined;
-};
+export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
+  "attempts" in job ? job.attempts : undefined;
 
-export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) => ("id" in job ? job.id : job.job.id);
+export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs): string | number =>
+  "id" in job ? job.id : job.job.id;
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
