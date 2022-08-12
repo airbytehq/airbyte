@@ -604,7 +604,7 @@ public class WorkerApp {
       final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
       final Algorithm algorithm = Algorithm.RSA256(null, key);
       return token.sign(algorithm);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Error occurred while generating JWT", e);
       return "";
     }
@@ -631,17 +631,17 @@ public class WorkerApp {
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, WorkerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
-        // Ensure that the Configuration database is available
-        DatabaseCheckFactory
-            .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
-                configs.getConfigsDatabaseInitializationTimeoutMs())
-            .check();
+        if (!configs.skipDatabaseAvailabilityChecks()) {
+          // Ensure that the Configuration database is available
+          DatabaseCheckFactory
+              .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
+                  configs.getConfigsDatabaseInitializationTimeoutMs())
+              .check();
 
-        LOGGER.info("Checking jobs database flyway migration version..");
-        DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
-            configs.getJobsDatabaseInitializationTimeoutMs()).check();
+          LOGGER.info("Checking jobs database flyway migration version..");
+          DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
+              configs.getJobsDatabaseInitializationTimeoutMs()).check();
 
-        if (!configs.skipJobsDatabaseAvailabilityCheck()) {
           // Ensure that the Jobs database is available
           new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
         }
