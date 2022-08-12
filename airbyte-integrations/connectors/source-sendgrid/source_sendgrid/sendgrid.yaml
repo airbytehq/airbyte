@@ -4,23 +4,7 @@ definitions:
   schema_loader:
     type: JsonSchema
     file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
-  result_selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_pointer:
-        - "result"
-  results_selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_pointer:
-        - "results"
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_pointer: []
+
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -94,7 +78,8 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "*ref(definitions.result_selector)"
+        extractor:
+          field_pointer: []
       requester:
         $ref: "*ref(definitions.requester)"
       paginator:
@@ -105,6 +90,7 @@ streams:
       name: "lists"
       primary_key: "id"
       path: "/v3/marketing/lists"
+      field_pointer: ["result"]
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
       paginator:
@@ -114,6 +100,7 @@ streams:
       name: "campaigns"
       primary_key: "id"
       path: "/v3/marketing/campaigns"
+      field_pointer: ["result"]
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
       paginator:
@@ -123,19 +110,15 @@ streams:
       name: "contacts"
       primary_key: "id"
       path: "/v3/marketing/contacts"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      paginator:
-        type: NoPagination
+      field_pointer: ["result"]
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stats_automations"
       primary_key: "id"
       path: "/v3/marketing/stats/automations"
+      field_pointer: ["results"]
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.results_selector)"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -143,21 +126,15 @@ streams:
       name: "segments"
       primary_key: "id"
       path: "/v3/marketing/segments"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.results_selector)"
-      paginator:
-        type: NoPagination
+      field_pointer: ["results"]
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "single_sends"
       primary_key: "id"
       path: "/v3/marketing/stats/singlesends"
+      field_pointer: ["results"]
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.results_selector)"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -165,10 +142,9 @@ streams:
       name: "templates"
       primary_key: "id"
       path: "/v3/templates"
+      field_pointer: ["result"]
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.result_selector)"
       requester:
         $ref: "*ref(definitions.base_stream.retriever.requester)"
         request_options_provider:
@@ -182,10 +158,9 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/bounces"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -196,10 +171,9 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/unsubscribes"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -210,10 +184,9 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/blocks"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -223,21 +196,15 @@ streams:
       name: "suppression_groups"
       primary_key: "id"
       path: "/v3/asm/groups"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
-      paginator:
-        type: "NoPagination"
+      field_pointer: []
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "suppression_group_members"
       primary_key: "group_id"
       path: "/v3/asm/suppressions"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -246,10 +213,9 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/invalid_emails"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -260,10 +226,9 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/spam_reports"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -274,10 +239,9 @@ streams:
       primary_key: "msg_id"
       stream_cursor_field: "last_event_time"
       path: "/v3/messages"
+      field_pointer: []
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        $ref: "*ref(definitions.selector)"
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
