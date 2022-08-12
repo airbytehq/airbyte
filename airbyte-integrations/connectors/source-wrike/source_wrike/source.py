@@ -3,7 +3,8 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from contextlib import nullcontext
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -15,57 +16,61 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 # Basic full refresh stream
 class WrikeStream(HttpStream, ABC):
-    url_base = "https://app-us2.wrike.com/api/v4/"
+
+    primary_key = "id"
+    url_base = ""
+
+    def __init__(self, wrike_instance: str, **kwargs):
+        super().__init__(**kwargs)
+        self.url_base = f"https://{wrike_instance}/api/v4/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        nextPageToken = response.json().get("nextPageToken")
 
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
+        if nextPageToken:
+            return {'nextPageToken': nextPageToken}
+        else:
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        return {}
+        return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
-        resp = response.json()
-        for task in resp['data']:
-            yield task
+        for record in response.json()['data']:
+            yield record
+
+    def path(self, **kwargs) -> str:
+        """
+        This one is tricky, the API path is the class name by default. Airbyte will load  `url_base`/`classname` by 
+        default, like https://app-us2.wrike.com/api/v4/tasks if the class name is Tasks
+        """
+        return self.__class__.__name__.lower()
 
 
 class Tasks(WrikeStream):
 
-    primary_key = "id"
-    
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        return {"fields": "[customFields,parentIds,authorIds,responsibleIds,description,briefDescription,superTaskIds]"}
-
-    def path(self, **kwargs) -> str:
-        return "tasks"
+        return next_page_token or {"fields": "[customFields,parentIds,authorIds,responsibleIds,description,briefDescription,superTaskIds]"}
 
 
-class Customfields(WrikeStream):
-    primary_key = "id"
+class Customfields(WrikeStream):    
+    pass
 
-    def path(self, **kwargs) -> str:
-        return "customfields"
+class Users(WrikeStream):    
+    pass
+
+class Comments(WrikeStream):
+    pass
+
+class Folders(WrikeStream):
+    pass
 
 # Source
 
@@ -101,7 +106,9 @@ class SourceWrike(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        # Oauth2Authenticator is also available if you need oauth support
         auth = TokenAuthenticator(token=config["access_token"])
-        return [Tasks(authenticator=auth), Customfields(authenticator=auth)]
+        return [Tasks(authenticator=auth,wrike_instance=config["wrike_instance"]), 
+            Customfields(authenticator=auth,wrike_instance=config["wrike_instance"]),
+            Users(authenticator=auth,wrike_instance=config["wrike_instance"]),
+            Folders(authenticator=auth,wrike_instance=config["wrike_instance"]),
+            Comments(authenticator=auth,wrike_instance=config["wrike_instance"])]
