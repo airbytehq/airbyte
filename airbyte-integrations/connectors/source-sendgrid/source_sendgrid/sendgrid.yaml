@@ -155,11 +155,9 @@ streams:
       primary_key: "id"
       path: "/v3/marketing/stats/singlesends"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.results_selector)"
-      requester:
-        $ref: "*ref(definitions.requester)"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -188,8 +186,6 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.base_stream.retriever.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -204,8 +200,6 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.base_stream.retriever.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -220,8 +214,6 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.base_stream.retriever.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -232,11 +224,9 @@ streams:
       primary_key: "id"
       path: "/v3/asm/groups"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.requester)"
       paginator:
         type: "NoPagination"
   - $ref: "*ref(definitions.base_stream)"
@@ -248,8 +238,6 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.base_stream.retriever.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -262,8 +250,6 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.base_stream.retriever.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -275,11 +261,9 @@ streams:
       stream_cursor_field: "created"
       path: "/v3/suppression/spam_reports"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
-      requester:
-        $ref: "*ref(definitions.requester)"
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
       stream_slicer:
@@ -291,7 +275,7 @@ streams:
       stream_cursor_field: "last_event_time"
       path: "/v3/messages"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "*ref(definitions.base_stream.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector)"
       requester:
