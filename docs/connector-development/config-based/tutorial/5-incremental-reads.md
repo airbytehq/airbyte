@@ -79,7 +79,7 @@ streams:
 You can test these changes by executing the `read` operation:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
@@ -225,7 +225,7 @@ check:
 Running the `read` operation will now read all data for all days between start_date and now:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The operation should now output more than one record:
@@ -280,7 +280,7 @@ We can simulate incremental syncs by creating a state file containing the last s
 Running the `read` operation will now only read data for dates later than the given state:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
+$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 
 There shouldn't be any data read if the state is today's date:

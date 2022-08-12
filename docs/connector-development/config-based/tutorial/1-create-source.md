@@ -10,8 +10,8 @@ $ cd airbyte
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.
 
 ```bash
-cd airbyte-integrations/connector-templates/generator
-./generate.sh
+$ cd airbyte-integrations/connector-templates/generator
+$ ./generate.sh
 ```
 
 This will bring up an interactive helper application. Use the arrow keys to pick a template from the list. Select the `Configuration Based Source` template and then input the name of your connector. The application will create a new directory in `airbyte/airbyte-integrations/connectors/` with the name of your new connector.

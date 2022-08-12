@@ -53,7 +53,7 @@ connectionSpecification:
    Because of the sensitive nature of the access key, we recommend storing this config in the `secrets` directory because it is ignored by git.
 
 ```bash
-echo '{"access_key": "<your_access_key>", "base": "USD"}'  > secrets/config.json
+$ echo '{"access_key": "<your_access_key>", "base": "USD"}'  > secrets/config.json
 ```
 
 ## Updating the connector definition
@@ -154,7 +154,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_pointer: [ ]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -197,7 +197,7 @@ check:
 We can now run the `check` operation, which verifies the connector can connect to the API source.
 
 ```bash
-python main.py check --config secrets/config.json
+$ python main.py check --config secrets/config.json
 ```
 
 which should now succeed with logs similar to:

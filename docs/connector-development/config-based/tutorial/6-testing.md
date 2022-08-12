@@ -31,8 +31,8 @@ and `integration_tests/abnormal_state.json` with
 You can run the acceptance tests with the following commands:
 
 ```bash
-docker build . -t airbyte/source-exchange-rates-tutorial:dev
-python -m pytest integration_tests -p integration_tests.acceptance
+$ docker build . -t airbyte/source-exchange-rates-tutorial:dev
+$ python -m pytest integration_tests -p integration_tests.acceptance
 ```
 
 ## Next steps:
