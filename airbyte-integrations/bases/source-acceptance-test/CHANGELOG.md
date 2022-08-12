@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+Update tests after protocol change making `supported_sync_modes` a required property of `AirbyteStream` [#15591](https://github.com/airbytehq/airbyte/pull/15591/)
+
 ## 0.2.1
 Don't fail on updating `additionalProperties`: fix IndexError [#15532](https://github.com/airbytehq/airbyte/pull/15532/)
 
