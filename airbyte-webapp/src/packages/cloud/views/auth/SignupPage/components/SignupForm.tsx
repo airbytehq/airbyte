@@ -1,5 +1,5 @@
 import { Field, FieldProps, Formik } from "formik";
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
@@ -8,7 +8,6 @@ import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
-import { Experiments } from "hooks/services/Experiment/experiments";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -188,30 +187,28 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
-const useExperimentallyHiddenField = (experimentKey: keyof Experiments) => {
-  const hideField = useExperiment(experimentKey, false);
-  let fieldSchema = yup.string();
-  if (!hideField) {
-    fieldSchema = fieldSchema.required("form.empty.error");
-  }
-  return { hideField, fieldSchema };
-};
-
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
 
-  const { hideField: hideName, fieldSchema: nameSchema } = useExperimentallyHiddenField("authPage.signup.hideName");
-  const { hideField: hideCompanyName, fieldSchema: companyNameSchema } = useExperimentallyHiddenField(
-    "authPage.signup.hideCompanyName"
-  );
+  const showName = !useExperiment("authPage.signup.hideName", false);
+  const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
 
-  const SignupPageValidationSchema = yup.object().shape({
-    email: yup.string().email("form.email.error").required("form.empty.error"),
-    password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
-    name: nameSchema,
-    companyName: companyNameSchema,
-    security: yup.boolean().oneOf([true], "form.empty.error"),
-  });
+  const validationSchema = useMemo(() => {
+    const shape = {
+      email: yup.string().email("form.email.error").required("form.empty.error"),
+      password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
+      name: yup.string(),
+      companyName: yup.string(),
+      security: yup.boolean().oneOf([true], "form.empty.error"),
+    };
+    if (showName) {
+      shape.name = shape.name.required("form.empty.error");
+    }
+    if (showCompanyName) {
+      shape.companyName = shape.companyName.required("form.empty.error");
+    }
+    return yup.object().shape(shape);
+  }, [showName, showCompanyName]);
 
   return (
     <Formik<FormValues>
@@ -223,7 +220,7 @@ export const SignupForm: React.FC = () => {
         news: true,
         security: false,
       }}
-      validationSchema={SignupPageValidationSchema}
+      validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
         signUp(values).catch((err) => {
           if (err instanceof FieldError) {
@@ -238,10 +235,10 @@ export const SignupForm: React.FC = () => {
     >
       {({ isValid, isSubmitting, values, status }) => (
         <Form>
-          {(!hideName || !hideCompanyName) && (
+          {(showName || showCompanyName) && (
             <RowFieldItem>
-              {!hideName && <NameField />}
-              {!hideCompanyName && <CompanyNameField />}
+              {showName && <NameField />}
+              {showCompanyName && <CompanyNameField />}
             </RowFieldItem>
           )}
 
