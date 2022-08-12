@@ -213,7 +213,13 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
   @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    } catch (final DateTimeParseException e) {
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for date column the new way, trying the old way", e);
+      super.setDate(preparedStatement, parameterIndex, value);
+    }
   }
 
   @Override
@@ -221,8 +227,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
   }
@@ -231,8 +237,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
-      // version of the connector
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     }
   }
@@ -242,9 +248,9 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+      LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      super.setTime(preparedStatement, parameterIndex, value);
     }
   }
 }
