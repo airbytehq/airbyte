@@ -69,7 +69,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           ) : (
             <FormattedMessage id={`sources.${getJobStatus(job)}`} />
           )}
-          {attempts.length && (
+          {attempts.length > 0 && (
             <>
               {attempts.length > 1 && (
                 <div className={styles.lastAttempt}>
