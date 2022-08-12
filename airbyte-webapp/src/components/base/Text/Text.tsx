@@ -36,7 +36,7 @@ export const Text: React.FC<TextProps> = ({
   children,
 }) => {
   const className = useMemo(() => {
-    const isHeading = as.match(/^h[0-9]$/);
+    const isHeading = as.match(/^h[0-6]$/);
     return classNames(
       isHeading ? styles.heading : styles.text,
       getSizeClassName(size),
