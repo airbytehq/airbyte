@@ -147,6 +147,10 @@ public interface StateManager<T, S> {
    * @return An {@link AirbyteStateMessage} that represents the current state maintained by the state
    *         manager.
    */
+  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+    return updateAndEmit(pair, cursor, 0);
+  }
+
   default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final int cursorRecordCount) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
