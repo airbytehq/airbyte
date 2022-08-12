@@ -3,6 +3,8 @@
 .text,
 .heading {
   color: colors.$dark-blue;
+  margin: 0;
+  padding: 0;
 
   &.centered {
     text-align: center;
