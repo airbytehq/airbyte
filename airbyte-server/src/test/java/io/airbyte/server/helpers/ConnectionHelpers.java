@@ -17,9 +17,11 @@ import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
+import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -41,16 +43,19 @@ public class ConnectionHelpers {
   private static final String FIELD_NAME = "id";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
+  private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
+  private static final long BASIC_SCHEDULE_DATA_UNITS = 1L;
+  private static final String ONE_HUNDRED_G = "100g";
 
   public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
   // only intended for unit tests, so intentionally set very high to ensure they aren't being used
   // elsewhere
   public static final io.airbyte.config.ResourceRequirements TESTING_RESOURCE_REQUIREMENTS = new io.airbyte.config.ResourceRequirements()
-      .withCpuLimit("100g")
-      .withCpuRequest("100g")
-      .withMemoryLimit("100g")
-      .withMemoryRequest("100g");
+      .withCpuLimit(ONE_HUNDRED_G)
+      .withCpuRequest(ONE_HUNDRED_G)
+      .withMemoryLimit(ONE_HUNDRED_G)
+      .withMemoryRequest(ONE_HUNDRED_G);
 
   public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -98,6 +103,12 @@ public class ConnectionHelpers {
     return new Schedule()
         .withTimeUnit(TimeUnit.fromValue(BASIC_SCHEDULE_TIME_UNIT))
         .withUnits(BASIC_SCHEDULE_UNITS);
+  }
+
+  public static ScheduleData generateBasicScheduleData() {
+    return new ScheduleData().withBasicSchedule(new BasicSchedule()
+        .withTimeUnit(BasicSchedule.TimeUnit.fromValue((BASIC_SCHEDULE_DATA_TIME_UNITS)))
+        .withUnits(BASIC_SCHEDULE_DATA_UNITS));
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,

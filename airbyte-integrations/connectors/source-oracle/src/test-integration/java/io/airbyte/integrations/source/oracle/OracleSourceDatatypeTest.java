@@ -44,7 +44,9 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", container.getSid())
+            .put("connection_type", "service_name").build())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("TEST"))
@@ -57,7 +59,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()),
+            config.get("connection_data").get("service_name").asText()),
         null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);

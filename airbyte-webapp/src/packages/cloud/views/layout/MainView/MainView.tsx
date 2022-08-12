@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -41,6 +41,7 @@ const MainView: React.FC = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
@@ -54,22 +55,23 @@ const MainView: React.FC = (props) => {
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
-      return formatMessage(
-        { id: `credits.creditsProblem.${cloudWorkspace.creditStatus}` },
-        {
-          values: {
+      return (
+        <FormattedMessage
+          id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
+          values={{
             lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
-          },
-        }
+          }}
+        />
       );
     } else if (alertToShow === "trial") {
       const { trialExpiryTimestamp } = cloudWorkspace;
 
-      //calculate difference between timestamp (in epoch seconds) and now (in epoch seconds)
-      const trialRemainingSeconds = trialExpiryTimestamp ? trialExpiryTimestamp - Date.now() / 1000 : 0;
+      //calculate difference between timestamp (in epoch milliseconds) and now (in epoch milliseconds)
+      //empty timestamp is 0
+      const trialRemainingMilliseconds = trialExpiryTimestamp ? trialExpiryTimestamp - Date.now() : 0;
 
       //calculate days (rounding up if decimal)
-      const trialRemainingDays = Math.ceil(trialRemainingSeconds / (24 * 60 * 60));
+      const trialRemainingDays = Math.ceil(trialRemainingMilliseconds / (1000 * 60 * 60 * 24));
 
       return formatMessage({ id: "trial.alertMessage" }, { value: trialRemainingDays });
     }

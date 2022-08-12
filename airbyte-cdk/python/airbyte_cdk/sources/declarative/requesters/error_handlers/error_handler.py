@@ -3,12 +3,14 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
+@dataclass
 class ErrorHandler(ABC):
     """
     Defines whether a request was successful and how to handle a failure.

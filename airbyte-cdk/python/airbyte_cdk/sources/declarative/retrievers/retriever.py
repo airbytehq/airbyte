@@ -3,12 +3,14 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
+@dataclass
 class Retriever(ABC):
     """
     Responsible for fetching a stream's records from an HTTP API source.

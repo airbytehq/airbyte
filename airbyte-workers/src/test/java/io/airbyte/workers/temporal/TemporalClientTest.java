@@ -90,6 +90,8 @@ class TemporalClientTest {
       .withDockerImage(IMAGE_NAME1);
   private static final String NAMESPACE = "namespace";
   private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("name");
+  private static final String UNCHECKED = "unchecked";
+  private static final String EXCEPTION_MESSAGE = "Force state exception to simulate workflow not running";
 
   private WorkflowClient workflowClient;
   private TemporalClient temporalClient;
@@ -117,7 +119,7 @@ class TemporalClientTest {
   @DisplayName("Test execute method.")
   class ExecuteJob {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecute() {
       final Supplier<String> supplier = mock(Supplier.class);
@@ -132,7 +134,7 @@ class TemporalClientTest {
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteWithException() {
       final Supplier<String> supplier = mock(Supplier.class);
@@ -309,7 +311,7 @@ class TemporalClientTest {
   class DeleteConnection {
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test delete connection method when workflow is in a running state.")
     void testDeleteConnection() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -336,12 +338,12 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test delete connection method when workflow is in an unexpected state")
     void testDeleteConnectionInUnexpectedState() {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       when(mTerminatedConnectionManagerWorkflow.getState())
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+          .thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
       when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
 
       final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -363,7 +365,7 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test delete connection method when workflow has already been deleted")
     void testDeleteConnectionOnDeletedWorkflow() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -386,7 +388,7 @@ class TemporalClientTest {
   class UpdateConnection {
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test update connection when workflow is running")
     void testUpdateConnection() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -403,12 +405,12 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test update connection method starts a new workflow when workflow is in an unexpected state")
     void testUpdateConnectionInUnexpectedState() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
 
-      when(mConnectionManagerWorkflow.getState()).thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(mConnectionManagerWorkflow.getState()).thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
       when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
       doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
 
@@ -425,7 +427,7 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test update connection method does nothing when connection is deleted")
     void testUpdateConnectionDeletedWorkflow() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -491,7 +493,7 @@ class TemporalClientTest {
     void testStartNewManualSyncRepairsBadWorkflowState() {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       when(mTerminatedConnectionManagerWorkflow.getState())
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+          .thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
       when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
 
       final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -525,7 +527,7 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test startNewManualSync returns a failure reason when connection is deleted")
     void testStartNewManualSyncDeletedWorkflow() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -573,7 +575,7 @@ class TemporalClientTest {
     void testStartNewCancellationRepairsBadWorkflowState() {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       when(mTerminatedConnectionManagerWorkflow.getState())
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+          .thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
       when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
 
       final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -606,7 +608,7 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test startNewCancellation returns a failure reason when connection is deleted")
     void testStartNewCancellationDeletedWorkflow() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -665,7 +667,7 @@ class TemporalClientTest {
     void testResetConnectionRepairsBadWorkflowState() throws IOException {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       when(mTerminatedConnectionManagerWorkflow.getState())
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+          .thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
       when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
 
       final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -705,7 +707,7 @@ class TemporalClientTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @DisplayName("Test resetConnection returns a failure reason when connection is deleted")
     void testResetConnectionDeletedWorkflow() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);

@@ -13,16 +13,18 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
+
+from .utils import datetime_to_string, delete_milliseconds, get_api_endpoint, get_start_date, initialize_authenticator
 
 
 class OktaStream(HttpStream, ABC):
     page_size = 200
 
-    def __init__(self, url_base: str, *args, **kwargs):
+    def __init__(self, url_base: str, start_date: pendulum.datetime, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
         self._url_base = url_base.rstrip("/") + "/"
+        self.start_date = start_date
 
     @property
     def url_base(self) -> str:
@@ -97,11 +99,10 @@ class IncrementalOktaStream(OktaStream, ABC):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        stream_state = stream_state or {}
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
-            params["filter"] = f'{self.cursor_field} gt "{latest_entry}"'
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else datetime_to_string(self.start_date)
+        filter_param = {"filter": f'{self.cursor_field} gt "{latest_entry}"'}
+        params.update(filter_param)
         return params
 
 
@@ -120,7 +121,7 @@ class GroupMembers(IncrementalOktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
 
@@ -134,10 +135,12 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
-            params["after"] = latest_entry
+        # Filter param should be ignored SCIM filter expressions can't use the published
+        # attribute since it may conflict with the logic of the since, after, and until query params.
+        # Docs: https://developer.okta.com/docs/reference/api/system-log/#expression-filter
+        params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_user_id
+        params["after"] = latest_entry
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -154,7 +157,7 @@ class GroupRoleAssignments(OktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
 
@@ -168,6 +171,28 @@ class Logs(IncrementalOktaStream):
     cursor_field = "published"
     primary_key = "uuid"
 
+    def __init__(self, url_base, **kwargs):
+        super().__init__(url_base=url_base, **kwargs)
+        self._raise_on_http_errors: bool = True
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return self._raise_on_http_errors
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        When the connector gets abnormal state API retrun errror with 400 status code
+        and internal error code E0000001. The connector ignores an error with 400 code
+        to finish successfully sync and inform the user about an error in logs with an
+        error message.
+        """
+
+        if response.status_code == 400 and response.json().get("errorCode") == "E0000001":
+            self.logger.info(f"{response.json()['errorSummary']}")
+            self._raise_on_http_errors = False
+            return False
+        return HttpStream.should_retry(self, response)
+
     def path(self, **kwargs) -> str:
         return "logs"
 
@@ -177,23 +202,26 @@ class Logs(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The log stream use a different params to get data
-        # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
-        stream_state = stream_state or {}
-        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
-            params["since"] = latest_entry
-            # [Test-driven Development] Set until When the cursor value from the stream state
-            #   is abnormally large, otherwise the server side that sets now to until
-            #   will throw an error: The "until" date must be later than the "since" date
-            # https://developer.okta.com/docs/reference/api/system-log/#request-parameters
-            parsed = pendulum.parse(latest_entry)
-            utc_now = pendulum.utcnow()
-            if parsed > utc_now:
-                params["until"] = latest_entry
-
+        # The log stream use a different params to get data.
+        # Docs: https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
+        # Filter param should be ignored SCIM filter expressions can't use the published
+        # attribute since it may conflict with the logic of the since, after, and until query params.
+        # Docs: https://developer.okta.com/docs/reference/api/system-log/#expression-filter
+        params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.start_date
+        params["since"] = latest_entry
         return params
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        data = response.json() if isinstance(response.json(), list) else []
+
+        for record in data:
+            record[self.cursor_field] = delete_milliseconds(record[self.cursor_field])
+            yield record
 
 
 class Users(IncrementalOktaStream):
@@ -223,6 +251,7 @@ class Users(IncrementalOktaStream):
 
 
 class CustomRoles(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-roles
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -241,7 +270,7 @@ class UserRoleAssignments(OktaStream):
     use_cache = True
 
     def stream_slices(self, **kwargs):
-        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base)
+        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for user in user_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
@@ -250,66 +279,33 @@ class UserRoleAssignments(OktaStream):
         return f"users/{user_id}/roles"
 
 
-class OktaOauth2Authenticator(Oauth2Authenticator):
-    def get_refresh_request_body(self) -> Mapping[str, Any]:
-        return {
-            "grant_type": "refresh_token",
-            "refresh_token": self.refresh_token,
-        }
+class Permissions(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-permissions
+    primary_key = "label"
+    use_cache = True
 
-    def refresh_access_token(self) -> Tuple[str, int]:
-        try:
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=self.get_refresh_request_body(),
-                auth=(self.client_id, self.client_secret),
-            )
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["permissions"]
+
+    def stream_slices(self, **kwargs):
+        custom_roles = CustomRoles(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
+        for role in custom_roles.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"role_id": role["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        role_id = stream_slice["role_id"]
+        return f"iam/roles/{role_id}/permissions"
 
 
 class SourceOkta(AbstractSource):
-    def initialize_authenticator(self, config: Mapping[str, Any]):
-        if "token" in config:
-            return TokenAuthenticator(config["token"], auth_method="SSWS")
-
-        creds = config.get("credentials")
-        if not creds:
-            raise Exception("Config validation error. `credentials` not specified.")
-
-        auth_type = creds.get("auth_type")
-        if not auth_type:
-            raise Exception("Config validation error. `auth_type` not specified.")
-
-        if auth_type == "api_token":
-            return TokenAuthenticator(creds["api_token"], auth_method="SSWS")
-
-        if auth_type == "oauth2.0":
-            return OktaOauth2Authenticator(
-                token_refresh_endpoint=self.get_token_refresh_endpoint(config),
-                client_secret=creds["client_secret"],
-                client_id=creds["client_id"],
-                refresh_token=creds["refresh_token"],
-            )
-
-    @staticmethod
-    def get_url_base(config: Mapping[str, Any]) -> str:
-        return config.get("base_url") or f"https://{config['domain']}.okta.com"
-
-    def get_api_endpoint(self, config: Mapping[str, Any]) -> str:
-        return parse.urljoin(self.get_url_base(config), "/api/v1/")
-
-    def get_token_refresh_endpoint(self, config: Mapping[str, Any]) -> str:
-        return parse.urljoin(self.get_url_base(config), "/oauth2/v1/token")
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = self.initialize_authenticator(config)
-            api_endpoint = self.get_api_endpoint(config)
+            auth = initialize_authenticator(config)
+            api_endpoint = get_api_endpoint(config)
             url = parse.urljoin(api_endpoint, "users")
 
             response = requests.get(
@@ -326,13 +322,11 @@ class SourceOkta(AbstractSource):
             return False, "Failed to authenticate with the provided credentials"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = self.initialize_authenticator(config)
-        api_endpoint = self.get_api_endpoint(config)
+        auth = initialize_authenticator(config)
+        api_endpoint = get_api_endpoint(config)
+        start_date = get_start_date(config)
 
-        initialization_params = {
-            "authenticator": auth,
-            "url_base": api_endpoint,
-        }
+        initialization_params = {"authenticator": auth, "url_base": api_endpoint, "start_date": start_date}
 
         return [
             Groups(**initialization_params),
@@ -342,4 +336,5 @@ class SourceOkta(AbstractSource):
             CustomRoles(**initialization_params),
             UserRoleAssignments(**initialization_params),
             GroupRoleAssignments(**initialization_params),
+            Permissions(**initialization_params),
         ]

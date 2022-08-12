@@ -47,7 +47,7 @@
           "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd."
         }
       },
-      "additionalProperties": {}
+      "additionalProperties": true
     },
     "projectId": {
       "type": "string",
@@ -60,5 +60,5 @@
       "readOnly": true
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }

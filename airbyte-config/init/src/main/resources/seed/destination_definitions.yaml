@@ -1,7 +1,7 @@
 - name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
   resourceRequirements:
@@ -27,7 +27,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.1.11
+  dockerImageTag: 1.1.14
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -40,7 +40,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.1.12
+  dockerImageTag: 1.1.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -53,14 +53,14 @@
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/cassandra
   icon: cassandra.svg
   releaseStage: alpha
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   dockerRepository: airbyte/destination-keen
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
   releaseStage: alpha
@@ -73,14 +73,14 @@
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
   icon: databricks.svg
   releaseStage: alpha
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
   icon: dynamodb.svg
   releaseStage: alpha
@@ -106,7 +106,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
   resourceRequirements:
@@ -126,21 +126,21 @@
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
   releaseStage: alpha
 - name: Kinesis
   destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
   dockerRepository: airbyte/destination-kinesis
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
   icon: kinesis.svg
   releaseStage: alpha
@@ -182,7 +182,7 @@
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
   icon: mongodb.svg
   releaseStage: alpha
@@ -210,7 +210,7 @@
 - name: Pulsar
   destinationDefinitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
   dockerRepository: airbyte/destination-pulsar
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
   icon: pulsar.svg
   releaseStage: alpha
@@ -244,13 +244,13 @@
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
   dockerRepository: airbyte/destination-rockset
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rockset
   releaseStage: alpha
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -297,7 +297,7 @@
 - name: Scylla
   destinationDefinitionId: 3dc6f384-cd6b-4be3-ad16-a41450899bf0
   dockerRepository: airbyte/destination-scylla
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/scylla
   icon: scylla.svg
   releaseStage: alpha
@@ -307,4 +307,11 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/google-sheets
   icon: google-sheets.svg
+  releaseStage: alpha
+- name: Local SQLite
+  destinationDefinitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
+  dockerRepository: airbyte/destination-sqlite
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-sqlite
+  icon: sqlite.svg
   releaseStage: alpha

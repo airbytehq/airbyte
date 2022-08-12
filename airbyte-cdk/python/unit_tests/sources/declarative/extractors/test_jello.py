@@ -10,8 +10,9 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 
 config = {"field": "record_array"}
+options = {"options_field": "record_array"}
 
-decoder = JsonDecoder()
+decoder = JsonDecoder(options={})
 
 
 @pytest.mark.parametrize(
@@ -19,6 +20,7 @@ decoder = JsonDecoder()
     [
         ("test_extract_from_array", "_.data", {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_field_in_config", "_.{{ config['field'] }}", {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
+        ("test_field_in_options", "_.{{ options['options_field'] }}", {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_default", "_{{kwargs['field']}}", [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
         (
             "test_remove_fields_from_records",
@@ -38,7 +40,7 @@ decoder = JsonDecoder()
     ],
 )
 def test(test_name, transform, body, expected_records):
-    extractor = JelloExtractor(transform, config, decoder)
+    extractor = JelloExtractor(transform=transform, config=config, decoder=decoder, options=options)
 
     response = create_response(body)
     actual_records = extractor.extract_records(response)
