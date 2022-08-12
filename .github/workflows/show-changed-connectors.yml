@@ -44,4 +44,44 @@ jobs:
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_current_branch.outputs.branch }}
           echo ${{ needs.find_valid_pat.outputs.pat }}
-          git branch
+
+      - uses: actions/checkout@v3
+      #        with:
+      #          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+      #          submodules: true # OR "recursive" -> To include all changed submodule files.
+
+      - name: Get changed files using defaults
+        id: changed-files
+        uses: tj-actions/changed-files@v25
+
+      # Pull request based workflows.
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5
+
+      - uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit_pull_request
+        with:
+          branch: ${{ steps.branch-name.outputs.base_ref_branch }} # Get the last successful commit on master or main branch
+          workflow_id: 'test.yml'
+          github_token: ${{ needs.find_valid_pat.outputs.pat }}
+
+      - name: Run changed-files with the commit of the last successful test workflow run on main
+        id: changed-files-base-sha-pull-request
+        uses: tj-actions/changed-files@v25
+        with:
+          base_sha: ${{ steps.last_successful_commit_pull_request.outputs.commit_hash }}
+
+      - name: Run changed-files with dir_names
+        id: changed-files-dir-names
+        uses: tj-actions/changed-files@v25
+        with:
+          dir_names: "true"
+
+      # All outputs are JSON formatted arrays and can be used in other actions and matrix compatible jobs.
+      - name: Run changed-files with json output
+        id: changed-files-json
+        uses: tj-actions/changed-files@v25
+        with:
+          json: "true"
+
