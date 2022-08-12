@@ -327,10 +327,10 @@ class AirbyteMessageTrackerTest {
   @Test
   void testCalculateMean() throws Exception {
     // Mean for 3 state messages is 5, 4th state message is 9, new mean should be 6
-    assertEquals(6.0, messageTracker.calculateMean(5.0, 4L, 9L));
+    assertEquals(6L, messageTracker.calculateMean(5L, 4L, 9L));
 
-    // Mean for 5 state messages is 10, 4th state message is 12, new mean should be 10.33...
-    assertEquals(10.333333333333334, messageTracker.calculateMean(10.0, 6L, 12L));
+    // Mean for 5 state messages is 10, 4th state message is 12, new mean is 10.33 rounded down to 10
+    assertEquals(10L, messageTracker.calculateMean(10L, 6L, 12L));
   }
 
 }

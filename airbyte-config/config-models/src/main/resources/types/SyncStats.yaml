@@ -22,6 +22,6 @@ properties:
   recordsCommitted:
     type: integer # if unset, committed records could not be computed
   meanSecondsBeforeStateMessageEmitted:
-    type: double
+    type: integer
   maxSecondsBeforeStateMessageEmitted:
     type: integer

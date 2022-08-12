@@ -10,7 +10,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.google.common.util.concurrent.AtomicDouble;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
@@ -44,7 +43,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicLong totalSourceEmittedStateMessages;
   private final AtomicLong totalDestinationEmittedStateMessages;
   private final AtomicLong maxSecondsToReceiveStateMessage;
-  private final AtomicDouble meanSecondsToReceiveStateMessage;
+  private final AtomicLong meanSecondsToReceiveStateMessage;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
@@ -82,7 +81,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.totalSourceEmittedStateMessages = new AtomicLong(0L);
     this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
     this.maxSecondsToReceiveStateMessage = new AtomicLong(0L);
-    this.meanSecondsToReceiveStateMessage = new AtomicDouble(0.0);
+    this.meanSecondsToReceiveStateMessage = new AtomicLong(0L);
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -349,7 +348,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public Double getMeanSecondsToReceiveStateMessage() {
+  public Long getMeanSecondsToReceiveStateMessage() {
     return meanSecondsToReceiveStateMessage.get();
   }
 
@@ -362,7 +361,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     if (meanSecondsToReceiveStateMessage.get() == 0) {
       meanSecondsToReceiveStateMessage.set(secondsSinceLastStateMessage);
     } else {
-      final Double newMeanSeconds =
+      final Long newMeanSeconds =
           calculateMean(meanSecondsToReceiveStateMessage.get(), totalSourceEmittedStateMessages.get(), secondsSinceLastStateMessage);
       meanSecondsToReceiveStateMessage.set(newMeanSeconds);
     }
@@ -381,9 +380,10 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @VisibleForTesting
-  protected Double calculateMean(final Double currentMean, final Long totalCount, final Long newDataPoint) {
+  protected Long calculateMean(final Long currentMean, final Long totalCount, final Long newDataPoint) {
     final Long previousCount = totalCount - 1;
-    return (currentMean * previousCount / totalCount) + (Double.valueOf(newDataPoint) / totalCount);
+    final double result = (Double.valueOf(currentMean * previousCount) / totalCount) + (Double.valueOf(newDataPoint) / totalCount);
+    return (long) result;
   }
 
 }
