@@ -2,7 +2,7 @@
 
 We welcome contributions to the Airbyte documentation! 
 
-Our docs is written in [Markdown](https://guides.github.com/features/mastering-markdown/) following the [Google developer documentation style guide](https://developers.google.com/style/highlights) and the files are stored in our [Github repository](https://github.com/airbytehq/airbyte/tree/master/docs). The docs are published at [docs.airbyte.com](https://docs.airbyte.com/) using [Docusaurus](https://docusaurus.io/) and [GitHub Pages](https://pages.github.com/). 
+Our docs are written in [Markdown](https://guides.github.com/features/mastering-markdown/) following the [Google developer documentation style guide](https://developers.google.com/style/highlights) and the files are stored in our [Github repository](https://github.com/airbytehq/airbyte/tree/master/docs). The docs are published at [docs.airbyte.com](https://docs.airbyte.com/) using [Docusaurus](https://docusaurus.io/) and [GitHub Pages](https://pages.github.com/). 
 
 ## Finding good first issues
 
