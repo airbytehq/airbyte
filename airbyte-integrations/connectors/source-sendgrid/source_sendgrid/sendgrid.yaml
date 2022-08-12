@@ -45,11 +45,11 @@ definitions:
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
-      datetime: "2017-01-01T00:00:00.0Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime: "{{ config['start_time'] }}"
+      datetime_format: "%s"
     end_datetime:
-      datetime: "2022-08-01T00:00:00.0Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "10000d"
     cursor_field: "{{ options.stream_cursor_field }}"
     start_time_option:
@@ -62,11 +62,11 @@ definitions:
   messages_stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
-      datetime: "2017-01-01T00:00:00.0Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime: "{{ config['start_time'] }}"
+      datetime_format: "%s"
     end_datetime:
-      datetime: "2022-08-01T00:00:00.0Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime: "{{ now_utc() }}}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "10000d"
     cursor_field: "{{ options.stream_cursor_field }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
