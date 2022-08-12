@@ -105,7 +105,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     publisher.publish(
         PubsubMessage.newBuilder().putAllAttributes(attributes.get(streamKey))
-            .setOrderingKey(streamKey.toString())
             .setData(ByteString.copyFromUtf8(Jsons.serialize(data))).build());
   }
 
