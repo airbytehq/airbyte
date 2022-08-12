@@ -13,7 +13,7 @@ from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
-from facebook_business.exceptions import FacebookRequestError
+from facebook_business.exceptions import FacebookRequestError, FacebookBadObjectError
 from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
@@ -23,7 +23,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookRequestError, FacebookBadObjectError), max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
