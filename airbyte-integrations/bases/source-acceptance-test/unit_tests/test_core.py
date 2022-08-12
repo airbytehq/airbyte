@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,6 +16,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Level,
+    SyncMode,
     TraceType,
     Type,
 )
@@ -39,7 +41,14 @@ from .conftest import does_not_raise
 def test_discovery(schema, cursors, should_fail):
     t = _TestDiscovery()
     discovered_catalog = {
-        "test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "default_cursor_field": cursors})
+        "test_stream": AirbyteStream.parse_obj(
+            {
+                "name": "test_stream",
+                "json_schema": schema,
+                "default_cursor_field": cursors,
+                "supported_sync_modes": ["full_refresh", "incremental"],
+            }
+        )
     }
     if should_fail:
         with pytest.raises(AssertionError):
@@ -71,7 +80,11 @@ def test_discovery(schema, cursors, should_fail):
 )
 def test_ref_in_discovery_schemas(schema, should_fail):
     t = _TestDiscovery()
-    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    discovered_catalog = {
+        "test_stream": AirbyteStream.parse_obj(
+            {"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh", "incremental"]}
+        )
+    }
     if should_fail:
         with pytest.raises(AssertionError):
             t.test_defined_refs_exist_in_schema(discovered_catalog)
@@ -111,7 +124,11 @@ def test_ref_in_discovery_schemas(schema, should_fail):
 )
 def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
     t = _TestDiscovery()
-    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    discovered_catalog = {
+        "test_stream": AirbyteStream.parse_obj(
+            {"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh", "incremental"]}
+        )
+    }
     if should_fail:
         with pytest.raises(AssertionError):
             t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
@@ -122,30 +139,30 @@ def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
 @pytest.mark.parametrize(
     "discovered_catalog, expectation",
     [
-        ({"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}})}, pytest.raises(AssertionError)),
+        ({"test_stream": mock.MagicMock(name="test_stream", json_schema={}, supported_sync_modes=None)}, pytest.raises(AssertionError)),
         (
-            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": []})},
+            {"test_stream": mock.MagicMock(name="test_stream", json_schema={}, supported_sync_modes=[])},
             pytest.raises(AssertionError),
         ),
         (
             {
-                "test_stream": AirbyteStream.parse_obj(
-                    {"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]}
+                "test_stream": mock.MagicMock(
+                    name="test_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
                 )
             },
             does_not_raise(),
         ),
         (
-            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]})},
+            {"test_stream": mock.MagicMock(name="test_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])},
             does_not_raise(),
         ),
         (
-            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["incremental"]})},
+            {"test_stream": mock.MagicMock(name="test_stream", json_schema={}, supported_sync_modes=[SyncMode.incremental])},
             does_not_raise(),
         ),
     ],
 )
-def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
+def test_supported_sync_modes_in_stream(mocker, discovered_catalog, expectation):
     t = _TestDiscovery()
     with expectation:
         t.test_streams_has_sync_modes(discovered_catalog)
@@ -154,17 +171,36 @@ def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
 @pytest.mark.parametrize(
     "discovered_catalog, expectation",
     [
-        ({"test_stream_1": AirbyteStream.parse_obj({"name": "test_stream_1", "json_schema": {}})}, does_not_raise()),
         (
-            {"test_stream_2": AirbyteStream.parse_obj({"name": "test_stream_2", "json_schema": {"additionalProperties": True}})},
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {"name": "test_stream_1", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}
+                )
+            },
             does_not_raise(),
         ),
         (
-            {"test_stream_3": AirbyteStream.parse_obj({"name": "test_stream_3", "json_schema": {"additionalProperties": False}})},
+            {
+                "test_stream_2": AirbyteStream.parse_obj(
+                    {"name": "test_stream_2", "json_schema": {"additionalProperties": True}, "supported_sync_modes": ["full_refresh"]}
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_3": AirbyteStream.parse_obj(
+                    {"name": "test_stream_3", "json_schema": {"additionalProperties": False}, "supported_sync_modes": ["full_refresh"]}
+                )
+            },
             pytest.raises(AssertionError),
         ),
         (
-            {"test_stream_4": AirbyteStream.parse_obj({"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}})},
+            {
+                "test_stream_4": AirbyteStream.parse_obj(
+                    {"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}, "supported_sync_modes": ["full_refresh"]}
+                )
+            },
             pytest.raises(AssertionError),
         ),
         (
@@ -173,6 +209,7 @@ def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
                     {
                         "name": "test_stream_5",
                         "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": True}}},
+                        "supported_sync_modes": ["full_refresh"],
                     }
                 )
             },
@@ -184,6 +221,7 @@ def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
                     {
                         "name": "test_stream_6",
                         "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": False}}},
+                        "supported_sync_modes": ["full_refresh"],
                     }
                 )
             },
@@ -217,7 +255,7 @@ def test_read(schema, record, should_fail):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema}),
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -334,7 +372,11 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=AirbyteStream.parse_obj(
-                            {"name": "test1", "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}}}}
+                            {
+                                "name": "test1",
+                                "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}}},
+                                "supported_sync_modes": ["full_refresh"],
+                            }
                         ),
                         sync_mode="full_refresh",
                         destination_sync_mode="overwrite",
@@ -352,6 +394,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                             {
                                 "name": "test1",
                                 "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -373,6 +416,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                             {
                                 "name": "test1",
                                 "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -401,6 +445,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                                         "f3": {"type": "array", "items": {"type": "integer"}},
                                     },
                                 },
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -429,6 +474,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                                         "f3": {"type": "array", "items": {"type": "integer"}},
                                     },
                                 },
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -457,6 +503,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                                         "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
                                     },
                                 },
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -485,6 +532,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                                         "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
                                     },
                                 },
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -505,6 +553,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
@@ -552,6 +601,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
@@ -584,6 +634,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test2",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
                             }
                         ),
@@ -607,6 +658,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
@@ -639,6 +691,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test2",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
                             }
                         ),
@@ -661,6 +714,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
@@ -695,6 +749,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
@@ -739,6 +794,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
                         stream=AirbyteStream.parse_obj(
                             {
                                 "name": "test1",
+                                "supported_sync_modes": ["full_refresh"],
                                 "json_schema": {
                                     "type": "object",
                                     "properties": {
