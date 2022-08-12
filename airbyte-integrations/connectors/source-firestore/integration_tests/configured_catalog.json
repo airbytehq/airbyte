@@ -1,0 +1,14 @@
+{
+  "streams": [
+    {
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "collection",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["name"]]
+      }
+    }
+  ]
+}
