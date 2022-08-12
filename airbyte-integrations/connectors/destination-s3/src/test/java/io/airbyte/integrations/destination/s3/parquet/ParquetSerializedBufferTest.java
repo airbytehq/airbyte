@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.parquet;
 
+import static io.airbyte.integrations.destination.s3.util.JavaProcessRunner.runProcess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,6 +75,51 @@ public class ParquetSerializedBufferTest {
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
     // TODO: Compressed parquet is the same size as uncompressed??
+    runTest(195L, 215L, config, getExpectedString());
+  }
+
+  private static String resolveArchitecture() {
+    return System.getProperty("os.name").replace(' ', '_') + "-" + System.getProperty("os.arch") + "-" + System.getProperty("sun.arch.data.model");
+  }
+
+  @Test
+  public void testLzoCompressedParquet() throws Exception {
+    final String currentDir = System.getProperty("user.dir");
+    Runtime runtime = Runtime.getRuntime();
+    final String architecture = resolveArchitecture();
+    if (architecture.equals("Linux-amd64-64") || architecture.equals("Linux-x86_64-64")) {
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev -y");
+      runLzoParquetTest();
+    } else if (architecture.equals("Linux-aarch64-64") || architecture.equals("Linux-arm64-64")) {
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev " +
+          "wget curl unzip zip build-essential maven git -y");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "wget http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /usr/local/tmp");
+      runProcess("/usr/local/tmp/", runtime, "/bin/sh", "-c", "tar xvfz lzo-2.10.tar.gz");
+      runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "./configure --enable-shared --prefix /usr/local/lzo-2.10");
+      runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "make && make install");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "git clone https://github.com/twitter/hadoop-lzo.git /usr/lib/hadoop/lib/hadoop-lzo/");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "curl -s https://get.sdkman.io | bash");
+      runProcess(currentDir, runtime, "/bin/bash", "-c", "source /root/.sdkman/bin/sdkman-init.sh;" +
+          " sdk install java 8.0.342-librca;" +
+          " sdk use java 8.0.342-librca;" +
+          " cd /usr/lib/hadoop/lib/hadoop-lzo/ " +
+          "&& C_INCLUDE_PATH=/usr/local/lzo-2.10/include " +
+          "LIBRARY_PATH=/usr/local/lzo-2.10/lib mvn clean package");
+      runProcess(currentDir, runtime, "/bin/sh", "-c",
+          "find /usr/lib/hadoop/lib/hadoop-lzo/ -name '*libgplcompression*' -exec cp {} /usr/lib/ \\;");
+      runLzoParquetTest();
+    }
+  }
+
+  private void runLzoParquetTest() throws Exception {
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+        "format", Map.of(
+            "format_type", "parquet",
+            "compression_codec", "LZO"),
+        "s3_bucket_name", "test",
+        "s3_bucket_region", "us-east-2")));
     runTest(195L, 215L, config, getExpectedString());
   }
 

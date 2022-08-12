@@ -28,7 +28,7 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
     [styles.mod]: diffType === "update",
   });
 
-  const contentStyle = classnames(styles.content, {
+  const contentStyle = classnames(styles.content, styles.cell, {
     [styles.add]: diffType === "add",
     [styles.remove]: diffType === "remove",
     [styles.update]: diffType === "update",
@@ -50,16 +50,16 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
         )}
       </td>
       <td className={contentStyle}>
-        <td className={styles.cell}>
+        <div className={styles.cell}>
           <span>{fieldName}</span>
-        </td>
-        <td className={updateCellStyle}>
+        </div>
+        <div className={updateCellStyle}>
           {oldType && newType && (
             <span>
               {oldType} <FontAwesomeIcon icon={faArrowRight} /> {newType}
             </span>
           )}
-        </td>
+        </div>
       </td>
     </tr>
   );
