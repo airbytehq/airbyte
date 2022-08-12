@@ -67,7 +67,7 @@ There is currently only one implementation, the `SimpleRetriever`, which is defi
 
 1. Requester: Describes how to submit requests to the API source
 2. Paginator: Describes how to navigate through the API's pages
-3. Record selector: Describes how to select records from an HTTP response
+3. Record selector: Describes how to extract records from an HTTP response
 4. Stream Slicer: Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
