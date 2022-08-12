@@ -36,10 +36,10 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_current_branch
       - name: Extract changed files
-        with:
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
         shell: bash
         run: echo "##[set-output name=files;]$(git diff --name-only master...${{steps.extract_current_branch.outputs.branch}})"
+        with:
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
         id: extract_changed_files
       - name: Debbug
         run: |
