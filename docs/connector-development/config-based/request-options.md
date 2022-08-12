@@ -35,12 +35,6 @@ requester:
       key: value
 ```
 
-In addition to $options, the provider can also access the following arguments for [string interpolation](yaml-structure.md#string-interpolation):
-
-- stream_slice
-- stream_state
-- next_page_token
-
 ## Authenticators
 
 It is also possible for authenticators to set request parameters or headers as needed.
