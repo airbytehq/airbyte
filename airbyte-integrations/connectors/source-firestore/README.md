@@ -5,7 +5,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ## Inputs
 
-- `api_token`: Follow the instructions on [Firestore's documentation](https://firebase.google.com/docs/firestore/use-rest-api#working_with_google_identity_oauth_20_tokens) on how to get an access token
+- `google_application_credentials`: JSON credentials for a service account with Cloud Datastore User permissions
 - `project_id`: Firebase project id
 - `collection_name`: The name of the Firestore collection
 

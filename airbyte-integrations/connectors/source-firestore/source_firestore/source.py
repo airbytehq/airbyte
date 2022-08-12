@@ -14,7 +14,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
+from google.oauth2 import service_account
+import google.auth.transport.requests
+import requests
 
 class Helpers(object):
     url_base = "https://firestore.googleapis.com/v1/"
@@ -154,8 +156,14 @@ class Collection(IncrementalFirestoreStream):
 
 # Source
 class SourceFirestore(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = TokenAuthenticator(token=config["api_token"])
+    def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+        scopes = ['https://www.googleapis.com/auth/datastore']
+        credentials = service_account.Credentials.from_service_account_info(config["google_application_credentials"], scopes=scopes)        
+        credentials.refresh(google.auth.transport.requests.Request())
+        return TokenAuthenticator(token=credentials.token)
+
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        auth = self.get_auth(config=config)
         project_id = config["project_id"]
         collection_name = config["collection_name"]
         url = f"{Helpers.url_base}{Helpers.get_collection_path(project_id, collection_name)}"
@@ -167,5 +175,5 @@ class SourceFirestore(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["api_token"])
+        auth = self.get_auth(config=config)
         return [Collection(authenticator=auth, config=config)]

@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - collection_name
     - project_id
-    - api_token
+    - google_application_credentials
   properties:
     collection_name:
       type: string
@@ -14,8 +14,8 @@ connectionSpecification:
     project_id:
       type: string
       description: Firebase project id
-    api_token:
-      type: string
+    google_application_credentials:
+      type: object
       description: JSON cert credentials
     start_date:
       type: string
