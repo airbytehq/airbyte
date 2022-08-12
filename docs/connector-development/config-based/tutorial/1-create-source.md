@@ -26,3 +26,7 @@ For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`.
 ## Next steps
 
 Next, [we'll install dependencies required to run the connector](2-install-dependencies.md)
+
+## More readings
+
+- [Connector generator](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/README.md)
