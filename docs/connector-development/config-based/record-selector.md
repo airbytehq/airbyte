@@ -20,9 +20,7 @@ selector:
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
 
-For example,
-
-Given a response body of the form
+For example, given a response body of the form
 
 ```json
 {
