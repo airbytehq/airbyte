@@ -15,9 +15,11 @@ configuration:
     cpu_request: "" # OPTIONAL
     memory_limit: "" # OPTIONAL
     memory_request: "" # OPTIONAL
-  schedule: # OPTIONAL | object
-    time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
-    units: 1 # REQUIRED | integer
+  schedule_type: basic
+  schedule_data:
+    basic_schedule:
+      time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
+      units: 1 # REQUIRED | integer
   sync_catalog: # OPTIONAL | object | 🚨 ONLY edit streams.config, streams.stream should not be edited as schema cannot be changed.
     streams:
       - config:

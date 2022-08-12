@@ -51,15 +51,12 @@ class BaseDiffChecker(ABC):
         pass
 
     def check_if_value_of_type_field_changed(self, diff: DeepDiff):
-        """Check if a type was changed"""
+        """Check if a type was changed on a property"""
         # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
-        type_values_changed = [change for change in diff.get("values_changed", []) if change.path(output_format="list")[-1] == "type"]
-
-        # Detect type value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
-        type_values_changed_in_list = [
-            change for change in diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
+        changes_on_property_type = [
+            change for change in diff.get("values_changed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
         ]
-        if type_values_changed or type_values_changed_in_list:
+        if changes_on_property_type:
             self._raise_error("The'type' field value was changed.", diff)
 
     def check_if_new_type_was_added(self, diff: DeepDiff):  # pragma: no cover
@@ -75,7 +72,7 @@ class BaseDiffChecker(ABC):
 
     def check_if_type_of_type_field_changed(self, diff: DeepDiff):
         """
-        Detect the change of type of a type field
+        Detect the change of type of a type field on a property
         e.g:
         - "str" -> ["str"] VALID
         - "str" -> ["str", "null"] VALID
@@ -85,7 +82,9 @@ class BaseDiffChecker(ABC):
         - ["str"] -> "int" INVALID
         - ["str"] -> 1 INVALID
         """
-        type_changes = [change for change in diff.get("type_changes", []) if change.path(output_format="list")[-1] == "type"]
+        type_changes = [
+            change for change in diff.get("type_changes", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
+        ]
         for change in type_changes:
             # We only accept change on the type field if the new type for this field is list or string
             # This might be something already guaranteed by JSON schema validation.
@@ -145,7 +144,9 @@ class SpecDiffChecker(BaseDiffChecker):
 
     def check_if_field_was_made_not_nullable(self, diff: DeepDiff):
         """Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]"""
-        removed_nullable = [change for change in diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"]
+        removed_nullable = [
+            change for change in diff.get("iterable_item_removed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
+        ]
         if removed_nullable:
             self._raise_error("A field type was narrowed or made a field not nullable", diff)
 
