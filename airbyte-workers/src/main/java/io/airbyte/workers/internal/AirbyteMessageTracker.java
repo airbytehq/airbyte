@@ -38,7 +38,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
-  private final AtomicLong totalEmittedStateMessages;
+  private final AtomicLong totalSourceEmittedStateMessages;
+  private final AtomicLong totalDestinationEmittedStateMessages;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
@@ -71,7 +72,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker, final StateAggregator stateAggregator) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
-    this.totalEmittedStateMessages = new AtomicLong(0L);
+    this.totalSourceEmittedStateMessages = new AtomicLong(0L);
+    this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -130,7 +132,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
     sourceOutputState.set(new State().withState(stateMessage.getData()));
-    totalEmittedStateMessages.incrementAndGet();
+    totalSourceEmittedStateMessages.incrementAndGet();
     final int stateHash = getStateHashCode(stateMessage);
     try {
       if (!unreliableCommittedCounts) {
@@ -150,6 +152,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
+    totalDestinationEmittedStateMessages.incrementAndGet();
     stateAggregator.ingest(stateMessage);
     destinationOutputState.set(stateAggregator.getAggregated());
     try {
@@ -315,8 +318,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public Long getTotalStateMessagesEmitted() {
-    return totalEmittedStateMessages.get();
+  public Long getTotalSourceStateMessagesEmitted() {
+    return totalSourceEmittedStateMessages.get();
+  }
+
+  @Override
+  public Long getTotalDestinationStateMessagesEmitted() {
+    return totalDestinationEmittedStateMessages.get();
   }
 
 }

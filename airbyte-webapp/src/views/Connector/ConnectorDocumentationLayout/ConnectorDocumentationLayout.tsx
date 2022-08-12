@@ -58,7 +58,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const screenWidth = useWindowSize().width;
 
   return (
-    <ReflexContainer orientation="vertical" windowResizeAware>
+    <ReflexContainer orientation="vertical">
       <ReflexElement className={classNames("left-pane", styles.leftPanelStyle)} propagateDimensions minSize={150}>
         <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
