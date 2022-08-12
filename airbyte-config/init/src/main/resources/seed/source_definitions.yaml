@@ -284,7 +284,7 @@
 - name: Flexport
   sourceDefinitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
   dockerRepository: airbyte/source-flexport
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/flexport
   sourceType: api
   releaseStage: alpha
