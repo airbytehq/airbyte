@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.assertCustomParametersDontOverwriteDefaultParameters;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -17,6 +20,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -24,10 +28,12 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -43,6 +49,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private JsonNode config;
+  private String dbName;
 
   @BeforeAll
   static void init() {
@@ -53,7 +60,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
@@ -83,6 +90,18 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public JsonNode getConfig() {
     return config;
+  }
+
+  public JsonNode getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psqlDb))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psqlDb))
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
+        .build());
   }
 
   @Override
@@ -159,6 +178,19 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       LOGGER.info("completed source: {}", PostgresTestSource.class);
     }
 
+  }
+
+  @Test
+  void testCustomParametersOverwriteDefaultParametersExpectException() {
+    final String connectionPropertiesUrl = "ssl=false";
+    final JsonNode config = getConfigWithConnectionProperties(PSQL_DB, dbName, connectionPropertiesUrl);
+    final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
+    final Map<String, String> defaultParameters = Map.of(
+        "ssl", "true",
+        "sslmode", "require");
+    assertThrows(IllegalArgumentException.class, () -> {
+      assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParameters);
+    });
   }
 
 }

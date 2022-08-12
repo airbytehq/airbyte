@@ -29,6 +29,7 @@ class AirbyteMessageTrackerTest {
   private static final String STREAM_1 = "stream1";
   private static final String STREAM_2 = "stream2";
   private static final String STREAM_3 = "stream3";
+  private static final String INDUCED_EXCEPTION = "induced exception";
 
   private AirbyteMessageTracker messageTracker;
 
@@ -57,7 +58,7 @@ class AirbyteMessageTrackerTest {
 
     assertEquals(3, messageTracker.getTotalRecordsEmitted());
     assertEquals(3L * Jsons.getEstimatedByteSize(r1.getRecord().getData()), messageTracker.getTotalBytesEmitted());
-    assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
+    assertEquals(2, messageTracker.getTotalSourceStateMessagesEmitted());
   }
 
   @Test
@@ -182,7 +183,7 @@ class AirbyteMessageTrackerTest {
 
   @Test
   void testGetCommittedRecordsByStream_emptyWhenAddStateThrowsException() throws Exception {
-    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+    Mockito.doThrow(new StateDeltaTrackerException(INDUCED_EXCEPTION)).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(1);
@@ -196,7 +197,7 @@ class AirbyteMessageTrackerTest {
 
   @Test
   void testGetCommittedRecordsByStream_emptyWhenCommitStateHashThrowsException() throws Exception {
-    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+    Mockito.doThrow(new StateDeltaTrackerException(INDUCED_EXCEPTION)).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(1);
@@ -246,7 +247,7 @@ class AirbyteMessageTrackerTest {
 
   @Test
   void testGetTotalRecordsCommitted_emptyWhenAddStateThrowsException() throws Exception {
-    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+    Mockito.doThrow(new StateDeltaTrackerException(INDUCED_EXCEPTION)).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(1);
@@ -260,7 +261,7 @@ class AirbyteMessageTrackerTest {
 
   @Test
   void testGetTotalRecordsCommitted_emptyWhenCommitStateHashThrowsException() throws Exception {
-    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+    Mockito.doThrow(new StateDeltaTrackerException(INDUCED_EXCEPTION)).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(1);

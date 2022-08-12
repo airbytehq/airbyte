@@ -17,7 +17,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -104,7 +104,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -248,7 +248,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.58
+  dockerImageTag: 0.2.59
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -271,19 +271,31 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.2.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
   releaseStage: alpha
+- name: Freshcaller
+  sourceDefinitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
+  dockerRepository: airbyte/source-freshcaller
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/freshcaller
+- name: Flexport
+  sourceDefinitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
+  dockerRepository: airbyte/source-flexport
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/flexport
+  sourceType: api
+  releaseStage: alpha
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
@@ -303,7 +315,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.43
+  dockerImageTag: 0.2.44
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -367,7 +379,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -399,7 +411,7 @@
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
@@ -411,10 +423,17 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/hellobaton
   sourceType: api
   releaseStage: alpha
+- name: Hubplanner
+  sourceDefinitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
+  dockerRepository: airbyte/source-hubplanner
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/hubplanner
+  sourceType: api
+  releaseStage: alpha
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.79
+  dockerImageTag: 0.1.81
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -462,7 +481,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.20
+  dockerImageTag: 0.2.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -513,6 +532,14 @@
   icon: linkedin.svg
   sourceType: api
   releaseStage: generally_available
+- name: LinkedIn Pages
+  sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
+  dockerRepository: airbyte/source-linkedin-pages
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/linkedin-pages
+  icon: linkedin.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Linnworks
   sourceDefinitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
   dockerRepository: airbyte/source-linnworks
@@ -564,7 +591,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.11
+  dockerImageTag: 0.4.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -612,7 +639,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.0
+  dockerImageTag: 0.6.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -628,7 +655,7 @@
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
   icon: okta.svg
   sourceType: api
@@ -651,7 +678,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -762,11 +789,11 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.38
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Prestashop
   sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   dockerRepository: airbyte/source-prestashop
@@ -802,7 +829,7 @@
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/recurly
   icon: recurly.svg
   sourceType: api
@@ -833,7 +860,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -849,7 +876,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.11
+  dockerImageTag: 1.0.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -865,7 +892,7 @@
 - name: Sendgrid
   sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/sendgrid
   icon: sendgrid.svg
   sourceType: api
@@ -881,7 +908,7 @@
 - name: Short.io
   sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
   dockerRepository: airbyte/source-shortio
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
   icon: short.svg
   sourceType: api
@@ -913,7 +940,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -937,7 +964,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.34
+  dockerImageTag: 0.1.36
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -945,11 +972,11 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: TalkDesk Explore
   sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
   dockerRepository: airbyte/source-talkdesk-explore
@@ -1009,7 +1036,7 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
@@ -1065,7 +1092,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.2.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
@@ -1088,7 +1115,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api

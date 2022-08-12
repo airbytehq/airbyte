@@ -1,5 +1,6 @@
 import { getIn, useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
+import { AnySchema } from "yup";
 
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
@@ -8,7 +9,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { ServiceFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
-interface Context {
+interface ServiceFormContext {
   formType: "source" | "destination";
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   widgetsInfo: WidgetConfigMap;
@@ -16,46 +17,53 @@ interface Context {
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
-  resetUiFormProgress: () => void;
+  resetServiceForm: () => void;
   selectedService?: ConnectorDefinition;
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
+  validationSchema: AnySchema;
 }
 
-const FormWidgetContext = React.createContext<Context | null>(null);
+const serviceFormContext = React.createContext<ServiceFormContext | null>(null);
 
-const useServiceForm = (): Context => {
-  const serviceFormHelpers = useContext(FormWidgetContext);
+export const useServiceForm = (): ServiceFormContext => {
+  const serviceFormHelpers = useContext(serviceFormContext);
   if (!serviceFormHelpers) {
     throw new Error("useServiceForm should be used within ServiceFormContextProvider");
   }
   return serviceFormHelpers;
 };
 
-const ServiceFormContextProvider: React.FC<{
+interface ServiceFormContextProviderProps {
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
+  resetUiWidgetsInfo: () => void;
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   availableServices: ConnectorDefinition[];
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   selectedConnector?: ConnectorDefinitionSpecification;
-}> = ({
+  validationSchema: AnySchema;
+}
+
+export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProps> = ({
   availableServices,
   children,
   widgetsInfo,
   setUiWidgetsInfo,
+  resetUiWidgetsInfo,
   selectedConnector,
   getValues,
   formType,
   isLoadingSchema,
+  validationSchema,
   isEditMode,
 }) => {
-  const { values } = useFormikContext<ServiceFormValues>();
+  const { values, resetForm } = useFormikContext<ServiceFormValues>();
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
   const { serviceType } = values;
@@ -81,7 +89,7 @@ const ServiceFormContextProvider: React.FC<{
     [selectedConnector]
   );
 
-  const ctx = useMemo<Context>(() => {
+  const ctx = useMemo<ServiceFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
@@ -93,6 +101,7 @@ const ServiceFormContextProvider: React.FC<{
       selectedConnector,
       formType,
       isLoadingSchema,
+      validationSchema,
       isEditMode,
       unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
@@ -105,7 +114,10 @@ const ServiceFormContextProvider: React.FC<{
           "_common.unfinishedFlows",
           Object.fromEntries(Object.entries(unfinishedFlows).filter(([key]) => key !== path))
         ),
-      resetUiFormProgress: () => setUiWidgetsInfo("_common.unfinishedFlows", {}),
+      resetServiceForm: () => {
+        resetForm();
+        resetUiWidgetsInfo();
+      },
     };
   }, [
     widgetsInfo,
@@ -117,10 +129,11 @@ const ServiceFormContextProvider: React.FC<{
     selectedConnector,
     formType,
     isLoadingSchema,
+    validationSchema,
     isEditMode,
+    resetForm,
+    resetUiWidgetsInfo,
   ]);
 
-  return <FormWidgetContext.Provider value={ctx}>{children}</FormWidgetContext.Provider>;
+  return <serviceFormContext.Provider value={ctx}>{children}</serviceFormContext.Provider>;
 };
-
-export { useServiceForm, ServiceFormContextProvider };

@@ -1,6 +1,6 @@
 # pod-sweeper
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.37-alpha](https://img.shields.io/badge/AppVersion-0.39.37--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte-pod-sweeper
 
@@ -19,10 +19,10 @@ Helm chart to deploy airbyte-pod-sweeper
 | enabled | bool | `true` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| global.database.host | string | `"test"` |  |
+| global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretName | string | `""` |  |
+| global.database.secretValue | string | `""` |  |
 | global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |
 | global.jobs.kube.main_container_image_pull_secret | string | `""` |  |
@@ -46,7 +46,7 @@ Helm chart to deploy airbyte-pod-sweeper
 | global.logs.secretKey.existingSecret | string | `""` |  |
 | global.logs.secretKey.existingSecretKey | string | `""` |  |
 | global.logs.secretKey.password | string | `"minio123"` |  |
-| global.secretName | string | `"airbyte-secrets"` |  |
+| global.secretName | string | `""` |  |
 | global.serviceAccountName | string | `"airbyte-admin"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"bitnami/kubectl"` |  |

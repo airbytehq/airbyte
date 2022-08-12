@@ -20,6 +20,7 @@ To set up Google Sheets as a source in Airbyte Cloud:
     - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**. 
+7. For Row Batch Size, define the number of records you want the Google API to fetch at a time. The default value is 200.
 
 ### For Airbyte OSS
 
@@ -70,6 +71,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                               | Subject                                                                       |
 |---------|------------|------------------------------------------------------------|-------------------------------------------------------------------------------|
+| 0.2.17  | 2022-08-03 | [15107](https://github.com/airbytehq/airbyte/pull/15107)   | Expose Row Batch Size in Connector Specification |  
 | 0.2.16  | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)   | Improve configuration field description |  
 | 0.2.15  | 2022-06-02 | [13446](https://github.com/airbytehq/airbyte/pull/13446)   | Retry requests resulting in a server error                                    |
 | 0.2.13  | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)   | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions  |

@@ -1,11 +1,18 @@
 
+## @param global.serviceAccountName Name of service account to be associated with service
+## @param deploymentMode Determines deployment mode of airbyte
+## @param secretName Overrides the secrate name with with credentials to S3 Bucket and logging
+## @param database.secretName Name of database secret
+## @param database.secretValue Value of database password key stored in secret
+## @param database.host Hostname of database
+## @param database.port Database port
 global:
-  serviceAccountName: placeholderServiceAccounr
+  serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
-  secretName: something
+  secretName: ""
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
+    secretName: ""
+    secretValue: ""
 
 
 enabled: true
@@ -54,3 +61,4 @@ resources:
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
+extraEnv: []

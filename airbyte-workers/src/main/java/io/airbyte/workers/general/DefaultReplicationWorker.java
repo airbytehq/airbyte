@@ -78,6 +78,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
+  private final WorkerMetricReporter metricReporter;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -85,7 +86,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
-                                  final RecordSchemaValidator recordSchemaValidator) {
+                                  final RecordSchemaValidator recordSchemaValidator,
+                                  final WorkerMetricReporter metricReporter) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -94,6 +96,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
+    this.metricReporter = metricReporter;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -112,7 +115,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
+  public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -154,7 +157,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -198,7 +201,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
           .withBytesEmitted(messageTracker.getTotalBytesEmitted())
-          .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
+          .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
+          .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted());
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -214,7 +218,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         final SyncStats syncStats = new SyncStats()
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
-            .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
+            .withSourceStateMessagesEmitted(null)
+            .withDestinationStateMessagesEmitted(null);
 
         if (outputStatus == ReplicationStatus.COMPLETED) {
           syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
@@ -293,7 +298,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final RecordSchemaValidator recordSchemaValidator) {
+                                                 final RecordSchemaValidator recordSchemaValidator,
+                                                 final WorkerMetricReporter metricReporter) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -337,6 +343,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
+            metricReporter.trackSchemaValidationError(stream);
           });
         }
 

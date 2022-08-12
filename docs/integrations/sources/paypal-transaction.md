@@ -25,11 +25,11 @@ In order to get an `Client ID` and `Secret` please go to [this](https://develope
 ### For Airbyte OSS:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
-4. Enter your client id
+3. Enter your client id
 4. Enter your secret
-4. Choose if your account is sandbox
-5. Enter the date you want your sync to start from
-6. Click **Set up source**
+5. Choose if your account is sandbox
+6. Enter the date you want your sync to start from
+7. Click **Set up source**
 
 ## Supported sync modes
 

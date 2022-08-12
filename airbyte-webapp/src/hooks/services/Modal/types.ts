@@ -5,6 +5,7 @@ import { ModalProps } from "components/Modal/Modal";
 export interface ModalOptions<T> {
   title: ModalProps["title"];
   size?: ModalProps["size"];
+  preventCancel?: boolean;
   content: React.ComponentType<ModalContentProps<T>>;
 }
 

@@ -67,9 +67,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -110,8 +110,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace)
+                                                     final String streamName,
+                                                     final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);

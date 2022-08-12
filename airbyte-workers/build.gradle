@@ -20,8 +20,10 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation libs.flyway.core
+    implementation libs.micrometer.statsd
 
     implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')

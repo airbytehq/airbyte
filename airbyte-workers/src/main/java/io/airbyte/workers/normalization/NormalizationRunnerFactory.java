@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
-  public static final String NORMALIZATION_VERSION = "0.2.13";
+  public static final String NORMALIZATION_VERSION = "0.2.18";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
