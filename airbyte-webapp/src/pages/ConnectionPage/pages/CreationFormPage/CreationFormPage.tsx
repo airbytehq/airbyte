@@ -81,9 +81,12 @@ export const CreationFormPage: React.FC = () => {
       ? EntityStepsTypes.DESTINATION
       : EntityStepsTypes.SOURCE;
 
-  const hasConnectors = hasSourceId(location.state) && hasDestinationId(location.state);
   const [currentStep, setCurrentStep] = useState(
-    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
+    hasSourceId(location.state) && hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTION
+      : hasSourceId(location.state) && !hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTOR
+      : StepsTypes.CREATE_ENTITY
   );
 
   const [currentEntityStep, setCurrentEntityStep] = useState(
