@@ -28,10 +28,10 @@ import java.util.stream.StreamSupport;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.generic.GenericData.Record;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.apache.avro.generic.GenericData.Record;
 
 public abstract class S3AvroParquetDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
@@ -57,7 +57,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
       Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
       Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
 
-      Assertions.assertEquals(expectedSchemaTypes, actualSchemaTypes);
+      assertEquals(expectedSchemaTypes, actualSchemaTypes);
     }
   }
 
