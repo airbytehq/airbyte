@@ -1,0 +1,26 @@
+name: Changed connector
+on:
+  pull_request_target:
+    types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
+
+jobs:
+  show-affected-connectors:
+    name: "Show affected connectors"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      # Pull request based workflows.
+      - name: Extract current branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_current_branch
+      - name: Extract changed files
+        shell: bash
+        run: echo "##[set-output name=files;]$(git diff --name-only remotes/origin/master...remotes/origin/${{steps.extract_current_branch.outputs.branch}})"
+        id: extract_changed_files
+      - name: Debbug
+        run: |
+          echo "!!! DEBBUG !!! "
+          echo ${{ steps.extract_current_branch.outputs.branch }}
+          echo ${{ steps.extract_changed_files.outputs.files }}
