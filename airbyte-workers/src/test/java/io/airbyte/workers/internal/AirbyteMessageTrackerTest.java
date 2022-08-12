@@ -324,4 +324,13 @@ class AirbyteMessageTrackerTest {
     assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
   }
 
+  @Test
+  void testCalculateMean() throws Exception {
+    // Mean for 3 state messages is 5, 4th state message is 9, new mean should be 6
+    assertEquals(6.0, messageTracker.calculateMean(5.0, 4L, 9L));
+
+    // Mean for 5 state messages is 10, 4th state message is 12, new mean should be 10.33...
+    assertEquals(10.333333333333334, messageTracker.calculateMean(10.0, 6L, 12L));
+  }
+
 }

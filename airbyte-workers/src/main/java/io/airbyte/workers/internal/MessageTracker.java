@@ -106,6 +106,10 @@ public interface MessageTracker {
 
   Long getTotalDestinationStateMessagesEmitted();
 
+  Long getMaxSecondsToReceiveStateMessage();
+
+  Double getMeanSecondsToReceiveStateMessage();
+
   AirbyteTraceMessage getFirstDestinationErrorTraceMessage();
 
   AirbyteTraceMessage getFirstSourceErrorTraceMessage();

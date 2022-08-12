@@ -10,6 +10,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.google.common.util.concurrent.AtomicDouble;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
@@ -30,6 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 
 @Slf4j
 public class AirbyteMessageTracker implements MessageTracker {
@@ -40,6 +43,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicReference<State> destinationOutputState;
   private final AtomicLong totalSourceEmittedStateMessages;
   private final AtomicLong totalDestinationEmittedStateMessages;
+  private final AtomicLong maxSecondsToReceiveStateMessage;
+  private final AtomicDouble meanSecondsToReceiveStateMessage;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
@@ -49,6 +54,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
+  private DateTime firstRecordReceivedAt;
+  private final DateTime lastStateMessageReceivedAt;
 
   private short nextStreamIndex;
 
@@ -74,6 +81,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.destinationOutputState = new AtomicReference<>();
     this.totalSourceEmittedStateMessages = new AtomicLong(0L);
     this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
+    this.maxSecondsToReceiveStateMessage = new AtomicLong(0L);
+    this.meanSecondsToReceiveStateMessage = new AtomicDouble(0.0);
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -85,6 +94,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
     this.stateAggregator = stateAggregator;
+    this.firstRecordReceivedAt = null;
+    this.lastStateMessageReceivedAt = null;
   }
 
   @Override
@@ -111,6 +122,10 @@ public class AirbyteMessageTracker implements MessageTracker {
    * total byte count for the record's stream.
    */
   private void handleSourceEmittedRecord(final AirbyteRecordMessage recordMessage) {
+    if (firstRecordReceivedAt == null) {
+      firstRecordReceivedAt = DateTime.now();
+    }
+
     final short streamIndex = getStreamIndex(recordMessage.getStream());
 
     final long currentRunningCount = streamToRunningCount.getOrDefault(streamIndex, 0L);
@@ -131,6 +146,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
+    updateMaxAndMeanSecondsToReceiveStateMessage(DateTime.now());
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     totalSourceEmittedStateMessages.incrementAndGet();
     final int stateHash = getStateHashCode(stateMessage);
@@ -325,6 +341,49 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public Long getTotalDestinationStateMessagesEmitted() {
     return totalDestinationEmittedStateMessages.get();
+  }
+
+  @Override
+  public Long getMaxSecondsToReceiveStateMessage() {
+    return maxSecondsToReceiveStateMessage.get();
+  }
+
+  @Override
+  public Double getMeanSecondsToReceiveStateMessage() {
+    return meanSecondsToReceiveStateMessage.get();
+  }
+
+  private void updateMaxAndMeanSecondsToReceiveStateMessage(final DateTime stateMessageReceivedAt) {
+    final Long secondsSinceLastStateMessage = calculateSecondsSinceLastStateEmitted(stateMessageReceivedAt);
+    if (maxSecondsToReceiveStateMessage.get() < secondsSinceLastStateMessage) {
+      maxSecondsToReceiveStateMessage.set(secondsSinceLastStateMessage);
+    }
+
+    if (meanSecondsToReceiveStateMessage.get() == 0) {
+      meanSecondsToReceiveStateMessage.set(secondsSinceLastStateMessage);
+    } else {
+      final Double newMeanSeconds =
+          calculateMean(meanSecondsToReceiveStateMessage.get(), totalSourceEmittedStateMessages.get(), secondsSinceLastStateMessage);
+      meanSecondsToReceiveStateMessage.set(newMeanSeconds);
+    }
+  }
+
+  private Long calculateSecondsSinceLastStateEmitted(final DateTime stateMessageReceivedAt) {
+    if (lastStateMessageReceivedAt != null) {
+      return Long.valueOf(Seconds.secondsBetween(lastStateMessageReceivedAt, stateMessageReceivedAt).getSeconds());
+    } else if (firstRecordReceivedAt != null) {
+      return Long.valueOf(Seconds.secondsBetween(firstRecordReceivedAt, stateMessageReceivedAt).getSeconds());
+    } else {
+      // If we receive a State Message before a Record Message there is no previous timestamp to use for a
+      // calculation
+      return 0L;
+    }
+  }
+
+  @VisibleForTesting
+  protected Double calculateMean(final Double currentMean, final Long totalCount, final Long newDataPoint) {
+    final Long previousCount = totalCount - 1;
+    return (currentMean * previousCount / totalCount) + (Double.valueOf(newDataPoint) / totalCount);
   }
 
 }
