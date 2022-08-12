@@ -111,6 +111,10 @@ public class TrackingMetadata {
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
             metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
             metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
+            metadata.put("max_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("mean_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
           }
         }
 
