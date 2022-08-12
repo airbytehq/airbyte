@@ -61,11 +61,6 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-# TODO wq clean
-def test_tidb():
-    test_normalization(DestinationType.TIDB, "test_nested_streams", setup_test_path)
-
-
 @pytest.mark.parametrize(
     "test_resource_name",
     set(
