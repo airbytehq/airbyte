@@ -11,6 +11,7 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import githubLogo from "./assets/github-logo.svg";
 import googleLogo from "./assets/google-logo.svg";
 import styles from "./OAuthLogin.module.scss";
+import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 
 const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
@@ -75,8 +76,9 @@ export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
     }
   };
 
-  const login = (provider: "google" | "github") => {
+  const login = (provider: OAuthProviders) => {
     setErrorCode(undefined);
+    stateSubscription.current?.unsubscribe();
     stateSubscription.current = loginWithOAuth(provider).subscribe({
       next: (value) => {
         if (value === "loading") {
