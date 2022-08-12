@@ -7,6 +7,8 @@ Other behaviors can be configured through the `Requester`'s `error_handler` fiel
 
 ## Defining errors
 
+### From status code
+
 Response filters can be used to define how to handle requests resulting in responses with a specific HTTP status code.
 For instance, this example will configure the handler to also retry responses with 404 error:
 
@@ -30,6 +32,8 @@ requester:
         - http_codes: [ 404 ]
           action: IGNORE
 ```
+
+### From error message
 
 Errors can also be defined by parsing the error message.
 For instance, this error handler will ignores responses if the error message contains the string "ignorethisresponse"

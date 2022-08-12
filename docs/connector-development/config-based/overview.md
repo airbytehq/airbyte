@@ -17,20 +17,20 @@ See the [connector definition section](yaml-structure.md) for more information o
 
 ## Supported features
 
-| Feature               | Support                                               |
-|-----------------------|-------------------------------------------------------|
-| Transport protocol    | HTTP                                                  |
-| HTTP methods          | GET, POST                                             |
-| Data format           | Json                                                  |
-| Resource type         | Collections<br/>Sub-collection                        |
-| Pagination            | Page limit<br/>Offset<br/>Cursor                      |
-| Authentication        | Header based<br/>OAuth 2.0                            |
-| Sync mode             | Full refresh<br/>Incremental                          |
-| Schema discovery      | Only static schemas                                   |
-| Record transformation | Field selection<br/>Adding fields<br/>Removing fields<br/> |
-| Error detection       | From HTTP status  code<br/>From error message         |
-| Backoff               | Exponential<br/>Constant<br/>Derived from headers     |
-| Filtering records     | :heavy_check_mark:                                    |
+| Feature                                                      | Support                                                                                                                                                                                                                                      |
+|--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Transport protocol                                           | HTTP                                                                                                                                                                                                                                         |
+| HTTP methods                                                 | GET, POST                                                                                                                                                                                                                                    |
+| Data format                                                  | Json                                                                                                                                                                                                                                         |
+| Resource type                                                | Collections<br/>Sub-collection                                                                                                                                                                       |
+| [Pagination](./pagination.md)                                | [Page limit](./pagination.md#page-increment)<br/>[Offset](./pagination.md#offset-increment)<br/>[Cursor](./pagination.md#cursor)                                                                                                             |
+| [Authentication](./authentication.md)                        | [Header based](./authentication.md#ApiKeyAuthenticator)<br/>[Bearer](./authentication.md#BearerAuthenticator)<br/>[Basic](./authentication.md#BasicHttpAuthenticator)<br/>[OAuth](./authentication.md#OAuth)                                 |
+| Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                                                                                                 |
+| Schema discovery                                             | Only static schemas                                                                                                                                                                                                                          |
+| [Stream slicing](./stream-slicers.md)                        | [Datetime](./stream-slicers.md#Datetime), [lists](./stream-slicers.md#list-stream-slicer), [parent-resource id](./stream-slicers.md#Substream-slicer)                                                                                        |
+| [Record transformation](./record-selector.md)                | [Field selection](./record-selector.md#selecting-a-field)<br/>[Adding fields](./record-selector.md#adding-fields)<br/>[Removing fields](./record-selector.md#removing-fields)<br/>[Filtering records](./record-selector.md#filtering-records) |
+| [Error detection](./error-handling.md)                       | [From HTTP status  code](./error-handling.md#from-status-code)<br/>[From error message](./error-handling.md#from-error-message)                                                                                                              |
+| [Backoff strategies](./error-handling.md#Backoff-Strategies) | [Exponential](./error-handling.md#Exponential-backoff)<br/>[Constant](./error-handling.md#Constant-Backoff)<br/>[Derived from headers](./error-handling.md#Wait-time-defined-in-header)                                                      |
 
 If a feature you require is not supported, you can [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
 
