@@ -44,6 +44,7 @@ jobs:
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_current_branch.outputs.branch }}
           echo ${{ needs.find_valid_pat.outputs.pat }}
+          echo ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v3
       #        with:
@@ -64,7 +65,7 @@ jobs:
         with:
           branch: ${{ steps.branch-name.outputs.base_ref_branch }} # Get the last successful commit on master or main branch
           workflow_id: 'test.yml'
-          github_token: ${{ needs.find_valid_pat.outputs.pat }}
+          github_token: secrets.GITHUB_TOKEN
 
       - name: Run changed-files with the commit of the last successful test workflow run on main
         id: changed-files-base-sha-pull-request
