@@ -7,25 +7,33 @@ When you're ready to start building a connector, you can start with [the tutoria
 
 ## Overview
 
-In building over 100 API connectors, we observed that most API connectors are implemented in a formulaic approach:
-
-1. Implement the API's authentication mechanism
-2. Describe the schema of the data returned by the API
-3. Make requests to the API's URL containing the data of interest
-4. Implement pagination strategy
-5. Implement error handling and rate limiting
-6. Decode the data returned from the API
-7. Keep track of what data was already synced.
-
-Each of these problems have a finite number of solutions. For instance, most APIs use one of 3 standard pagination mechanism.
-
-The CDK's config-based interface uses a declarative approach to the problem and allows the developers to specify __what__ data they want to read from a source and abstracts the specifics of the __how__.
+The CDK's config-based interface uses a declarative approach to building source connectors for REST APIs.
 
 Config-based connectors work by parsing a YAML configuration describing the Source, then running the configured connector using a Python backend.
 
 The process then submits HTTP requests to the API endpoint, and extracts records out of the response.
 
 See the [connector definition section](yaml-structure.md) for more information on the YAML file describing the connector.
+
+## Supported features
+
+| Feature               | Support                                           |
+|-----------------------|---------------------------------------------------|
+| Transport protocol    | HTTP                                              |
+| HTTP methods          | GET, POST                                         |
+| Data format           | Json                                              |
+| Resource type         | Collections<br/>Sub-collection                    |
+| Pagination            | Page limit<br/>Offset<br/>Cursor                  |
+| Authentication        | Header based<br/>OAuth 2.0                        |
+| Sync mode             | Full refresh<br/>Incremental                      |
+| Schema discovery      | Only static schemas                               |
+| Record transformation | Adding fields<br/>Removing fields<br/>            |
+| Error detection       | From HTTP status  code<br/>From error message     |
+| Backoff               | Exponential<br/>Constant<br/>Derived from headers |
+| Filtering records     | :heavy_check_mark:                                |
+| Throttling            | :x:                                               |
+
+If a feature you require is not supported, you can [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
 
 ## Source
 
