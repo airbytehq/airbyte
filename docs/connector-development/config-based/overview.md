@@ -94,7 +94,7 @@ More details on the paginator can be found in the [pagination section](paginatio
 ## Requester
 
 The `Requester` defines how to prepare HTTP requests to send to the source API.
-There currently is only one implementation, the `HttpRequester`, which is defined by
+There is currently only one implementation, the `HttpRequester`, which is defined by
 
 1. A base url: The root of the API source
 2. A path: The specific endpoint to fetch data from for a resource
