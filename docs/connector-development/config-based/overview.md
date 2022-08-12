@@ -71,7 +71,7 @@ There is currently only one implementation, the `SimpleRetriever`, which is defi
 4. Stream Slicer: Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
-The developer can choose and configure the implementation they need depending on specifications of the integrations they are building against.
+The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
 
 Since the `Retriever` is defined as part of the Stream configuration, different Streams for a given Source can use different `Retriever` definitions if needed.
 
