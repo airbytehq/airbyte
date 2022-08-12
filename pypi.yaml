@@ -1,0 +1,16 @@
+username: estuary_eng
+password_sops: ENC[AES256_GCM,data:SAm0zrfjV3bMir134es=,iv:yfVmxrULG2oYRfGGQqhz4k7Behqi+FmBClVCS5rpkeM=,tag:S44ykTj8mQMVHrbb2ayKBA==,type:str]
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/helpful-kingdom-273219/locations/us-central1/keyRings/catalog-sops/cryptoKeys/config-encryptor
+          created_at: "2022-08-12T14:27:58Z"
+          enc: CiQABM8p+3xi4T2zIfjF/ylHcOGmRz7QifnzOWb0HXEYhbsOlMUSSQDqeAqHAfTpAHDNdux40w5D2kxav/FeHkvGMJmTb3EZSWpkaLNr7n+uvNlfHscNMehiV7CcOjum6Wq4uSn2+gIe5G2WJ2R1GxM=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2022-08-12T14:27:59Z"
+    mac: ENC[AES256_GCM,data:+/Ij6804ohL8ShFBbjfPKtkE/apZIh9JfBv0hZiCyhPcEZuyDCIeZJCmG8RAIJiev2RsO2+MzV+BrN0iZ+08aLj8GuiZUhY45Py9mh1dgR+enF090vwTNkSnT8agU1IcUccWW6q3vThNqVaH3QA+qXMcQ4hfB8309ehVmJo9TcY=,iv:CfkiJ5TVrXyNefn1EuGOBPIS6L7ptsnZmCq5LneNWsA=,tag:mTBnResqMc/oVuF2HazGdw==,type:str]
+    pgp: []
+    encrypted_suffix: sops
+    version: 3.7.3

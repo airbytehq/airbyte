@@ -22,9 +22,9 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-project = "Airbyte Connector Development Kit"
-copyright = "2021, Airbyte"
-author = "Airbyte"
+project = "Airbyte Connector Development Kit: Estuary's fork"
+copyright = "2022, Estuary"
+author = "Estuary"
 
 
 # -- General configuration ---------------------------------------------------
