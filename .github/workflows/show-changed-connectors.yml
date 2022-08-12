@@ -46,4 +46,4 @@ jobs:
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_current_branch.outputs.branch }}
           echo ${{ needs.find_valid_pat.outputs.pat }}
-          echo ${ git branch }
+          git branch
