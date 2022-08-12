@@ -1,5 +1,6 @@
 definitions:
   page_size: 50
+  step: "30d"
 
   schema_loader:
     type: JsonSchema
@@ -50,7 +51,7 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "10000d"
+    step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
     start_time_option:
       field_name: "start_time"
@@ -67,7 +68,7 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "10000d"
+    step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 
