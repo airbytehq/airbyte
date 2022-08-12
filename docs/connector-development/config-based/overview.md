@@ -56,7 +56,7 @@ A stream is defined by:
 4. [Data retriever](overview.md#data-retriever): Describes how to retrieve the data from the API
 5. [Cursor field](../cdk-python/incremental-stream.md) (Optional): Field to use used as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.
 6. [Transformations](./record-selector.md#transformations) (Optional): A set of transformations to be applied on the records read from the source before emitting them to the destination
-7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval at which incremental syncs should be checkpointed.
+7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval, in number of records, at which incremental syncs should be checkpointed.
 
 More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
 
