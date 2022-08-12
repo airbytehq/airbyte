@@ -47,3 +47,6 @@ See your [Contributiong guide]() on how to get started releasing your connector.
 - [Pagination](../pagination.md)
 - [Testing connectors](../../testing-connectors/README.md)
 - [Contribution guide](../../../contributing-to-airbyte/README.md)
+- [Greenhouse source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
+- [Sendgrid source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sendgrid)
+- [Sentry source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sentry)

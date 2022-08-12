@@ -138,3 +138,11 @@ pagination_strategy:
   class_name: "my_connector_module.MyPaginationStrategy"
   my_field: "hello world"
 ```
+
+## Sample connectors
+
+The following connectors can serve as example of what production-ready config-based connectors look like
+
+- [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
+- [Sendgrid](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sendgrid)
+- [Sentry](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sentry)
