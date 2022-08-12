@@ -4,7 +4,6 @@
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
 When you're ready to start building a connector, you can start with [the tutorial](../../../config-based/tutorial/0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
-See the [motivation section](./motivation.md) for more information on the motivation driving this framework.
 
 ## Overview
 
