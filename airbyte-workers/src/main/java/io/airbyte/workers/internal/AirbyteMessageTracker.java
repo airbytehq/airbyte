@@ -42,8 +42,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicReference<State> destinationOutputState;
   private final AtomicLong totalSourceEmittedStateMessages;
   private final AtomicLong totalDestinationEmittedStateMessages;
-  private final AtomicLong maxSecondsToReceiveStateMessage;
-  private final AtomicLong meanSecondsToReceiveStateMessage;
+  private final AtomicLong maxSecondsToReceiveSourceStateMessage;
+  private final AtomicLong meanSecondsToReceiveSourceStateMessage;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
@@ -80,8 +80,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.destinationOutputState = new AtomicReference<>();
     this.totalSourceEmittedStateMessages = new AtomicLong(0L);
     this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
-    this.maxSecondsToReceiveStateMessage = new AtomicLong(0L);
-    this.meanSecondsToReceiveStateMessage = new AtomicLong(0L);
+    this.maxSecondsToReceiveSourceStateMessage = new AtomicLong(0L);
+    this.meanSecondsToReceiveSourceStateMessage = new AtomicLong(0L);
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -343,27 +343,27 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public Long getMaxSecondsToReceiveStateMessage() {
-    return maxSecondsToReceiveStateMessage.get();
+  public Long getMaxSecondsToReceiveSourceStateMessage() {
+    return maxSecondsToReceiveSourceStateMessage.get();
   }
 
   @Override
-  public Long getMeanSecondsToReceiveStateMessage() {
-    return meanSecondsToReceiveStateMessage.get();
+  public Long getMeanSecondsToReceiveSourceStateMessage() {
+    return meanSecondsToReceiveSourceStateMessage.get();
   }
 
   private void updateMaxAndMeanSecondsToReceiveStateMessage(final DateTime stateMessageReceivedAt) {
     final Long secondsSinceLastStateMessage = calculateSecondsSinceLastStateEmitted(stateMessageReceivedAt);
-    if (maxSecondsToReceiveStateMessage.get() < secondsSinceLastStateMessage) {
-      maxSecondsToReceiveStateMessage.set(secondsSinceLastStateMessage);
+    if (maxSecondsToReceiveSourceStateMessage.get() < secondsSinceLastStateMessage) {
+      maxSecondsToReceiveSourceStateMessage.set(secondsSinceLastStateMessage);
     }
 
-    if (meanSecondsToReceiveStateMessage.get() == 0) {
-      meanSecondsToReceiveStateMessage.set(secondsSinceLastStateMessage);
+    if (meanSecondsToReceiveSourceStateMessage.get() == 0) {
+      meanSecondsToReceiveSourceStateMessage.set(secondsSinceLastStateMessage);
     } else {
       final Long newMeanSeconds =
-          calculateMean(meanSecondsToReceiveStateMessage.get(), totalSourceEmittedStateMessages.get(), secondsSinceLastStateMessage);
-      meanSecondsToReceiveStateMessage.set(newMeanSeconds);
+          calculateMean(meanSecondsToReceiveSourceStateMessage.get(), totalSourceEmittedStateMessages.get(), secondsSinceLastStateMessage);
+      meanSecondsToReceiveSourceStateMessage.set(newMeanSeconds);
     }
   }
 
