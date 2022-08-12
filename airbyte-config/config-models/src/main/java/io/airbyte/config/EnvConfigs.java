@@ -140,6 +140,7 @@ public class EnvConfigs implements Configs {
   private static final String PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE";
   private static final String SYNC_DATA_PLANE_TASK_QUEUES = "SYNC_DATA_PLANE_TASK_QUEUES";
   private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
+  private static final String SKIP_JOBS_DATABASE_AVAILABILITY_CHECK = "SKIP_JOBS_DATABASE_AVAILABILITY_CHECK";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
@@ -969,6 +970,11 @@ public class EnvConfigs implements Configs {
       return new HashSet<>();
     }
     return Arrays.stream(taskQueues.split(",")).collect(Collectors.toSet());
+  }
+
+  @Override
+  public Boolean skipJobsDatabaseAvailabilityCheck() {
+    return getEnvOrDefault(SKIP_JOBS_DATABASE_AVAILABILITY_CHECK, false);
   }
 
   /**

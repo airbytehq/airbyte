@@ -641,8 +641,10 @@ public class WorkerApp {
         DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
             configs.getJobsDatabaseInitializationTimeoutMs()).check();
 
-        // Ensure that the Jobs database is available
-        new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
+        if (!configs.skipJobsDatabaseAvailabilityCheck()) {
+          // Ensure that the Jobs database is available
+          new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
+        }
 
         launchWorkerApp(configs, configsDslContext, jobsDslContext);
       }

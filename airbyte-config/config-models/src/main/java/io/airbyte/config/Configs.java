@@ -604,6 +604,11 @@ public interface Configs {
    */
   Set<String> getSyncDataPlaneTaskQueues();
 
+  /**
+   * Define if the Jobs Database availability check should be skipped. Internal-use only.
+   */
+  Boolean skipJobsDatabaseAvailabilityCheck();
+
   // Worker - Kube only
 
   /**
