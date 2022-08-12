@@ -17,21 +17,20 @@ See the [connector definition section](yaml-structure.md) for more information o
 
 ## Supported features
 
-| Feature               | Support                                           |
-|-----------------------|---------------------------------------------------|
-| Transport protocol    | HTTP                                              |
-| HTTP methods          | GET, POST                                         |
-| Data format           | Json                                              |
-| Resource type         | Collections<br/>Sub-collection                    |
-| Pagination            | Page limit<br/>Offset<br/>Cursor                  |
-| Authentication        | Header based<br/>OAuth 2.0                        |
-| Sync mode             | Full refresh<br/>Incremental                      |
-| Schema discovery      | Only static schemas                               |
-| Record transformation | Adding fields<br/>Removing fields<br/>            |
-| Error detection       | From HTTP status  code<br/>From error message     |
-| Backoff               | Exponential<br/>Constant<br/>Derived from headers |
-| Filtering records     | :heavy_check_mark:                                |
-| Throttling            | :x:                                               |
+| Feature               | Support                                               |
+|-----------------------|-------------------------------------------------------|
+| Transport protocol    | HTTP                                                  |
+| HTTP methods          | GET, POST                                             |
+| Data format           | Json                                                  |
+| Resource type         | Collections<br/>Sub-collection                        |
+| Pagination            | Page limit<br/>Offset<br/>Cursor                      |
+| Authentication        | Header based<br/>OAuth 2.0                            |
+| Sync mode             | Full refresh<br/>Incremental                          |
+| Schema discovery      | Only static schemas                                   |
+| Record transformation | Field selection<br/>Adding fields<br/>Removing fields<br/> |
+| Error detection       | From HTTP status  code<br/>From error message         |
+| Backoff               | Exponential<br/>Constant<br/>Derived from headers     |
+| Filtering records     | :heavy_check_mark:                                    |
 
 If a feature you require is not supported, you can [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
 
