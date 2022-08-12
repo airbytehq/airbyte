@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.1.74
+- Make `supported_sync_modes` a required `AirbyteStream` property
+
+## 0.1.74
 - Replace JelloRecordExtractor with DpathRecordExtractor
 
 ## 0.1.73
