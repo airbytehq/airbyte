@@ -155,6 +155,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
             next_date = state_date + datetime.timedelta(days=1)
             start_datetime = max(start_datetime, next_date)
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
+        print(f"dates:{dates}")
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):

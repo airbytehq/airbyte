@@ -43,7 +43,7 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "100d"
+    step: "30000d"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   base_stream:
     $options:
