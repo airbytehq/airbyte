@@ -47,6 +47,7 @@ class MockStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        assert sync_mode == sync_mode.full_refresh
         if not stream_slice:
             yield from self._records
         else:
