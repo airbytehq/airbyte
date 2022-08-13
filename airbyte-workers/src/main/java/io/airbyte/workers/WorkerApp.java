@@ -438,6 +438,7 @@ public class WorkerApp {
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
+    LOGGER.info("Initialising as data plane worker: {}", configs.initializeAsDataPlaneWorker());
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(null, configs);
 
@@ -462,23 +463,22 @@ public class WorkerApp {
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
-    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
+    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
+    final var authHeader = configs.initializeAsDataPlaneWorker()
         ? "bearer"
         : configs.getAirbyteApiAuthHeaderName();
-
-    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
+    final var authToken = configs.initializeAsDataPlaneWorker()
         ? generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
             configs.getDataPlaneServiceAccountEmail(),
             configs.getControlPlaneGoogleEndpoint(),
             JWT_TTL_SECONDS)
         : configs.getAirbyteApiAuthHeaderValue();
-
-    LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
-        configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
+        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader, authToken);
 
     final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme("http")
+            .setScheme(scheme)
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
@@ -635,12 +635,13 @@ public class WorkerApp {
             JWT_TTL_SECONDS)
         : configs.getAirbyteApiAuthHeaderValue();
 
-    LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
-        configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
+    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
+        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
 
     final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme("http")
+            .setScheme(scheme)
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
