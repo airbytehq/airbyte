@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "scope": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customStatusId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "childIds": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "project": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "authorId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+  }
+}

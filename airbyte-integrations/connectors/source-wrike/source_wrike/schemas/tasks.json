@@ -17,12 +17,24 @@
     "importance": {
       "type":  ["null","string"]
     },   
+    "scope": {
+      "type":  ["null","string"]
+    },   
     "briefDescription": {
       "type":  ["null","string"]
     },  
     "description": {
       "type":  ["null","string"]
     },           
+    "customStatusId": {
+      "type":  ["null","string"]
+    },      
+    "permalink": {
+      "type":  ["null","string"]
+    },  
+    "priority": {
+      "type":  ["null","string"]
+    },  
     "createdDate": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -33,6 +45,24 @@
         "type": ["string", "null"]
       }
     },
+    "parentIds": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "superTaskIds": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },    
+    "authorIds": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },    
     "customFields": {
       "type": ["array", "null"],
       "items": {
@@ -47,9 +77,17 @@
         }
       }
     },
+    "dates": {
+      "type": ["object","null"],
+      "properties": {
+        "type": {
+          "type": ["string","null"]
+        }
+      }
+    },
     "updatedDate": {
       "type": ["null", "string"],
       "format": "date-time"
-    }    
+    }
   }
 }

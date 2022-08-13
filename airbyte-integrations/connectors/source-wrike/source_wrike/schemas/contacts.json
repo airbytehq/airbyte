@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "firstName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lastName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "avatarUrl": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "timezone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "locale": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "profiles": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "accountId": {
+            "type": [
+              "string"
+            ]
+          },
+          "role": {
+            "type": [
+              "string"
+            ]
+          },
+          "external": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "admin": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "owner": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

@@ -3,7 +3,7 @@
 #
 
 
-from abc import ABC, abstractmethod
+from abc import ABC 
 from contextlib import nullcontext
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -63,8 +63,9 @@ class Tasks(WrikeStream):
 class Customfields(WrikeStream):    
     pass
 
-class Users(WrikeStream):    
+class Contacts(WrikeStream):    
     pass
+
 
 class Comments(WrikeStream):
     pass
@@ -109,6 +110,6 @@ class SourceWrike(AbstractSource):
         auth = TokenAuthenticator(token=config["access_token"])
         return [Tasks(authenticator=auth,wrike_instance=config["wrike_instance"]), 
             Customfields(authenticator=auth,wrike_instance=config["wrike_instance"]),
-            Users(authenticator=auth,wrike_instance=config["wrike_instance"]),
+            Contacts(authenticator=auth,wrike_instance=config["wrike_instance"]),
             Folders(authenticator=auth,wrike_instance=config["wrike_instance"]),
             Comments(authenticator=auth,wrike_instance=config["wrike_instance"])]
