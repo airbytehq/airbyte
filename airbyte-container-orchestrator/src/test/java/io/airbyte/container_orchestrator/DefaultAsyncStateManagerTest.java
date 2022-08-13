@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 
 class DefaultAsyncStateManagerTest {
 
-
   private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1", new KubeContainerInfo("busybox", "IfNotPresent"));
   private static final String OUTPUT = "some output value";
 
