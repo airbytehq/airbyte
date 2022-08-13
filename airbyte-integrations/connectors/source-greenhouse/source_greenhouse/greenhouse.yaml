@@ -70,6 +70,11 @@ definitions:
         inject_into: "request_parameter"
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            created_after: "{{ stream_slice['start_time'] }}"
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
     primary_key: "id"
