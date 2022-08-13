@@ -2,43 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
-from typing import Any, List, Mapping, Tuple
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from .streams import Events, Issues, ProjectDetail, Projects
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+WARNING: Do not modify this file.
+"""
 
 
-# Source
-class SourceSentry(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        try:
-            projects_stream = Projects(
-                authenticator=TokenAuthenticator(token=config["auth_token"]),
-                hostname=config.get("hostname"),
-            )
-            next(projects_stream.read_records(sync_mode=SyncMode.full_refresh))
-            return True, None
-        except Exception as e:
-            return False, e
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        stream_args = {
-            "authenticator": TokenAuthenticator(token=config["auth_token"]),
-            "hostname": config.get("hostname"),
-        }
-        project_stream_args = {
-            **stream_args,
-            "organization": config["organization"],
-            "project": config["project"],
-        }
-        return [
-            Events(**project_stream_args),
-            Issues(**project_stream_args),
-            ProjectDetail(**project_stream_args),
-            Projects(**stream_args),
-        ]
+# Declarative Source
+class SourceSentry(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "./source_sentry/sentry.yaml"})
