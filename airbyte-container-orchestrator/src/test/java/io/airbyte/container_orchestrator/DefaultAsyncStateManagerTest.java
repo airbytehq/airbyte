@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,8 @@ import org.junit.jupiter.api.Test;
 
 class DefaultAsyncStateManagerTest {
 
-  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1");
+
+  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1", new KubeContainerInfo("busybox", "IfNotPresent"));
   private static final String OUTPUT = "some output value";
 
   private DocumentStoreClient documentStore;
