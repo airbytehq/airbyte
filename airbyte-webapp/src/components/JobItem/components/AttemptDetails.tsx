@@ -54,7 +54,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
 
   const truncateExternalMessage = (failureMessage?: string) => {
     if (failureMessage && failureMessage.length > 140) {
-      return failureMessage.slice(0, 140).concat("...");
+      return failureMessage.slice(0, 136).concat("...");
     }
     return failureMessage;
   };
