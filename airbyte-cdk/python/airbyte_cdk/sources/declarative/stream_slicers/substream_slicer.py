@@ -125,13 +125,11 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key
                 stream_state_field = parent_stream_config.stream_slice_field
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
+                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode.full_refresh):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice.get("slice")
 
-                    for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
-                    ):
+                    for parent_record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
                         empty_parent_slice = False
                         stream_state_value = parent_record.get(parent_field)
                         yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
