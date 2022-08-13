@@ -607,7 +607,7 @@ public interface Configs {
   /**
    * Define if database availability checks should be skipped. Internal-use only.
    */
-  Boolean skipDatabaseAvailabilityChecks();
+  Boolean initializeAsDataPlaneWorker();
 
   // Worker - Kube only
 

@@ -140,7 +140,7 @@ public class EnvConfigs implements Configs {
   private static final String PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE";
   private static final String SYNC_DATA_PLANE_TASK_QUEUES = "SYNC_DATA_PLANE_TASK_QUEUES";
   private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
-  private static final String SKIP_DATABASE_AVAILABILITY_CHECKS = "SKIP_DATABASE_AVAILABILITY_CHECKS";
+  private static final String INITIALIZE_AS_DATA_PLANE_WORKER = "INITIALIZE_AS_DATA_PLANE_WORKER";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
@@ -973,8 +973,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Boolean skipDatabaseAvailabilityChecks() {
-    return getEnvOrDefault(SKIP_DATABASE_AVAILABILITY_CHECKS, false);
+  public Boolean initializeAsDataPlaneWorker() {
+    return getEnvOrDefault(INITIALIZE_AS_DATA_PLANE_WORKER, false);
   }
 
   /**

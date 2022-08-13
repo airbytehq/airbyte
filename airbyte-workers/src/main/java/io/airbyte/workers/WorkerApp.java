@@ -421,6 +421,110 @@ public class WorkerApp {
     }
   }
 
+  private static void launchDataPlaneWorkerApp(final Configs configs) throws IOException {
+    MetricClientFactory.initialize(MetricEmittingApps.WORKER);
+
+    final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
+    final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
+    final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
+    final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
+    final WorkerConfigs replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
+
+    final ProcessFactory defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
+    final ProcessFactory replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
+
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
+
+    final Path workspaceRoot = configs.getWorkspaceRoot();
+    LOGGER.info("workspaceRoot = " + workspaceRoot);
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(null, configs);
+
+    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
+    }
+
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+
+    final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
+
+    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService, null);
+    TemporalUtils.configureTemporalNamespace(temporalService);
+
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
+
+    final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
+
+    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
+        ? "bearer"
+        : configs.getAirbyteApiAuthHeaderName();
+
+    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
+        ? generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
+            configs.getDataPlaneServiceAccountEmail(),
+            configs.getControlPlaneGoogleEndpoint(),
+            JWT_TTL_SECONDS)
+        : configs.getAirbyteApiAuthHeaderValue();
+
+    LOGGER.info("Creating Airbyte Config Api Client with Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
+        configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+
+    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.generated.ApiClient()
+            .setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api")
+            .setRequestInterceptor(builder -> {
+              builder.setHeader(authHeader, authToken);
+              builder.setHeader("User-Agent", "WorkerApp");
+            }));
+
+    // TODO (pmossman) this is obviously horrible, just passing nulls for now to unblock bare minimum
+    // MVP. Should refactor this all to properly
+    // differentiate control-plane dependencies and initialization from data-plane
+    // dependencies/initialization
+    new WorkerApp(
+        workspaceRoot,
+        defaultProcessFactory,
+        null,
+        null,
+        null,
+        replicationProcessFactory,
+        secretsHydrator,
+        workflowClient,
+        null,
+        configs.getMaxWorkers(),
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        defaultWorkerConfigs,
+        specWorkerConfigs,
+        checkWorkerConfigs,
+        discoverWorkerConfigs,
+        replicationWorkerConfigs,
+        configs.getAirbyteVersionOrWarning(),
+        null,
+        null,
+        temporalWorkerRunFactory,
+        configs,
+        null,
+        containerOrchestratorConfig,
+        null,
+        null,
+        null,
+        null,
+        featureFlags,
+        null,
+        airbyteApiClient).start();
+  }
+
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
 
@@ -636,7 +740,7 @@ public class WorkerApp {
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, WorkerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
-        if (!configs.skipDatabaseAvailabilityChecks()) {
+        if (!configs.initializeAsDataPlaneWorker()) {
           // Ensure that the Configuration database is available
           DatabaseCheckFactory
               .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
@@ -651,7 +755,11 @@ public class WorkerApp {
           new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
         }
 
-        launchWorkerApp(configs, configsDslContext, jobsDslContext);
+        if (configs.initializeAsDataPlaneWorker()) {
+          launchDataPlaneWorkerApp(configs);
+        } else {
+          launchWorkerApp(configs, configsDslContext, jobsDslContext);
+        }
       }
     } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
