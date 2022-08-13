@@ -52,9 +52,17 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     })}: ${failureOrigin}`;
   };
 
+  const truncateExternalMessage = (failureMessage?: string) => {
+    if (failureMessage && failureMessage.length > 140) {
+      return failureMessage.slice(0, 140).concat("...");
+    }
+    return failureMessage;
+  };
+
   const getExternalFailureMessage = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
-    const failureMessage = failure?.externalMessage?.slice(0, 140) ?? formatMessage({ id: "errorView.unknown" });
+    const failureMessage =
+      truncateExternalMessage(failure?.externalMessage) ?? formatMessage({ id: "errorView.unknown" });
 
     return `${formatMessage({
       id: "sources.message",
