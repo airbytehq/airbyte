@@ -9,17 +9,21 @@ connectionSpecification:
     - google_application_credentials
   properties:
     collection_name:
+      title: Collection Name
       type: string
-      description: Firestore collection name to sync
+      description: Firestore collection to sync
     project_id:
+      title: Project ID
       type: string
       description: Firebase project id
     google_application_credentials:
-      type: object
-      description: JSON cert credentials
-    start_date:
+      title: Service Account Key JSON
       type: string
+      description: JSON cert credentials in JSON format
+      airbyte_secret: true
+    start_date:
       title: Start date
+      type: string
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Any data before

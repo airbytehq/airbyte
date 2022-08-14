@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from google.oauth2 import service_account
 import google.auth.transport.requests
 import requests
+import json
 
 class Helpers(object):
     url_base = "https://firestore.googleapis.com/v1/"
@@ -158,7 +159,7 @@ class Collection(IncrementalFirestoreStream):
 class SourceFirestore(AbstractSource):
     def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         scopes = ['https://www.googleapis.com/auth/datastore']
-        credentials = service_account.Credentials.from_service_account_info(config["google_application_credentials"], scopes=scopes)        
+        credentials = service_account.Credentials.from_service_account_info(json.loads(config["google_application_credentials"]), scopes=scopes)        
         credentials.refresh(google.auth.transport.requests.Request())
         return TokenAuthenticator(token=credentials.token)
 
