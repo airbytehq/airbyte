@@ -27,7 +27,8 @@
       "type":  ["null","string"]
     },           
     "customStatusId": {
-      "type":  ["null","string"]
+      "type": 
+       ["null","string"]
     },      
     "permalink": {
       "type":  ["null","string"]
