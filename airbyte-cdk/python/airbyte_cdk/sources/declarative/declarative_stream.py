@@ -36,9 +36,9 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     config: Config
     options: InitVar[Mapping[str, Any]]
     name: str
-    _name: str = field(init=False, repr=False)
+    _name: str = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
-    _primary_key: str = field(init=False, repr=False)
+    _primary_key: str = field(init=False, repr=False, default="")
     stream_cursor_field: Optional[List[str]] = None
     transformations: List[RecordTransformation] = None
     checkpoint_interval: Optional[int] = None

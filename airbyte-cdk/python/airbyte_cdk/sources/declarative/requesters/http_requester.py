@@ -28,8 +28,8 @@ class HttpRequester(Requester, JsonSchemaMixin):
 
     Attributes:
         name (str): Name of the stream. Only used for request/response caching
-        url_base (InterpolatedString): Base url to send requests to
-        path (InterpolatedString): Path to send requests to
+        url_base (Union[InterpolatedString, str]): Base url to send requests to
+        path (Union[InterpolatedString, str]): Path to send requests to
         http_method (Union[str, HttpMethod]): HTTP method to use when sending requests
         request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
         authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
@@ -38,8 +38,8 @@ class HttpRequester(Requester, JsonSchemaMixin):
     """
 
     name: str
-    url_base: InterpolatedString
-    path: InterpolatedString
+    url_base: Union[InterpolatedString, str]
+    path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
@@ -48,6 +48,8 @@ class HttpRequester(Requester, JsonSchemaMixin):
     error_handler: Optional[ErrorHandler] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
+        self.url_base = InterpolatedString.create(self.url_base, options=options)
+        self.path = InterpolatedString.create(self.path, options=options)
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
         elif isinstance(self.request_options_provider, dict):
