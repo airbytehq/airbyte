@@ -3,17 +3,17 @@
 #
 
 
-from abc import ABC 
+from abc import ABC
 from contextlib import nullcontext
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
 import pendulum
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from pendulum import DateTime 
+from pendulum import DateTime
 
 
 # Basic full refresh stream
@@ -30,7 +30,7 @@ class WrikeStream(HttpStream, ABC):
         nextPageToken = response.json().get("nextPageToken")
 
         if nextPageToken:
-            return {'nextPageToken': nextPageToken}
+            return {"nextPageToken": nextPageToken}
         else:
             return None
 
@@ -42,19 +42,18 @@ class WrikeStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
-        for record in response.json()['data']:
+        for record in response.json()["data"]:
             yield record
 
     def path(self, **kwargs) -> str:
         """
-        This one is tricky, the API path is the class name by default. Airbyte will load  `url_base`/`classname` by 
+        This one is tricky, the API path is the class name by default. Airbyte will load  `url_base`/`classname` by
         default, like https://app-us2.wrike.com/api/v4/tasks if the class name is Tasks
         """
         return self.__class__.__name__.lower()
 
 
 class Tasks(WrikeStream):
-
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -62,18 +61,19 @@ class Tasks(WrikeStream):
         return next_page_token or {"fields": "[customFields,parentIds,authorIds,responsibleIds,description,briefDescription,superTaskIds]"}
 
 
-class Customfields(WrikeStream):    
+class Customfields(WrikeStream):
     pass
 
-class Contacts(WrikeStream):    
+
+class Contacts(WrikeStream):
     pass
 
 
 def to_utc_z(date: DateTime):
-    return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 class Comments(WrikeStream):
-
     def __init__(self, start_date: DateTime, **kwargs):
         self._start_date = start_date
         super().__init__(**kwargs)
@@ -81,13 +81,13 @@ class Comments(WrikeStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
         Yields a list of the beginning timestamps of each 7 days period between the start date and now,
-        as the comments endpoint limits the requests for 7 days intervals. 
+        as the comments endpoint limits the requests for 7 days intervals.
         """
         start_date = self._start_date
         now = pendulum.now()
 
         while start_date <= now:
-            end_date = start_date + pendulum.duration(days=7) 
+            end_date = start_date + pendulum.duration(days=7)
             yield {"start": to_utc_z(start_date)}
             start_date = end_date
 
@@ -98,8 +98,10 @@ class Comments(WrikeStream):
         slice_params = {"updatedDate": '{"start":"' + stream_slice["start"] + '"}'}
         return next_page_token or slice_params
 
+
 class Folders(WrikeStream):
     pass
+
 
 # Source
 
@@ -118,8 +120,7 @@ class SourceWrike(AbstractSource):
                 "Authorization": "Bearer " + config["access_token"],
             }
 
-            resp = requests.get(
-                f"https://{config['wrike_instance']}/api/v4/version", headers=headers)
+            resp = requests.get(f"https://{config['wrike_instance']}/api/v4/version", headers=headers)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -138,8 +139,10 @@ class SourceWrike(AbstractSource):
         start_date = pendulum.parse(config["start_date"])
 
         auth = TokenAuthenticator(token=config["access_token"])
-        return [Tasks(authenticator=auth,wrike_instance=config["wrike_instance"]), 
-            Customfields(authenticator=auth,wrike_instance=config["wrike_instance"]),
-            Contacts(authenticator=auth,wrike_instance=config["wrike_instance"]),
-            Folders(authenticator=auth,wrike_instance=config["wrike_instance"]),
-            Comments(authenticator=auth,wrike_instance=config["wrike_instance"],start_date=start_date)]
+        return [
+            Tasks(authenticator=auth, wrike_instance=config["wrike_instance"]),
+            Customfields(authenticator=auth, wrike_instance=config["wrike_instance"]),
+            Contacts(authenticator=auth, wrike_instance=config["wrike_instance"]),
+            Folders(authenticator=auth, wrike_instance=config["wrike_instance"]),
+            Comments(authenticator=auth, wrike_instance=config["wrike_instance"], start_date=start_date),
+        ]
