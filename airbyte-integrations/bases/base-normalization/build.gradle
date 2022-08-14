@@ -71,6 +71,10 @@ task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('clickhouse')
     dependsOn assemble
 }
+task airbyteDockerFirebolt(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('firebolt')
+    dependsOn assemble
+}
 task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('snowflake')
     dependsOn assemble
@@ -88,6 +92,7 @@ airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
 airbyteDocker.dependsOn(airbyteDockerClickhouse)
+airbyteDocker.dependsOn(airbyteDockerFirebolt)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 airbyteDocker.dependsOn(airbyteDockerTiDB)
