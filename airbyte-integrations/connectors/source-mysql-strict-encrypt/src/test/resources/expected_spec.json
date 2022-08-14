@@ -90,12 +90,28 @@
                 "multiline": true,
                 "order": 1
               },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
               "client_key_password": {
                 "type": "string",
                 "title": "Client key password (Optional)",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
-                "order": 2
+                "order": 4
               }
             }
           },
@@ -104,9 +120,7 @@
             "description": "Verify-full SSL mode.",
             "required": [
               "mode",
-              "ca_certificate",
-              "client_certificate",
-              "client_key"
+              "ca_certificate"
             ],
             "properties": {
               "mode": {
@@ -127,7 +141,7 @@
               "client_certificate": {
                 "type": "string",
                 "title": "Client certificate",
-                "description": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
                 "order": 2
@@ -135,7 +149,7 @@
               "client_key": {
                 "type": "string",
                 "title": "Client key",
-                "description": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
                 "order": 3

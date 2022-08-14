@@ -46,7 +46,7 @@ import java.util.Set;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnectionOptions;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
 import static java.util.stream.Collectors.toList;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
@@ -156,7 +156,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
+        additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
         jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
                 .append(JdbcUtils.AMPERSAND);
         if (additionalParameters.isEmpty()) {
