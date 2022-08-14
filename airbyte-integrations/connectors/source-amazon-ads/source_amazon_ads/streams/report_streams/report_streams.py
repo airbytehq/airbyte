@@ -92,6 +92,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
+    # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
+    REPORTING_PERIOD = 60
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
@@ -274,9 +276,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
-            return max(start_date, today.subtract(days=60))
+            return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
-            return max(self._start_date, today.subtract(days=60))
+            return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
         return today
 
     def stream_slices(
