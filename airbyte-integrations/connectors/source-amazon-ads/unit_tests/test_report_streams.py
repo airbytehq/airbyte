@@ -4,6 +4,7 @@
 
 import re
 from base64 import b64decode
+from datetime import timedelta
 from unittest import mock
 
 import pytest
@@ -360,3 +361,34 @@ def test_stream_slices_different_timezones(config):
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
+
+
+def test_stream_slices_lazy_evaluation(config):
+    with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
+        config["start_date"] = "2021-05-10"
+        profile1 = Profile(profileId=1, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+        profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+
+        stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
+        stream.REPORTING_PERIOD = 5
+
+        slices = []
+        for _slice in stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field):
+            slices.append(_slice)
+            frozen_datetime.tick(delta=timedelta(minutes=10))
+
+        assert slices == [
+            {"profile": profile1, "reportDate": "20220527"},
+            {"profile": profile2, "reportDate": "20220528"},
+            {"profile": profile1, "reportDate": "20220528"},
+            {"profile": profile2, "reportDate": "20220529"},
+            {"profile": profile1, "reportDate": "20220529"},
+            {"profile": profile2, "reportDate": "20220530"},
+            {"profile": profile1, "reportDate": "20220530"},
+            {"profile": profile2, "reportDate": "20220531"},
+            {"profile": profile1, "reportDate": "20220531"},
+            {"profile": profile2, "reportDate": "20220601"},
+            {"profile": profile1, "reportDate": "20220601"},
+            {"profile": profile2, "reportDate": "20220602"},
+            {"profile": profile1, "reportDate": "20220602"},
+        ]
