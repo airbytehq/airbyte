@@ -8,7 +8,7 @@ from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -143,7 +143,7 @@ def test_create_substream_slicer():
         path: "kek"
       record_selector:
         extractor:
-          transform: "_"
+          field_pointer: []
     stream_A:
       type: DeclarativeStream
       $options:
@@ -275,7 +275,7 @@ def test_full_config():
 decoder:
   class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 extractor:
-  class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.dpath_extractor.DpathExtractor
   decoder: "*ref(decoder)"
 selector:
   class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
@@ -331,7 +331,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
-      transform: "_.result" # <- change here for chaos
+      field_pointer: ["result"]
   retriever:
     $ref: "*ref(retriever)"
     requester:
@@ -358,7 +358,7 @@ check:
     assert stream_config["cursor_field"] == []
     stream = factory.create_component(stream_config, input_config)()
 
-    assert isinstance(stream.retriever.record_selector.extractor, JelloExtractor)
+    assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
 
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
@@ -370,7 +370,7 @@ check:
     assert type(stream.retriever.record_selector) == RecordSelector
     assert type(stream.retriever.record_selector.extractor.decoder) == JsonDecoder
 
-    assert stream.retriever.record_selector.extractor.transform.eval(input_config) == "_.result"
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
     assert type(stream.retriever.record_selector.record_filter) == RecordFilter
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -386,8 +386,7 @@ check:
 def test_create_record_selector():
     content = """
     extractor:
-      type: JelloExtractor
-      transform: "_.result"
+      type: DpathExtractor
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
@@ -395,7 +394,7 @@ def test_create_record_selector():
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         $ref: "*ref(extractor)"
-        transform: "_.result"
+        field_pointer: ["result"]
     """
     config = parser.parse(content)
 
@@ -405,8 +404,8 @@ def test_create_record_selector():
     factory.instantiate = True
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
-    assert isinstance(selector.extractor, JelloExtractor)
-    assert selector.extractor.transform.eval(input_config) == "_.result"
+    assert isinstance(selector.extractor, DpathExtractor)
+    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == ["result"]
     assert isinstance(selector.record_filter, RecordFilter)
 
 
@@ -507,7 +506,7 @@ def test_config_with_defaults():
               page_size: 10
           record_selector:
             extractor:
-              transform: "_.result"
+              field_pointer: ["result"]
     streams:
       - "*ref(lists_stream)"
     """
@@ -527,7 +526,7 @@ def test_config_with_defaults():
     assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
-    assert stream.retriever.record_selector.extractor.transform.eval(input_config) == "_.result"
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream.retriever.paginator, LimitPaginator)
 
@@ -581,7 +580,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      transform: "_.result"
+                      field_pointer: ["result"]
     """
 
     def test_no_transformations(self):

@@ -90,6 +90,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.12 | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469)    | Define primary_key for all report streams                                                                         |
 | 0.1.11 | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031)    | Improve report streams date-range generation                                                                      |
 | 0.1.10 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042)    | Update `additionalProperties` field to true from schemas                                                          |
 | 0.1.9  | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541)    | Improve documentation for Beta                                                                                    |
