@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - access_token 
     - wrike_instance
+    - start_date
   additionalProperties: false
   properties:
     access_token:
@@ -18,3 +19,12 @@ connectionSpecification:
       type: string
       description: Wrike's instance such as `app-us2.wrike.com`
       default: app-us2.wrike.com
+    start_date:
+      type: string
+      title: Start date for comments
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Only comments
+        after this date will be replicated.
+      examples:
+        - "2017-01-25T00:00:00Z"
