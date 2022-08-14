@@ -6,12 +6,12 @@ import { Subscription } from "rxjs";
 import { Spinner } from "components";
 
 import { useExperiment } from "hooks/services/Experiment";
+import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import githubLogo from "./assets/github-logo.svg";
 import googleLogo from "./assets/google-logo.svg";
 import styles from "./OAuthLogin.module.scss";
-import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 
 const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
