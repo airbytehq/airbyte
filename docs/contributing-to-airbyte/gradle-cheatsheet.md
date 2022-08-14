@@ -17,7 +17,7 @@ We split Build Platform and Build Connectors Base from each other for a few reas
 2. We want to the iteration cycles of people working on connectors or the platform faster _and_ independent. e.g. Before this change someone working on a Platform feature needs to run formatting on the entire codebase \(including connectors\). This led to a lot of cosmetic build failures that obfuscated actually problems. Ideally a failure on the connectors side should not block progress on the platform side.
 3. The lifecycles are different. One can safely release the Platform even if parts of Connectors Base is failing \(and vice versa\).
 
-Future Work: The next step here is to figure out how to more formally split connectors and platform. Right now we exploit behavior in `settings.gradle` to separate them. This is not a best practice. Ultimately, we want these two builds to be totally separate. We do not know what that will look like yet.
+Future Work: The next step here is to figure out how to more formally split connectors and platform. Right now we exploit behavior in [settings.gradle](../../settings.gradle) to separate them. This is not a best practice. Ultimately, we want these two builds to be totally separate. We do not know what that will look like yet.
 
 ## Cheatsheet
 
@@ -98,7 +98,7 @@ Unit Tests can be run using the `:test` task on any submodule. These test class-
 
 We split Acceptance Tests into 2 different test suites:
 
-* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test_kube.sh) that is used by the CI.
+* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](../../tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [accetance_test_kube script](../../tools/bin/acceptance_test_kube.sh) that is used by the CI.
 * Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate deployment of Airbyte running.
 
 These tests currently all live in [airbyte-tests](../.././airbyte-tests)
@@ -141,6 +141,6 @@ We're almost there, but today there is only one Gradle command that's needed whe
 
 **Formatting python module**: 
 ```shell
-./gradlew :airbyte-integrations:connectors:<name>:airbytePythonFormat
+./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
 ```
 
