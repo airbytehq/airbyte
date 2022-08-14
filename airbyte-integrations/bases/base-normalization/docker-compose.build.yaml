@@ -36,6 +36,13 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-firebolt:
+    image: airbyte/normalization-firebolt:${VERSION}
+    build:
+      dockerfile: firebolt.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   normalization-snowflake:
     image: airbyte/normalization-snowflake:${VERSION}
     build:

@@ -23,3 +23,15 @@
         {%- endfor %}
     )))
 {%- endmacro %}
+
+{% macro firebolt__surrogate_key(field_list) -%}
+    MD5(
+        {%- for field in field_list %}
+            {% if not loop.last %}
+                IFNULL(CAST({{ field }} AS STRING), '') || '~' ||
+            {% else %}
+                IFNULL(CAST({{ field }} AS STRING), '')
+            {% endif %}
+        {%- endfor %}
+    )
+{%- endmacro %}

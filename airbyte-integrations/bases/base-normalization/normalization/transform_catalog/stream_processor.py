@@ -541,6 +541,8 @@ where 1 = 1
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
                 return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
+            if self.destination_type == DestinationType.FIREBOLT:
+                return f"TRY_CAST(TRIM('\"' FROM {replace_operation}) AS DATETIME) as {column_name}"
             # in all other cases
             if is_datetime_without_timezone(definition):
                 sql_type = jinja_call("type_timestamp_without_timezone()")
@@ -558,6 +560,8 @@ where 1 = 1
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
                 return f"toDate(parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation}))) as {column_name}"
+            if self.destination_type == DestinationType.FIREBOLT:
+                return f"TRY_CAST(TRIM('\"' FROM {replace_operation}) AS DATE) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -580,6 +584,8 @@ where 1 = 1
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            if self.destination_type == DestinationType.FIREBOLT:
+                return f"TRY_CAST(TRIM('\"' FROM {column_name}) AS {sql_type}) as {column_name}"
             elif self.destination_type == DestinationType.MYSQL:
                 # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
                 sql_type = f"{sql_type}(1024)"
@@ -589,6 +595,8 @@ where 1 = 1
 
         if self.destination_type == DestinationType.CLICKHOUSE:
             return f"accurateCastOrNull({column_name}, '{sql_type}') as {column_name}"
+        if self.destination_type == DestinationType.FIREBOLT:
+            return f"TRY_CAST({column_name} as {sql_type}) as {column_name}"
         else:
             return f"cast({column_name} as {sql_type}) as {column_name}"
 

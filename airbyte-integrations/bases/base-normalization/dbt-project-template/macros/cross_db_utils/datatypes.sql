@@ -44,6 +44,9 @@
     json
 {%- endmacro -%}
 
+{% macro firebolt__type_json() %}
+    STRING
+{% endmacro %}
 
 {# string ------------------------------------------------- #}
 
@@ -61,6 +64,10 @@
 
 {%- macro clickhouse__type_string() -%}
     String
+{%- endmacro -%}
+
+{%- macro firebolt__type_string() -%}
+    STRING
 {%- endmacro -%}
 
 {#-- TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/dbt-labs/dbt-core/issues/5238) and we've upgraded to the latest version of dbt --#}
@@ -89,6 +96,10 @@
     float
 {% endmacro %}
 
+{% macro firebolt__type_float() %}
+    FLOAT
+{% endmacro %}
+
 {# int  ------------------------------------------------- #}
 {% macro default__type_int() %}
     int
@@ -110,6 +121,10 @@
     signed
 {% endmacro %}
 
+{% macro firebolt__type_int() %}
+    INT
+{% endmacro %}
+
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
@@ -127,6 +142,10 @@
     signed
 {% endmacro %}
 
+{% macro firebolt__type_bigint() %}
+    BIGINT
+{% endmacro %}
+
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
@@ -138,6 +157,10 @@
 
 {% macro tidb__type_numeric() %}
     float
+{% endmacro %}
+
+{% macro firebolt__type_numeric() %}
+    FLOAT
 {% endmacro %}
 
 {# very_large_integer --------------------------------------- --#}
@@ -170,6 +193,10 @@ so this macro needs to be called very_large_integer.
     decimal(38, 0)
 {% endmacro %}
 
+{% macro firebolt__type_very_large_integer() %}
+    DECIMAL(38)
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
@@ -187,6 +214,10 @@ so this macro needs to be called very_large_integer.
 
 {% macro tidb__type_timestamp() %}
     time
+{% endmacro %}
+
+{% macro firebolt__type_timestamp() %}
+    DATETIME
 {% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -228,6 +259,11 @@ so this macro needs to be called very_large_integer.
 {%- macro tidb__type_timestamp_with_timezone() -%}
     char(1000)
 {%- endmacro -%}
+
+{% macro firebolt__type_timestamp_with_timezone() %}
+    DATETIME
+{% endmacro %}
+
 
 {# timestamp without time zone  -------------------------------------------------     #}
 
@@ -287,6 +323,9 @@ so this macro needs to be called very_large_integer.
     time
 {% endmacro %}
 
+{% macro firebolt__type_time_without_timezone() %}
+    STRING
+{% endmacro %}
 
 {# time with time zone  -------------------------------------------------     #}
 
@@ -330,6 +369,10 @@ so this macro needs to be called very_large_integer.
     char(1000)
 {%- endmacro -%}
 
+{% macro firebolt__type_time_with_timezone() %}
+    STRING
+{% endmacro %}
+
 {# date  -------------------------------------------------     #}
 
 {%- macro type_date() -%}
@@ -350,4 +393,8 @@ so this macro needs to be called very_large_integer.
 
 {% macro clickhouse__type_date() %}
     Date32
+{% endmacro %}
+
+{% macro firebolt__type_date() %}
+    DATE
 {% endmacro %}

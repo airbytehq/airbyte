@@ -59,6 +59,7 @@ class TransformConfig:
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
             DestinationType.TIDB.value: self.transform_tidb,
+            DestinationType.FIREBOLT.value: self.transform_firebolt,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -343,6 +344,20 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_firebolt(config: Dict[str, Any]):
+        # https://docs.getdbt.com/reference/warehouse-profiles/firebolt-profile
+        dbt_config = {
+            "type": "firebolt",
+            "database": config["database"],
+            "user": config["username"],
+            "password": config["password"],
+            "api_endpoint": config["host"],
+            "host": config["host"],
+            "schema": config["database"],
         }
         return dbt_config
 

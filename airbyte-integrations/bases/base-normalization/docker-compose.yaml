@@ -12,6 +12,8 @@ services:
     image: airbyte/normalization-oracle:${VERSION}
   normalization-clickhouse:
     image: airbyte/normalization-clickhouse:${VERSION}
+  normalization-firebolt:
+    image: airbyte/normalization-firebolt:${VERSION}
   normalization-snowflake:
     image: airbyte/normalization-snowflake:${VERSION}
   normalization-redshift:
