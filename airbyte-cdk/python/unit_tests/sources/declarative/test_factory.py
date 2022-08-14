@@ -39,6 +39,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
@@ -807,3 +808,8 @@ def test_validate_types_nested_in_list():
 def test_unpack(test_name, input_type, expected_unpacked_types):
     actual_unpacked_types = DeclarativeComponentFactory.unpack(input_type)
     assert actual_unpacked_types == expected_unpacked_types
+
+
+def test_complete_schema():
+    schema = YamlDeclarativeSource.generate_schema()
+    print(schema)

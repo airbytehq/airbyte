@@ -4,8 +4,10 @@
 
 import json
 import logging
-from dataclasses import dataclass
-from typing import Any, List, Mapping
+import typing
+from dataclasses import dataclass, fields
+from enum import EnumMeta
+from typing import Any, List, Mapping, Union
 
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
@@ -14,6 +16,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
 from jsonschema.validators import validate
@@ -84,3 +87,74 @@ class YamlDeclarativeSource(DeclarativeSource):
             if "class_name" not in s:
                 s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
         return stream_configs
+
+    @staticmethod
+    def generate_schema() -> str:
+        expanded_source_definition = YamlDeclarativeSource.expand_schema_interfaces(ConcreteDeclarativeSource, {})
+        expanded_schema = expanded_source_definition.json_schema()
+        return json.dumps(expanded_schema, cls=SchemaEncoder)
+
+    @staticmethod
+    def expand_schema_interfaces(expand_class: type, visited: dict) -> type:
+        """
+        Recursive function that takes in class type that will have its interface fields unpacked and expended and then recursively
+        attempt the same expansion on all the class' underlying fields that are declarative component. It also performs expansion
+        with respect to interfaces that are contained within generic data types.
+        :param expand_class: The declarative component class that will have its interface fields expanded
+        :param visited: cache used to store a record of already visited declarative classes that have already been seen
+        :return: The expanded declarative component
+        """
+
+        # Recursive base case to stop recursion if we have already expanded an interface in case of cyclical components
+        # like CompositeErrorHandler
+        if expand_class.__name__ in visited:
+            return visited[expand_class.__name__]
+        visited[expand_class.__name__] = expand_class
+
+        next_classes = []
+        copy_cls = type(expand_class.__name__, expand_class.__bases__, dict(expand_class.__dict__))
+        class_fields = fields(copy_cls)
+        for field in class_fields:
+            unpacked_field_types = DeclarativeComponentFactory.unpack(field.type)
+            copy_cls.__annotations__[field.name] = unpacked_field_types
+            next_classes.extend(YamlDeclarativeSource._get_next_expand_classes(field.type))
+
+        for next_class in next_classes:
+            YamlDeclarativeSource.expand_schema_interfaces(next_class, visited)
+        return copy_cls
+
+    @staticmethod
+    def _get_next_expand_classes(field_type) -> list[type]:
+        """
+        Parses through a given field type and assembles a list of all underlying declarative components. For a concrete declarative class
+        it will return itself. For a declarative interface it will return its subclasses. For declarative components in a generic type
+        it will return the unpacked classes. Any non-declarative types will be skipped.
+        :param field_type: A field type that
+        :return:
+        """
+        generic_type = typing.get_origin(field_type)
+        if generic_type is None:
+            module = field_type.__module__
+            # We can only continue parsing declarative components since we explicitly inherit from the JsonSchemaMixin class which is
+            # used to generate the final json schema
+            if "airbyte_cdk.sources.declarative" in module and not isinstance(field_type, EnumMeta):
+                subclasses = field_type.__subclasses__()
+                if subclasses:
+                    return subclasses
+                else:
+                    return [field_type]
+        elif generic_type == list or generic_type == Union:
+            next_classes = []
+            for underlying_type in typing.get_args(field_type):
+                next_classes.extend(YamlDeclarativeSource._get_next_expand_classes(underlying_type))
+            return next_classes
+        return []
+
+
+class SchemaEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, property):
+            return str(obj)
+        elif isinstance(obj, HttpMethod):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
