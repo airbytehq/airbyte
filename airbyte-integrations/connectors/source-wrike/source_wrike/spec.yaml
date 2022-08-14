@@ -7,7 +7,6 @@ connectionSpecification:
     - access_token 
     - wrike_instance
     - start_date
-  additionalProperties: false
   properties:
     access_token:
       type: string
