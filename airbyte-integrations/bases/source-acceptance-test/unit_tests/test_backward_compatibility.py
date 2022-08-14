@@ -518,6 +518,54 @@ VALID_SPEC_TRANSITIONS = [
             connectionSpecification={
                 "type": "object",
                 "required": ["my_required_string"],
+                "additionalProperties": False,
+                "properties": {
+                    "my_required_string": {"type": "string"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "required": ["my_required_string"],
+                "additionalProperties": True,
+                "properties": {
+                    "my_required_string": {"type": "string"},
+                },
+            }
+        ),
+        name="Top level: Changing the value of additionalProperties should not fail",
+        should_fail=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_nested_object": {"type": "object", "properties": {"my_property": {"type": ["integer"]}}},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_nested_object": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {"my_property": {"type": ["integer"]}},
+                    },
+                },
+            }
+        ),
+        name="Nested level: Changing the value of additionalProperties should not fail",
+        should_fail=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "required": ["my_required_string"],
                 "properties": {
                     "my_required_string": {"type": "string"},
                 },
@@ -898,7 +946,6 @@ assert all([transition.should_fail for transition in FAILING_SPEC_TRANSITIONS])
 # Checking that all transitions in VALID_SPEC_TRANSITIONS have should_fail = False to prevent typos
 assert not all([transition.should_fail for transition in VALID_SPEC_TRANSITIONS])
 
-
 ALL_SPEC_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_SPEC_TRANSITIONS + VALID_SPEC_TRANSITIONS]
 
 
@@ -915,11 +962,12 @@ VALID_JSON_SCHEMA_TRANSITIONS_PARAMS = [
 ]
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", VALID_JSON_SCHEMA_TRANSITIONS_PARAMS)
 def test_validate_previous_configs(previous_connector_spec, actual_connector_spec, should_fail):
     expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
     with expectation:
-        validate_previous_configs(previous_connector_spec, actual_connector_spec, 100)
+        validate_previous_configs(previous_connector_spec, actual_connector_spec, 200)
 
 
 FAILING_CATALOG_TRANSITIONS = [
@@ -989,6 +1037,72 @@ FAILING_CATALOG_TRANSITIONS = [
             )
         },
     ),
+    Transition(
+        name="Changing a cursor in a stream should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["b"],
+                }
+            ),
+        },
+    ),
+    Transition(
+        name="Changing a cursor in a stream should fail (nested cursors).",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a", "b"],
+                }
+            ),
+        },
+    ),
+    Transition(
+        name="Changing a cursor in a stream should fail (nested cursors removal).",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a", "b"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
@@ -1056,13 +1170,34 @@ VALID_CATALOG_TRANSITIONS = [
             )
         },
     ),
+    Transition(
+        name="Not changing a cursor in a stream should not fail.",
+        should_fail=False,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+    ),
 ]
 
 # Checking that all transitions in FAILING_CATALOG_TRANSITIONS have should_fail == True to prevent typos
 assert all([transition.should_fail for transition in FAILING_CATALOG_TRANSITIONS])
 # Checking that all transitions in VALID_CATALOG_TRANSITIONS have should_fail = False to prevent typos
 assert not all([transition.should_fail for transition in VALID_CATALOG_TRANSITIONS])
-
 
 ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
 
