@@ -56,8 +56,33 @@
             "string",
             "null"
           ]
+        },
+        "customStatusId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdDate": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "ownerIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       }
-    },
+    }
   }
 }
