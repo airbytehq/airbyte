@@ -301,7 +301,7 @@ def test_display_report_stream_backoff(mocker, config, modifiers, expected):
 def test_display_report_stream_slices_full_refresh(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    slices = stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field)
+    slices = list(stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
 
@@ -311,7 +311,7 @@ def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_state = {str(profiles[0].profileId): {"reportDate": "20210725"}}
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
         {"profile": profiles[0], "reportDate": "20210725"},
         {"profile": profiles[0], "reportDate": "20210726"},
@@ -321,13 +321,13 @@ def test_display_report_stream_slices_incremental(config):
     ]
 
     stream_state = {str(profiles[0].profileId): {"reportDate": "20210730"}}
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={}))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
 
@@ -358,5 +358,5 @@ def test_stream_slices_different_timezones(config):
     profile1 = Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
