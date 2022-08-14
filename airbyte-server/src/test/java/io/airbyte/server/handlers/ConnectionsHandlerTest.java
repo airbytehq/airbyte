@@ -22,6 +22,7 @@ import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSchedule;
+import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
@@ -216,6 +217,13 @@ class ConnectionsHandlerTest {
       assertEquals(expectedConnectionRead, actualConnectionRead);
 
       verify(configRepository).writeStandardSync(standardSync);
+
+      // Use new schedule schema, verify that we get the same results.
+      connectionCreate
+          .schedule(null)
+          .scheduleType(ConnectionScheduleType.BASIC)
+          .scheduleData(ConnectionHelpers.generateBasicConnectionScheduleData());
+      assertEquals(expectedConnectionRead, connectionsHandler.createConnection(connectionCreate));
     }
 
     @Test
@@ -360,6 +368,8 @@ class ConnectionsHandlerTest {
           standardSync.getOperationIds(),
           newSourceCatalogId)
           .schedule(null)
+          .scheduleType(ConnectionScheduleType.MANUAL)
+          .scheduleData(null)
           .syncCatalog(catalog)
           .status(ConnectionStatus.INACTIVE);
 

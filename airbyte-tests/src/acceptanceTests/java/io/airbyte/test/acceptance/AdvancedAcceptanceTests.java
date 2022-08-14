@@ -199,7 +199,9 @@ class AdvancedAcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (final Exception e) {}
+    } catch (final Exception e) {
+      LOGGER.error("error:", e);
+    }
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
