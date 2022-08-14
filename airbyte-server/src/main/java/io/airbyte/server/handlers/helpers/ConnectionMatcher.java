@@ -33,6 +33,8 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
         search.getNamespaceDefinition() == null ? query.getNamespaceDefinition() : search.getNamespaceDefinition());
     fromSearch.prefix(Strings.isBlank(search.getPrefix()) ? query.getPrefix() : search.getPrefix());
     fromSearch.schedule(search.getSchedule() == null ? query.getSchedule() : search.getSchedule());
+    fromSearch.scheduleType(search.getScheduleType() == null ? query.getScheduleType() : search.getScheduleType());
+    fromSearch.scheduleData(search.getScheduleData() == null ? query.getScheduleData() : search.getScheduleData());
     fromSearch.sourceId(search.getSourceId() == null ? query.getSourceId() : search.getSourceId());
     fromSearch.status(search.getStatus() == null ? query.getStatus() : search.getStatus());
 

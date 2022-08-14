@@ -31,7 +31,7 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
       <div className={styles.sectionHeader}>
         <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="stream" />
       </div>
-      <table>
+      <table aria-label={`${diffVerb} streams table`}>
         <thead className={styles.sectionSubHeader}>
           <tr>
             <th>
