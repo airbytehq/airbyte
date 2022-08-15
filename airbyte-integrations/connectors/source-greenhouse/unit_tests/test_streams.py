@@ -15,7 +15,7 @@ from source_greenhouse.streams import Applications
 @pytest.fixture
 def applications_stream():
     auth = HTTPBasicAuth("api_key", "")
-    stream = Applications(authenticator=auth)
+    stream = Applications(authenticator=auth, replication_start_date="2022-01-01T00:00:00.000Z")
     return stream
 
 
@@ -43,13 +43,17 @@ def test_request_params_next_page_token_is_not_none(applications_stream):
     next_page_token = applications_stream.next_page_token(response=response)
     request_params = applications_stream.request_params(next_page_token=next_page_token, stream_state={})
 
-    assert request_params == {"per_page": str(Applications.page_size), "since_id": "123456789"}
+    assert request_params == {
+        "last_activity_after": "2022-01-01T00:00:00.000Z",
+        "per_page": str(Applications.page_size),
+        "since_id": "123456789",
+    }
 
 
 def test_request_params_next_page_token_is_none(applications_stream):
     request_params = applications_stream.request_params(stream_state={})
 
-    assert request_params == {"per_page": Applications.page_size}
+    assert request_params == {"last_activity_after": "2022-01-01T00:00:00.000Z", "per_page": Applications.page_size}
 
 
 def test_parse_response_expected_response(applications_stream):
