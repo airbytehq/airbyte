@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -160,7 +159,6 @@ public class AirbyteMessageTracker implements MessageTracker {
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     totalSourceEmittedStateMessages.incrementAndGet();
     final int stateHash = getStateHashCode(stateMessage);
-
 
     if (AirbyteStateType.LEGACY != stateMessage.getType()) {
       addStateMessageToStreamToStateHashTimestampTracker(stateMessage, stateHash, timeEmittedStateMessage);
@@ -374,6 +372,16 @@ public class AirbyteMessageTracker implements MessageTracker {
     return meanSecondsToReceiveSourceStateMessage;
   }
 
+  @Override
+  public Long getMaxSecondsBetweenStateMessageEmittedandCommitted() {
+    return maxSecondsBetweenStateMessageEmittedandCommitted;
+  }
+
+  @Override
+  public Long getMeanSecondsBetweenStateMessageEmittedandCommitted() {
+    return meanSecondsBetweenStateMessageEmittedandCommitted;
+  }
+
   private void updateMaxAndMeanSecondsToReceiveStateMessage(final DateTime stateMessageReceivedAt) {
     final Long secondsSinceLastStateMessage = calculateSecondsSinceLastStateEmitted(stateMessageReceivedAt);
     if (maxSecondsToReceiveSourceStateMessage < secondsSinceLastStateMessage) {
@@ -411,7 +419,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   void addStateMessageToStreamToStateHashTimestampTracker(final AirbyteStateMessage stateMessage, final int stateHash, final DateTime timeEmitted) {
     final List<StreamDescriptor> streamDescriptorsToUpdate = StateMessageHelper.getStreamDescriptors(stateMessage);
 
-    streamDescriptorsToUpdate.forEach( streamDescriptor -> {
+    streamDescriptorsToUpdate.forEach(streamDescriptor -> {
       final HashMap<Integer, DateTime> stateHashToTimestamp = new HashMap<>();
       stateHashToTimestamp.put(stateHash, timeEmitted);
       streamDescriptorToStateMessageTimestamps.put(streamDescriptor, stateHashToTimestamp);
@@ -457,4 +465,5 @@ public class AirbyteMessageTracker implements MessageTracker {
       }
     });
   }
+
 }

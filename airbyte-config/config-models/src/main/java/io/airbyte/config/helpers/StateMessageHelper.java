@@ -97,8 +97,8 @@ public class StateMessageHelper {
   }
 
   /**
-   * Extract the list of StreamDescriptors from an AirbyteStateMessage for Per Stream and Global state messages
-   * This is not meant to be used for Legacy state messages and will return an empty list
+   * Extract the list of StreamDescriptors from an AirbyteStateMessage for Per Stream and Global state
+   * messages This is not meant to be used for Legacy state messages and will return an empty list
    *
    * @param stateMessage an AirbyteStateMessage
    * @return List of StreamDescriptors that are contained in the AirbyteStateMessage

@@ -204,7 +204,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
           .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted())
           .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
-          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage());
+          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
+          .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedandCommitted());
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
