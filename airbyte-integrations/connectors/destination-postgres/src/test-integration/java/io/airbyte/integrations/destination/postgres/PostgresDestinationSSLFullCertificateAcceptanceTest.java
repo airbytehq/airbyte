@@ -13,12 +13,11 @@ import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -26,49 +25,48 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-// todo (cgardens) - DRY this up with PostgresDestinationAcceptanceTest
-public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
+public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-postgres-strict-encrypt:dev";
+    return "airbyte/destination-postgres:dev";
   }
 
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-                .put("mode", "verify-full")
-                .put("ca_certificate", certs.getCaCertificate())
-                .put("client_certificate", certs.getClientCertificate())
-                .put("client_key", certs.getClientKey())
-                .put("client_key_password", PASSWORD)
-                .build())
+        .put("host", db.getHost())
+        .put("username", "postgres")
+        .put("password", "postgres")
+        .put("schema", "public")
+        .put("port", db.getFirstMappedPort())
+        .put("database", db.getDatabaseName())
+        .put("ssl", true)
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
+            .put("client_key_password", "Passw0rd")
+            .build())
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", db.getHost())
+        .put("username", db.getUsername())
+        .put("password", "wrong password")
+        .put("schema", "public")
+        .put("port", db.getFirstMappedPort())
+        .put("database", db.getDatabaseName())
+        .put("ssl", false)
         .build());
   }
 
@@ -80,7 +78,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -100,29 +98,30 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // //tableName = "\"" + tableName + "\"";
-    // }
-    return retrieveRecordsFromTable(tableName, namespace);
+  protected TestDataComparator getTestDataComparator() {
+    return new PostgresTestDataComparator();
   }
 
   @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(tableName, namespace);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
@@ -133,13 +132,13 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         db.getJdbcUrl(),
         SQLDialect.POSTGRES)) {
       return new Database(dslContext)
-          .query(
-              ctx -> ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList()));
+          .query(ctx -> {
+            ctx.execute("set time zone 'UTC';");
+            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(this::getJsonFromRecord)
+                .collect(Collectors.toList());
+          });
     }
   }
 
@@ -152,7 +151,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
   }
