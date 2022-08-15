@@ -69,6 +69,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 - [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 - [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 - [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
+- [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets)
 
 ## Performance considerations
 
@@ -78,6 +79,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.13  | 2022-08-12 | [14700](https://github.com/airbytehq/airbyte/pull/14700) | Add resource sets |
 | 0.1.12  | 2022-08-05 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Add parameter `start_date` for Logs stream                                     |
 | 0.1.11  | 2022-08-03 | [14739](https://github.com/airbytehq/airbyte/pull/14739) | Add permissions for custom roles                                               |
 | 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fix broken schemas for all streams                                             | 
