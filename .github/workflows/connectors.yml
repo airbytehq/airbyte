@@ -58,6 +58,7 @@ jobs:
           - source-amplitude
           - source-intercom
           - source-google-ads
+          - source-salesforce
 
     steps:
       - uses: actions/checkout@v2
