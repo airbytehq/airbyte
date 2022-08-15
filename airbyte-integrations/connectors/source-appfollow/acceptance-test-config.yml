@@ -1,11 +1,11 @@
 # # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # # for more information about how to configure these tests
 
+connector_image: airbyte/source-appfollow:dev
+tests:
+  spec:
+    - spec_path: "source_appfollow/spec.yaml"
 # Enable these once we get appfollow credentials
-# connector_image: airbyte/source-appfollow:dev
-# tests:
-#   spec:
-#     - spec_path: "source_appfollow/spec.yaml"
 #   connection:
 #     - config_path: "secrets/config.json"
 #       status: "succeed"
