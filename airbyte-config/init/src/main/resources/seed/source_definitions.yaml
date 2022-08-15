@@ -104,7 +104,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -415,7 +415,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Hellobaton
   sourceDefinitionId: 492b56d1-937c-462e-8076-21ad2031e784
   dockerRepository: airbyte/source-hellobaton
@@ -655,7 +655,7 @@
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
   icon: okta.svg
   sourceType: api

@@ -865,7 +865,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.9"
+- dockerImage: "airbyte/source-bing-ads:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -6197,7 +6197,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.12"
+- dockerImage: "airbyte/source-okta:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
