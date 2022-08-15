@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type, Union, List
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Type, Union
 from urllib import parse
 
 import requests
@@ -58,7 +58,7 @@ class IncrementalGreenhouseStream(GreenhouseStream):
         pass
 
     def request_params(
-            self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token, **kwargs)
 
@@ -75,6 +75,7 @@ class IncrementalGreenhouseStream(GreenhouseStream):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
+
 
 class GreenhouseSubStream(GreenhouseStream):
     @property
@@ -105,6 +106,7 @@ class Applications(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-applications
     """
+
     cursor_field = "last_activity_after"
     benchmark_field = "last_activity_at"
 
@@ -131,6 +133,7 @@ class Candidates(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-candidates
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
 
@@ -229,13 +232,16 @@ class JobPosts(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-posts
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
+
 
 class JobStages(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-stages
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
 
@@ -244,8 +250,10 @@ class Jobs(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-jobs
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
+
 
 class JobsOpenings(GreenhouseSubStream, GreenhouseStream):
     """
@@ -269,6 +277,7 @@ class Offers(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-offers
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
 
@@ -283,6 +292,7 @@ class Scorecards(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-scorecards
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
 
@@ -297,5 +307,6 @@ class Users(IncrementalGreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-users
     """
+
     cursor_field = "updated_after"
     benchmark_field = "updated_at"
