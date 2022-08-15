@@ -128,7 +128,10 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{"error": "data unavailable on date."}]
+
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -179,7 +182,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json().get("data"):
             return response.json().get("data")
-        pass
+        return [{"error": "data unavailable on date."}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -228,7 +231,9 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{"error": "data unavailable on date."}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -277,7 +282,9 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{"error": "data unavailable on date."}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -326,7 +333,9 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data").get("history")
+        if response.json().get("data"):
+            return response.json().get("data").get("history")
+        return [{"error": "data unavailable on date."}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -375,7 +384,9 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{"error": "data unavailable on date."}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
