@@ -641,9 +641,9 @@ public class WorkerApp {
 
     final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
         ? "Bearer " + generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
-        configs.getDataPlaneServiceAccountEmail(),
-        configs.getControlPlaneGoogleEndpoint(),
-        JWT_TTL_SECONDS)
+            configs.getDataPlaneServiceAccountEmail(),
+            configs.getControlPlaneGoogleEndpoint(),
+            JWT_TTL_SECONDS)
         : configs.getAirbyteApiAuthHeaderValue();
 
     final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
