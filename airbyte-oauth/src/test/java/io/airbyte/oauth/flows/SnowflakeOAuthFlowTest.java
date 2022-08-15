@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
+  public static final String STRING = "string";
+  public static final String TYPE = "type";
+
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
     return new SourceSnowflakeOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
@@ -35,7 +38,7 @@ class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected JsonNode getCompleteOAuthOutputSpecification() {
-    return getJsonSchema(Map.of("access_token", Map.of("type", "string"), "refresh_token", Map.of("type", "string")));
+    return getJsonSchema(Map.of("access_token", Map.of(TYPE, STRING), "refresh_token", Map.of(TYPE, STRING)));
   }
 
   @Override
@@ -64,7 +67,7 @@ class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected JsonNode getUserInputFromConnectorConfigSpecification() {
-    return getJsonSchema(Map.of("host", Map.of("type", "string"), "role", Map.of("type", "string")));
+    return getJsonSchema(Map.of("host", Map.of(TYPE, STRING), "role", Map.of(TYPE, STRING)));
   }
 
   @Test
