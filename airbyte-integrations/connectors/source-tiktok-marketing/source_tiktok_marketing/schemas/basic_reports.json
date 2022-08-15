@@ -13,9 +13,6 @@
         "adgroup_name": {
           "type": ["null", "string"]
         },
-        "placement": {
-          "type": ["null", "string"]
-        },
         "adgroup_id": {
           "type": ["null", "integer"]
         },

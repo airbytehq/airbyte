@@ -197,9 +197,6 @@
                 "adgroup_name": {
                   "type": ["null", "string"]
                 },
-                "placement": {
-                  "type": ["null", "string"]
-                },
                 "adgroup_id": {
                   "type": ["null", "integer"]
                 },
@@ -427,9 +424,6 @@
                 "adgroup_name": {
                   "type": ["null", "string"]
                 },
-                "placement": {
-                  "type": ["null", "string"]
-                },
                 "adgroup_id": {
                   "type": ["null", "integer"]
                 },
@@ -583,12 +577,6 @@
             "placement_type": {
               "type": "string",
               "enum": ["PLACEMENT_TYPE_AUTOMATIC", "PLACEMENT_TYPE_NORMAL"]
-            },
-            "placement": {
-              "type": ["null", "array"],
-              "items": {
-                "type": "string"
-              }
             },
             "enable_inventory_filter": {
               "type": ["null", "boolean"]
@@ -967,9 +955,6 @@
                 "adgroup_name": {
                   "type": ["null", "string"]
                 },
-                "placement": {
-                  "type": ["null", "string"]
-                },
                 "adgroup_id": {
                   "type": ["null", "integer"]
                 },
@@ -1185,9 +1170,6 @@
                   "type": ["null", "integer"]
                 },
                 "adgroup_name": {
-                  "type": ["null", "string"]
-                },
-                "placement": {
                   "type": ["null", "string"]
                 },
                 "adgroup_id": {

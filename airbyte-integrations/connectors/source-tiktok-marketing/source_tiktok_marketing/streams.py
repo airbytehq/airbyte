@@ -50,7 +50,6 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
-    "placement",
 ]
 
 T = TypeVar("T")
@@ -566,7 +565,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 [
                     "campaign_id",
                     "adgroup_name",
-                    "placement",
                     "tt_app_id",
                     "tt_app_name",
                     "mobile_app_id",
