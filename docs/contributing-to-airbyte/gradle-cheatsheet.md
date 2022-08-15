@@ -107,7 +107,6 @@ These tests currently all live in [airbyte-tests](https://github.com/airbytehq/a
 **Frontend Acceptance Tests**
 
 These are acceptance tests for the frontend. They are run with
-
 ```shell
 SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest
 ``` 
@@ -127,13 +126,11 @@ Our story around "integration testing" or "E2E testing" is a little ambiguous. O
 All connectors, regardless of implementation language, implement the following interface to allow uniformity in the build system when run from CI:
 
 **Build connector, run unit tests, and build Docker image**:
-
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:build
 ``` 
 
 **Run integration tests**:
-
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:integrationTest
 ```
@@ -145,7 +142,6 @@ The ideal end state for a Python connector developer is that they shouldn't have
 We're almost there, but today there is only one Gradle command that's needed when developing in Python, used for formatting code.
 
 **Formatting python module**:
-
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
 ```
