@@ -5,6 +5,7 @@
 import re
 from base64 import b64decode
 from datetime import timedelta
+from functools import partial
 from unittest import mock
 
 import pytest
@@ -392,3 +393,23 @@ def test_stream_slices_lazy_evaluation(config):
             {"profile": profile2, "reportDate": "20220602"},
             {"profile": profile1, "reportDate": "20220602"},
         ]
+
+
+def test_get_date_range_lazy_evaluation():
+    get_date_range = partial(SponsoredProductsReportStream.get_date_range, SponsoredProductsReportStream)
+
+    with freeze_time("2022-06-01T12:00:00+00:00") as frozen_datetime:
+        date_range = list(get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"))
+        assert date_range == ["20220529", "20220530", "20220531", "20220601"]
+
+        date_range = list(get_date_range(start_date=Date(2022, 6, 1), timezone="UTC"))
+        assert date_range == ["20220601"]
+
+        date_range = list(get_date_range(start_date=Date(2022, 6, 2), timezone="UTC"))
+        assert date_range == []
+
+        date_range = []
+        for date in get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"):
+            date_range.append(date)
+            frozen_datetime.tick(delta=timedelta(hours=3))
+        assert date_range == ["20220529", "20220530", "20220531", "20220601", "20220602"]
