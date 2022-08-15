@@ -5,7 +5,6 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
