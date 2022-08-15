@@ -8,6 +8,7 @@ import { LoadingButton } from "components";
 import { LogType } from "core/domain/logs/types";
 import { useNotificationService } from "hooks/services/Notification";
 import { useGetLogs } from "services/logs/LogsService";
+import { downloadFile } from "utils/file";
 
 const Content = styled.div`
   padding: 29px 0 27px;
@@ -17,15 +18,6 @@ const Content = styled.div`
 const LogsButton = styled(LoadingButton)`
   margin: 0 15px;
 `;
-
-const downloadFile = (file: Blob, name: string) => {
-  const element = document.createElement("a");
-  element.href = URL.createObjectURL(file);
-  element.download = name;
-  document.body.appendChild(element); // Required for this to work in FireFox
-  element.click();
-  document.body.removeChild(element);
-};
 
 const LogsContent: React.FC = () => {
   const { registerNotification } = useNotificationService();
