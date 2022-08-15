@@ -34,7 +34,6 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class CdcMySqlSslFullCertificatesSourceAcceptanceTest extends SourceAcceptanceTest {
+public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -106,7 +105,7 @@ public class CdcMySqlSslFullCertificatesSourceAcceptanceTest extends SourceAccep
     certs = MySqlUtils.getCertificate(container, true);
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_identity")
+            .put(JdbcUtils.MODE_KEY, "verify_ca")
             .put("ca_certificate", certs.getCaCertificate())
             .put("client_certificate", certs.getClientCertificate())
             .put("client_key", certs.getClientKey())

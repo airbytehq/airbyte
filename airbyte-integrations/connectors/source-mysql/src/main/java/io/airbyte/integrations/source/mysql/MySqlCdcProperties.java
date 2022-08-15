@@ -5,6 +5,10 @@
 package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Properties;
 
 public class MySqlCdcProperties {
@@ -44,7 +48,14 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
     props.setProperty("database.include.list", config.get("database").asText());
-
+    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      if (config.has(JdbcUtils.SSL_MODE_KEY) && config.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
+        props.setProperty("database.ssl.mode", config.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText());
+      } else {
+        props.setProperty("database.ssl.mode", "required");
+      }
+    }
     return props;
   }
 
