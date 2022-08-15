@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -20,11 +20,11 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
     records based on a heuristic.
 
     Attributes:
-        extractor (JelloExtractor): The record extractor responsible for extracting records from a response
+        extractor (RecordExtractor): The record extractor responsible for extracting records from a response
         record_filter (RecordFilter): The record filter responsible for filtering extracted records
     """
 
-    extractor: JelloExtractor
+    extractor: RecordExtractor
     options: InitVar[Mapping[str, Any]]
     record_filter: RecordFilter = None
 
@@ -39,9 +39,6 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         all_records = self.extractor.extract_records(response)
-        # Some APIs don't wrap single records in a list
-        if not isinstance(all_records, list):
-            all_records = [all_records]
         if self.record_filter:
             return self.record_filter.filter_records(
                 all_records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
