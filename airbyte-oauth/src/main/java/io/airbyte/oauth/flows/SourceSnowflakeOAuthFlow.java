@@ -50,6 +50,7 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
           .addParameter("state", getState())
+          .addParameter("scope", "session:role:" + extractRole(inputOAuthConfiguration))
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -139,6 +140,11 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
   private String extractUrl(JsonNode inputOAuthConfiguration) {
     var url = inputOAuthConfiguration.get("host");
     return url == null ? "snowflakecomputing.com" : url.asText();
+  }
+
+  private String extractRole(JsonNode inputOAuthConfiguration) {
+    var role = inputOAuthConfiguration.get("role");
+    return role == null ? "" : role.asText();
   }
 
 }
