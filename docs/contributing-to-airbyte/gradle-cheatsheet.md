@@ -13,6 +13,7 @@ We have 3 ways of slicing our builds:
 In our CI we run **Build Platform** and **Build Connectors Base**. Then separately, on a regular cadence, we build each connector and run its integration tests.
 
 We split Build Platform and Build Connectors Base from each other for a few reasons:
+
 1. The tech stacks are very different. The Platform is almost entirely Java. Because of differing needs around separating environments, the Platform build can be optimized separately from the Connectors one.
 2. We want to the iteration cycles of people working on connectors or the platform faster _and_ independent. e.g. Before this change someone working on a Platform feature needs to run formatting on the entire codebase \(including connectors\). This led to a lot of cosmetic build failures that obfuscated actually problems. Ideally a failure on the connectors side should not block progress on the platform side.
 3. The lifecycles are different. One can safely release the Platform even if parts of Connectors Base is failing \(and vice versa\).
@@ -101,18 +102,18 @@ We split Acceptance Tests into 2 different test suites:
 * Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](../../tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [accetance_test_kube script](../../tools/bin/acceptance_test_kube.sh) that is used by the CI.
 * Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate deployment of Airbyte running.
 
-These tests currently all live in [airbyte-tests](../.././airbyte-tests)
+These tests currently all live in [airbyte-tests](https://github.com/airbytehq/airbyte/airbyte-tests)
 
 **Frontend Acceptance Tests**
 
-These are acceptance tests for the frontend. They are run with 
+These are acceptance tests for the frontend. They are run with
 ```shell
 SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest
 ``` 
+
 Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/e2e_test.sh) that is used by the CI.
 
-
-These tests currently all live in [airbyte-webapp-e2e-tests](../.././airbyte-webapp-e2e-tests)
+These tests currently all live in [airbyte-webapp-e2e-tests](https://github.com/airbytehq/airbyte/airbyte-webapp-e2e-tests)
 
 **Future Work**
 
@@ -124,11 +125,12 @@ Our story around "integration testing" or "E2E testing" is a little ambiguous. O
 
 All connectors, regardless of implementation language, implement the following interface to allow uniformity in the build system when run from CI:
 
-**Build connector, run unit tests, and build Docker image**: 
+**Build connector, run unit tests, and build Docker image**:
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:build
 ``` 
-**Run integration tests**: 
+
+**Run integration tests**:
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:integrationTest
 ```
@@ -139,7 +141,7 @@ The ideal end state for a Python connector developer is that they shouldn't have
 
 We're almost there, but today there is only one Gradle command that's needed when developing in Python, used for formatting code.
 
-**Formatting python module**: 
+**Formatting python module**:
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
 ```
