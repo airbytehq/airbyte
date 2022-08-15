@@ -1,8 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
 from typing import Any, List, Mapping, Tuple
 
