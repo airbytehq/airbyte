@@ -109,6 +109,7 @@ class ConnectionManagerWorkflowTest {
       Mockito.mock(AutoDisableConnectionActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final StreamResetActivity mStreamResetActivity =
       Mockito.mock(StreamResetActivity.class, Mockito.withSettings().withoutAnnotations());
+  private static final String EVENT = "event = ";
 
   private TestWorkflowEnvironment testEnv;
   private WorkflowClient client;
@@ -568,7 +569,7 @@ class ConnectionManagerWorkflowTest {
 
       for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
-          log.info("event = " + event);
+          log.info(EVENT + event);
         }
       }
 
@@ -617,7 +618,7 @@ class ConnectionManagerWorkflowTest {
 
       for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
-          log.info("event = " + event);
+          log.info(EVENT + event);
         }
       }
 
@@ -697,7 +698,7 @@ class ConnectionManagerWorkflowTest {
 
       for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
-          log.info("event = " + event);
+          log.info(EVENT + event);
         }
       }
 
@@ -777,7 +778,7 @@ class ConnectionManagerWorkflowTest {
 
       for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
-          log.info("event = " + event);
+          log.info(EVENT + event);
         }
       }
 

@@ -72,6 +72,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext) {
+
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;

@@ -1,4 +1,4 @@
-# Shortio
+# Glassfrog
 
 ## Sync overview
 
@@ -18,9 +18,6 @@ This Source is capable of syncing the following Streams:
 * [People](https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY#78b74b9f-72b7-63fc-a18c-18518932944b)
 * [Projects](https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY#110bde88-a319-ae9c-077a-9752fd2f0843)
 * [Roles](https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY#d1f31f7a-1d42-8c86-be1d-a36e640bf993)
-
-
-
 
 
 ### Data type mapping

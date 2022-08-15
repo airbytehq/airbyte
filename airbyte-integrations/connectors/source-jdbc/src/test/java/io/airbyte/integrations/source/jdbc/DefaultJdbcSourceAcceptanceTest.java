@@ -20,16 +20,15 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -190,8 +189,7 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
     final Map<String, String> defaultParameters = Map.of(
         "ssl", "true",
-        "sslmode", "require"
-    );
+        "sslmode", "require");
     assertThrows(IllegalArgumentException.class, () -> {
       assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParameters);
     });

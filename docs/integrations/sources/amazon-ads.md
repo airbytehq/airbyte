@@ -27,10 +27,10 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Amazon Ads account`.
 5. Log in and Authorize to the Amazon account.
-6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)** or **Sandbox Environment**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
+6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 7. **Report Wait Timeout** is the maximum number of minutes the connector waits for the generation of a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
 8. **Report Generation Maximum Retries** is the maximum number of attempts the connector tries to generate a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-9. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date for a specific profile is calculated according to its timezone, this parameter should be specified in the UTC timezone. Since it has no sense of generating report for the current day \(metrics could be changed\) it generates report for the day before \(e.g. if **Start Date** is 2021-10-11 it would use 20211010 as `reportDate` parameter for request\).
+9. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
 10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 11. Click `Set up source`.
 
@@ -69,7 +69,7 @@ This source is capable of syncing the following streams:
 
 ## Connector-specific features and highlights
 
-All the reports are generated for the day before relatively to the target profile' timezone
+All the reports are generated relative to the target profile' timezone.
 
 ## Performance considerations
 
@@ -90,6 +90,8 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.12 | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469)    | Define primary_key for all report streams                                                                         |
+| 0.1.11 | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031)    | Improve report streams date-range generation                                                                      |
 | 0.1.10 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042)    | Update `additionalProperties` field to true from schemas                                                          |
 | 0.1.9  | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541)    | Improve documentation for Beta                                                                                    |
 | 0.1.8  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482)    | Update input configuration copy                                                                                   |

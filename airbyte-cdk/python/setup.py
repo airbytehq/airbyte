@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.68",
+    version="0.1.74",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -44,6 +44,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "backoff",
+        "dataclasses-jsonschema~=2.15.1",
         "dpath~=2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
@@ -54,7 +55,6 @@ setup(
         "vcrpy",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
-        "jello~=1.5.2",
     ],
     python_requires=">=3.9",
     extras_require={

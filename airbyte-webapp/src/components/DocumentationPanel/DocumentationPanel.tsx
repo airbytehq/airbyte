@@ -1,40 +1,28 @@
 import type { Url } from "url";
 
 import { useMemo } from "react";
-import { FormattedMessage } from "react-intl";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
-import { ReflexElement } from "react-reflex";
 import { useLocation } from "react-router-dom";
 import { useUpdateEffect } from "react-use";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
-import styled from "styled-components";
 
 import { LoadingPage, PageTitle } from "components";
-import Markdown from "components/Markdown/Markdown";
+import { Markdown } from "components/Markdown";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-export const DocumentationContainer = styled.div`
-  padding: 0px 0px 20px;
-  background-color: #ffffff;
-  min-height: 100vh;
-`;
-
-export const DocumentationContent = styled(Markdown)`
-  padding: 0px 35px 20px;
-`;
+import styles from "./DocumentationPanel.module.scss";
 
 export const DocumentationPanel: React.FC = () => {
-  const config = useConfig();
-
-  const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
-
-  const { data: docs, isLoading } = useDocumentation(documentationUrl);
   const { formatMessage } = useIntl();
+  const config = useConfig();
+  const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
+  const { data: docs, isLoading } = useDocumentation(documentationUrl);
+
   // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
   const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
     const sanitizeLinks = (url: Url, element: Element) => {
@@ -62,18 +50,14 @@ export const DocumentationPanel: React.FC = () => {
 
   return isLoading || documentationUrl === "" ? (
     <LoadingPage />
-  ) : docs ? (
-    <DocumentationContainer>
-      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
-      {!docs.includes("<!DOCTYPE html>") ? (
-        <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
-      ) : (
-        <DocumentationContent content={formatMessage({ id: "connector.setupGuide.notFound" })} />
-      )}
-    </DocumentationContainer>
   ) : (
-    <ReflexElement className="right-pane" maxSize={1000}>
-      <FormattedMessage id="connector.setupGuide.notFound" />
-    </ReflexElement>
+    <div className={styles.container}>
+      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+      <Markdown
+        className={styles.content}
+        content={!docs?.includes("<!DOCTYPE html>") ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}
+        rehypePlugins={urlReplacerPlugin}
+      />
+    </div>
   );
 };

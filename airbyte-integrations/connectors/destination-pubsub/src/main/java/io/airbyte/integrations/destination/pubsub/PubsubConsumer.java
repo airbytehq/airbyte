@@ -39,7 +39,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, Map<String, String>> attributes;
   private Publisher publisher;
-  private AirbyteMessage lastStateMessage;
 
   public PubsubConsumer(final JsonNode config,
                         final ConfiguredAirbyteCatalog catalog,
@@ -47,7 +46,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
-    this.lastStateMessage = null;
     this.attributes = Maps.newHashMap();
     this.publisher = null;
     LOGGER.info("initializing consumer.");
@@ -82,8 +80,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage msg) throws Exception {
     if (msg.getType() == Type.STATE) {
-      lastStateMessage = msg;
-      outputRecordCollector.accept(lastStateMessage);
+      outputRecordCollector.accept(msg);
       return;
     } else if (msg.getType() != Type.RECORD) {
       return;
@@ -114,7 +111,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     if (!hasFailed) {
       publisher.shutdown();
       LOGGER.info("shutting down consumer.");
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
