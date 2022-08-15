@@ -37,8 +37,12 @@ def test_parse_response(patch_incremental_german_history_recovered):
     config = {"start_date": "2022-04-27"}
     stream = GermanHistoryRecovered(config)
     response = requests.get("https://api.corona-zahlen.org/germany/history/recovered/1")
-    expected_response = response.json().get("data")
-    assert stream.parse_response(response) == expected_response
+    if response.json().get("data"):
+        expected_response = response.json().get("data")
+        assert stream.parse_response(response) == expected_response
+    else:
+        expected_response = [{"error": "data unavailable on date."}]
+        assert stream.parse_response(response) == expected_response
 
 
 def check_diff(start_date):

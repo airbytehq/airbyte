@@ -132,7 +132,6 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             return response.json().get("data")
         return [{"error": "data unavailable on date."}]
 
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
