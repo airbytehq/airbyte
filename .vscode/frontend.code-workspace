@@ -7,7 +7,12 @@
       "path": "../airbyte-webapp-e2e-tests"
     },
     {
-      "path": "../docs"
+      "name": "docs/integrations/destinations",
+      "path": "../docs/integrations/destinations"
+    },
+    {
+      "name": "docs/integrations/sources",
+      "path": "../docs/integrations/sources"
     }
   ],
   "extensions": {
