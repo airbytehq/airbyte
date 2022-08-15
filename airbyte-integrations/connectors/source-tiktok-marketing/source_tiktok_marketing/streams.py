@@ -188,8 +188,8 @@ class TiktokStream(HttpStream, ABC):
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
-            return "https://sandbox-ads.tiktok.com/open_api/v1.2/"
-        return "https://business-api.tiktok.com/open_api/v1.2/"
+            return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
+        return "https://business-api.tiktok.com/open_api/v1.3/"
 
     def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
         # this data without listing
