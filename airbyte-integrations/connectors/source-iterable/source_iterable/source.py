@@ -41,7 +41,7 @@ class SourceIterable(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            authenticator = TokenAuthenticator(token=config["api_key"], auth_header='Api-Key', auth_method='')
+            authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
             list_gen = Lists(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
             next(list_gen)
             return True, None
@@ -49,7 +49,7 @@ class SourceIterable(AbstractSource):
             return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(token=config["api_key"], auth_header='Api-Key', auth_method='')
+        authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
         return [
             Campaigns(authenticator=authenticator),
             CampaignsMetrics(authenticator=authenticator, start_date=config["start_date"]),
