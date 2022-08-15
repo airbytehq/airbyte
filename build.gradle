@@ -135,11 +135,11 @@ spotless {
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
-//    format 'styling', {
-    //        target createSpotlessTarget(['**/*.yaml', '**/*.json'])
-//
-//        prettier()
-//    }
+    format 'styling', {
+        target createSpotlessTarget(['**/*.yaml', '**/*.json'])
+
+        prettier()
+    }
 }
 check.dependsOn 'spotlessApply'
 
