@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 set -eo pipefail
 
 VERSION=${VERSION:-latest}
@@ -13,7 +13,7 @@ _error() {
 
 _download_con() {
     mkdir -p $BUILD_DIR
-    curl -s "$ABCON_URL" -o "${ABCON_CMD}" || _error "Invalid URL: ${ABCON_URL}"
+    curl -fsSL "$ABCON_URL" -o "${ABCON_CMD}" || _error "Invalid URL: ${ABCON_URL}"
     chmod +x "${ABCON_CMD}"
     echo "Upgraded ($ABCON_URL)"
 }
