@@ -62,8 +62,8 @@ export const ConnectorCard: React.FC<
 
       analyticsService.track(namespace, actionType, {
         actionDescription,
-        connector_source: connector?.name,
-        connector_source_definition_id: Connector.id(connector),
+        connector: connector?.name,
+        connector_definition_id: Connector.id(connector),
       });
     };
 
