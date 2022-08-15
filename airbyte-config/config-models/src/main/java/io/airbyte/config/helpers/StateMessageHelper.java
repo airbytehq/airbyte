@@ -13,6 +13,8 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,6 +94,24 @@ public class StateMessageHelper {
       case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
       default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
     };
+  }
+
+  /**
+   * Extract the list of StreamDescriptors from an AirbyteStateMessage for Per Stream and Global state messages
+   * This is not meant to be used for Legacy state messages and will return an empty list
+   *
+   * @param stateMessage an AirbyteStateMessage
+   * @return List of StreamDescriptors that are contained in the AirbyteStateMessage
+   */
+  public static List<StreamDescriptor> getStreamDescriptors(final AirbyteStateMessage stateMessage) {
+    List<StreamDescriptor> streamDescriptors = new ArrayList<>();
+    if (AirbyteStateType.STREAM == stateMessage.getType()) {
+      final StreamDescriptor stateMessageStream = stateMessage.getStream().getStreamDescriptor();
+      streamDescriptors.add(stateMessageStream);
+    } else if (AirbyteStateType.GLOBAL == stateMessage.getType()) {
+      streamDescriptors = stateMessage.getGlobal().getStreamStates().stream().map(s -> s.getStreamDescriptor()).toList();
+    }
+    return streamDescriptors;
   }
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {

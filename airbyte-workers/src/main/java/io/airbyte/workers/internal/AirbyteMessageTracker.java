@@ -14,10 +14,13 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
@@ -29,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -44,6 +48,9 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicLong totalDestinationEmittedStateMessages;
   private Long maxSecondsToReceiveSourceStateMessage;
   private Long meanSecondsToReceiveSourceStateMessage;
+  private Long maxSecondsBetweenStateMessageEmittedandCommitted;
+  private Long meanSecondsBetweenStateMessageEmittedandCommitted;
+  private final Map<StreamDescriptor, Map<Integer, DateTime>> streamDescriptorToStateMessageTimestamps;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
@@ -82,6 +89,9 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
     this.maxSecondsToReceiveSourceStateMessage = 0L;
     this.meanSecondsToReceiveSourceStateMessage = 0L;
+    this.maxSecondsBetweenStateMessageEmittedandCommitted = 0L;
+    this.meanSecondsBetweenStateMessageEmittedandCommitted = 0L;
+    this.streamDescriptorToStateMessageTimestamps = new HashMap<>();
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -145,10 +155,17 @@ public class AirbyteMessageTracker implements MessageTracker {
    * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
-    updateMaxAndMeanSecondsToReceiveStateMessage(DateTime.now());
+    final DateTime timeEmittedStateMessage = DateTime.now();
+    updateMaxAndMeanSecondsToReceiveStateMessage(timeEmittedStateMessage);
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     totalSourceEmittedStateMessages.incrementAndGet();
     final int stateHash = getStateHashCode(stateMessage);
+
+
+    if (AirbyteStateType.LEGACY != stateMessage.getType()) {
+      addStateMessageToStreamToStateHashTimestampTracker(stateMessage, stateHash, timeEmittedStateMessage);
+    }
+
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
@@ -170,9 +187,14 @@ public class AirbyteMessageTracker implements MessageTracker {
     totalDestinationEmittedStateMessages.incrementAndGet();
     stateAggregator.ingest(stateMessage);
     destinationOutputState.set(stateAggregator.getAggregated());
+    final int stateHash = getStateHashCode(stateMessage);
+    if (AirbyteStateType.LEGACY != stateMessage.getType()) {
+      updateTimestampTrackerAndCalculateMaxAndMeanTimeToCommit(stateMessage, stateHash);
+    }
+
     try {
       if (!unreliableCommittedCounts) {
-        stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
+        stateDeltaTracker.commitStateHash(stateHash);
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
@@ -386,4 +408,53 @@ public class AirbyteMessageTracker implements MessageTracker {
     return (long) result;
   }
 
+  void addStateMessageToStreamToStateHashTimestampTracker(final AirbyteStateMessage stateMessage, final int stateHash, final DateTime timeEmitted) {
+    final List<StreamDescriptor> streamDescriptorsToUpdate = StateMessageHelper.getStreamDescriptors(stateMessage);
+
+    streamDescriptorsToUpdate.forEach( streamDescriptor -> {
+      final HashMap<Integer, DateTime> stateHashToTimestamp = new HashMap<>();
+      stateHashToTimestamp.put(stateHash, timeEmitted);
+      streamDescriptorToStateMessageTimestamps.put(streamDescriptor, stateHashToTimestamp);
+    });
+  }
+
+  Long calculateSecondsBetweenStateEmittedAndCommitted(final DateTime stateMessageEmittedAt, final DateTime stateMessageCommittedAt) {
+    return Long.valueOf(Seconds.secondsBetween(stateMessageEmittedAt, stateMessageCommittedAt).getSeconds());
+  }
+
+  void updateTimestampTrackerAndCalculateMaxAndMeanTimeToCommit(final AirbyteStateMessage stateMessage, final int stateHash) {
+    final DateTime timeCommitted = DateTime.now();
+    final List<StreamDescriptor> streamDescriptorsToResolve = StateMessageHelper.getStreamDescriptors(stateMessage);
+
+    streamDescriptorsToResolve.forEach(streamDescriptor -> {
+      final Map<Integer, DateTime> stateMessagesForStream = streamDescriptorToStateMessageTimestamps.get(streamDescriptor);
+      final DateTime maxTime = stateMessagesForStream.get(stateHash);
+      DateTime minTime = null;
+
+      // update minTime to earliest timestamp that exists for a state message for this particular stream
+      // and delete state message entries that are equal to or earlier than the destination state message
+      for (final Map.Entry<Integer, DateTime> stateMessageTime : stateMessagesForStream.entrySet()) {
+        final DateTime time = stateMessageTime.getValue();
+        if (minTime == null || time.isBefore(minTime)) {
+          minTime = time;
+          stateMessagesForStream.remove(stateMessageTime.getKey());
+        } else if (time.equals(maxTime)) {
+          stateMessagesForStream.remove(stateMessageTime.getKey());
+        }
+      }
+
+      final Long secondsUntilCommit = calculateSecondsBetweenStateEmittedAndCommitted(minTime, timeCommitted);
+      if (maxSecondsBetweenStateMessageEmittedandCommitted < secondsUntilCommit) {
+        maxSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
+      }
+
+      if (meanSecondsToReceiveSourceStateMessage == 0) {
+        meanSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
+      } else {
+        final Long newMeanSeconds =
+            calculateMean(meanSecondsBetweenStateMessageEmittedandCommitted, totalDestinationEmittedStateMessages.get(), secondsUntilCommit);
+        meanSecondsBetweenStateMessageEmittedandCommitted = newMeanSeconds;
+      }
+    });
+  }
 }
