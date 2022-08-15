@@ -167,6 +167,8 @@ help_sat="Run standard acceptance tests"
 cmd_sat() {
     echo "Running SAT"
 
+    cmd_build 1>&2
+
     python -m pytest -p integration_tests.acceptance "$@"
 }
 
@@ -183,9 +185,6 @@ cmd_container_sat() {
         -v $(pwd):/test_input \
         airbyte/source-acceptance-test \
         --acceptance-test-config /test_input
-
-
-    python -m pytest -p integration_tests.acceptance "$@"
 }
 
 help_publish="Publish connector"
