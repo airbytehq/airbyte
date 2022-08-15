@@ -565,7 +565,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 [
                     "campaign_id",
                     "adgroup_name",
-                    "placement",
+                    "placement_type",
                     "tt_app_id",
                     "tt_app_name",
                     "mobile_app_id",
