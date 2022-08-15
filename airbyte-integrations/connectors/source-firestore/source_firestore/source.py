@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -31,6 +32,9 @@ class Helpers(object):
     def get_project_url(project_id: str) -> str:
         return f"{Helpers.url_base}projects/{project_id}"
 
+    @staticmethod
+    def get_collections_list_url(project_id: str) -> str:
+        return f"{Helpers.get_project_url(project_id)}/databases/(default)/documents:listCollectionIds"
 
 # Basic full refresh stream
 class FirestoreStream(HttpStream, ABC):
@@ -39,6 +43,10 @@ class FirestoreStream(HttpStream, ABC):
     page_size = 100
     http_method = "POST"
     collection_name: str
+
+    @property
+    def name(self):
+        return casing.camel_to_snake(self.collection_name)
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
         super().__init__(authenticator=authenticator)
@@ -94,7 +102,15 @@ class FirestoreStream(HttpStream, ABC):
         return iter(results)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {"name": {"type": ["string"]}, "fields": {"type": ["object"]}}
+        return {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "required": ["name"],
+            "properties": {
+                "name": { "type": ["string"] }
+            },
+        }
 
 
 class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
@@ -142,8 +158,7 @@ class Collection(IncrementalFirestoreStream):
     collection_name: str
     start_date: Optional[datetime]
 
-    def __init__(self, authenticator: TokenAuthenticator, config: Mapping[str, Any]):
-        collection_name = config["collection_name"]
+    def __init__(self, authenticator: TokenAuthenticator, collection_name: str, config: Mapping[str, Any]):
         super().__init__(authenticator, collection_name=collection_name)
         self.collection_name = collection_name
         self.project_id = config["project_id"]
@@ -166,8 +181,7 @@ class SourceFirestore(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         auth = self.get_auth(config=config)
         project_id = config["project_id"]
-        collection_name = config["collection_name"]
-        url = f"{Helpers.url_base}{Helpers.get_collection_path(project_id, collection_name)}"
+        url = Helpers.get_collections_list_url(project_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
@@ -175,6 +189,17 @@ class SourceFirestore(AbstractSource):
             return False, str(e)
         return True, None
 
+    def discover_collections(self, project_id: str, auth: TokenAuthenticator) -> List[str]:
+        url = Helpers.get_collections_list_url(project_id)
+        response = requests.post(url, headers=auth.get_auth_header())
+        print(f"STATUS CODE {response.status_code}")
+        response.raise_for_status()
+        json = response.json()
+        return json["collectionIds"]
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_auth(config=config)
-        return [Collection(authenticator=auth, config=config)]
+        project_id = config["project_id"]
+        collections = self.discover_collections(project_id, auth)
+        print(collections)
+        return map(lambda collection_name : Collection(auth, collection_name, config), collections)
