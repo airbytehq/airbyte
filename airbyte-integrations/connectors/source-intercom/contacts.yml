@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: '{"query": {"operator": "OR", "value": [{"field": "updated_at", "operator":
+      ">", "value": 1606098725.0}, {"field": "updated_at", "operator": "=", "value":
+      1606098725.0}]}, "sort": {"field": "updated_at", "order": "ascending"}, "pagination":
+      {"per_page": 150}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer dG9rOjVjYzY1OWM4X2U5MWJfNDZhY185N2ZkXzFkNTRiYmY1N2I2MToxOjA=
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '258'
+      Content-Type:
+      - application/json
+      Intercom-Version:
+      - '2.2'
+      User-Agent:
+      - python-requests/2.28.1
+    method: POST
+    uri: https://api.intercom.io/contacts/search
+  response:
+    body:
+      string: !!binary |
+        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
+        AP//AwCt7CNZ0jMAAA==
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 10 Aug 2022 21:43:37 GMT
+      ETag:
+      - W/"b31f90a44019990b79f545379a48e6b4"
+      Intercom-Version:
+      - '2.2'
+      Server:
+      - nginx
+      Status:
+      - 200 OK
+      Strict-Transport-Security:
+      - max-age=31556952; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept,Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Intercom-Version:
+      - 965e57d781a13539736a38618a6429a1ebdc6281
+      X-RateLimit-Limit:
+      - '167'
+      X-RateLimit-Remaining:
+      - '153'
+      X-RateLimit-Reset:
+      - '1660167826'
+      X-Request-Id:
+      - 003m49phulqqfn72af20
+      X-Runtime:
+      - '0.142795'
+      X-XSS-Protection:
+      - 1; mode=block
+      x-ami-version:
+      - ami-029675bdf50ce488a
+    status:
+      code: 200
+      message: OK
+version: 1
