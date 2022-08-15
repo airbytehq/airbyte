@@ -636,8 +636,9 @@ public class WorkerApp {
         : configs.getAirbyteApiAuthHeaderValue();
 
     final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
-    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
-        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), configs.getAirbyteApiAuthHeaderName(), configs.getAirbyteApiAuthHeaderValue());
+    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}, Auth-Token: {}",
+        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader,
+        authToken);
 
     final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
