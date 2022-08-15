@@ -625,11 +625,11 @@ public class WorkerApp {
             jobErrorReportingClient);
 
     final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
-        ? "bearer"
+        ? "Authorization"
         : configs.getAirbyteApiAuthHeaderName();
 
     final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
-        ? generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
+        ? "Bearer " + generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
             configs.getDataPlaneServiceAccountEmail(),
             configs.getControlPlaneGoogleEndpoint(),
             JWT_TTL_SECONDS)
