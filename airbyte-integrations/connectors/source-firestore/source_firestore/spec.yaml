@@ -4,14 +4,9 @@ connectionSpecification:
   title: Firestore Spec
   type: object
   required:
-    - collection_name
     - project_id
     - google_application_credentials
   properties:
-    collection_name:
-      title: Collection Name
-      type: string
-      description: Firestore collection to sync
     project_id:
       title: Project ID
       type: string

@@ -57,9 +57,9 @@ class FirestoreStream(HttpStream, ABC):
         documents = list(self.parse_response(response))
         if len(documents) == 0:
             return None
-        if self.cursor_field is None:
+        if self.cursor_key is None:
             return {"stringValue": documents[len(documents) - 1]["name"]}
-        return documents[len(documents) - 1]["fields"][self.cursor_field]
+        return documents[len(documents) - 1]["fields"][self.cursor_key]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -72,7 +72,7 @@ class FirestoreStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        timestamp_state: Optional[datetime] = stream_state.get(self.cursor_field)
+        timestamp_state: Optional[datetime] = stream_state.get(self.cursor_key)
         timestamp_value = timestamp_state.timestamp() if timestamp_state else None
         return {
             "structuredQuery": {
@@ -89,7 +89,7 @@ class FirestoreStream(HttpStream, ABC):
                 if timestamp_value
                 else None,
                 "limit": self.page_size,
-                "orderBy": [{"field": {"fieldPath": self.cursor_field}, "direction": "ASCENDING"}] if self.cursor_field else None,
+                "orderBy": [{"field": {"fieldPath": self.cursor_key}, "direction": "ASCENDING"}] if self.cursor_key else None,
                 "startAt": {"values": [next_page_token], "before": False} if next_page_token else None,
             }
         }
@@ -98,7 +98,11 @@ class FirestoreStream(HttpStream, ABC):
         json = response.json()
         results = []
         for entry in json:
-            results.append(entry["document"]) if "document" in entry else None
+            if "document" in entry:
+                result = entry["document"]
+                if self.cursor_field:
+                    result[self.cursor_field] = entry["document"]["fields"][self.cursor_field]["timestampValue"]
+                results.append(result)
         return iter(results)
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -108,30 +112,32 @@ class FirestoreStream(HttpStream, ABC):
             "additionalProperties": True,
             "required": ["name"],
             "properties": {
-                "name": { "type": ["string"] }
+                "name": { "type": ["string"] },
+                self.cursor_field: { "type": ["null", "string"]}
             },
         }
 
 
 class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
 
-    _cursor_value: str
+    _cursor_value: Optional[datetime]
+    cursor_key = 'updated_at'
+    start_date: Optional[datetime]
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
         super().__init__(authenticator=authenticator, collection_name=collection_name)
-        self._cursor_value = ""
 
     @property
-    def cursor_field(self) -> str:
-        return "updated_at"
+    def cursor_field(self):
+        return self.cursor_key
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
+        return {self.cursor_key: self._cursor_value} if self._cursor_value else {}
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
+        self._cursor_value = value.get(self.cursor_key, self.start_date)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -150,13 +156,12 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
-            self._cursor_value = max(record["fields"][self.cursor_field]["timestampValue"], self._cursor_value)
+            self._cursor_value = max(record["fields"][self.cursor_key]["timestampValue"], self._cursor_value)
 
 
 class Collection(IncrementalFirestoreStream):
     project_id: str
     collection_name: str
-    start_date: Optional[datetime]
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str, config: Mapping[str, Any]):
         super().__init__(authenticator, collection_name=collection_name)
@@ -192,7 +197,6 @@ class SourceFirestore(AbstractSource):
     def discover_collections(self, project_id: str, auth: TokenAuthenticator) -> List[str]:
         url = Helpers.get_collections_list_url(project_id)
         response = requests.post(url, headers=auth.get_auth_header())
-        print(f"STATUS CODE {response.status_code}")
         response.raise_for_status()
         json = response.json()
         return json["collectionIds"]
@@ -201,5 +205,4 @@ class SourceFirestore(AbstractSource):
         auth = self.get_auth(config=config)
         project_id = config["project_id"]
         collections = self.discover_collections(project_id, auth)
-        print(collections)
         return map(lambda collection_name : Collection(auth, collection_name, config), collections)
