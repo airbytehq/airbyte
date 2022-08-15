@@ -2,17 +2,19 @@
 
 set -eo pipefail
 
-if [[ "$DEBUG" = "true" ]]; then 
+if [[ "$DEBUG" = "true" ]]; then
     set -x
 fi
 
-PROJECT_DIR=$(pwd)
-
+VERSION=0.0.1
 CLI_NAME="${CLI_NAME:-con}"
 AIRBYTE_REPO="${AIRBYTE_REPO:-https://github.com/airbytehq/airbyte.git}"
+
 BUILD_DIR="build"
+PROJECT_PATH=$(pwd)
+AIRBYTE_PATH="${PROJECT_PATH}/${BUILD_DIR}"/airbyte
+
 PROJECT_FILE=airbyte.json
-VERSION=0.0.1
 
 PYTHON_CMD="${PYTHON_CMD:-python}"
 PIP_CMD="${PIP_CMD:-pip}"
@@ -24,8 +26,10 @@ _error() {
 
 _setup_airbyte() {
     (
-        mkdir -p "${BUILD_DIR}"
-        cd "${BUILD_DIR}"
+        local build_path="$(dirname ${AIRBYTE_PATH})"
+        mkdir -p "${build_path}"
+
+        cd "${build_path}"
 
         [[ -d airbyte ]] || git clone "${AIRBYTE_REPO}"
 
@@ -42,29 +46,11 @@ _setup_env() {
 }
 
 _get_connector_name() {
-    cat ${PROJECT_FILE} | jq -r '.connector_name'
+    cat acceptance-test-config.yml | grep connector_image | cut -d / -f 2 | cut -d : -f 1
 }
 
-help_init="Initialize current connector project in current directory"
-cmd_init() {
-#    [[ -f "${PROJECT_FILE}" ]] && _error "Connector alrealy initialized"
-
-    echo "Initializing connector"
-
-    local airbyte_dir="${PROJECT_DIR}/${BUILD_DIR}"/airbyte
-
-    # (
-    #     cd "${airbyte_dir}"
-    #     cd ./airbyte-integrations/connector-templates/generator
-    #     ./generate.sh
-    #     connector_dir=$(git status --porcelain | cut -d ' ' -f2)
-
-    #     shopt -s dotglob
-    #     mv "${airbyte_dir}/${connector_dir}/"* "${PROJECT_DIR}"
-    # )
-
-    cp -i "${airbyte_dir}/.gitignore" .
-    cp -i "${airbyte_dir}/pyproject.toml" .
+_patch_connector() {
+    echo "Patching standalone connector"
 
     # TODO(michel): publish package instead of editable
     if [[ -f requirements.txt ]]; then
@@ -76,16 +62,41 @@ cmd_init() {
         " requirements.txt > requirements.txt.new
         mv requirements.txt.new requirements.txt
     fi
-    rm build.gradle
-    
-    # TODO(michel): create better information gathering process
-    local connector_name=$(cat acceptance-test-config.yml | grep connector_image | cut -d / -f 2 | cut -d : -f 1)
+    rm -f build.gradle
+    rm -f acceptance-test-docker.sh
+}
 
-    echo "
-    {
-        \"connector_name\": \"${connector_name}\"
-    }
-    " | jq > "${PROJECT_FILE}"
+help_init="Initialize current connector project in current directory"
+cmd_init() {
+    [[ -f "${PROJECT_FILE}" ]] && _error "Connector alrealy initialized"
+
+    echo "Initializing connector"
+
+    cp -i "${AIRBYTE_PATH}/.gitignore" .
+    cp -i "${AIRBYTE_PATH}/pyproject.toml" .
+
+    # TODO(michel): Remove all unecessary generated files
+    _patch_connector
+
+    echo "{}" | jq > "${PROJECT_FILE}"
+}
+
+help_generate="Generate new connector from template"
+cmd_generate() {
+    echo "Generating connector"
+
+    (
+        cd "${AIRBYTE_PATH}"
+        cd ./airbyte-integrations/connector-templates/generator
+        ./generate.sh
+        local connector_dir=$(git status --porcelain | cut -d ' ' -f2)
+
+        shopt -s dotglob
+        mv "${AIRBYTE_PATH}/${connector_dir}/"* "${PROJECT_PATH}"
+    )
+
+    # TODO(michel): Remove all unecessary generated files
+    _patch_connector
 }
 
 help_configure="Configure & install all connector dependencies"
@@ -110,8 +121,10 @@ cmd_container_run() {
     local image_name="airbyte/$(_get_connector_name):dev"
 
     cmd_build dev
-    
+
+    # allow proper mounting of sample_files & secrets so it is not necessary to prepend '/'
     local docker_pwd=$(docker run --rm --entrypoint pwd "${image_name}")
+
     docker run --rm \
         -v "$(pwd)/secrets:${docker_pwd}/secrets" \
         -v "$(pwd)/sample_files:${docker_pwd}/sample_files" \
