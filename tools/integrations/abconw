@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-ABCON_URL=${ABCON:-file://$(pwd)/tools/con}
+ABCON_URL=${ABCON:-https://raw.githubusercontent.com/airbytehq/airbyte/mt-standalone-connectors/tools/integrations/abcon}
 BUILD_DIR="build"
 ABCON_CMD="$BUILD_DIR/abcon"
 
