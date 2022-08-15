@@ -1,12 +1,13 @@
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
-  
-  secretName: "airbyte-secrets"
+  credVolumeOverride: ""
+  secretName: ""
+  extraContainers: []
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "test"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
   logs:
     ## @param logs.accessKey.password Logs Access Key

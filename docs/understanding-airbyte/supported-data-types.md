@@ -2,7 +2,7 @@
 
 AirbyteRecords are required to conform to the Airbyte type system. This means that all sources must produce schemas and records within these types, and all destinations must handle records that conform to this type system.
 
-Because Airybet's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
+Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
 
 This type system does not (generally) constrain values. Sources may declare streams using additional features of JSON schema (such as the `length` property for strings), but those constraints will be ignored by all other Airbyte components. The exception is in numeric types; `integer` and `number` fields must be representable within 64-bit primitives.
 

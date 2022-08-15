@@ -16,6 +16,10 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
+/**
+ * TODO : Replace all the DateTime related logic of this class with
+ * {@link io.airbyte.db.jdbc.DateTimeConverter}
+ */
 public class DataTypeUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
@@ -27,6 +31,7 @@ public class DataTypeUtils {
   public static final DateTimeFormatter TIMETZ_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX");
   public static final DateTimeFormatter TIMESTAMPTZ_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
   public static final DateTimeFormatter OFFSETDATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX");
+  public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
   public static DateFormat getDateFormat() {

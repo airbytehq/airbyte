@@ -47,6 +47,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.AvoidCatchingNPE")
 public class SourceDefinitionsHandler {
 
   private final ConfigRepository configRepository;
