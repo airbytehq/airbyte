@@ -7,9 +7,13 @@ ABCON_URL=${ABCON:-https://tools.airbyte.com/${VERSION}/abcon}
 BUILD_DIR="build"
 ABCON_CMD="$BUILD_DIR/abcon"
 
+_error() {
+    echo "$@" 1>&2 && exit 1
+}
+
 _download_con() {
     mkdir -p $BUILD_DIR
-    curl -s "$ABCON_URL" -o "${ABCON_CMD}"
+    curl -s "$ABCON_URL" -o "${ABCON_CMD}" || _error "Invalid URL: ${ABCON_URL}"
     chmod +x "${ABCON_CMD}"
     echo "Upgraded ($ABCON_URL)"
 }
