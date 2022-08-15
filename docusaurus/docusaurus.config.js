@@ -13,8 +13,8 @@ const config = {
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
-    onBrokenLinks: 'throw',
-    onBrokenMarkdownLinks: 'throw',
+    onBrokenLinks: 'warn',
+    onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.png',
     organizationName: 'airbytehq', // Usually your GitHub org/user name.
     projectName: 'airbyte', // Usually your repo name.
@@ -62,7 +62,6 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
-                    exclude: ['**/connector-development/config-based/**']
                 },
                 blog: false,
                 theme: {
