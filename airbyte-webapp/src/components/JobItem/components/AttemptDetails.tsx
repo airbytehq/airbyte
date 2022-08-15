@@ -52,17 +52,9 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     })}: ${failureOrigin}`;
   };
 
-  const truncateExternalMessage = (failureMessage?: string) => {
-    if (failureMessage && failureMessage.length > 140) {
-      return failureMessage.slice(0, 136).concat("...");
-    }
-    return failureMessage;
-  };
-
   const getExternalFailureMessage = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
-    const failureMessage =
-      truncateExternalMessage(failure?.externalMessage) ?? formatMessage({ id: "errorView.unknown" });
+    const failureMessage = failure?.externalMessage ?? formatMessage({ id: "errorView.unknown" });
 
     return `${formatMessage({
       id: "sources.message",
@@ -107,7 +99,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
         ) : null}
       </div>
       {isFailed && (
-        <div>
+        <div className={styles.truncate}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",
