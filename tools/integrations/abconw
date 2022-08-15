@@ -19,7 +19,11 @@ _download_con() {
 }
 
 main() {
-    [[ -f "${ABCON_CMD}" && -z "$UPGRADE" ]] || _download_con 1>&2
+    if [[ ! -f "${ABCON_CMD}" || ! -z "$UPGRADE" ]]; then
+        _download_con 1>&2
+        [[ ! -z "$UPGRADE" ]] && exit 0
+    fi 
+
     "${ABCON_CMD}" "$@"
 }
 
