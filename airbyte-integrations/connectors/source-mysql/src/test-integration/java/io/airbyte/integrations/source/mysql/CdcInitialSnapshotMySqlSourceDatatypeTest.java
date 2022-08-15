@@ -15,7 +15,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class CdcMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
+public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
   private DSLContext dslContext;
 
@@ -37,6 +37,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest 
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", MySqlSource.ReplicationMethod.CDC)
+        .put("snapshot_mode", "initial_only")
         .build());
 
     dslContext = DSLContextFactory.create(
@@ -87,6 +88,11 @@ public class CdcMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest 
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean testCatalog() {
+    return true;
   }
 
 }
