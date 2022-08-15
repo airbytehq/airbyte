@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-VERSION=${VERSION:-latest}
-ABCON_URL=${ABCON:-https://tools.airbyte.com/${VERSION}/abcon}
+DEV_VERSION=${DEV_VERSION:-latest}
+ABCON_URL=${ABCON:-https://tools.airbyte.com/${DEV_VERSION}/abcon}
 BUILD_DIR="build"
 ABCON_CMD="$BUILD_DIR/abcon"
 
@@ -19,10 +19,7 @@ _download_con() {
 }
 
 main() {
-    if [[ ! -f "${ABCON_CMD}" || ! -z "$UPGRADE" ]]; then
-        _download_con 1>&2
-        [[ ! -z "$UPGRADE" ]] && exit 0
-    fi 
+    [[ -f "${ABCON_CMD}" && -z "$DEV_UPGRADE" ]] || _download_con 1>&2
 
     "${ABCON_CMD}" "$@"
 }
