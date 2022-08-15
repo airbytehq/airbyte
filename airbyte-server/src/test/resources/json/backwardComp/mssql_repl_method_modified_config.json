@@ -13,6 +13,6 @@
     "tunnel_method": "NO_TUNNEL"
   },
   "replication_method": {
-    "replication_type": "STANDARD"
+    "method": "STANDARD"
   }
 }

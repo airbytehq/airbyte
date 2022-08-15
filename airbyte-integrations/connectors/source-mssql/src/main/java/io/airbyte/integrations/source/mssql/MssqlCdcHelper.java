@@ -17,6 +17,7 @@ public class MssqlCdcHelper {
   // it is an oneOf object
   private static final String REPLICATION_FIELD = "replication";
   private static final String REPLICATION_TYPE_FIELD = "replication_type";
+  private static final String METHOD_FIELD = "method";
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
@@ -93,7 +94,7 @@ public class MssqlCdcHelper {
     // new replication method config since version 0.4.0
     if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
     }
     // legacy replication method config before version 0.4.0
     if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {

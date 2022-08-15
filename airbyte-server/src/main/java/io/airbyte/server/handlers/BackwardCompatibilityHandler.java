@@ -87,11 +87,25 @@ public class BackwardCompatibilityHandler {
                                                   JsonNode specReplication,
                                                   JsonNode configReplication) {
     if (specReplicationMethod != null && configReplicationMethod == null && configReplication != null && configReplication.isObject()) {
-      clone.remove("replication");
-      clone.put("replication_method", configuration.get("replication"));
+      final ObjectNode replication = (ObjectNode) configuration.get("replication");
+      final JsonNode replicationType = replication.get("replication_type");
+      if (replicationType!=null) {
+        final ObjectNode replicationClone = Jsons.clone(replication);
+        replicationClone.remove("replication_type");
+        replicationClone.put("method", replicationType);
+        clone.remove("replication");
+        clone.put("replication_method", replicationClone);
+      }
     } else if (specReplication != null && configReplication == null && configReplicationMethod != null && configReplicationMethod.isObject()) {
-      clone.remove("replication_method");
-      clone.put("replication", configuration.get("replication_method"));
+      final ObjectNode replicationMethod = (ObjectNode) configuration.get("replication_method");
+      final JsonNode method = replicationMethod.get("method");
+      if (method!=null){
+        final ObjectNode replicationMethodClone = Jsons.clone(replicationMethod);
+        replicationMethodClone.remove("method");
+        replicationMethodClone.put("replication_type", method);
+        clone.remove("replication_method");
+        clone.put("replication", replicationMethodClone);
+      }
     }
   }
 

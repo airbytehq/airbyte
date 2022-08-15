@@ -40,7 +40,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_type", "Standard")
+        .put("method", "Standard")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()

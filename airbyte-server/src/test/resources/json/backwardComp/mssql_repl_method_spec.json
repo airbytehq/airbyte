@@ -97,9 +97,9 @@
       "oneOf": [
         {
           "title": "Standard",
-          "required": ["replication_type"],
+          "required": ["method"],
           "properties": {
-            "replication_type": {
+            "method": {
               "enum": ["STANDARD"],
               "type": "string",
               "const": "STANDARD",
@@ -111,7 +111,7 @@
         },
         {
           "title": "Logical Replication (CDC)",
-          "required": ["replication_type"],
+          "required": ["method"],
           "properties": {
             "data_to_sync": {
               "enum": ["Existing and New", "New Changes Only"],
@@ -121,7 +121,7 @@
               "default": "Existing and New",
               "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC."
             },
-            "replication_type": {
+            "method": {
               "enum": ["CDC"],
               "type": "string",
               "const": "CDC",
