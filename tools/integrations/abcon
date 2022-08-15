@@ -1,0 +1,210 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [[ "$DEBUG" = "true" ]]; then 
+    set -x
+fi
+
+PROJECT_DIR=$(pwd)
+
+CLI_NAME="${CLI_NAME:-con}"
+AIRBYTE_REPO="${AIRBYTE_REPO:-https://github.com/airbytehq/airbyte.git}"
+BUILD_DIR="build"
+PROJECT_FILE=airbyte.json
+VERSION=0.0.1
+
+PYTHON_CMD="${PYTHON_CMD:-python}"
+PIP_CMD="${PIP_CMD:-pip}"
+
+
+_error() {
+    echo "$@" 1>&2 && exit 1
+}
+
+_setup_airbyte() {
+    (
+        mkdir -p "${BUILD_DIR}"
+        cd "${BUILD_DIR}"
+
+        [[ -d airbyte ]] || git clone "${AIRBYTE_REPO}"
+
+        cd airbyte
+        git clean -fd # remove all untracked files
+        git clean -fdX # remove all ignored files
+        git pull -q
+    )
+}
+
+_setup_env() {
+    [[ -d .venv ]] || "${PYTHON_CMD}" -m venv ".venv" # Create a virtual environment in the .venv directory
+    source ".venv/bin/activate" # enable the venv
+}
+
+_get_connector_name() {
+    cat ${PROJECT_FILE} | jq -r '.connector_name'
+}
+
+help_init="Initialize current connector project in current directory"
+cmd_init() {
+#    [[ -f "${PROJECT_FILE}" ]] && _error "Connector alrealy initialized"
+
+    echo "Initializing connector"
+
+    local airbyte_dir="${PROJECT_DIR}/${BUILD_DIR}"/airbyte
+
+    # (
+    #     cd "${airbyte_dir}"
+    #     cd ./airbyte-integrations/connector-templates/generator
+    #     ./generate.sh
+    #     connector_dir=$(git status --porcelain | cut -d ' ' -f2)
+
+    #     shopt -s dotglob
+    #     mv "${airbyte_dir}/${connector_dir}/"* "${PROJECT_DIR}"
+    # )
+
+    cp -i "${airbyte_dir}/.gitignore" .
+    cp -i "${airbyte_dir}/pyproject.toml" .
+
+    # TODO(michel): publish package instead of editable
+    if [[ -f requirements.txt ]]; then
+        rm -f requirements.txt.new
+        sed "
+            s;\.\./\.\./\.\.;${BUILD_DIR}/airbyte;
+            s;\.\./\.\.;${BUILD_DIR}/airbyte/airbyte-integrations;
+            s;\.\.;${BUILD_DIR}/airbyte/airbyte-integrations/connectors;
+        " requirements.txt > requirements.txt.new
+        mv requirements.txt.new requirements.txt
+    fi
+    rm build.gradle
+    
+    # TODO(michel): create better information gathering process
+    local connector_name=$(cat acceptance-test-config.yml | grep connector_image | cut -d / -f 2 | cut -d : -f 1)
+
+    echo "
+    {
+        \"connector_name\": \"${connector_name}\"
+    }
+    " | jq > "${PROJECT_FILE}"
+}
+
+help_configure="Configure & install all connector dependencies"
+cmd_configure() {
+    pip install -r requirements.txt
+
+    pip install pyproject-flake8==0.0.1a5
+    pip install black==22.3.0
+    pip install mypy==0.930
+    pip install isort==5.6.4
+}
+
+help_run="Run connector"
+cmd_run() {
+    cmd_check 1>&2
+
+    python main.py "$@"
+}
+
+help_container_run="Run connector from within a container"
+cmd_container_run() {
+    local image_name="airbyte/$(_get_connector_name):dev"
+
+    cmd_build dev
+    
+    local docker_pwd=$(docker run --rm --entrypoint pwd "${image_name}")
+    docker run --rm \
+        -v "$(pwd)/secrets:${docker_pwd}/secrets" \
+        -v "$(pwd)/sample_files:${docker_pwd}/sample_files" \
+        "${image_name}" \
+        "$@"
+}
+
+help_build="Build connector image"
+cmd_build() {
+    local tag=${1:-dev}
+    local connector_name=$(_get_connector_name)
+
+    cmd_check 1>&2
+
+    docker build . -t "airbyte/${connector_name}:${tag}"
+}
+
+help_test="Run connector unit tests"
+cmd_test() {
+    echo "Testing connector"
+
+    python -m pytest -s unit_tests
+}
+
+help_format="Apply style to project"
+cmd_format() {
+    black --config pyproject.toml .
+    isort --settings-file=pyproject.toml .
+}
+
+help_check="Verify code style & types"
+cmd_check() {
+    black --config pyproject.toml --diff --quiet .
+    pflake8 --exit-zero --config pyproject.toml .
+    isort --settings-file=pyproject.toml --diff --quiet .
+    python -m mypy --config-file pyproject.toml .
+}
+
+help_sat="Run standard acceptance tests"
+cmd_sat() {
+    echo "Running SAT"
+
+    python -m pytest -p integration_tests.acceptance "$@"
+}
+
+help_container_sat="Run standard acceptance tests from container"
+cmd_container_sat() {
+    echo "Running SAT"
+
+    cmd_build
+
+    # Run
+    docker run --rm -it \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v /tmp:/tmp \
+        -v $(pwd):/test_input \
+        airbyte/source-acceptance-test \
+        --acceptance-test-config /test_input
+
+
+    python -m pytest -p integration_tests.acceptance "$@"
+}
+
+help_publish="Publish connector"
+cmd_publish() {
+    echo "Publishing connector"
+}
+
+help_help="Display that message"
+cmd_help() {
+    echo
+    echo "Usage:  abcon [OPTIONS] COMMAND"
+    echo
+    echo "A CLI to develop Airbyte connectors"
+    echo
+    echo "Options: None (yet)"
+    echo ""
+    echo "Commands:"
+    while read cmd; do
+        help_var="help_$cmd"
+        echo -e "  $cmd@${!help_var}"
+    done < <(declare -F | grep cmd_ | cut -d ' ' -f 3 | cut -d _ -f 2-) |  column -t -s @
+}
+
+main() {
+    local cmd="$1"; shift || _error "missing cmd"
+
+    [[ "--version" = "$cmd" ]] && { echo "$VERSION" ; exit 0; }
+
+    _setup_airbyte
+    _setup_env
+
+    "cmd_${cmd}" "$@"
+}
+
+main "$@"
