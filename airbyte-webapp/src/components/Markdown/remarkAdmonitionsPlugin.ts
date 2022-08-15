@@ -3,6 +3,10 @@ import { Plugin } from "unified";
 import { Node } from "unist";
 import { visit } from "unist-util-visit";
 
+// This class is also used in Markdown.tsx thus ignoring unused classes here
+// eslint-disable-next-line css-modules/no-unused-class
+import styles from "./Markdown.module.scss";
+
 const SUPPORTED_ADMONITION_NAMES: Readonly<string[]> = ["note", "tip", "info", "caution", "warning", "danger"];
 const SUPPORTED_NODE_TYPES: Readonly<string[]> = ["textDirective", "leafDirective", "containerDirective"];
 
@@ -13,7 +17,7 @@ export const remarkAdmonitionsPlugin: Plugin<[], Root> = () => (tree) => {
     }
 
     const data = node.data ?? (node.data = {});
-    const className = `admonition admonition--${node.name}`;
+    const className = `${styles.admonition} ${styles[`admonition--${node.name}`]}`;
 
     data.hName = "div";
     data.hProperties = { class: className };
