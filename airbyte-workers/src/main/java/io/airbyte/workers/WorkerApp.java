@@ -463,30 +463,6 @@ public class WorkerApp {
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
-    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
-    final var authHeader = configs.initializeAsDataPlaneWorker()
-        ? "bearer"
-        : configs.getAirbyteApiAuthHeaderName();
-    final var authToken = configs.initializeAsDataPlaneWorker()
-        ? generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
-            configs.getDataPlaneServiceAccountEmail(),
-            configs.getControlPlaneGoogleEndpoint(),
-            JWT_TTL_SECONDS)
-        : configs.getAirbyteApiAuthHeaderValue();
-    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header Name: {}, Auth-Header Value: {}",
-        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader, authToken);
-
-    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme(scheme)
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api")
-            .setRequestInterceptor(builder -> {
-              builder.setHeader(authHeader, authToken);
-              builder.setHeader("User-Agent", "WorkerApp");
-            }));
-
     // TODO (pmossman) this is obviously horrible, just passing nulls for now to unblock bare minimum
     // MVP. Should refactor this all to properly
     // differentiate control-plane dependencies and initialization from data-plane
@@ -522,7 +498,7 @@ public class WorkerApp {
         null,
         featureFlags,
         null,
-        airbyteApiClient).start();
+        getApiClient(configs)).start();
   }
 
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
@@ -624,33 +600,6 @@ public class WorkerApp {
             webUrlHelper,
             jobErrorReportingClient);
 
-    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
-        ? "Authorization"
-        : configs.getAirbyteApiAuthHeaderName();
-
-    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
-        ? "Bearer " + generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
-            configs.getDataPlaneServiceAccountEmail(),
-            configs.getControlPlaneGoogleEndpoint(),
-            JWT_TTL_SECONDS)
-        : configs.getAirbyteApiAuthHeaderValue();
-
-    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
-    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}, Auth-Token: {}",
-        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader,
-        authToken);
-
-    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme(scheme)
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api")
-            .setRequestInterceptor(builder -> {
-              builder.setHeader(authHeader, authToken);
-              builder.setHeader("User-Agent", "WorkerApp");
-            }));
-
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -682,7 +631,37 @@ public class WorkerApp {
         streamResetPersistence,
         featureFlags,
         jobCreator,
-        airbyteApiClient).start();
+        getApiClient(configs)).start();
+  }
+
+  private static AirbyteApiClient getApiClient(final Configs configs) throws IOException {
+    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
+        ? "Authorization"
+        : configs.getAirbyteApiAuthHeaderName();
+
+    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
+        ? "Bearer " + generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
+        configs.getDataPlaneServiceAccountEmail(),
+        configs.getControlPlaneGoogleEndpoint(),
+        JWT_TTL_SECONDS)
+        : configs.getAirbyteApiAuthHeaderValue();
+
+    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
+    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}, Auth-Token: {}",
+        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader,
+        authToken);
+
+    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.generated.ApiClient()
+            .setScheme(scheme)
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api")
+            .setRequestInterceptor(builder -> {
+              builder.setHeader(authHeader, authToken);
+              builder.setHeader("User-Agent", "WorkerApp");
+            }));
+    return airbyteApiClient;
   }
 
   public static String generateJwt(final String saKeyfile,
