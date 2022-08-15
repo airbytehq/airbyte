@@ -62,7 +62,6 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
-                    exclude: ['**/connector-development/config-based/**']
                 },
                 blog: false,
                 theme: {
