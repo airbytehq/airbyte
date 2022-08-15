@@ -28,7 +28,7 @@ const getSizeClassName = (size: TextSize): string | undefined => {
 };
 
 export const Text: React.FC<TextProps> = ({
-  as = "span",
+  as = "p",
   size = "md",
   bold,
   centered,
