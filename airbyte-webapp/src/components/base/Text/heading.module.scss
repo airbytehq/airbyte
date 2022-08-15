@@ -1,0 +1,30 @@
+@use "../../../scss/colors";
+
+.heading {
+  font-size: 20px;
+  line-height: 1.48em;
+  font-weight: 700;
+
+  color: colors.$dark-blue;
+  margin: 0;
+  padding: 0;
+}
+
+.sm {
+  font-size: 16px;
+  line-height: 1.2em;
+}
+
+.lg {
+  font-size: 24px;
+  line-height: 1.7em;
+}
+
+.xl {
+  font-size: 32px;
+  line-height: 2em;
+}
+
+.centered {
+  text-align: center;
+}

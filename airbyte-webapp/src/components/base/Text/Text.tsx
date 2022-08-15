@@ -1,7 +1,8 @@
 import classNames from "classnames";
 import React, { useMemo } from "react";
 
-import styles from "./Text.module.scss";
+import headingStyles from "./heading.module.scss";
+import textStyles from "./text.module.scss";
 
 type TextSize = "sm" | "md" | "lg" | "xl";
 type TextElementType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span" | "div";
@@ -14,33 +15,38 @@ interface TextProps {
   centered?: boolean;
 }
 
-const getSizeClassName = (size: TextSize): string | undefined => {
-  switch (size) {
-    case "sm":
-      return styles.sm;
-    case "lg":
-      return styles.lg;
-    case "xl":
-      return styles.xl;
-  }
+const getTextClassNames = ({ size, centered, bold }: Required<Pick<TextProps, "size" | "centered" | "bold">>) => {
+  const sizes: Partial<Record<TextSize, string>> = {
+    sm: textStyles.sm,
+    lg: textStyles.lg,
+    xl: textStyles.xl,
+  };
 
-  return undefined;
+  return classNames(textStyles.text, sizes[size], centered && textStyles.centered, bold && textStyles.bold);
+};
+
+const getHeadingClassNames = ({ size, centered }: Required<Pick<TextProps, "size" | "centered">>) => {
+  const sizes: Partial<Record<TextSize, string>> = {
+    sm: headingStyles.sm,
+    lg: headingStyles.lg,
+    xl: headingStyles.xl,
+  };
+
+  return classNames(headingStyles.heading, sizes[size], centered && headingStyles.centered);
 };
 
 export const Text: React.FC<TextProps> = ({
   as = "p",
   size = "md",
-  bold,
-  centered,
+  bold = false,
+  centered = false,
   className: customClassName,
   children,
 }) => {
   const className = useMemo(() => {
-    const isHeading = as.match(/^h[0-6]$/);
+    const isHeading = /^h[0-6]$/.test(as);
     return classNames(
-      isHeading ? styles.heading : styles.text,
-      getSizeClassName(size),
-      { [styles.bold]: bold, [styles.centered]: centered },
+      isHeading ? getHeadingClassNames({ size, centered }) : getTextClassNames({ size, centered, bold }),
       customClassName
     );
   }, [as, bold, centered, customClassName, size]);

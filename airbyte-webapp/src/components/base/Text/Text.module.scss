@@ -1,57 +1,30 @@
 @use "../../../scss/colors";
 
-.text,
-.heading {
-  color: colors.$dark-blue;
-  margin: 0;
-  padding: 0;
-
-  &.centered {
-    text-align: center;
-  }
-}
-
 .text {
   font-weight: 400;
   font-size: 13px;
   line-height: 1.2em;
-
-  &.sm {
-    font-size: 12px;
-    line-height: 1.2em;
-  }
-
-  &.lg,
-  &.xl {
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 1.3em;
-  }
-
-  &.bold,
-  strong,
-  b {
-    font-weight: 600;
-  }
+  color: colors.$dark-blue;
+  margin: 0;
+  padding: 0;
 }
 
-.heading {
-  font-size: 20px;
-  line-height: 1.48em;
-  font-weight: 700;
+.sm {
+  font-size: 12px;
+}
 
-  &.sm {
-    font-size: 16px;
-    line-height: 1.2em;
-  }
+.lg,
+.xl {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.3em;
+}
 
-  &.lg {
-    font-size: 24px;
-    line-height: 1.7em;
-  }
+.centered {
+  text-align: center;
+}
 
-  &.xl {
-    font-size: 32px;
-    line-height: 2em;
-  }
+.bold,
+.text > strong {
+  font-weight: 600;
 }
