@@ -81,14 +81,16 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "CDC")
+            .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", MySqlSource.ReplicationMethod.CDC)
+        .put("replication_method", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
