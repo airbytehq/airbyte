@@ -12,6 +12,8 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.Base64;

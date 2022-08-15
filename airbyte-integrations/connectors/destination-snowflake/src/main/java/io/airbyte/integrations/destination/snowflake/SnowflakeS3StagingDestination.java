@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
