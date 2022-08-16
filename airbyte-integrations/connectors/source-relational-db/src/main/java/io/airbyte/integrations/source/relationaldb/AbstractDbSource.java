@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -151,8 +152,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
           stream.getName());
-      if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || airbyteStream.getStream()
-          .getSourceDefinedCursor()) {
+      final boolean hasSourceDefinedCursor =
+          !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor()) && airbyteStream.getStream().getSourceDefinedCursor();
+      if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
         continue;
       }
 
@@ -172,7 +174,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField, cursorType.toString()));
     }
 
-    if (tablesWithInvalidCursor.isEmpty()) {
+    if (!tablesWithInvalidCursor.isEmpty()) {
       throw new InvalidCursorException(tablesWithInvalidCursor);
     }
   }
