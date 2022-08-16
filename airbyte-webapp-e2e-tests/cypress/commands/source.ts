@@ -20,6 +20,20 @@ export const fillPgSourceForm = (name: string) => {
   );
 };
 
+export const fillPokeAPISourceForm = (name: string) => {
+  cy.intercept("/api/v1/source_definition_specifications/get").as(
+    "getSourceSpecifications"
+  );
+  
+  cy.get("div[data-testid='serviceType']").click();
+  cy.get("div").contains("PokeAPI").click();
+  
+  cy.wait("@getSourceSpecifications");
+  
+  cy.get("input[name=name]").clear().type(name);
+  cy.get("input[name='connectionConfiguration.pokemon_name']").type("luxray");
+};
+
 export const createTestSource = (name: string) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
@@ -28,6 +42,20 @@ export const createTestSource = (name: string) => {
 
   openNewSourceForm();
   fillPgSourceForm(name);
+  submitButtonClick();
+
+  cy.wait("@checkSourceUpdateConnection");
+  cy.wait("@createSource");
+};
+
+export const createPokeTestSource = (name: string) => {
+  cy.intercept("/api/v1/scheduler/sources/check_connection").as(
+    "checkSourceUpdateConnection"
+  );
+  cy.intercept("/api/v1/sources/create").as("createSource");
+
+  openNewSourceForm();
+  fillPokeAPISourceForm(name);
   submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");

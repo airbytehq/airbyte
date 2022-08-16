@@ -1,12 +1,16 @@
 import { submitButtonClick } from "./common";
 import { createTestDestination } from "./destination";
-import { createTestSource } from "./source";
+import { createPokeTestSource, createTestSource } from "./source";
 
 export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
-  createTestSource(sourceName);
+  if (sourceName.includes("PokeAPI")){
+    createPokeTestSource(sourceName)
+  } else {
+    createTestSource(sourceName);
+  }
   createTestDestination(destinationName);
   cy.wait(5000);
 
