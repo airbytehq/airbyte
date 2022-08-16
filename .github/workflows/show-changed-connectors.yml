@@ -23,9 +23,13 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "$file was changed"
           done
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          git diff --name-only remotes/origin/master
+          git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}
           echo ${{ github.token }}
 
