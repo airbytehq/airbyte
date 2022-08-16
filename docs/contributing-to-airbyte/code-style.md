@@ -32,3 +32,15 @@ Install it in IntelliJ:
          5. `Add final modifier to local variable or parameter` > check the box
          6. Apply the changes
 7. You're done!
+
+## Source code comments
+
+It's hard to pin down exactly what to do around source code comments, but there are two \(very subjective\) and rough guidelines:
+
+**If something is not obvious, write it down**. Examples include:
+
+* non-trivial class definitions should have docstrings
+* magic variables should have comments explaining why those values are used \(e.g: if using a page size of 10 in a connector, describe why if possible. If there is no reason, that's also fine, just mention in a comment\).
+* Complicated subroutines/logic which cannot be refactored should have comments explaining what they are doing and why
+
+**If something is obvious, don't write it down** since it's probably more likely to go out of date. For example, a comment like `x = 42; // sets x to 42` is not adding any new information and is therefore better omitted.

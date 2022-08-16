@@ -795,7 +795,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.5"
+- dockerImage: "airbyte/source-bigcommerce:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigcommerce"
     connectionSpecification:
@@ -806,7 +806,7 @@
       - "start_date"
       - "store_hash"
       - "access_token"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         start_date:
           type: "string"
@@ -865,7 +865,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.9"
+- dockerImage: "airbyte/source-bing-ads:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -6197,7 +6197,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.12"
+- dockerImage: "airbyte/source-okta:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -9498,7 +9498,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.36"
+- dockerImage: "airbyte/source-stripe:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
