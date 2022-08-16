@@ -4,9 +4,7 @@ connectionSpecification:
   title: Salesforce Source Spec
   type: object
   required:
-    - client_id
-    - client_secret
-    - refresh_token
+    - credentials
   additionalProperties: true
   properties:
     is_sandbox:
@@ -18,6 +16,10 @@ connectionSpecification:
       default: false
       order: 1
     credentials:
+      required:
+        - client_id
+        - client_secret
+        - refresh_token
       type: object
       x-oauth2-provider: salesforce
       properties:
@@ -89,7 +91,7 @@ connectionSpecification:
 
 authSpecification:
   provider: "salesforce"
-  authUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code"
+  authUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
   accessTokenUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/token"
   accessTokenBody: "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
