@@ -30,6 +30,6 @@ jobs:
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          git diff --name-only remotes/origin/master
+          git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}
           echo ${{ github.token }}
 
