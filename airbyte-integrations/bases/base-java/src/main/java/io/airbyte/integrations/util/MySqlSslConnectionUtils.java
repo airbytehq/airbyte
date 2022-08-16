@@ -57,7 +57,7 @@ public class MySqlSslConnectionUtils {
     return additionalParameters;
   }
 
-  private static String checkOrCreatePassword(final JsonNode encryption) {
+  public static String checkOrCreatePassword(final JsonNode encryption) {
     String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
     var keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
     if (sslPassword.isEmpty()) {
