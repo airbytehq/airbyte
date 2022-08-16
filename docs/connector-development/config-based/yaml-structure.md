@@ -137,7 +137,7 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete ConnectionDefinition
 
-References can be defined using a *ref(<arg>) string.
+References can be defined using a "*ref({arg})" string.
 
 ```yaml
 key: 1234
