@@ -19,7 +19,8 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
       - name: Extract changes
-        run: echo "##[set-output name=changed_files;]$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})"
+        run: |
+          echo "::set-output name=changed_files::$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})"
         id: extract_changed_files
       - name: Debbug
         run: |
