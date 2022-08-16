@@ -46,11 +46,15 @@ class SlackNotificationClientTest {
   private static final String EXPECTED_FAIL_MESSAGE = "Your connection from source-test to destination-test just failed...\n"
       + "This happened with job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private static final String EXPECTED_SUCCESS_MESSAGE = "Your connection from source-test to destination-test succeeded\n"
       + "This was for job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private HttpServer server;
 
   @BeforeEach

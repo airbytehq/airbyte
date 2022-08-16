@@ -5,7 +5,6 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -80,10 +79,10 @@ public class MySqlSslConnectionUtils {
 
   private static String readFile(final File file) {
     try {
-    BufferedReader reader = new BufferedReader(new FileReader(file));
-    String currentLine = reader.readLine();
-    reader.close();
-    return currentLine;
+      BufferedReader reader = new BufferedReader(new FileReader(file));
+      String currentLine = reader.readLine();
+      reader.close();
+      return currentLine;
     } catch (final IOException e) {
       throw new RuntimeException("Failed to read file with encryption");
     }
@@ -93,9 +92,9 @@ public class MySqlSslConnectionUtils {
                                                                           final String mode,
                                                                           final String clientKeyPassword) {
     var clientCert = encryption.has(PARAM_CLIENT_CERTIFICATE) &&
-            !encryption.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty() ? encryption.get(PARAM_CLIENT_CERTIFICATE).asText() : null;
+        !encryption.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty() ? encryption.get(PARAM_CLIENT_CERTIFICATE).asText() : null;
     var clientKey = encryption.has(PARAM_CLIENT_KEY) &&
-            !encryption.get(PARAM_CLIENT_KEY).asText().isEmpty() ? encryption.get(PARAM_CLIENT_KEY).asText() : null;
+        !encryption.get(PARAM_CLIENT_KEY).asText().isEmpty() ? encryption.get(PARAM_CLIENT_KEY).asText() : null;
     if (Objects.nonNull(clientCert) && Objects.nonNull(clientKey)) {
       return obtainConnectionWithFullCertificatesOptions(encryption, mode, clientKeyPassword);
     } else if (Objects.isNull(clientCert) && Objects.isNull(clientKey)) {
