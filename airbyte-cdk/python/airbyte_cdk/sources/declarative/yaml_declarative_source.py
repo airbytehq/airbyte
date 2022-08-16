@@ -112,16 +112,14 @@ class YamlDeclarativeSource(DeclarativeSource):
         visited[expand_class.__name__] = expand_class
 
         next_classes = []
-        copy_cls = type(expand_class.__name__, expand_class.__bases__, dict(expand_class.__dict__))
-        class_fields = fields(copy_cls)
+        class_fields = fields(expand_class)
         for field in class_fields:
             unpacked_field_types = DeclarativeComponentFactory.unpack(field.type)
-            copy_cls.__annotations__[field.name] = unpacked_field_types
+            expand_class.__annotations__[field.name] = unpacked_field_types
             next_classes.extend(YamlDeclarativeSource._get_next_expand_classes(field.type))
-
         for next_class in next_classes:
             YamlDeclarativeSource.expand_schema_interfaces(next_class, visited)
-        return copy_cls
+        return expand_class
 
     @staticmethod
     def _get_next_expand_classes(field_type) -> list[type]:
