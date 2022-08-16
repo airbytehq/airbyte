@@ -26,6 +26,6 @@ jobs:
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          git branch
+          git branch -a
           echo ${{ github.token }}
 
