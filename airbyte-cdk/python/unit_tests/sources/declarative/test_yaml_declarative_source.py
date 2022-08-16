@@ -248,7 +248,9 @@ def test_generate_schema():
     schema_str = YamlDeclarativeSource.generate_schema()
     schema = json.loads(schema_str)
 
-    assert schema["required"] == ["checker", "streams"]
+    assert "version" in schema["required"]
+    assert "checker" in schema["required"]
+    assert "streams" in schema["required"]
     assert schema["properties"]["checker"]["$ref"] == "#/definitions/CheckStream"
     assert schema["properties"]["streams"]["items"]["$ref"] == "#/definitions/DeclarativeStream"
 
