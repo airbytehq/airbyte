@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pendulum import DateTime
 
 
@@ -135,7 +135,7 @@ class SourceWrike(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        start_date = pendulum.parse(config["start_date"])
+        start_date = pendulum.parse(config.get("start_date")) if config.get("start_date") else pendulum.now().subtract(days=7)
 
         auth = TokenAuthenticator(token=config["access_token"])
         return [
