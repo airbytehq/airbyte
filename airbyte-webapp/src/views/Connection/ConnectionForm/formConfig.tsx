@@ -254,24 +254,35 @@ const useInitialValues = (
   }, [initialSchema, connection, isEditMode, destDefinition]);
 };
 
-const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
+const useFrequencyDropdownData = (
+  additionalFrequency: WebBackendConnectionRead["schedule"]
+): DropDownRow.IDataItem[] => {
   const { formatMessage } = useIntl();
 
-  return useMemo(
-    () =>
-      FrequencyConfig.map((item) => ({
-        value: item.config,
-        label: item.config
-          ? formatMessage(
-              {
-                id: `form.every.${item.config.timeUnit}`,
-              },
-              { value: item.config.units }
-            )
-          : formatMessage({ id: "frequency.manual" }),
-      })),
-    [formatMessage]
-  );
+  return useMemo(() => {
+    const frequencies = FrequencyConfig.map((frequencyConfig) => frequencyConfig.config);
+    if (additionalFrequency) {
+      const additionalFreqAlreadyPresent = frequencies.some(
+        (frequency) =>
+          frequency?.timeUnit === additionalFrequency.timeUnit && frequency?.units === additionalFrequency.units
+      );
+      if (!additionalFreqAlreadyPresent) {
+        frequencies.unshift(additionalFrequency);
+      }
+    }
+
+    return frequencies.map((frequency) => ({
+      value: frequency,
+      label: frequency
+        ? formatMessage(
+            {
+              id: `form.every.${frequency.timeUnit}`,
+            },
+            { value: frequency.units }
+          )
+        : formatMessage({ id: "frequency.manual" }),
+    }));
+  }, [formatMessage, additionalFrequency]);
 };
 
 export type { ConnectionFormValues, FormikConnectionFormValues };

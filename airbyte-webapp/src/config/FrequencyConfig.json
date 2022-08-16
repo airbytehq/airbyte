@@ -4,27 +4,6 @@
     "config": null
   },
   {
-    "type": "5 min",
-    "config": {
-      "units": 5,
-      "timeUnit": "minutes"
-    }
-  },
-  {
-    "type": "15 min",
-    "config": {
-      "units": 15,
-      "timeUnit": "minutes"
-    }
-  },
-  {
-    "type": "30 min",
-    "config": {
-      "units": 30,
-      "timeUnit": "minutes"
-    }
-  },
-  {
     "type": "1 hour",
     "config": {
       "units": 1,
