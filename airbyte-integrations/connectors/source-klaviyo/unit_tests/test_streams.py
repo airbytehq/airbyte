@@ -43,16 +43,6 @@ def response_fixture(mocker):
 
 
 class TestKlaviyoStream:
-    def test_schema_is_required_property(self):
-        with pytest.raises(TypeError, match="Can't instantiate abstract class KlaviyoStream with abstract methods path, schema"):
-            KlaviyoStream(api_key="some_key")
-
-    def test_get_json_schema(self):
-        stream = SomeStream(api_key="some_key")
-        result = stream.get_json_schema()
-
-        assert result == SomeStream.schema.schema.return_value
-
     @pytest.mark.parametrize(
         ["response_json", "next_page_token"],
         [
@@ -92,7 +82,7 @@ class TestKlaviyoStream:
 class TestIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
         with pytest.raises(
-            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path, schema"
+            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path"
         ):
             IncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 
@@ -173,7 +163,7 @@ class TestReverseIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path, schema",
+            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path",
         ):
             ReverseIncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 

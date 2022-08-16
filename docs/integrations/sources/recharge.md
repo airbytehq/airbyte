@@ -1,7 +1,7 @@
 # Recharge
 
-his page guides you through the process of setting up the Recharge source connector.
 This source can sync data for the [Recharge API](https://developer.rechargepayments.com/).
+This page guides you through the process of setting up the Recharge source connector.
 
 ## Prerequisites (Airbyte Cloud & Airbyte Open Source)
 * A Recharge account with permission to access data from accounts you want to sync.
@@ -67,6 +67,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-07-24 | [14978](https://github.com/airbytehq/airbyte/pull/14978) | Set `additionalProperties` to True, to guarantee backward cababilities |
 | 0.1.6 | 2022-07-21 | [14902](https://github.com/airbytehq/airbyte/pull/14902) | Increased test coverage, fixed broken `charges`, `orders` schemas, added state checkpoint |
 | 0.1.5 | 2022-01-26 | [9808](https://github.com/airbytehq/airbyte/pull/9808) | Update connector fields title/description |
 | 0.1.4 | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626) | Improve 'backoff' for HTTP requests |

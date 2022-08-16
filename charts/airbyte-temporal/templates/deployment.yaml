@@ -9,6 +9,7 @@ metadata:
     helm.sh/chart: {{ include "airbyte.chart" . }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -58,21 +59,23 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-                key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
+                key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
           - name: POSTGRES_SEEDS
-            value: {{ .Release.Name }}-postgresql
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+                key: DATABASE_HOST
           - name: DYNAMIC_CONFIG_FILE_PATH
             value: "config/dynamicconfig/development.yaml"
         {{- end }}
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 8 }}
+        {{ .Values.extraEnv | toYaml | nindent 10 }}
         {{- end }}
         ports:
         - containerPort: 7233
         {{- if .Values.containerSecurityContext }}
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
-        resources: {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
@@ -107,6 +110,12 @@ spec:
           timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.extraContainers }}
+        {{ toYaml .Values.extraContainers | indent 8 }}
+        {{- end }}
+        {{- if .Values.global.extraConrainers }}
+        {{ toYaml .Values.global.extraContainers | indent 8 }}
         {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig

@@ -4,19 +4,20 @@
 
 
 import json
+import tempfile
 import traceback
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 
+import boto3
+import botocore
 import google
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from azure.storage.blob import BlobServiceClient
-from botocore import UNSIGNED
-from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
@@ -54,10 +55,14 @@ class URLFile:
     ```
     """
 
-    def __init__(self, url: str, provider: dict):
+    def __init__(self, url: str, provider: dict, binary=None, encoding=None):
         self._url = url
         self._provider = provider
         self._file = None
+        self.args = {
+            "mode": "rb" if binary else "r",
+            "encoding": encoding,
+        }
 
     def __enter__(self):
         return self._file
@@ -74,29 +79,28 @@ class URLFile:
             self._file.close()
             self._file = None
 
-    def open(self, binary=False):
+    def open(self):
         self.close()
         try:
-            self._file = self._open(binary=binary)
+            self._file = self._open()
         except google.api_core.exceptions.NotFound as err:
             raise FileNotFoundError(self.url) from err
         return self
 
-    def _open(self, binary):
-        mode = "rb" if binary else "r"
+    def _open(self):
         storage = self.storage_scheme
         url = self.url
 
         if storage == "gs://":
-            return self._open_gcs_url(binary=binary)
+            return self._open_gcs_url()
         elif storage == "s3://":
-            return self._open_aws_url(binary=binary)
+            return self._open_aws_url()
         elif storage == "azure://":
-            return self._open_azblob_url(binary=binary)
+            return self._open_azblob_url()
         elif storage == "webhdfs://":
             host = self._provider["host"]
             port = self._provider["port"]
-            return smart_open.open(f"webhdfs://{host}:{port}/{url}", mode=mode)
+            return smart_open.open(f"webhdfs://{host}:{port}/{url}", **self.args)
         elif storage in ("ssh://", "scp://", "sftp://"):
             user = self._provider["user"]
             host = self._provider["host"]
@@ -114,19 +118,15 @@ class URLFile:
                 uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
             else:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
-            return smart_open.open(uri, transport_params=transport_params, mode=mode)
+            return smart_open.open(uri, transport_params=transport_params, **self.args)
         elif storage in ("https://", "http://"):
             transport_params = None
             if "user_agent" in self._provider and self._provider["user_agent"]:
                 airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
                 transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
             logger.info(f"TransportParams: {transport_params}")
-            return smart_open.open(
-                self.full_url,
-                mode=mode,
-                transport_params=transport_params,
-            )
-        return smart_open.open(self.full_url, mode=mode)
+            return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
+        return smart_open.open(self.full_url, **self.args)
 
     @property
     def url(self) -> str:
@@ -168,8 +168,7 @@ class URLFile:
         logger.error(f"Unknown Storage provider in: {self.full_url}")
         return ""
 
-    def _open_gcs_url(self, binary) -> object:
-        mode = "rb" if binary else "r"
+    def _open_gcs_url(self) -> object:
         service_account_json = self._provider.get("service_account_json")
         credentials = None
         if service_account_json:
@@ -185,12 +184,11 @@ class URLFile:
             client = GCSClient(credentials=credentials, project=credentials._project_id)
         else:
             client = GCSClient.create_anonymous_client()
-        file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
+        file_to_close = smart_open.open(self.full_url, transport_params={"client": client}, **self.args)
 
         return file_to_close
 
-    def _open_aws_url(self, binary):
-        mode = "rb" if binary else "r"
+    def _open_aws_url(self):
         aws_access_key_id = self._provider.get("aws_access_key_id")
         aws_secret_access_key = self._provider.get("aws_secret_access_key")
         use_aws_account = aws_access_key_id and aws_secret_access_key
@@ -198,17 +196,15 @@ class URLFile:
         if use_aws_account:
             aws_access_key_id = self._provider.get("aws_access_key_id", "")
             aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-            result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
+            url = f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}"
+            result = smart_open.open(url, **self.args)
         else:
-            config = Config(signature_version=UNSIGNED)
-            params = {
-                "resource_kwargs": {"config": config},
-            }
-            result = smart_open.open(self.full_url, transport_params=params, mode=mode)
+            config = botocore.client.Config(signature_version=botocore.UNSIGNED)
+            params = {"client": boto3.client("s3", config=config)}
+            result = smart_open.open(self.full_url, transport_params=params, **self.args)
         return result
 
-    def _open_azblob_url(self, binary):
-        mode = "rb" if binary else "r"
+    def _open_azblob_url(self):
         storage_account = self._provider.get("storage_account")
         storage_acc_url = f"https://{storage_account}.blob.core.windows.net"
         sas_token = self._provider.get("sas_token", None)
@@ -222,14 +218,15 @@ class URLFile:
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
 
-        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
-        return result
+        url = f"{self.storage_scheme}{self.url}"
+        return smart_open.open(url, transport_params=dict(client=client), **self.args)
 
 
 class Client:
     """Class that manages reading and parsing data from streams"""
 
     reader_class = URLFile
+    binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
         self._dataset_name = dataset_name
@@ -244,6 +241,9 @@ class Client:
                 error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
                 logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
+
+        self.binary_source = self._reader_format in self.binary_formats
+        self.encoding = self._reader_options.get("encoding")
 
     @property
     def stream_name(self) -> str:
@@ -338,17 +338,12 @@ class Client:
 
     @property
     def reader(self) -> reader_class:
-        return self.reader_class(url=self._url, provider=self._provider)
-
-    @property
-    def binary_source(self):
-        binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
-        return self._reader_format in binary_formats
+        return self.reader_class(url=self._url, provider=self._provider, binary=self.binary_source, encoding=self.encoding)
 
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
-        with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "jsonl":
+        with self.reader.open() as fp:
+            if self._reader_format in ["json", "jsonl"]:
                 yield from self.load_nested_json(fp)
             elif self._reader_format == "yaml":
                 fields = set(fields) if fields else None
@@ -358,10 +353,20 @@ class Client:
                 yield from df[columns].to_dict(orient="records")
             else:
                 fields = set(fields) if fields else None
+                if self.binary_source:
+                    fp = self._cache_stream(fp)
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.where(pd.notnull(df), None)
-                    yield from df[columns].to_dict(orient="records")
+                    yield from df[list(columns)].to_dict(orient="records")
+
+    def _cache_stream(self, fp):
+        """cache stream to file"""
+        fp_tmp = tempfile.TemporaryFile(mode="w+b")
+        fp_tmp.write(fp.read())
+        fp_tmp.seek(0)
+        fp.close()
+        return fp_tmp
 
     def _stream_properties(self, fp):
         if self._reader_format == "yaml":
@@ -378,8 +383,8 @@ class Client:
     def streams(self) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
-        with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "jsonl":
+        with self.reader.open() as fp:
+            if self._reader_format in ["json", "jsonl"]:
                 json_schema = self.load_nested_json_schema(fp)
             else:
                 json_schema = {

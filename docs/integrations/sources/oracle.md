@@ -124,14 +124,15 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ## Encryption Options
 
-Airbite has the ability to connect to the Oracle source with 3 network connectivity options:
+Airbyte has the ability to connect to the Oracle source with 3 network connectivity options:
 
 1.`Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form. 2.`Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports. In this case, the _SQLNET.ENCRYPTION\_CLIENT_ option will always be set as _REQUIRED_ by default: The client or server will only accept encrypted traffic, but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs. 3.`TLS Encrypted` \(verify certificate\) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject                                         |
-|:--------| :--- | :--- |:------------------------------------------------|
+| Version | Date       | Pull Request | Subject                                         |
+|:--------|:-----------| :--- |:------------------------------------------------|
+| 0.3.19  | 2022-08-03 | [14953](https://github.com/airbytehq/airbyte/pull/14953) | Use Service Name to connect to database |
 | 0.3.18  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.3.17  | 2022-06-24 | [14092](https://github.com/airbytehq/airbyte/pull/14092) | Introduced a custom jdbc param field |
 | 0.3.16  | 2022-06-22 | [13997](https://github.com/airbytehq/airbyte/pull/13997) | Fixed tests |

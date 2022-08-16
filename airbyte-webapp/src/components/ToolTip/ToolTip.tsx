@@ -9,9 +9,9 @@ interface ToolTipProps {
 }
 
 const Control = styled.div<{ $cursor?: "pointer" | "help" | "not-allowed"; $showCursor?: boolean }>`
-  display: inline-block;
+  display: inline;
   position: relative;
-  cursor: ${({ $cursor, $showCursor = true }) => ($showCursor && $cursor) ?? "pointer"};
+  ${({ $cursor, $showCursor = true }) => ($showCursor && $cursor ? `cursor: ${$cursor}` : "")};
 `;
 
 const ToolTipView = styled.div<{ $disabled?: boolean }>`

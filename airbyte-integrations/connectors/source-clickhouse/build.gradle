@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.3.2-patch9'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')

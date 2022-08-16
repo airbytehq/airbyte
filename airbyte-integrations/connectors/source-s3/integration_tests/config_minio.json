@@ -1,0 +1,16 @@
+{
+  "dataset": "test",
+  "provider": {
+    "storage": "S3",
+    "bucket": "test-bucket",
+    "aws_access_key_id": "123456",
+    "aws_secret_access_key": "123456key",
+    "path_prefix": "",
+    "endpoint": "http://10.0.3.185:9000"
+  },
+  "format": {
+    "filetype": "csv"
+  },
+  "path_pattern": "*.csv",
+  "schema": "{}"
+}

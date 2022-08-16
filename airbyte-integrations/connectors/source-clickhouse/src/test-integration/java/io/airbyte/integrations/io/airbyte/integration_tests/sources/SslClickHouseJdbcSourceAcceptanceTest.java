@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -16,14 +18,19 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.io.IOException;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -32,6 +39,25 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   private static DataSource dataSource;
   private JsonNode config;
   private String dbName;
+
+  @BeforeAll
+  static void init() throws IOException, InterruptedException {
+    container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
+        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+            .withEnv("TZ", "UTC")
+            .withExposedPorts(8123, 8443)
+            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+            .waitingFor(Wait.forHttp("/ping").forPort(8123)
+                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+    container.start();
+  }
+
+  @AfterAll
+  public static void cleanUp() throws Exception {
+    DataSourceFactory.close(dataSource);
+    container.close();
+  }
 
   @Override
   public boolean supportsSchemas() {
@@ -60,17 +86,11 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
                 + primaryKeyClause);
   }
 
-  @BeforeAll
-  static void init() {
-    container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
-    container.start();
-  }
-
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.PORT_KEY, container.getMappedPort(8443))
         .put(JdbcUtils.USERNAME_KEY, "default")
         .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
@@ -81,7 +101,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
-        String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
+        String.format("jdbc:clickhouse:https://%s:%d?sslmode=NONE",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
@@ -96,15 +116,9 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   }
 
   @AfterEach
-  public void tearDownMySql() throws Exception {
+  public void tearDownClickHouse() throws Exception {
     jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
     super.tearDown();
-  }
-
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    DataSourceFactory.close(dataSource);
-    container.close();
   }
 
   @Override

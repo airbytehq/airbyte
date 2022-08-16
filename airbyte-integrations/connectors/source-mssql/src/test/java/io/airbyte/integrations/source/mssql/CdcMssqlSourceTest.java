@@ -58,6 +58,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MSSQLServerContainer<?> container;
 
   private String dbName;
+  private String dbNamewithDot;
   private Database database;
   private JdbcDatabase testJdbcDatabase;
   private MssqlSource source;
@@ -81,6 +82,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     container.start();
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
@@ -120,6 +122,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("CREATE DATABASE [" + dbNamewithDot + "];");
     switchSnapshotIsolation(true, dbName);
   }
 
@@ -158,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
-    executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
+    executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);
   }
 
   @Override
@@ -311,6 +314,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     switchSnapshotIsolation(false, dbName);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+  }
+
+  @Test
+  void testCdcCheckOperationsWithDot() throws Exception {
+    // assertCdcEnabledInDb and validate escape with special character
+    switchCdcOnDatabase(true, dbNamewithDot);
+    AirbyteConnectionStatus status = getSource().check(getConfig());
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   // todo: check LSN returned is actually the max LSN

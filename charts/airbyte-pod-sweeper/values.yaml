@@ -1,12 +1,19 @@
+## @param global.serviceAccountName Name of service account to be associated with service
+## @param deploymentMode Determines deployment mode of airbyte
+## @param secretName Overrides the secrate name with with credentials to S3 Bucket and logging
+## @param database.secretName Name of database secret
+## @param database.secretValue Value of database password key stored in secret
+## @param database.host Hostname of database
+## @param database.port Database port
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
   
-  secretName: "airbyte-secrets"
+  secretName: ""
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "test"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
   logs:
     ## @param logs.accessKey.password Logs Access Key

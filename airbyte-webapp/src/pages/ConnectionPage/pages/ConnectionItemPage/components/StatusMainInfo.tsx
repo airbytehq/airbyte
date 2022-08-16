@@ -39,30 +39,34 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
 
   return (
     <div className={styles.container}>
-      <Link to={sourceConnectionPath} className={styles.connectorLink}>
-        <ConnectorCard
-          connectionName={source.sourceName}
-          icon={sourceDefinition?.icon}
-          connectorName={source.name}
-          releaseStage={sourceDefinition?.releaseStage}
-        />
-      </Link>
-      <FontAwesomeIcon icon={faArrowRight} />
-      <Link to={destinationConnectionPath} className={styles.connectorLink}>
-        <ConnectorCard
-          connectionName={destination.destinationName}
-          icon={destinationDefinition?.icon}
-          connectorName={destination.name}
-          releaseStage={destinationDefinition?.releaseStage}
-        />
-      </Link>
+      <div className={styles.pathContainer}>
+        <Link to={sourceConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={source.sourceName}
+            icon={sourceDefinition?.icon}
+            connectorName={source.name}
+            releaseStage={sourceDefinition?.releaseStage}
+          />
+        </Link>
+        <FontAwesomeIcon icon={faArrowRight} />
+        <Link to={destinationConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={destination.destinationName}
+            icon={destinationDefinition?.icon}
+            connectorName={destination.name}
+            releaseStage={destinationDefinition?.releaseStage}
+          />
+        </Link>
+      </div>
       {connection.status !== ConnectionStatus.deprecated && (
-        <EnabledControl
-          onStatusUpdating={onStatusUpdating}
-          disabled={!allowSync}
-          connection={connection}
-          frequencyType={frequency?.type}
-        />
+        <div className={styles.enabledControlContainer}>
+          <EnabledControl
+            onStatusUpdating={onStatusUpdating}
+            disabled={!allowSync}
+            connection={connection}
+            frequencyType={frequency?.type}
+          />
+        </div>
       )}
     </div>
   );
