@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -26,53 +27,72 @@ class ParentStreamConfig:
     stream: Stream
     parent_key: str
     stream_slice_field: str
+    options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
 
-class SubstreamSlicer(StreamSlicer):
+@dataclass
+class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
     Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
+
+    Attributes:
+        parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
     """
 
-    def __init__(self, parent_streams_configs: List[ParentStreamConfig], **options: Optional[Mapping[str, Any]]):
-        """
-        :param parent_streams_configs: parent streams to iterate over and their config
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        if not parent_streams_configs:
+    parent_stream_configs: List[ParentStreamConfig]
+    options: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        if not self.parent_stream_configs:
             raise ValueError("SubstreamSlicer needs at least 1 parent stream")
-        self._parent_stream_configs = parent_streams_configs
         self._cursor = None
         self._options = options
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         cursor = {}
-        for parent_stream_config in self._parent_stream_configs:
+        for parent_stream_config in self.parent_stream_configs:
             slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
             if slice_value:
                 cursor.update({parent_stream_config.stream_slice_field: slice_value})
         self._cursor = cursor
 
-    def request_params(self) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.request_parameter)
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def get_request_body_json(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
         return self._get_request_option(RequestOptionType.body_json)
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}
 
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}
-        for parent_config in self._parent_stream_configs:
+        for parent_config in self.parent_stream_configs:
             if parent_config.request_option and parent_config.request_option.inject_into == option_type:
                 key = parent_config.stream_slice_field
                 value = self._cursor.get(key)
@@ -98,10 +118,10 @@ class SubstreamSlicer(StreamSlicer):
         - parent_record: mapping representing the parent record
         - parent_stream_name: string representing the parent stream name
         """
-        if not self._parent_stream_configs:
+        if not self.parent_stream_configs:
             yield from []
         else:
-            for parent_stream_config in self._parent_stream_configs:
+            for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key
                 stream_state_field = parent_stream_config.stream_slice_field

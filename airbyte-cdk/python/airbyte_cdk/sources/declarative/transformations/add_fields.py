@@ -2,13 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class AddedFieldDefinition:
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
+    options: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -25,9 +27,11 @@ class ParsedAddFieldDefinition:
 
     path: FieldPointer
     value: InterpolatedString
+    options: InitVar[Mapping[str, Any]]
 
 
-class AddFields(RecordTransformation):
+@dataclass
+class AddFields(RecordTransformation, JsonSchemaMixin):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -73,25 +77,31 @@ class AddFields(RecordTransformation):
         # by supplying any valid Jinja template directive or expression https://jinja.palletsprojects.com/en/3.1.x/templates/#
         - path: ["two_times_two"]
           value: {{ 2 * 2 }}
+
+    Attributes:
+        fields (List[AddedFieldDefinition]): A list of transformations (path and corresponding value) that will be added to the record
     """
 
-    def __init__(self, fields: List[AddedFieldDefinition], **options: Optional[Mapping[str, Any]]):
-        """
-        :param fields: Fields to add
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self._fields: List[ParsedAddFieldDefinition] = []
-        for field in fields:
-            if len(field.path) < 1:
-                raise f"Expected a non-zero-length path for the AddFields transformation {field}"
+    fields: List[AddedFieldDefinition]
+    options: InitVar[Mapping[str, Any]]
+    _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-            if not isinstance(field.value, InterpolatedString):
-                if not isinstance(field.value, str):
-                    raise f"Expected a string value for the AddFields transformation: {field}"
+    def __post_init__(self, options: Mapping[str, Any]):
+        for add_field in self.fields:
+            if len(add_field.path) < 1:
+                raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
+
+            if not isinstance(add_field.value, InterpolatedString):
+                if not isinstance(add_field.value, str):
+                    raise f"Expected a string value for the AddFields transformation: {add_field}"
                 else:
-                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=options)))
+                    self._parsed_fields.append(
+                        ParsedAddFieldDefinition(
+                            add_field.path, InterpolatedString.create(add_field.value, options=options), options=options
+                        )
+                    )
             else:
-                self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
+                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, options={}))
 
     def transform(
         self,
@@ -101,9 +111,9 @@ class AddFields(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
-        for field in self._fields:
-            value = field.value.eval(config, **kwargs)
-            dpath.util.new(record, field.path, value)
+        for parsed_field in self._parsed_fields:
+            value = parsed_field.value.eval(config, **kwargs)
+            dpath.util.new(record, parsed_field.path, value)
 
         return record
 

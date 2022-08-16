@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.74
+- Replace JelloRecordExtractor with DpathRecordExtractor
+
+## 0.1.73
+- Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
+
+## 0.1.72
+- Bugfix: Fix bug in DatetimeStreamSlicer's format method
+
+## 0.1.71
+- Refactor declarative package to dataclasses
+- Bugfix: Requester header always converted to string
+- Bugfix: Reset paginator state between stream slices
+- Bugfix: Record selector handles single records
+
+## 0.1.70
+- Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
+- Bugfix: Set stream slicer's request options in SimpleRetriever
+
+## 0.1.69
+- AbstractSource emits a state message when reading incremental even if there were no stream slices to process.
+
 ## 0.1.68
 - Replace parse-time string interpolation with run-time interpolation in YAML-based sources
 

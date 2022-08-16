@@ -22,7 +22,7 @@ public class ClickhouseTestSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
+    final LocalDateTime timestamp = getObject(resultSet, index, LocalDateTime.class);
     final LocalDate date = timestamp.toLocalDate();
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(

@@ -43,7 +43,7 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
         <Modal
           title={modalOptions.title}
           size={modalOptions.size}
-          onClose={() => resultSubjectRef.current?.next({ type: "canceled" })}
+          onClose={modalOptions.preventCancel ? undefined : () => resultSubjectRef.current?.next({ type: "canceled" })}
         >
           <modalOptions.content
             onCancel={() => resultSubjectRef.current?.next({ type: "canceled" })}
