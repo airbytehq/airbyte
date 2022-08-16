@@ -27,5 +27,6 @@ jobs:
         run: |
           echo "!!! DEBBUG !!! "
           git branch -a
+          git diff --name-status master
           echo ${{ github.token }}
 
