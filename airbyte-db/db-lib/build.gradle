@@ -15,6 +15,7 @@ dependencies {
 
     // Mark as compile only to avoid leaking transitively to connectors
     compileOnly libs.platform.testcontainers.postgresql
+    compileOnly libs.connectors.testcontainers.mysql
 
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
@@ -25,6 +26,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.platform.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.mysql
 
     // Big Query
     implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
