@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.75
+- Improve `filter_secrets` skip empty string
+
 ## 0.1.74
 - Replace JelloRecordExtractor with DpathRecordExtractor
 
