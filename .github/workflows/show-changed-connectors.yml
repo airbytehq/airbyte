@@ -7,82 +7,20 @@ on:
 
 jobs:
 
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
-
   show-affected-connectors:
     name: "Show affected connectors"
     needs:
       - find_valid_pat
     runs-on: ubuntu-latest
     steps:
-      - name: Extract current branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_current_branch
-      - name: Extract changed files
-        shell: bash
-        run: echo "##[set-output name=files;]$(git diff --name-only master...${{steps.extract_current_branch.outputs.branch}})"
-        id: extract_changed_files
-      - name: Debbug
-        run: |
-          echo "!!! DEBBUG !!! "
-          echo ${{ steps.extract_current_branch.outputs.branch }}
-          echo ${{ needs.find_valid_pat.outputs.pat }}
-          echo ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/checkout@v3
-      #        with:
-      #          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
-      #          submodules: true # OR "recursive" -> To include all changed submodule files.
-
-      - name: Get changed files using defaults
-        id: changed-files
-        uses: tj-actions/changed-files@v25
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
 
       # Pull request based workflows.
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v5
-
-      - uses: nrwl/last-successful-commit-action@v1
-        id: last_successful_commit_pull_request
-        with:
-          branch: ${{ steps.branch-name.outputs.base_ref_branch }} # Get the last successful commit on master or main branch
-          workflow_id: 'test.yml'
-          github_token: secrets.GITHUB_TOKEN
-
-      - name: Run changed-files with the commit of the last successful test workflow run on main
-        id: changed-files-base-sha-pull-request
-        uses: tj-actions/changed-files@v25
-        with:
-          base_sha: ${{ steps.last_successful_commit_pull_request.outputs.commit_hash }}
-
-      - name: Run changed-files with dir_names
-        id: changed-files-dir-names
-        uses: tj-actions/changed-files@v25
-        with:
-          dir_names: "true"
-
-      # All outputs are JSON formatted arrays and can be used in other actions and matrix compatible jobs.
-      - name: Run changed-files with json output
-        id: changed-files-json
-        uses: tj-actions/changed-files@v25
-        with:
-          json: "true"
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+      - run: |
+          for changed_file in ${{ steps.files.outputs.all }}; do
+            echo "Do something with this ${changed_file}."
+          done
 
