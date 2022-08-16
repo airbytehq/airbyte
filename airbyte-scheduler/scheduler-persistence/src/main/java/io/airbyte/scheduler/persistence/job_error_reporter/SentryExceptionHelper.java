@@ -10,7 +10,9 @@ import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +33,9 @@ public class SentryExceptionHelper {
       }
       if (stacktrace.contains("\tat ") && stacktrace.contains(".java")) {
         return buildJavaSentryExceptions(stacktrace);
+      }
+      if (stacktrace.startsWith("AirbyteDbtError: ")) {
+        return buildNormalizationDbtSentryExceptions(stacktrace);
       }
 
       return Optional.empty();
@@ -158,6 +163,63 @@ public class SentryExceptionHelper {
           sentryExceptions.add(sentryException);
         }
       }
+    }
+
+    if (sentryExceptions.isEmpty())
+      return Optional.empty();
+
+    return Optional.of(sentryExceptions);
+  }
+
+  private static Optional<List<SentryException>> buildNormalizationDbtSentryExceptions(final String stacktrace) {
+    final List<SentryException> sentryExceptions = new ArrayList<>();
+
+    // focus on Database Errors (these are the common errors seen in Airbyte)
+    final String databaseErrorIdentifier = "Database Error in model";
+    // for other dbt error types, we'll default to non-parsed stacktrace grouping
+    if (! stacktrace.contains(databaseErrorIdentifier)) {
+      return Optional.empty();
+    }
+
+    // Use a regex to differentiate errors
+    final Pattern errorIdPattern = Pattern.compile("dbt_node_info_id=(?<id>\\w+): (?<errorline>.*)");
+    final Matcher matcher = errorIdPattern.matcher(stacktrace);
+
+    final HashMap<String, List<String>> errorLineListsByError = new HashMap<>();
+    while (matcher.find()) {
+      final String errorId = matcher.group("id");
+      final String errorLine = matcher.group("errorline");
+      errorLineListsByError.computeIfAbsent(errorId, k -> new ArrayList<>()).add(errorLine);
+    }
+
+    // for each separate exception
+    for (Entry<String, List<String>> errorSet : errorLineListsByError.entrySet()) {
+
+      // first let's get our useful error line for grouping
+      String usefulError = "";
+      boolean nextLine = false;
+      for (String errorLine : errorSet.getValue()) {
+        // previous line was "Database Error..." so this is our useful message line
+        if (nextLine) {
+          usefulError = errorLine;
+          break;
+        }
+        if (errorLine.contains("Database Error in model")) {
+          nextLine = true;
+        }
+      }
+
+      if (!usefulError.equals("")) {
+        final SentryException usefulException = new SentryException();
+        usefulException.setValue(usefulError);
+        usefulException.setType("DbtDatabaseError");
+        sentryExceptions.add(usefulException);
+      }
+
+      final SentryException fullException = new SentryException();
+      fullException.setValue(String.join(", ", errorSet.getValue()));
+      fullException.setType("DbtDatabaseError");
+      sentryExceptions.add(fullException);
     }
 
     if (sentryExceptions.isEmpty())

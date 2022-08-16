@@ -74,6 +74,11 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     if (releaseParts.length > 0) {
       event.setFingerprints(List.of("{{ default }}", releaseParts[0]));
     }
+//    // For normalization dbt errors we want to group on just the message rather than whole stacktrace
+//    // https://docs.google.com/document/d/1g90ouosjjM2aFDUOc_M5VUgfqwU5aUBjhW0GQTYLMjc/edit#
+//    if (failureReason.getStacktrace() != null && failureReason.getStacktrace().startsWith("AirbyteDbtError: ")) {
+//      event.setFingerprints(List.of("{{ message }}", releaseParts[0]));
+//    }
 
     // set workspace as the user in sentry to get impact and priority
     if (workspace != null) {

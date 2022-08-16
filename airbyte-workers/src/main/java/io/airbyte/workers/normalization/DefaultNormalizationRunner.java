@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +53,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private final String normalizationImageName;
   private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
   private Map<Type, List<AirbyteMessage>> airbyteMessagesByType;
+  private String dbtErrorStack;
 
   private Process process = null;
 
@@ -154,7 +156,13 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // picks up error logs from dbt
-        String dbtErrorStack = String.join("\n\t", streamFactory.getDbtErrors());
+        final List<String> separatedDbtErrorStacks = streamFactory.getDbtErrors()
+            .entrySet()
+            .stream()
+            .map(e -> String.format("dbt_node_info_id=%s: ", e.getKey()) +
+                String.join(String.format("\ndbt_node_info_id=%s: ", e.getKey()), e.getValue()))
+            .collect(Collectors.toList());
+        dbtErrorStack = String.join("\n", separatedDbtErrorStacks);
 
         if (!"".equals(dbtErrorStack)) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
@@ -165,8 +173,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                   .withError(new AirbyteErrorTraceMessage()
                       .withFailureType(FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
                       .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
-                      .withInternalMessage(dbtErrorStack)
-                      .withStackTrace(dbtErrorStack)));
+                      .withInternalMessage(buildInternalErrorMessageFromDbtStackTrace())
+                      // due to the lack of consistent defining features in dbt errors we're injecting a breadcrumb to the
+                      // stacktrace so we can confidently identify all dbt errors when parsing and sending to Sentry
+                      // see dbt error examples: https://docs.getdbt.com/guides/legacy/debugging-errors for more context
+                      .withStackTrace("AirbyteDbtError: \n".concat(dbtErrorStack))));
 
           airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
         }
@@ -204,6 +215,32 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return airbyteMessagesByType.get(Type.TRACE).stream().map(AirbyteMessage::getTrace);
     }
     return Stream.empty();
+  }
+
+  private String buildInternalErrorMessageFromDbtStackTrace() {
+    String internalMessage = "";
+    for (Entry<String, List<String>> errorSet : streamFactory.getDbtErrors().entrySet()) {
+      // Most dbt errors we see in Airbyte are `Database Errors`
+      // The line containing the relevant error message is often the line following the "Database
+      // Error..." line
+      // e.g. "Column 10 in UNION ALL has incompatible types: DATETIME, TIMESTAMP"
+      boolean nextLine = false;
+      for (String errorLine : errorSet.getValue()) {
+        // previous line was "Database Error..." so this is our useful message line
+        if (nextLine) {
+          internalMessage = internalMessage.concat(errorLine + "\n");
+          break;
+        }
+        if (errorLine.contains("Database Error in model")) {
+          nextLine = true;
+        }
+      }
+    }
+    if (!"".equals(internalMessage)) {
+      return internalMessage;
+    }
+    // Not all errors are Database Errors, for other types, we just return the stacktrace(s)
+    return dbtErrorStack;
   }
 
   @VisibleForTesting

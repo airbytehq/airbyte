@@ -97,6 +97,14 @@ public class JobErrorReporter {
           final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getDestinationMetadata(destinationDefinition));
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        } else if (failureOrigin == FailureOrigin.NORMALIZATION) {
+          // final StandardDestinationDefinition destinationDefinition =
+          // configRepository.getDestinationDefinitionFromConnection(connectionId);
+          // final String dockerImage = jobContext.destinationDockerImage();
+          // final Map<String, String> metadata = MoreMaps.merge(commonMetadata,
+          // getDestinationMetadata(destinationDefinition));
+          //
+          reportJobFailureReason(workspace, failureReason, "airbyte/normalization", commonMetadata);
         }
       }
     });
