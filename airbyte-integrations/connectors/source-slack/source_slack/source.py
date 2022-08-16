@@ -332,7 +332,10 @@ class JoinChannelsStream(HttpStream):
         if self.join_all_channels:
             channels_stream = Channels(authenticator=self._session.auth)
         else:
-            channels_stream = Channels(authenticator=self._session.auth, channel_filter = self.channel_filter)
+            if len(self.channel_filter) > 0:
+                channels_stream = Channels(authenticator=self._session.auth, channel_filter = self.channel_filter)
+            else:
+                return []
 
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel": channel["id"], "channel_name": channel["name"]}
