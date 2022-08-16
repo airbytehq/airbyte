@@ -125,7 +125,7 @@ public class SSLCertificateUtilsTest {
         + "BgQCNFv97FyETaSgAacGQHlCfqrqr75VM/FXQqX09+RyHrUubA4ShdV7Z8Id0L0yyrlbMqRBPqnkEOKck6nQKYMpCxCsF9Sr6R4xLV8B29YK7TOBhcIxDZH"
         + "UfBvhwXuNBkYrpd2OABCAZ5NxoTnj/vXf12l9aSZ1N4pOPAKntRAa+ZQKBgQDCPgJQfZePJGOvSIkW/TkXcHpGsexb5p900Si23BLjnMtCNMSkHuIWb60xq"
         + "I3vLFKhrLiYzYVQ5n3C6PYLcdfiDYwruYU3zmtr/gpg/QzcsvTe5CW/hxTAkzsZsFBOquJyuyCRBGN59tH6N6ietu8zzvCc8EeJJX7N7AX0ezF7lQ==";
-    
+
   void testkeyStoreFromCertificateInternal(final String certString, final String pwd, final FileSystem fs, final String directory) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     final URI ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory);
 
