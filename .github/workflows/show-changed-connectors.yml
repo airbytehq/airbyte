@@ -20,12 +20,14 @@ jobs:
         id: extract_branch
       - name: Extract changes
         run: |
-          echo "::set-output name=changed_files::one\ntwo"
+          content=$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})
+          echo "::set-output name=changed_files::$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})"
         id: extract_changed_files
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
           echo ${{ steps.extract_changed_files.outputs.changed_files }}
+          echo ${content}
           echo "!!! DEBBUG 2!!! "
           git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}
 
