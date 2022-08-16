@@ -27,9 +27,11 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
+      - name: Extract changes
+        run: echo "##[set-output name=changed_files;]$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})"
+        id: extract_changed_files
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}
-          echo ${{ github.token }}
+          echo ${{ steps.extract_changed_files.outputs.changed_files }}
 
