@@ -5,62 +5,98 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-import pytest
-from source_wrike.source import WrikeStream
+import pendulum
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from pytest import fixture, mark
+from source_wrike.source import Comments, Tasks, WrikeStream, to_utc_z
 
 
-@pytest.fixture
+@fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(WrikeStream, "path", "v0/example_endpoint")
-    mocker.patch.object(WrikeStream, "primary_key", "test_primary_key")
     mocker.patch.object(WrikeStream, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
-    stream = WrikeStream()
-    # TODO: replace this with your input parameters
+@fixture()
+def args(request):
+    args = {"wrike_instance": "app-us2.wrike.com", "authenticator": TokenAuthenticator(token="tokkk")}
+    return args
+
+
+def test_request_params(args):
+    stream = WrikeStream(**args)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+    expected_params = None
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = WrikeStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
+def test_tasks_request_params(args):
+    stream = Tasks(**args)
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+    assert stream.request_params(**inputs).get("fields")
+
+
+def test_comments_slices(args):
+    stream = Comments(start_date=pendulum.parse("2022-05-01"), **args)
+    inputs = {"stream_state": None}
+    slices = list(stream.stream_slices(**inputs))
+    assert slices[0].get("start") == "2022-05-01T00:00:00Z"
+    assert len(slices) > 1
+
+
+def test_next_page_token(args):
+    stream = WrikeStream(**args)
+
+    response = MagicMock()
+    # first page
+    response.json.return_value = {
+        "kind": "tasks",
+        "nextPageToken": "ADE7SXYAAAAAUAAAAAAQAAAAMAAAAAABVB5K4QPE7SXKM",
+        "responseSize": 96,
+        "data": [{"id": "IEAFHZ6ZKQ233LQK"}],
+    }
+    inputs = {"response": response}
+    expected_token = {"nextPageToken": "ADE7SXYAAAAAUAAAAAAQAAAAMAAAAAABVB5K4QPE7SXKM"}
+    assert stream.next_page_token(**inputs) == expected_token
+    # next page
+    response.json.return_value = {
+        "kind": "tasks",
+        "responseSize": 96,
+        "data": [{"id": "IEAFHZ6ZKQ233LQK"}],
+    }
+    inputs = {"response": response}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
-def test_parse_response(patch_base_class):
-    stream = WrikeStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
+def test_parse_response(args):
+    stream = WrikeStream(**args)
+    response = MagicMock()
+    response.json.return_value = {
+        "kind": "tasks",
+        "responseSize": 96,
+        "data": [{"id": "IEAFHZ6ZKQ233LQK"}],
+    }
+    inputs = {"response": response}
+    expected_parsed_object = {"id": "IEAFHZ6ZKQ233LQK"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
-    stream = WrikeStream()
-    # TODO: replace this with your input parameters
+def test_request_headers(args):
+    stream = WrikeStream(**args)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
-def test_http_method(patch_base_class):
-    stream = WrikeStream()
+def test_http_method(args):
+    stream = WrikeStream(**args)
     # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     ("http_status", "should_retry"),
     [
         (HTTPStatus.OK, False),
@@ -69,15 +105,19 @@ def test_http_method(patch_base_class):
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
+def test_should_retry(args, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = WrikeStream()
+    stream = WrikeStream(**args)
     assert stream.should_retry(response_mock) == should_retry
 
 
-def test_backoff_time(patch_base_class):
+def test_backoff_time(args):
     response_mock = MagicMock()
-    stream = WrikeStream()
+    stream = WrikeStream(**args)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_to_utc_z():
+    assert to_utc_z(pendulum.parse("2022-05-01")) == "2022-05-01T00:00:00Z"
