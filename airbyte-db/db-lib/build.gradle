@@ -35,6 +35,9 @@ dependencies {
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+
+    // JimFS
+    testImplementation 'com.google.jimfs:jimfs:1.2'
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
