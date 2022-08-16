@@ -5,11 +5,13 @@
 package io.airbyte.integrations.destination.pubsub;
 
 import static com.google.common.base.Strings.nullToEmpty;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_CREDS;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_PROJECT_ID;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_TOPIC_ID;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.NAMESPACE;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.STREAM;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_BATCHING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_CREDS;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_ORDERING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_PROJECT_ID;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_TOPIC_ID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -202,6 +204,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_TOPIC_ID, topicId)
+        .put(CONFIG_BATCHING_ENABLED, false)
+        .put(CONFIG_ORDERING_ENABLED, false)
         .build());
 
     credentials =
