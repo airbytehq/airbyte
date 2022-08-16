@@ -1,8 +1,6 @@
 @use "../../../scss/colors";
 
 .heading {
-  font-size: 20px;
-  line-height: 1.48em;
   font-weight: 700;
 
   color: colors.$dark-blue;
@@ -13,6 +11,11 @@
 .sm {
   font-size: 16px;
   line-height: 1.2em;
+}
+
+.md {
+  font-size: 20px;
+  line-height: 1.48em;
 }
 
 .lg {

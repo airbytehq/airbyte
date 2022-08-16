@@ -4,7 +4,7 @@ import React from "react";
 import headingStyles from "./heading.module.scss";
 import textStyles from "./text.module.scss";
 
-type TextSize = "sm" | "md" | "lg" | "xl";
+type TextSize = "sm" | "md" | "lg";
 type HeadingSize = TextSize | "xl";
 type TextElementType = "p" | "span" | "div";
 type HeadingElementType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -15,19 +15,20 @@ interface BaseProps {
 }
 
 interface TextProps extends BaseProps {
-  as?: HeadingElementType;
+  as?: TextElementType;
   size?: TextSize;
   bold?: boolean;
 }
 
 interface HeadingProps extends BaseProps {
-  as?: TextElementType;
+  as?: HeadingElementType;
   size?: HeadingSize;
 }
 
 const getTextClassNames = ({ size, centered, bold }: Required<Pick<TextProps, "size" | "centered" | "bold">>) => {
-  const sizes: Partial<Record<TextSize, string>> = {
+  const sizes: Record<TextSize, string> = {
     sm: textStyles.sm,
+    md: textStyles.md,
     lg: textStyles.lg,
   };
 
@@ -35,8 +36,9 @@ const getTextClassNames = ({ size, centered, bold }: Required<Pick<TextProps, "s
 };
 
 const getHeadingClassNames = ({ size, centered }: Required<Pick<HeadingProps, "size" | "centered">>) => {
-  const sizes: Partial<Record<TextSize, string>> = {
+  const sizes: Record<HeadingSize, string> = {
     sm: headingStyles.sm,
+    md: headingStyles.md,
     lg: headingStyles.lg,
     xl: headingStyles.xl,
   };
@@ -50,12 +52,12 @@ const isHeadingType = (props: TextProps | HeadingProps): props is HeadingProps =
 
 export const Text: React.FC<TextProps | HeadingProps> = React.memo((props) => {
   const isHeading = isHeadingType(props);
-  const { as = isHeading ? "h1" : "p", size = "md", centered = false, children } = props;
+  const { as = isHeading ? "h1" : "p", centered = false, children } = props;
 
   const className = classNames(
     isHeading
-      ? getHeadingClassNames({ size, centered })
-      : getTextClassNames({ size, centered, bold: props.bold ?? false }),
+      ? getHeadingClassNames({ centered, size: props.size ?? "md" })
+      : getTextClassNames({ centered, size: props.size ?? "md", bold: props.bold ?? false }),
     props.className
   );
 
