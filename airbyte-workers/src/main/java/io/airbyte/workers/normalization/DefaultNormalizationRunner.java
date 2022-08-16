@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -158,7 +157,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         // picks up error logs from dbt
         dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
 
-        if (!"".equals(dbtErrorStack)) {
+        if (!dbtErrorStack.equals("")) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
               .withType(Type.TRACE)
               .withTrace(new AirbyteTraceMessage()
@@ -213,8 +212,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private String buildInternalErrorMessageFromDbtStackTrace() {
     // Most dbt errors we see in Airbyte are `Database Errors`
-    // The line containing the relevant error message is often the line following the "Database
-    // Error..." line
+    // The relevant error message is often the line following the "Database Error..." line
     // e.g. "Column 10 in UNION ALL has incompatible types: DATETIME, TIMESTAMP"
     boolean nextLine = false;
     for (String errorLine : streamFactory.getDbtErrors()) {
@@ -226,7 +224,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         nextLine = true;
       }
     }
-    // Not all errors are Database Errors, for other types, we just return the stacktrace(s)
+    // Not all errors are Database Errors, for other types, we just return the stacktrace
     return dbtErrorStack;
   }
 

@@ -13,9 +13,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import java.io.BufferedReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -95,10 +93,9 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         try (final var mdcScope = containerLogMdcBuilder.build()) {
           switch (logLevel) {
             case "debug" -> logger.debug(logMsg);
-            case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            default -> logger.info(jsonLine.asText()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(logMsg); // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
       } catch (final Exception e) {
