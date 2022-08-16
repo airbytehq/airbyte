@@ -420,9 +420,14 @@ public class AirbyteMessageTracker implements MessageTracker {
     final List<StreamDescriptor> streamDescriptorsToUpdate = StateMessageHelper.getStreamDescriptors(stateMessage);
 
     streamDescriptorsToUpdate.forEach(streamDescriptor -> {
-      final HashMap<Integer, DateTime> stateHashToTimestamp = new HashMap<>();
-      stateHashToTimestamp.put(stateHash, timeEmitted);
-      streamDescriptorToStateMessageTimestamps.put(streamDescriptor, stateHashToTimestamp);
+      if (streamDescriptorToStateMessageTimestamps.get(streamDescriptor) != null) {
+        final HashMap<Integer, DateTime> stateHashToTimestamp = new HashMap<>();
+        stateHashToTimestamp.put(stateHash, timeEmitted);
+        streamDescriptorToStateMessageTimestamps.put(streamDescriptor, stateHashToTimestamp);
+      } else {
+        final Map streamDescriptorValue = streamDescriptorToStateMessageTimestamps.get(streamDescriptor);
+        streamDescriptorValue.put(stateHash, timeEmitted);
+      }
     });
   }
 
