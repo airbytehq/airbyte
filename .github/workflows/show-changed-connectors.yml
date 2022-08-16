@@ -23,4 +23,9 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "$file was changed"
           done
+      - name: Debbug
+        run: |
+          echo "!!! DEBBUG !!! "
+          git branch
+          echo ${{ github.token }}
 
