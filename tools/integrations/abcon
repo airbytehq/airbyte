@@ -131,9 +131,13 @@ cmd_container_run() {
     # allow proper mounting of sample_files & secrets so it is not necessary to prepend '/'
     local docker_pwd=$(docker run --rm --entrypoint pwd "${image_name}")
 
+    local mounts=()
+    [[ -d secrets ]] && mounts+=("-v" "$(pwd)/secrets:${docker_pwd}/secrets")
+    [[ -d sample_files ]] && mounts+=("-v" "$(pwd)/sample_files:${docker_pwd}/sample_files")
+    [[ -d integration_tests ]] && mounts+=("-v" "$(pwd)/integration_tests:${docker_pwd}/integration_tests")
+
     docker run --rm \
-        -v "$(pwd)/secrets:${docker_pwd}/secrets" \
-        -v "$(pwd)/sample_files:${docker_pwd}/sample_files" \
+        "${mounts[@]}" \
         "${image_name}" \
         "$@"
 }
