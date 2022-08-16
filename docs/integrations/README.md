@@ -88,6 +88,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
+| [LinkedIn Pages](sources/linkedin-pages.md)                                                 | Alpha                | Yes                 |
 | [Linnworks](sources/linnworks.md)                                                           | Alpha                | Yes                 |
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
@@ -113,6 +114,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
+| [Orbit](sources/orbit.md)                                                                   | Alpha                | No                  |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | Yes                 |
@@ -215,4 +217,5 @@ For more information about the grading system, see [Product Release Stages](http
 | [Scylla](destinations/scylla.md)                           | Alpha                | Yes                 |
 | [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
 | [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
+| [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
 | [Streamr](destinations/streamr.md)                         | Alpha                | No                  |

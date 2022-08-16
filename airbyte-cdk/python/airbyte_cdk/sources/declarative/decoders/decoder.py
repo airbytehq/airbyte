@@ -3,11 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Union
 
 import requests
 
 
+@dataclass
 class Decoder(ABC):
     """
     Decoder strategy to transform a requests.Response into a Mapping[str, Any]

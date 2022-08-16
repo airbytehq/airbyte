@@ -16,7 +16,6 @@ import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -306,8 +305,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
           catalog,
           state,
-          // We can assume that there will be only 1 replication slot cause before the sync starts for Postgres CDC,
-          // we run all the check operations and one of the check validates that the replication slot exists and has only 1 entry
+          // We can assume that there will be only 1 replication slot cause before the sync starts for
+          // Postgres CDC,
+          // we run all the check operations and one of the check validates that the replication slot exists
+          // and has only 1 entry
           getReplicationSlot(database, sourceConfig).get(0),
           sourceConfig);
 

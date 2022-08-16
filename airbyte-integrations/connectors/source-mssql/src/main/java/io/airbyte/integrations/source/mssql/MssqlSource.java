@@ -284,7 +284,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       // Azure SQL does not support USE clause
       final String sql =
-          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get(JdbcUtils.DATABASE_KEY).asText() + "; SELECT * FROM cdc.change_tables";
+          isAzureSQL ? "SELECT * FROM cdc.change_tables"
+              : "USE [" + config.get(JdbcUtils.DATABASE_KEY).asText() + "]; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",

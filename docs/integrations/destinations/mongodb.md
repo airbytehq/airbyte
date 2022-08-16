@@ -9,6 +9,10 @@
 | Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | Yes |  |
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your MongoDB connector to version `0.1.6` or newer
+
+
 ## Output Schema for `destination-mongodb`
 
 Each stream will be output into its own collection in MongoDB. Each collection will contain 3 fields:

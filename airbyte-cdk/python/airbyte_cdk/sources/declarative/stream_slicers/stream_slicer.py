@@ -3,6 +3,7 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -10,6 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.request_options_
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
+@dataclass
 class StreamSlicer(RequestOptionsProvider):
     """
     Slices the stream into a subset of records.
