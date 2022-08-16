@@ -21,6 +21,7 @@ from jsonschema.validators import validate
 
 @dataclass
 class ConcreteDeclarativeSource(JsonSchemaMixin):
+    version: str
     checker: CheckStream
     streams: List[DeclarativeStream]
 
@@ -66,15 +67,19 @@ class YamlDeclarativeSource(DeclarativeSource):
             return YamlParser().parse(config_content)
 
     def _validate_source(self):
-        full_config = {
-            "checker": self._source_config["check"],
-            "streams": [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()],
-        }
+        full_config = {}
+        if "version" in self._source_config:
+            full_config["version"] = self._source_config["version"]
+        if "check" in self._source_config:
+            full_config["checker"] = self._source_config["check"]
+        streams = [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
+        if len(streams) > 0:
+            full_config["streams"] = streams
         declarative_source_schema = ConcreteDeclarativeSource.json_schema()
         validate(full_config, declarative_source_schema)
 
     def _stream_configs(self):
-        stream_configs = self._source_config["streams"]
+        stream_configs = self._source_config.get("streams", [])
         for s in stream_configs:
             if "class_name" not in s:
                 s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
