@@ -143,7 +143,8 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
       // getFieldType}
-      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, MEDIUMINT, MEDIUMINT_UNSIGNED, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> JsonSchemaType.INTEGER;
+      case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}

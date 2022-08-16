@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,9 +37,9 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "ssl=true",
-      "sslmode=none");
+  public static final String SSL_MODE = "sslmode=none";
+  public static final String HTTPS_PROTOCOL = "https";
+  public static final String HTTP_PROTOCOL = "http";
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
@@ -82,14 +81,16 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
+    boolean isSsl = !config.has("ssl") || config.get("ssl").asBoolean();
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse:%s://%s:%s/%s",
+        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    if (isSsl) {
+      jdbcUrl.append("?").append(SSL_MODE);
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
@@ -105,7 +106,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Collections.singleton("system");
+    return Set.of("system", "information_schema", "INFORMATION_SCHEMA");
   }
 
   public static void main(final String[] args) throws Exception {

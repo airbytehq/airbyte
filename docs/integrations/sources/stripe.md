@@ -61,6 +61,8 @@ The Stripe source connector supports the following streams:
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 * [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+* [ExternalAccountBankAccounts](https://stripe.com/docs/api/external_account_bank_accounts/list)\(Full Refresh\)
+* [ExternalAccountCards](https://stripe.com/docs/api/external_account_cards/list)\(Full Refresh\)
 
 ### Data type mapping
 
@@ -72,33 +74,35 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                |
-|:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.34  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec and schema |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.36  | 2022-08-04 | [15292](https://github.com/airbytehq/airbyte/pull/15292) | Implement slicing                                                                                                                                      |
+| 0.1.35  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec and schema                                                                                               |
+| 0.1.34  | 2022-07-01 | [14357](https://github.com/airbytehq/airbyte/pull/14357) | added external account streams -                                                                                                                       |
 | 0.1.33  | 2022-06-06 | [13449](https://github.com/airbytehq/airbyte/pull/13449) | added semi-incremental support for CheckoutSessions and CheckoutSessionsLineItems streams, fixed big in StripeSubStream, added unittests, updated docs |
 | 0.1.32  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                                                                                       |
 | 0.1.31  | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230) | Update connector to use a `spec.yaml`                                                                                                                  |
 | 0.1.30  | 2022-03-21 | [11286](https://github.com/airbytehq/airbyte/pull/11286) | Minor corrections to documentation and connector specification                                                                                         |
 | 0.1.29  | 2022-03-08 | [10359](https://github.com/airbytehq/airbyte/pull/10359) | Improved performance for streams with substreams: invoice_line_items, subscription_items, bank_accounts                                                |
 | 0.1.28  | 2022-02-08 | [10165](https://github.com/airbytehq/airbyte/pull/10165) | Improve 404 handling for `CheckoutSessionsLineItems` stream                                                                                            |
-| 0.1.27  | 2021-12-28 | [9148](https://github.com/airbytehq/airbyte/pull/9148) | Fix `date`, `arrival\_date` fields                                                                                                                     |
-| 0.1.26  | 2021-12-21 | [8992](https://github.com/airbytehq/airbyte/pull/8992) | Fix type `events.request` in schema                                                                                                                    |
-| 0.1.25  | 2021-11-25 | [8250](https://github.com/airbytehq/airbyte/pull/8250) | Rearrange setup fields                                                                                                                                 |
-| 0.1.24  | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Include tax data in `checkout_sessions_line_items` stream                                                                                              |
-| 0.1.23  | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Correct `payment_intents` schema                                                                                                                       |
-| 0.1.22  | 2021-11-05 | [7345](https://github.com/airbytehq/airbyte/pull/7345) | Add 3 new streams                                                                                                                                      |
-| 0.1.21  | 2021-10-07 | [6841](https://github.com/airbytehq/airbyte/pull/6841) | Fix missing `start_date` argument + update json files for SAT                                                                                          |
-| 0.1.20  | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback\_window\_days parameter                                                                                                                   |
-| 0.1.19  | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466) | Use `start_date` parameter in incremental streams                                                                                                      |
-| 0.1.18  | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Fix coupons and subscriptions stream schemas by removing incorrect timestamp formatting                                                                |
-| 0.1.17  | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream                                                                                                                            |
-| 0.1.16  | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980) | Remove Updated field from schemas                                                                                                                      |
-| 0.1.15  | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878) | Fix incorrect percent\_off and discounts data filed types                                                                                              |
-| 0.1.14  | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions \(including expired and canceled\)                                                         |
-| 0.1.13  | 2021-07-03 | [4528](https://github.com/airbytehq/airbyte/pull/4528) | Remove regex for acc validation                                                                                                                        |
-| 0.1.12  | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                        |
-| 0.1.11  | 2021-05-30 | [3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix types in schema                                                                                                                                    |
-| 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728) | Update data types to be number instead of int                                                                                                          |
-| 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367) | Add acceptance tests for connected accounts                                                                                                            |
-| 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368) | Bump CDK connectors                                                                                                                                    |
+| 0.1.27  | 2021-12-28 | [9148](https://github.com/airbytehq/airbyte/pull/9148)   | Fix `date`, `arrival\_date` fields                                                                                                                     |
+| 0.1.26  | 2021-12-21 | [8992](https://github.com/airbytehq/airbyte/pull/8992)   | Fix type `events.request` in schema                                                                                                                    |
+| 0.1.25  | 2021-11-25 | [8250](https://github.com/airbytehq/airbyte/pull/8250)   | Rearrange setup fields                                                                                                                                 |
+| 0.1.24  | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729)   | Include tax data in `checkout_sessions_line_items` stream                                                                                              |
+| 0.1.23  | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729)   | Correct `payment_intents` schema                                                                                                                       |
+| 0.1.22  | 2021-11-05 | [7345](https://github.com/airbytehq/airbyte/pull/7345)   | Add 3 new streams                                                                                                                                      |
+| 0.1.21  | 2021-10-07 | [6841](https://github.com/airbytehq/airbyte/pull/6841)   | Fix missing `start_date` argument + update json files for SAT                                                                                          |
+| 0.1.20  | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017)   | Add lookback\_window\_days parameter                                                                                                                   |
+| 0.1.19  | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466)   | Use `start_date` parameter in incremental streams                                                                                                      |
+| 0.1.18  | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004)   | Fix coupons and subscriptions stream schemas by removing incorrect timestamp formatting                                                                |
+| 0.1.17  | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004)   | Add `PaymentIntents` stream                                                                                                                            |
+| 0.1.16  | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980)   | Remove Updated field from schemas                                                                                                                      |
+| 0.1.15  | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878)   | Fix incorrect percent\_off and discounts data filed types                                                                                              |
+| 0.1.14  | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669)   | Subscriptions Stream now returns all kinds of subscriptions \(including expired and canceled\)                                                         |
+| 0.1.13  | 2021-07-03 | [4528](https://github.com/airbytehq/airbyte/pull/4528)   | Remove regex for acc validation                                                                                                                        |
+| 0.1.12  | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                        |
+| 0.1.11  | 2021-05-30 | [3744](https://github.com/airbytehq/airbyte/pull/3744)   | Fix types in schema                                                                                                                                    |
+| 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)   | Update data types to be number instead of int                                                                                                          |
+| 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)   | Add acceptance tests for connected accounts                                                                                                            |
+| 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)   | Bump CDK connectors                                                                                                                                    |
 

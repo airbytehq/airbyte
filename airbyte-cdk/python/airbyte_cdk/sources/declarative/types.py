@@ -11,5 +11,6 @@ Record = Mapping[str, Any]
 # "hello"}] returns "hello"
 FieldPointer = List[str]
 Config = Mapping[str, Any]
+ConnectionDefinition = Mapping[str, Any]
 StreamSlice = Mapping[str, Any]
 StreamState = Mapping[str, Any]

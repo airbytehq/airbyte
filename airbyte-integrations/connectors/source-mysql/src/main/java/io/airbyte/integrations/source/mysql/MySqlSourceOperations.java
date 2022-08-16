@@ -20,10 +20,17 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +80,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
       case DECIMAL, DECIMAL_UNSIGNED -> putBigDecimal(json, columnName, resultSet, colIndex);
       case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case DATETIME, TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
+      case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       // The returned year value can either be a java.sql.Short (when yearIsDateType=false)
       // or a java.sql.Date with the date set to January 1st, at midnight (when yearIsDateType=true).
@@ -125,7 +133,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
       case DECIMAL, DECIMAL_UNSIGNED -> setDecimal(preparedStatement, parameterIndex, value);
       case DATE -> setDate(preparedStatement, parameterIndex, value);
-      case DATETIME, TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case DATETIME -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
       case TIME -> setTime(preparedStatement, parameterIndex, value);
       case YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> setString(preparedStatement, parameterIndex, value);
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
@@ -168,18 +177,80 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonSchemaType getJsonType(MysqlType mysqlType) {
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
+  }
+
+  @Override
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
+  }
+
+  @Override
+  public JsonSchemaType getJsonType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
       // getFieldType}
-      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, MEDIUMINT, MEDIUMINT_UNSIGNED, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> JsonSchemaType.INTEGER;
+      case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
       case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaType.STRING_BASE_64;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case DATETIME -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case DATE -> JsonSchemaType.STRING_DATE;
       default -> JsonSchemaType.STRING;
     };
   }
 
+  @Override
+  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    } catch (final DateTimeParseException e) {
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for date column the new way, trying the old way", e);
+      super.setDate(preparedStatement, parameterIndex, value);
+    }
+  }
+
+  @Override
+  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    }
+  }
+
+  private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    }
+  }
+
+  @Override
+  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
+      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      super.setTime(preparedStatement, parameterIndex, value);
+    }
+  }
 }

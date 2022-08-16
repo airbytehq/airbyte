@@ -145,13 +145,19 @@ class AbstractSource(Source, ABC):
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
             logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
             stream_instance.page_size = internal_config.page_size
-
         logger.debug(
-            f"Syncing stream: {configured_stream.stream.name}",
+            f"Syncing configured stream: {configured_stream.stream.name}",
             extra={
                 "sync_mode": configured_stream.sync_mode,
                 "primary_key": configured_stream.primary_key,
                 "cursor_field": configured_stream.cursor_field,
+            },
+        )
+        logger.debug(
+            f"Syncing stream instance: {stream_instance.name}",
+            extra={
+                "primary_key": stream_instance.primary_key,
+                "cursor_field": stream_instance.cursor_field,
             },
         )
 
@@ -220,6 +226,10 @@ class AbstractSource(Source, ABC):
         )
         logger.debug(f"Processing stream slices for {stream_name}", extra={"stream_slices": slices})
         total_records_counter = 0
+        if not slices:
+            # Safety net to ensure we always emit at least one state message even if there are no slices
+            checkpoint = self._checkpoint_state(stream_instance, stream_instance.state, connector_state)
+            yield checkpoint
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
             records = stream_instance.read_records(

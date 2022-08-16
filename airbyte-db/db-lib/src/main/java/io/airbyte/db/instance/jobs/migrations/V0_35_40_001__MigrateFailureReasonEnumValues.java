@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_40_001__MigrateFailureReasonEnumValues.class);
+  private static final String NULL = "<null>";
 
   @VisibleForTesting
   static String OLD_MANUAL_CANCELLATION = "manualCancellation";
@@ -179,11 +180,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return internalMessage;
     }
 
-    public void setInternalMessage(String internalMessage) {
+    public void setInternalMessage(final String internalMessage) {
       this.internalMessage = internalMessage;
     }
 
-    public FailureReasonForMigration withInternalMessage(String internalMessage) {
+    public FailureReasonForMigration withInternalMessage(final String internalMessage) {
       this.internalMessage = internalMessage;
       return this;
     }
@@ -192,11 +193,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return externalMessage;
     }
 
-    public void setExternalMessage(String externalMessage) {
+    public void setExternalMessage(final String externalMessage) {
       this.externalMessage = externalMessage;
     }
 
-    public FailureReasonForMigration withExternalMessage(String externalMessage) {
+    public FailureReasonForMigration withExternalMessage(final String externalMessage) {
       this.externalMessage = externalMessage;
       return this;
     }
@@ -205,11 +206,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return metadata;
     }
 
-    public void setMetadata(Metadata metadata) {
+    public void setMetadata(final Metadata metadata) {
       this.metadata = metadata;
     }
 
-    public FailureReasonForMigration withMetadata(Metadata metadata) {
+    public FailureReasonForMigration withMetadata(final Metadata metadata) {
       this.metadata = metadata;
       return this;
     }
@@ -218,11 +219,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return stacktrace;
     }
 
-    public void setStacktrace(String stacktrace) {
+    public void setStacktrace(final String stacktrace) {
       this.stacktrace = stacktrace;
     }
 
-    public FailureReasonForMigration withStacktrace(String stacktrace) {
+    public FailureReasonForMigration withStacktrace(final String stacktrace) {
       this.stacktrace = stacktrace;
       return this;
     }
@@ -231,11 +232,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return retryable;
     }
 
-    public void setRetryable(Boolean retryable) {
+    public void setRetryable(final Boolean retryable) {
       this.retryable = retryable;
     }
 
-    public FailureReasonForMigration withRetryable(Boolean retryable) {
+    public FailureReasonForMigration withRetryable(final Boolean retryable) {
       this.retryable = retryable;
       return this;
     }
@@ -244,11 +245,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return timestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
+    public void setTimestamp(final Long timestamp) {
       this.timestamp = timestamp;
     }
 
-    public FailureReasonForMigration withTimestamp(Long timestamp) {
+    public FailureReasonForMigration withTimestamp(final Long timestamp) {
       this.timestamp = timestamp;
       return this;
     }
@@ -259,35 +260,35 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       sb.append(FailureReasonForMigration.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
       sb.append("failureOrigin");
       sb.append('=');
-      sb.append(((this.failureOrigin == null) ? "<null>" : this.failureOrigin));
+      sb.append(((this.failureOrigin == null) ? NULL : this.failureOrigin));
       sb.append(',');
       sb.append("failureType");
       sb.append('=');
-      sb.append(((this.failureType == null) ? "<null>" : this.failureType));
+      sb.append(((this.failureType == null) ? NULL : this.failureType));
       sb.append(',');
       sb.append("internalMessage");
       sb.append('=');
-      sb.append(((this.internalMessage == null) ? "<null>" : this.internalMessage));
+      sb.append(((this.internalMessage == null) ? NULL : this.internalMessage));
       sb.append(',');
       sb.append("externalMessage");
       sb.append('=');
-      sb.append(((this.externalMessage == null) ? "<null>" : this.externalMessage));
+      sb.append(((this.externalMessage == null) ? NULL : this.externalMessage));
       sb.append(',');
       sb.append("metadata");
       sb.append('=');
-      sb.append(((this.metadata == null) ? "<null>" : this.metadata));
+      sb.append(((this.metadata == null) ? NULL : this.metadata));
       sb.append(',');
       sb.append("stacktrace");
       sb.append('=');
-      sb.append(((this.stacktrace == null) ? "<null>" : this.stacktrace));
+      sb.append(((this.stacktrace == null) ? NULL : this.stacktrace));
       sb.append(',');
       sb.append("retryable");
       sb.append('=');
-      sb.append(((this.retryable == null) ? "<null>" : this.retryable));
+      sb.append(((this.retryable == null) ? NULL : this.retryable));
       sb.append(',');
       sb.append("timestamp");
       sb.append('=');
-      sb.append(((this.timestamp == null) ? "<null>" : this.timestamp));
+      sb.append(((this.timestamp == null) ? NULL : this.timestamp));
       sb.append(',');
       if (sb.charAt((sb.length() - 1)) == ',') {
         sb.setCharAt((sb.length() - 1), ']');
@@ -355,11 +356,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return partialSuccess;
     }
 
-    public void setPartialSuccess(Boolean partialSuccess) {
+    public void setPartialSuccess(final Boolean partialSuccess) {
       this.partialSuccess = partialSuccess;
     }
 
-    public AttemptFailureSummaryForMigration withPartialSuccess(Boolean partialSuccess) {
+    public AttemptFailureSummaryForMigration withPartialSuccess(final Boolean partialSuccess) {
       this.partialSuccess = partialSuccess;
       return this;
     }
@@ -370,11 +371,11 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       sb.append(AttemptFailureSummaryForMigration.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
       sb.append("failures");
       sb.append('=');
-      sb.append(((this.failures == null) ? "<null>" : this.failures));
+      sb.append(((this.failures == null) ? NULL : this.failures));
       sb.append(',');
       sb.append("partialSuccess");
       sb.append('=');
-      sb.append(((this.partialSuccess == null) ? "<null>" : this.partialSuccess));
+      sb.append(((this.partialSuccess == null) ? NULL : this.partialSuccess));
       sb.append(',');
       if (sb.charAt((sb.length() - 1)) == ',') {
         sb.setCharAt((sb.length() - 1), ']');

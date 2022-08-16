@@ -26,14 +26,22 @@ class ResponseStatus:
 
     @property
     def action(self):
+        """The ResponseAction to execute when a response matches the filter"""
         return self._action
 
     @property
     def retry_in(self) -> Optional[float]:
+        """How long to backoff before retrying a response. None if no wait required."""
         return self._retry_in
 
     @classmethod
-    def retry(cls, retry_in: Optional[float]):
+    def retry(cls, retry_in: Optional[float]) -> "ResponseStatus":
+        """
+        Returns a ResponseStatus defining how long to backoff before retrying
+
+        :param retry_in: how long to backoff before retrying. None if no wait required
+        :return: A response status defining how long to backoff before retrying
+        """
         return ResponseStatus(ResponseAction.RETRY, retry_in)
 
     def __eq__(self, other):
@@ -45,6 +53,9 @@ class ResponseStatus:
         return hash([self.action, self.retry_in])
 
 
+"""Response is successful. No need to retry"""
 SUCCESS: Final[ResponseStatus] = ResponseStatus(ResponseAction.SUCCESS)
+"""Response is unsuccessful. The failure needs to be handled"""
 FAIL: Final[ResponseStatus] = ResponseStatus(ResponseAction.FAIL)
+"""Response is unsuccessful, but can be ignored. No need to retry"""
 IGNORE: Final[ResponseStatus] = ResponseStatus(ResponseAction.IGNORE)

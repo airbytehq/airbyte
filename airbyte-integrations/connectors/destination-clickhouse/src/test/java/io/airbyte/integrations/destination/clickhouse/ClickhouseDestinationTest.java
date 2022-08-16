@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -61,7 +62,7 @@ public class ClickhouseDestinationTest {
 
   @BeforeAll
   static void init() {
-    db = new ClickHouseContainer("yandex/clickhouse-server");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
   }
 
@@ -92,20 +93,6 @@ public class ClickhouseDestinationTest {
   }
 
   @Test
-  void testDefaultParamsNoSSL() {
-    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_NO_SSL));
-    assertEquals(ImmutableMap.of("socket_timeout", "3000000"), defaultProperties);
-  }
-
-  @Test
-  void testDefaultParamsWithSSL() {
-    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_WITH_SSL));
-    assertEquals(ClickhouseDestination.SSL_JDBC_PARAMETERS, defaultProperties);
-  }
-
-  @Test
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
     final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
@@ -131,9 +118,10 @@ public class ClickhouseDestinationTest {
             config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickhouseDestination.DRIVER_CLASS,
-            String.format("jdbc:clickhouse://%s:%s/%s",
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                ClickhouseDestination.HTTP_PROTOCOL,
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
