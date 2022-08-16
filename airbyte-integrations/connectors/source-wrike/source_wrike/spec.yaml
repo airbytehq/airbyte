@@ -6,18 +6,21 @@ connectionSpecification:
   required:
     - access_token 
     - wrike_instance
-    - start_date
   properties:
     access_token:
       type: string
+      title: Permanent Access Token
       description: >-
         Permanent access token. You can find documentation on how to acquire a permanent access token 
         at <a href="https://developers.wrike.com/oauth-20-authorization/">here</a>
       airbyte_secret: true
+      order: 0
     wrike_instance:
       type: string
+      title: Wrike Instance (hostname)
       description: Wrike's instance such as `app-us2.wrike.com`
       default: app-us2.wrike.com
+      order: 1
     start_date:
       type: string
       title: Start date for comments
@@ -27,3 +30,4 @@ connectionSpecification:
         after this date will be replicated.
       examples:
         - "2017-01-25T00:00:00Z"
+      order: 2
