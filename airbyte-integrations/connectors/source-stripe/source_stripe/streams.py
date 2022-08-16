@@ -12,7 +12,6 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-
 STRIPE_ERROR_CODES: List = [
     # stream requires additional permissions
     "more_permissions_required",
