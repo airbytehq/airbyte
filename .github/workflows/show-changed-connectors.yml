@@ -26,7 +26,6 @@ jobs:
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
-          git branch -a
           git diff --name-only remotes/origin/master
           echo ${{ github.token }}
 
