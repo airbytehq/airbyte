@@ -13,6 +13,14 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
+STRIPE_ERROR_CODES: List = [
+    # stream requires additional permissions
+    "more_permissions_required",
+    # account_id doesn't have the access to the stream
+    "account_invalid",
+]
+
+
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
@@ -74,6 +82,30 @@ class StripeStream(HttpStream, ABC):
         for start, end in self.chunk_dates(self.start_date):
             yield {"created[gte]": start, "created[lte]": end}
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if stream_slice is None:
+            return []
+
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            parsed_error = e.response.json()
+            error_code = parsed_error.get("error", {}).get("code")
+            error_message = parsed_error.get("message")
+            # if the API Key doesn't have required permissions to particular stream, this stream will be skipped
+            if status_code == 403 and error_code in STRIPE_ERROR_CODES:
+                self.logger.warn(f"Stream {self.name} is skipped, due to {error_code}. Full message: {error_message}")
+                pass
+            else:
+                self.logger.error(f"Syncing stream {self.name} is failed, due to {error_code}. Full message: {error_message}")
+
 
 class SingleEmptySliceMixin(object):
     def stream_slices(
@@ -105,17 +137,6 @@ class IncrementalStripeStream(StripeStream, ABC):
         and returning an updated state object.
         """
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        if stream_slice is None:
-            return []
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
