@@ -8863,7 +8863,7 @@
           default: true
           title: "Join all channels"
           description: "Whether to join all channels or to sync data only from channels\
-            \ the bot is already in.  If false, you'll need to manually add the bot\
+            \ the bot is already in.  If false, it will join only the channels that exist in the filter or you'll need to manually add the bot\
             \ to all the channels from which you'd like to sync messages. "
         channel_filter:
           type: "array"
