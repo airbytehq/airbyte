@@ -156,13 +156,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // picks up error logs from dbt
-        final List<String> separatedDbtErrorStacks = streamFactory.getDbtErrors()
-            .entrySet()
-            .stream()
-            .map(e -> String.format("dbt_node_info_id=%s: ", e.getKey()) +
-                String.join(String.format("\ndbt_node_info_id=%s: ", e.getKey()), e.getValue()))
-            .collect(Collectors.toList());
-        dbtErrorStack = String.join("\n", separatedDbtErrorStacks);
+        dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
 
         if (!"".equals(dbtErrorStack)) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
@@ -218,26 +212,19 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   private String buildInternalErrorMessageFromDbtStackTrace() {
-    String internalMessage = "";
-    for (Entry<String, List<String>> errorSet : streamFactory.getDbtErrors().entrySet()) {
-      // Most dbt errors we see in Airbyte are `Database Errors`
-      // The line containing the relevant error message is often the line following the "Database
-      // Error..." line
-      // e.g. "Column 10 in UNION ALL has incompatible types: DATETIME, TIMESTAMP"
-      boolean nextLine = false;
-      for (String errorLine : errorSet.getValue()) {
-        // previous line was "Database Error..." so this is our useful message line
-        if (nextLine) {
-          internalMessage = internalMessage.concat(errorLine + "\n");
-          break;
-        }
-        if (errorLine.contains("Database Error in model")) {
-          nextLine = true;
-        }
+    // Most dbt errors we see in Airbyte are `Database Errors`
+    // The line containing the relevant error message is often the line following the "Database
+    // Error..." line
+    // e.g. "Column 10 in UNION ALL has incompatible types: DATETIME, TIMESTAMP"
+    boolean nextLine = false;
+    for (String errorLine : streamFactory.getDbtErrors()) {
+      // previous line was "Database Error..." so this is our useful message line
+      if (nextLine) {
+        return errorLine;
       }
-    }
-    if (!"".equals(internalMessage)) {
-      return internalMessage;
+      if (errorLine.contains("Database Error in model")) {
+        nextLine = true;
+      }
     }
     // Not all errors are Database Errors, for other types, we just return the stacktrace(s)
     return dbtErrorStack;

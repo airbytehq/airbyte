@@ -13,7 +13,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import java.io.BufferedReader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private final MdcScope.Builder containerLogMdcBuilder;
   private final Logger logger;
-  private final Map<String, List<String>> dbtErrors = new HashMap<>();
+  private final List<String> dbtErrors = new ArrayList<>();
 
   public NormalizationAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
     this(LOGGER, containerLogMdcBuilder);
@@ -76,7 +76,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         // however it is only for destinations that are using dbt version < 1.0.
         // For v1 + we switch on JSON logging and parse those in the next block.
         if (line.contains("[error]")) {
-          dbtErrors.computeIfAbsent("errors", k -> new ArrayList<>()).add(line);
+          dbtErrors.add(line);
         }
       }
     }
@@ -97,7 +97,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
             case "debug" -> logger.debug(logMsg);
             case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
-            case "error" -> logAndCollectErrorMessage(jsonLine, logMsg);
+            case "error" -> logAndCollectErrorMessage(logMsg);
             default -> logger.info(jsonLine.asText()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
@@ -108,18 +108,12 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     return m.stream();
   }
 
-  private void logAndCollectErrorMessage(JsonNode jsonLine, String logMsg) {
-    // if dbt encounters multiple errors, we need to differentiate these
-    // we're using the unique_id from node_info to separate error lines into a map
-    String errorId = "errors";
-    if (!jsonLine.get("node_info").isNull()) {
-      errorId = jsonLine.get("node_info").get("unique_id").isNull() ? "errors" : jsonLine.get("node_info").get("unique_id").asText();
-    }
+  private void logAndCollectErrorMessage(String logMsg) {
     logger.error(logMsg);
-    dbtErrors.computeIfAbsent(errorId, k -> new ArrayList<>()).add(logMsg);
+    dbtErrors.add(logMsg);
   }
 
-  public Map<String, List<String>> getDbtErrors() {
+  public List<String> getDbtErrors() {
     return dbtErrors;
   }
 
