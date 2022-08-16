@@ -136,12 +136,6 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.logs.accessKey.existingSecret }}
               key: {{ .Values.global.logs.accessKey.existingSecretKey }}
-        {{- else }}
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-minio
-              key: root-user
         {{- end }}
         {{- if and .Values.global.logs.secretKey.existingSecret .Values.global.logs.secretKey.existingSecretKey }}
         - name: AWS_SECRET_ACCESS_KEY
@@ -149,18 +143,24 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.logs.secretKey.existingSecret }}
               key: {{ .Values.global.logs.secretKey.existingSecretKey }}
-        {{- else }}
+        {{- end }}
+        {{- if or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled }}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-minio
+              key: root-user
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-minio
               key: root-password
-        {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: S3_MINIO_ENDPOINT
+        {{- end }}
         - name: S3_PATH_STYLE_ACCESS
           valueFrom:
             configMapKeyRef:

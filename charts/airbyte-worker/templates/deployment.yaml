@@ -189,12 +189,6 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.logs.accessKey.existingSecret }}
               key: {{ .Values.global.logs.accessKey.existingSecretKey }}
-        {{- else }}
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-minio
-              key: root-user
         {{- end }}
         {{- if and .Values.global.logs.secretKey.existingSecret .Values.global.logs.secretKey.existingSecretKey }}
         - name: AWS_SECRET_ACCESS_KEY
@@ -202,38 +196,23 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.logs.secretKey.existingSecret }}
               key: {{ .Values.global.logs.secretKey.existingSecretKey }}
-        {{- else }}
+        {{- end }}
+        {{- if or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled }}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-minio
+              key: root-user
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-minio
               key: root-password
-        {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: S3_MINIO_ENDPOINT
-        - name: S3_PATH_STYLE_ACCESS
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: S3_PATH_STYLE_ACCESS
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: GOOGLE_APPLICATION_CREDENTIALS
-        - name: GCS_LOG_BUCKET
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: GCS_LOG_BUCKET
-        - name: STATE_STORAGE_MINIO_BUCKET_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: STATE_STORAGE_MINIO_BUCKET_NAME
         - name: STATE_STORAGE_MINIO_ACCESS_KEY
           valueFrom:
             secretKeyRef:
@@ -249,6 +228,27 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: STATE_STORAGE_MINIO_ENDPOINT
+        - name: STATE_STORAGE_MINIO_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: STATE_STORAGE_MINIO_BUCKET_NAME
+        {{- end }}
+        - name: S3_PATH_STYLE_ACCESS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: S3_PATH_STYLE_ACCESS
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: GOOGLE_APPLICATION_CREDENTIALS
+        - name: GCS_LOG_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: GCS_LOG_BUCKET
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:
