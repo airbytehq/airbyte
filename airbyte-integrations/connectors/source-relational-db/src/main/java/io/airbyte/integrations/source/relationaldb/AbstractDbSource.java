@@ -98,7 +98,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .map(tableInfo -> CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
                   tableInfo.getFields())
-              .withSupportedSyncModes(tableInfo.getCursorFields().isEmpty() ? Lists.newArrayList(SyncMode.FULL_REFRESH)
+              .withSupportedSyncModes(tableInfo.getCursorFields()!=null && tableInfo.getCursorFields().isEmpty() ? Lists.newArrayList(SyncMode.FULL_REFRESH)
                   : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
