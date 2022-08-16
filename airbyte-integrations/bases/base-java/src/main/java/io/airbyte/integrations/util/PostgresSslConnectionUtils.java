@@ -85,7 +85,7 @@ public class PostgresSslConnectionUtils {
 
   private static String readFile(final File file) {
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
+      BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
       String currentLine = reader.readLine();
       reader.close();
       return currentLine;
