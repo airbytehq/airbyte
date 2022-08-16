@@ -12,7 +12,7 @@ connectionSpecification:
       title: Permanent Access Token
       description: >-
         Permanent access token. You can find documentation on how to acquire a permanent access token 
-        at <a href="https://developers.wrike.com/oauth-20-authorization/">here</a>
+        <a href="https://developers.wrike.com/oauth-20-authorization/">here</a>
       airbyte_secret: true
       order: 0
     wrike_instance:
