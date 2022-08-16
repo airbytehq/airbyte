@@ -9,6 +9,7 @@ connectionSpecification:
     - refresh_token
   additionalProperties: true
   properties:
+    x-oauth2-provider: salesforce
     is_sandbox:
       title: Sandbox
       description: >-
