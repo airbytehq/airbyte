@@ -447,6 +447,8 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(5L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(4L);
+    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
+    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(3L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -471,6 +473,8 @@ class DefaultReplicationWorkerTest {
                 .withDestinationStateMessagesEmitted(1L)
                 .withMaxSecondsBeforeSourceStateMessageEmitted(5L)
                 .withMeanSecondsBeforeSourceStateMessageEmitted(4L)
+                .withMaxSecondsBetweenStateMessageEmittedandCommitted(6L)
+                .withMeanSecondsBetweenStateMessageEmittedandCommitted(3L)
                 .withRecordsCommitted(12L)) // since success, should use emitted count
             .withStreamStats(Collections.singletonList(
                 new StreamSyncStats()
@@ -482,7 +486,9 @@ class DefaultReplicationWorkerTest {
                         .withSourceStateMessagesEmitted(null)
                         .withDestinationStateMessagesEmitted(null)
                         .withMaxSecondsBeforeSourceStateMessageEmitted(null)
-                        .withMeanSecondsBeforeSourceStateMessageEmitted(null)))))
+                        .withMeanSecondsBeforeSourceStateMessageEmitted(null)
+                        .withMaxSecondsBetweenStateMessageEmittedandCommitted(null)
+                        .withMeanSecondsBetweenStateMessageEmittedandCommitted(null)))))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));
 
@@ -556,6 +562,8 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap(STREAM1, 6L)));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(10L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(8L);
+    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(12L);
+    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(11L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -575,6 +583,8 @@ class DefaultReplicationWorkerTest {
         .withDestinationStateMessagesEmitted(2L)
         .withMaxSecondsBeforeSourceStateMessageEmitted(10L)
         .withMeanSecondsBeforeSourceStateMessageEmitted(8L)
+        .withMaxSecondsBetweenStateMessageEmittedandCommitted(12L)
+        .withMeanSecondsBetweenStateMessageEmittedandCommitted(11L)
         .withRecordsCommitted(6L);
     final List<StreamSyncStats> expectedStreamStats = Collections.singletonList(
         new StreamSyncStats()

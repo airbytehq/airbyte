@@ -456,7 +456,7 @@ public class AirbyteMessageTracker implements MessageTracker {
         maxSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
       }
 
-      if (meanSecondsToReceiveSourceStateMessage == 0) {
+      if (totalDestinationEmittedStateMessages.get() == 1) {
         meanSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
       } else {
         final Long newMeanSeconds =
