@@ -1,0 +1,190 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "attributes": {
+            "type": [
+                "object"
+            ],
+            "properties": {
+                "organization-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "organization-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "restricted": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "psa-integration": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "my-glue": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "primary": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "address-1": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "address-2": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "city": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "postal-code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "region-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "region-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "country-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "country-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "phone": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fax": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "latitude": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "longitude": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "created-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "updated-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formatted-phone": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formatted-fax": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "relationships": {
+            "type": "object",
+            "properties": {
+                "adapters-resources": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,95 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "attributes": {
+            "type": "object",
+            "properties": {
+                "organization-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "organization-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "expiration-date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "updated-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "resource-type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-type-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "relationships": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}

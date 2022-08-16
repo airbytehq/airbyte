@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "first-name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "last-name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "role-name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "email": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "invitation-sent-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "invitation-accepted-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "current-sign-in-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "current-sign-in-ip": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "last-sign-in-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "last-sign-in-ip": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "reputation": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "created-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "updated-at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "my-glue-account-id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "avatar": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "my-glue": {
+          "type": [
+            "null",
+            "boolean"
+          ]
+        }
+      }
+    }
+  }
+}

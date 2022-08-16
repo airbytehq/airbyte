@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "user-id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "organization-id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "created": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "viewed": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "edited": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "deleted": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "date": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "resource-type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    }
+  }
+}

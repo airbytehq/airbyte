@@ -1,0 +1,301 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "attributes": {
+            "type": [
+                "object"
+            ],
+            "properties": {
+                "organization-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "organization-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "restricted": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "my-glue": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "psa-integration": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "flexible-asset-type-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "flexible-asset-type-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "traits": {
+                    "type": [
+                        "object"
+                    ],
+                    "properties": {
+                        "name": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "importance": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "authentication-type": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "legacy-business-purpose": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "user-provisioning-enabled": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "internal-application-champion": {
+                            "type": [
+                                "object"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "values": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "resource-url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "id": {
+                                                "type": [
+                                                    "integer",
+                                                    "null"
+                                                ]
+                                            },
+                                            "first-name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "last-name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "organization-name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "identity-provider": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "values": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "resource-url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "id": {
+                                                "type": [
+                                                    "integer",
+                                                    "null"
+                                                ]
+                                            },
+                                            "name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "organization-name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "asset-type-id": {
+                                                "type": [
+                                                    "integer",
+                                                    "null"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "legacy-provider": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "values": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "resource-url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "id": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "short-name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "archived": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "created-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "updated-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "relationships": {
+            "type": "object",
+            "properties": {
+                "adapters-resources": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

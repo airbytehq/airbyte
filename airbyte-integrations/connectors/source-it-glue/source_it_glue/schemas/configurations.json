@@ -1,0 +1,280 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "attributes": {
+            "type": [
+                "object"
+            ],
+            "properties": {
+                "organization-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "organization-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "resource-url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "restricted": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "psa-integration": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "my-glue": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "hostname": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "primary-ip": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "mac-address": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "default-gateway": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "serial-number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "asset-tag": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "position": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "installed-by": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "purchased-by": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "operating-system-notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "warranty-expires-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "installed-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "purchased-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "updated-at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "organization-short-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "configuration-type-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "configuration-type-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "configuration-type-kind": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "configuration-status-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "configuration-status-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "manufacturer-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "manufacturer-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "model-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "operating-system-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "operating-system-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "location-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "location-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "contact-id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "archived": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "model-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "contact-name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "relationships": {
+            "type": "object",
+            "properties": {
+                "adapters-resources": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

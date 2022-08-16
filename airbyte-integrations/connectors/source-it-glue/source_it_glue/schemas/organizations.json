@@ -1,0 +1,153 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "attributes": {
+            "type": "object",
+            "properties": {
+                "psa-integration": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "alert": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "organization-type-id": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "organization-type-name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "organization-status-id": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "organization-status-name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "my-glue-account-id": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "primary": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "quick-notes": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "quick-note-vault-id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "short-name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created-at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "updated-at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "my-glue-account-status": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "logo": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "has-personal-passwords": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                }
+            }
+        },
+        "relationships": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "adapters-resources": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "properties": {
+                        "data": {
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
