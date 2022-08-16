@@ -1,3 +1,11 @@
+# It Glue API and FatId
+
+To get going with this connector you would be needing two important things, one is the API key which can be obtained via OAuth2, I prefer using postman app to get the API Key from the redirect uri, client secret, and client Id.
+
+Once you have the API key you can extract the flexible asset ID, which will be needed to retrieve data out of your organizations flexible assets. 
+
+`filter[flexible-asset-type-id]`
+
 # It Glue Source
 
 This is the repository for the It Glue source connector, written in Python.
