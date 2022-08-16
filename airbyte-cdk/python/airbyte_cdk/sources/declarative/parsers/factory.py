@@ -145,8 +145,9 @@ class DeclarativeComponentFactory:
         else:
             # Because the component's data fields definitions use interfaces, we need to resolve the underlying types into the
             # concrete classes that implement the interface before generating the schema
-            DeclarativeComponentFactory._transform_interface_to_union(class_)
-            schema = class_.json_schema()
+            class_copy = copy.deepcopy(class_)
+            DeclarativeComponentFactory._transform_interface_to_union(class_copy)
+            schema = class_copy.json_schema()
 
             component_definition = {
                 **updated_kwargs,
@@ -270,12 +271,12 @@ class DeclarativeComponentFactory:
         return cls.__module__ == "builtins"
 
     @staticmethod
-    def _transform_interface_to_union(cls: type):
-        copy_cls = type(cls.__name__ + "Copy", cls.__bases__, dict(cls.__dict__))
-        class_fields = fields(copy_cls)
+    def _transform_interface_to_union(expand_class: type):
+        class_fields = fields(expand_class)
         for field in class_fields:
             unpacked_field_types = DeclarativeComponentFactory.unpack(field.type)
-            copy_cls.__annotations__[field.name] = unpacked_field_types
+            expand_class.__annotations__[field.name] = unpacked_field_types
+        return expand_class
 
     @staticmethod
     def unpack(field_type: type):
@@ -290,7 +291,7 @@ class DeclarativeComponentFactory:
             # Functions as the base case since the origin is none for non-typing classes. If it is an interface then we derive
             # and return the union of its subclasses or return the original type if it is a concrete class or a primitive type
             module = field_type.__module__
-            if module != "builtins" and module != "typing":
+            if "airbyte_cdk.sources.declarative" in module:
                 subclasses = field_type.__subclasses__()
                 if subclasses:
                     return Union[tuple(subclasses)]

@@ -156,7 +156,51 @@ class TestYamlDeclarativeSource(unittest.TestCase):
           stream_names: ["lists"]
         """
         temporary_file = TestFileContent(content)
-        with pytest.raises(KeyError):
+        with pytest.raises(ValidationError):
+            YamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_missing_version_fails(self):
+        content = """
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "LimitPaginator"
+              page_size: 10
+              limit_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(ValidationError):
             YamlDeclarativeSource(temporary_file.filename)
 
     def test_source_with_invalid_stream_config_fails_validation(self):
