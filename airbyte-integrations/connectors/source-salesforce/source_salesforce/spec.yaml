@@ -9,7 +9,6 @@ connectionSpecification:
     - refresh_token
   additionalProperties: true
   properties:
-    x-oauth2-provider: salesforce
     is_sandbox:
       title: Sandbox
       description: >-
@@ -87,6 +86,7 @@ connectionSpecification:
       title: Filter Salesforce Objects (Optional)
       description: >-
         Filter streams relevant to you
+
 authSpecification:
   provider: "salesforce"
   authUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code"
