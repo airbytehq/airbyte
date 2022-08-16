@@ -6,17 +6,13 @@ on:
       - "gitbook/v1"
 
 jobs:
-
   show-affected-connectors:
     name: "Show affected connectors"
-    needs:
-      - find_valid_pat
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      # Pull request based workflows.
       - id: files
         uses: jitterbit/get-changed-files@v1
       - run: |
