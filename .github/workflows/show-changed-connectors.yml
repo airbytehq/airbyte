@@ -18,9 +18,13 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
+      - name: Save changes
+        run: |
+          git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }} > ./diff_file.txt
+        id: save_changed_file
       - name: Extract changes
         run: |
-          echo "::set-output name=changed_files::$(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }})"
+          echo "::set-output name=changed_files::$(cat ./diff_file.txt)"
         id: extract_changed_files
       - name: Debbug
         run: |
