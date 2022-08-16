@@ -3,7 +3,7 @@
 set -eo pipefail
 
 DEV_VERSION=${DEV_VERSION:-latest}
-ABCON_URL=${ABCON:-https://tools.airbyte.com/${DEV_VERSION}/abcon}
+ABCON_URL=${ABCON_URL:-https://tools.airbyte.com/${DEV_VERSION}/abcon}
 BUILD_DIR="build"
 ABCON_CMD="$BUILD_DIR/abcon"
 

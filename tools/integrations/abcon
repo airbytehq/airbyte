@@ -2,9 +2,7 @@
 
 set -eo pipefail
 
-if [[ "$DEBUG" = "true" ]]; then
-    set -x
-fi
+[[ "$DEBUG" = "true" ]] && set -x
 
 VERSION=0.0.1
 CLI_NAME="${CLI_NAME:-con}"
@@ -16,9 +14,10 @@ AIRBYTE_PATH="${PROJECT_PATH}/${BUILD_DIR}"/airbyte
 
 PROJECT_FILE=airbyte.json
 
-PYTHON_CMD="${PYTHON_CMD:-python}"
-PIP_CMD="${PIP_CMD:-pip}"
-
+PYTHON_DEFAULT=$(which python || which python3)
+PIP_DEFAULT=$(which pip || which pip3)
+PYTHON_CMD="${PYTHON_CMD:-${PYTHON_DEFAULT}}"
+PIP_CMD="${PIP_CMD:-${PIP_DEFAULT}}"
 
 _error() {
     echo "$@" 1>&2 && exit 1
@@ -26,7 +25,7 @@ _error() {
 
 _setup_airbyte() {
     (
-        local build_path="$(dirname ${AIRBYTE_PATH})"
+        local build_path="$(dirname "${AIRBYTE_PATH}")"
         mkdir -p "${build_path}"
 
         cd "${build_path}"
@@ -34,8 +33,8 @@ _setup_airbyte() {
         [[ -d airbyte ]] || git clone "${AIRBYTE_REPO}"
 
         cd airbyte
-        git clean -fd # remove all untracked files
-        git clean -fdX # remove all ignored files
+        git clean -qfd # remove all untracked files
+        git clean -qfdX # remove all ignored files
         git pull -q
     )
 }
@@ -46,7 +45,7 @@ _setup_env() {
 }
 
 _get_connector_name() {
-    cat acceptance-test-config.yml | grep connector_image | cut -d / -f 2 | cut -d : -f 1
+    grep connector_image < acceptance-test-config.yml | cut -d / -f 2 | cut -d : -f 1
 }
 
 _patch_connector() {
@@ -66,16 +65,23 @@ _patch_connector() {
     rm -f acceptance-test-docker.sh
 }
 
+help_clean="Clean project"
+cmd_clean() {
+  rm -rf .venv
+  rm -rf build
+}
+
 help_init="Initialize current connector project in current directory"
 cmd_init() {
-    [[ -f "${PROJECT_FILE}" ]] && _error "Connector alrealy initialized"
+    [[ -f "${PROJECT_FILE}" ]] && _error "Connector already initialized"
 
     echo "Initializing connector"
 
     cp -i "${AIRBYTE_PATH}/.gitignore" .
     cp -i "${AIRBYTE_PATH}/pyproject.toml" .
+    echo "3.9" > .python-version
 
-    # TODO(michel): Remove all unecessary generated files
+    # TODO(michel): Remove all unnecessary generated files
     _patch_connector
 
     echo "{}" | jq > "${PROJECT_FILE}"
@@ -95,12 +101,12 @@ cmd_generate() {
         mv "${AIRBYTE_PATH}/${connector_dir}/"* "${PROJECT_PATH}"
     )
 
-    # TODO(michel): Remove all unecessary generated files
+    # TODO(michel): Remove all unnecessary generated files
     _patch_connector
 }
 
 help_configure="Configure & install all connector dependencies"
-cmd_configure() {
+cmd_install() {
     pip install -r requirements.txt
 
     pip install pyproject-flake8==0.0.1a5
@@ -157,9 +163,9 @@ cmd_format() {
 
 help_check="Verify code style & types"
 cmd_check() {
-    black --config pyproject.toml --diff --quiet .
-    pflake8 --exit-zero --config pyproject.toml .
-    isort --settings-file=pyproject.toml --diff --quiet .
+    black --config pyproject.toml --diff --quiet --check .
+    pflake8 --config pyproject.toml .
+    isort --settings-file=pyproject.toml --diff --quiet --check .
     python -m mypy --config-file pyproject.toml .
 }
 
