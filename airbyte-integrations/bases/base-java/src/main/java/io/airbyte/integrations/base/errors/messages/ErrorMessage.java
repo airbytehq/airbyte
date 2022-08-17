@@ -12,7 +12,7 @@ import java.util.Map;
 public abstract class ErrorMessage {
 
   private static final String DEFAULT_ERROR_MESSAGE = "Standard error code: %s. \n Error Message: %s.";
-  protected final Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
+  protected final Map<String, ConnectionErrorType> ERRORCODES_TYPES = new HashMap<>();
 
   public abstract ConnectorName getConnectorName();
 
@@ -21,8 +21,8 @@ public abstract class ErrorMessage {
   }
 
   public String getErrorMessage(String errorCode, Exception exception) {
-    if (CONSTANTS.containsKey(errorCode)) {
-      return CONSTANTS.get(errorCode).getValue();
+    if (ERRORCODES_TYPES.containsKey(errorCode)) {
+      return ERRORCODES_TYPES.get(errorCode).getValue();
     }
     return getDefaultErrorMessage(errorCode, exception);
   }

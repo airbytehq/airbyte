@@ -13,8 +13,8 @@ import io.airbyte.integrations.base.errors.utils.ConnectorName;
 public class MssqlErrorMessage extends ErrorMessage {
 
   {
-    CONSTANTS.put("S0001", INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED);
-    CONSTANTS.put("08S01", INCORRECT_HOST_OR_PORT);
+    ERRORCODES_TYPES.put("S0001", INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED);
+    ERRORCODES_TYPES.put("08S01", INCORRECT_HOST_OR_PORT);
   }
 
   @Override

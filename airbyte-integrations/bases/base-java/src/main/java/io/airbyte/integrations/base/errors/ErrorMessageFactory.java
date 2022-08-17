@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class ErrorMessageFactory {
 
-  private final static Map<ConnectorName, ErrorMessage> MAP = Map.of(MSSQL, new MssqlErrorMessage(),
+  private final static Map<ConnectorName, ErrorMessage> CONNECTOR_ERROR_MESSAGE_MAP = Map.of(MSSQL, new MssqlErrorMessage(),
       MYSQL, new MysqlErrorMessage(),
       POSTGRES, new PostgresErrorMessage(),
       ORACLE, new OracleErrorMessage(),
@@ -40,10 +40,10 @@ public class ErrorMessageFactory {
       DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorName name) {
-    if (MAP.containsKey(name)) {
-      return MAP.get(name);
+    if (CONNECTOR_ERROR_MESSAGE_MAP.containsKey(name)) {
+      return CONNECTOR_ERROR_MESSAGE_MAP.get(name);
     }
-    return MAP.get(DEFAULT);
+    return CONNECTOR_ERROR_MESSAGE_MAP.get(DEFAULT);
   }
 
 }

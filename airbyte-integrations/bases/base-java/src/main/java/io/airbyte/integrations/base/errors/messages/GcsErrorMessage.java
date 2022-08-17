@@ -13,9 +13,9 @@ import io.airbyte.integrations.base.errors.utils.ConnectorName;
 public class GcsErrorMessage extends ErrorMessage {
 
   {
-    CONSTANTS.put("NoSuchKey", INCORRECT_BUCKET_NAME);
-    CONSTANTS.put("NoSuchBucket", INCORRECT_BUCKET_NAME);
-    CONSTANTS.put("SignatureDoesNotMatch", INCORRECT_CREDENTIALS);
+    ERRORCODES_TYPES.put("NoSuchKey", INCORRECT_BUCKET_NAME);
+    ERRORCODES_TYPES.put("NoSuchBucket", INCORRECT_BUCKET_NAME);
+    ERRORCODES_TYPES.put("SignatureDoesNotMatch", INCORRECT_CREDENTIALS);
   }
 
   @Override
