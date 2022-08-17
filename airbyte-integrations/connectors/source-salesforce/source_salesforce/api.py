@@ -340,7 +340,10 @@ class Salesforce:
         sf_type = field_params["type"]
         property_schema = {}
 
-        if sf_type in STRING_TYPES:
+        # Id fields must not be nullable
+        if "name" in field_params and field_params["name"] == "Id":
+            property_schema["type"] = ["string"]
+        elif sf_type in STRING_TYPES:
             property_schema["type"] = ["string", "null"]
         elif sf_type in DATE_TYPES:
             property_schema = {
