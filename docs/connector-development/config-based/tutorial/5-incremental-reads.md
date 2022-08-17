@@ -90,7 +90,7 @@ The connector will now always read data for the start date, which is not exactly
 Instead, we would like to iterate over all the dates between the start_date and today and read data for each day.
 
 We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
-More details on the stream slicers can be found [here](./link-to-stream-slicers.md) <FIXME: need to fix links>
+More details on the stream slicers can be found [here](../stream-slicers.md) <FIXME: need to fix links>
 
 Let's first define a stream slicer at the top level of the connector definition:
 
@@ -167,7 +167,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      transform: [ ]
+      field_pointer: [ ]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -298,4 +298,4 @@ Next, we'll run the [Source Acceptance Tests suite to ensure the connector invar
 
 - [Incremental reads](../../cdk-python/incremental-stream.md)
 - [Stream slicers](../stream-slicers.md)
-- [Stream slices](../cdk-python/stream-slices.md)
+- [Stream slices](../../cdk-python/stream-slices.md)
