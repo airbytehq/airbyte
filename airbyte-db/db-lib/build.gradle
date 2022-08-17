@@ -37,6 +37,8 @@ dependencies {
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+     // Teradata
+    implementation files('lib/terajdbc4.jar')
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
