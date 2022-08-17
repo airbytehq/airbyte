@@ -103,7 +103,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-@AllArgsConstructor
+//@AllArgsConstructor
 @SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class WorkerApp {
 
@@ -115,76 +115,39 @@ public class WorkerApp {
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
-  private final Path workspaceRoot;
-  private final ProcessFactory defaultProcessFactory;
-  private final ProcessFactory specProcessFactory;
-  private final ProcessFactory checkProcessFactory;
-  private final ProcessFactory discoverProcessFactory;
-  private final ProcessFactory replicationProcessFactory;
-  private final SecretsHydrator secretsHydrator;
-  private final WorkflowClient workflowClient;
-  private final ConfigRepository configRepository;
-  private final MaxWorkersConfig maxWorkers;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final WorkerConfigs defaultWorkerConfigs;
-  private final WorkerConfigs specWorkerConfigs;
-  private final WorkerConfigs checkWorkerConfigs;
-  private final WorkerConfigs discoverWorkerConfigs;
-  private final WorkerConfigs replicationWorkerConfigs;
-  private final String airbyteVersion;
-  private final SyncJobFactory jobFactory;
-  private final JobPersistence jobPersistence;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
-  private final Configs configs;
-  private final ConnectionHelper connectionHelper;
-  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  private final JobNotifier jobNotifier;
-  private final JobTracker jobTracker;
-  private final JobErrorReporter jobErrorReporter;
-  private final StreamResetPersistence streamResetPersistence;
-  private final FeatureFlags featureFlags;
-  private final JobCreator jobCreator;
-  private final StatePersistence statePersistence;
+  private static Path workspaceRoot;
+  private static ProcessFactory defaultProcessFactory;
+  private static ProcessFactory specProcessFactory;
+  private static ProcessFactory checkProcessFactory;
+  private static ProcessFactory discoverProcessFactory;
+  private static ProcessFactory replicationProcessFactory;
+  private static SecretsHydrator secretsHydrator;
+  private static WorkflowClient workflowClient;
+  private static ConfigRepository configRepository;
+  private static MaxWorkersConfig maxWorkers;
+  private static WorkerEnvironment workerEnvironment;
+  private static LogConfigs logConfigs;
+  private static WorkerConfigs defaultWorkerConfigs;
+  private static WorkerConfigs specWorkerConfigs;
+  private static WorkerConfigs checkWorkerConfigs;
+  private static WorkerConfigs discoverWorkerConfigs;
+  private static WorkerConfigs replicationWorkerConfigs;
+  private static String airbyteVersion;
+  private static SyncJobFactory jobFactory;
+  private static JobPersistence jobPersistence;
+  private static TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private static Configs configs;
+  private static ConnectionHelper connectionHelper;
+  private static Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private static JobNotifier jobNotifier;
+  private static JobTracker jobTracker;
+  private static JobErrorReporter jobErrorReporter;
+  private static StreamResetPersistence streamResetPersistence;
+  private static FeatureFlags featureFlags;
+  private static JobCreator jobCreator;
+  private static StatePersistence statePersistence;
 
-  public void start() {
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    Executors.newSingleThreadExecutor().submit(
-        () -> {
-          MDC.setContextMap(mdc);
-          try {
-            new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-          } catch (final Exception e) {
-            throw new RuntimeException(e);
-          }
-        });
-
-    final WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
-
-    if (configs.shouldRunGetSpecWorkflows()) {
-      registerGetSpec(factory);
-    }
-
-    if (configs.shouldRunCheckConnectionWorkflows()) {
-      registerCheckConnection(factory);
-    }
-
-    if (configs.shouldRunDiscoverWorkflows()) {
-      registerDiscover(factory);
-    }
-
-    if (configs.shouldRunSyncWorkflows()) {
-      registerSync(factory);
-    }
-
-    if (configs.shouldRunConnectionManagerWorkflows()) {
-      registerConnectionManager(factory);
-    }
-
-    factory.start();
-  }
-
-  private void registerConnectionManager(final WorkerFactory factory) {
+  private static void registerConnectionManager(final WorkerFactory factory) {
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
@@ -220,7 +183,7 @@ public class WorkerApp {
         new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
   }
 
-  private void registerSync(final WorkerFactory factory) {
+  private static void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
     // Note that the configuration injected here is for the normalization orchestrator, and not the
@@ -241,7 +204,7 @@ public class WorkerApp {
 
   }
 
-  private void registerDiscover(final WorkerFactory factory) {
+  private static void registerDiscover(final WorkerFactory factory) {
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
@@ -251,7 +214,7 @@ public class WorkerApp {
                 jobPersistence, airbyteVersion));
   }
 
-  private void registerCheckConnection(final WorkerFactory factory) {
+  private static void registerCheckConnection(final WorkerFactory factory) {
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
@@ -261,7 +224,7 @@ public class WorkerApp {
                 jobPersistence, airbyteVersion));
   }
 
-  private void registerGetSpec(final WorkerFactory factory) {
+  private static void registerGetSpec(final WorkerFactory factory) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
@@ -269,7 +232,7 @@ public class WorkerApp {
             airbyteVersion));
   }
 
-  private ReplicationActivityImpl getReplicationActivityImpl(final WorkerConfigs workerConfigs,
+  private static ReplicationActivityImpl getReplicationActivityImpl(final WorkerConfigs workerConfigs,
                                                              final ProcessFactory jobProcessFactory) {
 
     return new ReplicationActivityImpl(
@@ -285,7 +248,7 @@ public class WorkerApp {
         featureFlags.useStreamCapableState());
   }
 
-  private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
+  private static NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
                                                                  final ProcessFactory jobProcessFactory) {
 
     return new NormalizationActivityImpl(
@@ -300,7 +263,7 @@ public class WorkerApp {
         airbyteVersion);
   }
 
-  private DbtTransformationActivityImpl getDbtActivityImpl(final WorkerConfigs workerConfigs,
+  private static DbtTransformationActivityImpl getDbtActivityImpl(final WorkerConfigs workerConfigs,
                                                            final ProcessFactory jobProcessFactory) {
 
     return new DbtTransformationActivityImpl(
@@ -383,15 +346,16 @@ public class WorkerApp {
 
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
-
+    // always create this because data plane bootstrap objects are a subset of control plane
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
     final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
     final WorkerConfigs replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
 
-    final ProcessFactory defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
-    final ProcessFactory specProcessFactory = getJobProcessFactory(configs, specWorkerConfigs);
+    // if it's also control plane
+    defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
+    specProcessFactory = getJobProcessFactory(configs, specWorkerConfigs);
     final ProcessFactory checkProcessFactory = getJobProcessFactory(configs, checkWorkerConfigs);
     final ProcessFactory discoverProcessFactory = getJobProcessFactory(configs, discoverWorkerConfigs);
     final ProcessFactory replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
@@ -480,38 +444,77 @@ public class WorkerApp {
             webUrlHelper,
             jobErrorReportingClient);
 
-    new WorkerApp(
-        workspaceRoot,
-        defaultProcessFactory,
-        specProcessFactory,
-        checkProcessFactory,
-        discoverProcessFactory,
-        replicationProcessFactory,
-        secretsHydrator,
-        workflowClient,
-        configRepository,
-        configs.getMaxWorkers(),
-        configs.getWorkerEnvironment(),
-        configs.getLogConfigs(),
-        defaultWorkerConfigs,
-        specWorkerConfigs,
-        checkWorkerConfigs,
-        discoverWorkerConfigs,
-        replicationWorkerConfigs,
-        configs.getAirbyteVersionOrWarning(),
-        jobFactory,
-        jobPersistence,
-        temporalWorkerRunFactory,
-        configs,
-        connectionHelper,
-        containerOrchestratorConfig,
-        jobNotifier,
-        jobTracker,
-        jobErrorReporter,
-        streamResetPersistence,
-        featureFlags,
-        jobCreator,
-        statePersistence).start();
+    // pass in a bunch of nulls
+//    new WorkerApp(
+//        workspaceRoot,
+//        defaultProcessFactory,
+//        null,
+//        checkProcessFactory,
+//        discoverProcessFactory,
+//        replicationProcessFactory,
+//        secretsHydrator,
+//        workflowClient,
+//        configRepository,
+//        configs.getMaxWorkers(),
+//        configs.getWorkerEnvironment(),
+//        configs.getLogConfigs(),
+//        defaultWorkerConfigs,
+//        specWorkerConfigs,
+//        checkWorkerConfigs,
+//        discoverWorkerConfigs,
+//        replicationWorkerConfigs,
+//        configs.getAirbyteVersionOrWarning(),
+//        jobFactory,
+//        jobPersistence,
+//        temporalWorkerRunFactory,
+//        configs,
+//        connectionHelper,
+//        containerOrchestratorConfig,
+//        jobNotifier,
+//        jobTracker,
+//        jobErrorReporter,
+//        streamResetPersistence,
+//        featureFlags,
+//        jobCreator,
+//        statePersistence).start();
+    WorkerApp.start();
+  }
+
+  public static void start() {
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
+    Executors.newSingleThreadExecutor().submit(
+        () -> {
+          MDC.setContextMap(mdc);
+          try {
+            new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+    final WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
+
+    if (configs.shouldRunGetSpecWorkflows()) {
+      registerGetSpec(factory);
+    }
+
+    if (configs.shouldRunCheckConnectionWorkflows()) {
+      registerCheckConnection(factory);
+    }
+
+    if (configs.shouldRunDiscoverWorkflows()) {
+      registerDiscover(factory);
+    }
+
+    if (configs.shouldRunSyncWorkflows()) {
+      registerSync(factory);
+    }
+
+    if (configs.shouldRunConnectionManagerWorkflows()) {
+      registerConnectionManager(factory);
+    }
+
+    factory.start();
   }
 
   public static void main(final String[] args) {
