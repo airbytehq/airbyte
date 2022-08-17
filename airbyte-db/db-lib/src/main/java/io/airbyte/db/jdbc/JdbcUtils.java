@@ -47,11 +47,13 @@ public class JdbcUtils {
   // NOTE: this is the plural version of SCHEMA_KEY
   public static final String SCHEMAS_KEY = "schemas";
   public static final String SSL_KEY = "ssl";
+  public static final String SSL_MODE_KEY = "ssl_mode";
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
+  public static final String MODE_KEY = "mode";
+  public static final String AMPERSAND = "&";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
-
+          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);

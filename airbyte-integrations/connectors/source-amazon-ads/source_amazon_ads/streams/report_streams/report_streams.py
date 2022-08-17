@@ -21,6 +21,7 @@ from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
+from source_amazon_ads.utils import iterate_one_by_one
 
 logger = AirbyteLogger()
 
@@ -92,6 +93,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
+    # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
+    REPORTING_PERIOD = 60
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
@@ -265,35 +268,42 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             raise TooManyRequests()
         return response
 
-    def get_date_range(self, start_date: Date, end_date: Date) -> Iterable[str]:
-        for days in range((end_date - start_date).days + 1):
-            yield start_date.add(days=days).format(ReportStream.REPORT_DATE_FORMAT)
+    def get_date_range(self, start_date: Date, timezone: str) -> Iterable[str]:
+        while True:
+            if start_date > pendulum.today(tz=timezone).date():
+                break
+            yield start_date.format(self.REPORT_DATE_FORMAT)
+            start_date = start_date.add(days=1)
 
     def get_start_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
         today = pendulum.today(tz=profile.timezone).date()
         start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
-            return max(start_date, today.subtract(days=60))
+            return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
-            return max(self._start_date, today.subtract(days=60))
+            return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
         return today
+
+    def stream_profile_slices(self, profile: Profile, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        start_date = self.get_start_date(profile, stream_state)
+        for report_date in self.get_date_range(start_date, profile.timezone):
+            yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         stream_state = stream_state or {}
+        no_data = True
 
-        slices = []
-        for profile in self._profiles:
-            today = pendulum.today(tz=profile.timezone).date()
-            start_date = self.get_start_date(profile, stream_state)
-            for report_date in self.get_date_range(start_date, today):
-                slices.append({"profile": profile, self.cursor_field: report_date})
-        if not slices:
-            return [None]
-        return slices
+        generators = [self.stream_profile_slices(profile, stream_state) for profile in self._profiles]
+        for _slice in iterate_one_by_one(*generators):
+            no_data = False
+            yield _slice
+
+        if no_data:
+            yield None
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         profileId = str(latest_data["profileId"])
