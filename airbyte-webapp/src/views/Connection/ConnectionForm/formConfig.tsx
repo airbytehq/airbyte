@@ -4,7 +4,7 @@ import * as yup from "yup";
 
 import { DropDownRow } from "components";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import frequencyConfig from "config/frequencyConfig";
 import { SyncSchema } from "core/domain/catalog";
 import {
   isDbtTransformation,
@@ -260,7 +260,7 @@ const useFrequencyDropdownData = (
   const { formatMessage } = useIntl();
 
   return useMemo(() => {
-    const frequencies = FrequencyConfig.map((frequencyConfig) => frequencyConfig.config);
+    const frequencies = [...frequencyConfig];
     if (additionalFrequency) {
       const additionalFreqAlreadyPresent = frequencies.some(
         (frequency) =>
