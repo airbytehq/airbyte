@@ -3,7 +3,6 @@
 #
 
 
-import re
 from typing import Any, Dict, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
