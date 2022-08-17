@@ -16,6 +16,7 @@ import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
@@ -301,9 +302,16 @@ class JobCreationAndStatusUpdateActivityTest {
       final Attempt mAttempt = Mockito.mock(Attempt.class);
       Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
 
+      final JobSyncConfig mJobSyncConfig = Mockito.mock(JobSyncConfig.class);
+      Mockito.when(mJobSyncConfig.getSourceDockerImage()).thenReturn(DOCKER_IMAGE_NAME);
+      Mockito.when(mJobSyncConfig.getDestinationDockerImage()).thenReturn(DOCKER_IMAGE_NAME);
+
+      final JobConfig mJobConfig = Mockito.mock(JobConfig.class);
+      Mockito.when(mJobConfig.getSync()).thenReturn(mJobSyncConfig);
+
       final Job mJob = Mockito.mock(Job.class);
       Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
-      Mockito.when(mJob.getConfig()).thenReturn(new JobConfig());
+      Mockito.when(mJob.getConfig()).thenReturn(mJobConfig);
       Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))

@@ -1,64 +1,72 @@
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { Button, ContentCard, LoadingButton } from "components";
+import { Button, ContentCard } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
+import { RotateIcon } from "components/icons/RotateIcon";
 import ToolTip from "components/ToolTip";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
-import useLoadingState from "hooks/useLoadingState";
-import { useListJobs } from "services/job/JobService";
+import { useCancelJob, useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
+import styles from "./StatusView.module.scss";
+
+enum ActionType {
+  RESET = "reset_connection",
+  SYNC = "sync",
+}
+
+interface ActiveJob {
+  id: number;
+  action: ActionType;
+  isCanceling: boolean;
+}
 
 interface StatusViewProps {
   connection: WebBackendConnectionRead;
   isStatusUpdating?: boolean;
 }
 
-const StyledContentCard = styled(ContentCard)`
-  margin-bottom: 20px;
-`;
+const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
+  return jobs.find((jobWithAttempts) => {
+    const jobStatus = jobWithAttempts?.job?.status;
+    return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
+  });
+};
 
-const Title = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const TryArrow = styled(FontAwesomeIcon)`
-  margin: 0 10px -1px 0;
-  font-size: 14px;
-`;
-
-const SyncButton = styled(LoadingButton)`
-  padding: 5px 8px;
-  margin: -5px 0 -5px 9px;
-  min-width: 101px;
-  min-height: 28px;
-`;
-
-const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { isLoading, showFeedback, startAction } = useLoadingState();
-  const allowSync = useFeature(FeatureItem.AllowSync);
+const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+  const [activeJob, setActiveJob] = useState<ActiveJob>();
 
   const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });
-  const isAtLeastOneJobRunningOrPending = jobs.some((jobWithAttempts) => {
-    const status = jobWithAttempts?.job?.status;
-    return status === Status.RUNNING || status === Status.PENDING;
-  });
+
+  useEffect(() => {
+    const jobRunningOrPending = getJobRunningOrPending(jobs);
+
+    setActiveJob(
+      (state) =>
+        ({
+          id: jobRunningOrPending?.job?.id,
+          action: jobRunningOrPending?.job?.configType,
+          isCanceling: state?.isCanceling && !!jobRunningOrPending,
+          // We need to disable button when job is canceled but the job list still has a running job
+        } as ActiveJob)
+    );
+  }, [jobs]);
+
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+
+  const allowSync = useFeature(FeatureItem.AllowSync);
+  const cancelJob = useCancelJob();
 
   const { mutateAsync: resetConnection } = useResetConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
@@ -74,56 +82,70 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
       cancelButtonText: "form.noNeed",
       onSubmit: async () => {
         await onReset();
+        setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
         closeConfirmationModal();
       },
       submitButtonDataId: "reset",
     });
   };
 
-  const resetDataBtn = (
-    <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
-      <FormattedMessage id="connection.resetData" />
+  const onSyncNowButtonClick = () => {
+    setActiveJob((state) => ({ ...state, action: ActionType.SYNC } as ActiveJob));
+    return onSync();
+  };
+
+  const onCancelJob = () => {
+    if (!activeJob?.id) {
+      return;
+    }
+    setActiveJob((state) => ({ ...state, isCanceling: true } as ActiveJob));
+    return cancelJob(activeJob.id);
+  };
+
+  const cancelJobBtn = (
+    <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
+      <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
+      {activeJob?.action === ActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
+      {activeJob?.action === ActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
     </Button>
   );
 
-  const syncNowBtn = (
-    <SyncButton
-      disabled={!allowSync || isAtLeastOneJobRunningOrPending || isStatusUpdating}
-      isLoading={isLoading}
-      wasActive={showFeedback}
-      onClick={() => startAction({ action: onSync })}
-    >
-      {showFeedback ? (
-        <FormattedMessage id="sources.syncingNow" />
-      ) : (
-        <>
-          <TryArrow icon={faRedoAlt} />
-          <FormattedMessage id="sources.syncNow" />
-        </>
-      )}
-    </SyncButton>
-  );
-
   return (
-    <StyledContentCard
-      title={
-        <Title>
-          <FormattedMessage id="sources.syncHistory" />
-          {connection.status === ConnectionStatus.active && (
-            <div>
-              <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                <FormattedMessage id="connection.pendingSync" />
-              </ToolTip>
-              <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                <FormattedMessage id="connection.pendingSync" />
-              </ToolTip>
-            </div>
-          )}
-        </Title>
-      }
-    >
-      {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-    </StyledContentCard>
+    <div className={styles.statusView}>
+      <ContentCard
+        className={styles.contentCard}
+        title={
+          <div className={styles.title}>
+            <FormattedMessage id="sources.syncHistory" />
+            {connection.status === ConnectionStatus.active && (
+              <div className={styles.actions}>
+                {!activeJob?.action && (
+                  <>
+                    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                      <FormattedMessage id="connection.resetData" />
+                    </Button>
+                    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
+                      <div className={styles.iconRotate}>
+                        <RotateIcon />
+                      </div>
+                      <FormattedMessage id="sources.syncNow" />
+                    </Button>
+                  </>
+                )}
+                {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
+                {activeJob?.action && activeJob.isCanceling && (
+                  <ToolTip control={cancelJobBtn} cursor="not-allowed">
+                    <FormattedMessage id="connection.canceling" />
+                  </ToolTip>
+                )}
+              </div>
+            )}
+          </div>
+        }
+      >
+        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+      </ContentCard>
+    </div>
   );
 };
 

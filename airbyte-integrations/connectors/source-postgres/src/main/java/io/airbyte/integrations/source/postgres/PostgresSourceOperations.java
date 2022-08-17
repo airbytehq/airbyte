@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -20,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
@@ -35,7 +34,15 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import org.postgresql.geometric.PGbox;
+import org.postgresql.geometric.PGcircle;
+import org.postgresql.geometric.PGline;
+import org.postgresql.geometric.PGlseg;
+import org.postgresql.geometric.PGpath;
+import org.postgresql.geometric.PGpoint;
+import org.postgresql.geometric.PGpolygon;
 import org.postgresql.jdbc.PgResultSetMetaData;
+import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,6 +180,14 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
         case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
+        case "circle" -> putObject(json, columnName, resultSet, colIndex, PGcircle.class);
+        case "box" -> putObject(json, columnName, resultSet, colIndex, PGbox.class);
+        case "double precision", "float", "float8" -> putDouble(json, columnName, resultSet, colIndex);
+        case "line" -> putObject(json, columnName, resultSet, colIndex, PGline.class);
+        case "lseg" -> putObject(json, columnName, resultSet, colIndex, PGlseg.class);
+        case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
+        case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
+        case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -198,21 +213,17 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalDate date = getDateTimeObject(resultSet, index, LocalDate.class);
-    node.put(columnName, resolveEra(date, date.toString()));
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
   }
 
   @Override
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
-    node.put(columnName, time.format(TIME_FORMATTER));
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
-    final LocalDate date = timestamp.toLocalDate();
-    node.put(columnName, resolveEra(date, timestamp.format(TIMESTAMP_FORMATTER)));
+    node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
 
   @Override
@@ -261,6 +272,16 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @Override
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
+  }
+
+  protected <T extends PGobject> void putObject(final ObjectNode node,
+                                                final String columnName,
+                                                final ResultSet resultSet,
+                                                final int index,
+                                                Class<T> clazz)
+      throws SQLException {
+    final T object = getObject(resultSet, index, clazz);
+    node.put(columnName, object.getValue());
   }
 
   @Override
