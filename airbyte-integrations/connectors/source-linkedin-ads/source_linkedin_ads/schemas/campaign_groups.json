@@ -1,0 +1,54 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "runSchedule": {
+      "type": ["null", "object"],
+      "properties": {
+        "start": {
+          "type": ["null", "integer"]
+        },
+        "end": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "test": {
+      "type": ["null", "boolean"]
+    },
+    "servingStatuses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "allowedCampaignTypes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "backfilled": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "account": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    }
+  }
+}

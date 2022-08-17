@@ -1,0 +1,78 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "review": {
+      "type": ["null", "object"],
+      "properties": {
+        "reviewStatus": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "variables": {
+      "type": ["null", "object"],
+      "properties": {
+        "click_uri": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "values": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "key": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "version": {
+      "type": ["null", "object"],
+      "properties": {
+        "versionTag": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "test": {
+      "type": ["null", "boolean"]
+    },
+    "servingStatuses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}
