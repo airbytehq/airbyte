@@ -1,12 +1,14 @@
-import { User as FbUser } from "firebase/auth";
+import { User as FirebaseUser } from "firebase/auth";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
+import { Observable, Subject } from "rxjs";
 
 import { Action, Namespace } from "core/analytics";
+import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { AuthProviders, OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
@@ -39,13 +41,18 @@ export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => Promise<void>;
 
+type OAuthLoginState = "waiting" | "loading" | "done";
+
 interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
   loggedOut: boolean;
+  providers: string[] | null;
+  hasPasswordLogin: () => boolean;
   login: AuthLogin;
+  loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
@@ -70,10 +77,61 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const analytics = useAnalyticsService();
   const authService = useInitService(() => new GoogleAuthService(() => auth), [auth]);
 
+  /**
+   * Create a user object in the Airbyte database from an existing Firebase user.
+   * This will make sure that the user account is tracked in our database as well
+   * as create a workspace for that user. This method also takes care of sending
+   * the relevant user creation analytics events.
+   */
+  const createAirbyteUser = async (
+    firebaseUser: FirebaseUser,
+    userData: { name?: string; companyName?: string; news?: boolean } = {}
+  ): Promise<User> => {
+    // Create the Airbyte user on our server
+    const user = await userService.create({
+      authProvider: AuthProviders.GoogleIdentityPlatform,
+      authUserId: firebaseUser.uid,
+      email: firebaseUser.email ?? "",
+      name: userData.name ?? firebaseUser.displayName ?? "",
+      companyName: userData.companyName ?? "",
+      news: userData.news ?? false,
+    });
+
+    analytics.track(Namespace.USER, Action.CREATE, {
+      actionDescription: "New user registered",
+      user_id: firebaseUser.uid,
+      name: user.name,
+      email: user.email,
+      // Which login provider was used, e.g. "password", "google.com", "github.com"
+      provider: firebaseUser.providerData[0]?.providerId,
+      ...getUtmFromStorage(),
+    });
+
+    return user;
+  };
+
   const onAfterAuth = useCallback(
-    async (currentUser: FbUser, user?: User) => {
-      user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
-      loggedIn({ user, emailVerified: currentUser.emailVerified });
+    async (currentUser: FirebaseUser, user?: User) => {
+      try {
+        user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
+        loggedIn({
+          user,
+          emailVerified: currentUser.emailVerified,
+          providers: currentUser.providerData.map(({ providerId }) => providerId),
+        });
+      } catch (e) {
+        if (isCommonRequestError(e) && e.status === 404) {
+          // If there is a firebase user but not database user we'll create a db user in this step
+          // and retry the onAfterAuth step. This will always happen when a user logins via OAuth
+          // the first time and we don't have a database user yet for them. In rare cases this can
+          // also happen for email/password users if they closed their browser or got some network
+          // errors in between creating the firebase user and the database user originally.
+          const user = await createAirbyteUser(currentUser);
+          await onAfterAuth(currentUser, user);
+        } else {
+          throw e;
+        }
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [userService]
@@ -103,12 +161,36 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       isLoading: state.loading,
       emailVerified: state.emailVerified,
       loggedOut: state.loggedOut,
+      providers: state.providers,
+      hasPasswordLogin(): boolean {
+        return !!state.providers?.includes("password");
+      },
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
         if (auth.currentUser) {
           await onAfterAuth(auth.currentUser);
         }
+      },
+      loginWithOAuth(provider): Observable<OAuthLoginState> {
+        const state = new Subject<OAuthLoginState>();
+        try {
+          state.next("waiting");
+          authService
+            .loginWithOAuth(provider)
+            .then(async () => {
+              state.next("loading");
+              if (auth.currentUser) {
+                await onAfterAuth(auth.currentUser);
+                state.next("done");
+                state.complete();
+              }
+            })
+            .catch((e) => state.error(e));
+        } catch (e) {
+          state.error(e);
+        }
+        return state.asObservable();
       },
       async logout(): Promise<void> {
         await userService.revokeUserSession();
@@ -148,7 +230,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.finishResetPassword(code, newPassword);
       },
       async signUpWithEmailLink({ name, email, password, news }): Promise<void> {
-        let firebaseUser: FbUser;
+        let firebaseUser: FirebaseUser;
 
         try {
           ({ user: firebaseUser } = await authService.signInWithEmailLink(email));
@@ -175,28 +257,13 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         news: boolean;
       }): Promise<void> {
         // Create a user account in firebase
-        const { user: fbUser } = await authService.signUp(form.email, form.password);
+        const { user: firebaseUser } = await authService.signUp(form.email, form.password);
 
-        // Create the Airbyte user on our server
-        const user = await userService.create({
-          authProvider: AuthProviders.GoogleIdentityPlatform,
-          authUserId: fbUser.uid,
-          email: form.email,
-          name: form.name,
-          companyName: form.companyName,
-          news: form.news,
-        });
+        // Create a user in our database for that firebase user
+        await createAirbyteUser(firebaseUser, { name: form.name, companyName: form.companyName, news: form.news });
 
         // Send verification mail via firebase
         await authService.sendEmailVerifiedLink();
-
-        analytics.track(Namespace.USER, Action.CREATE, {
-          actionDescription: "New user registered",
-          user_id: fbUser.uid,
-          name: user.name,
-          email: user.email,
-          ...getUtmFromStorage(),
-        });
 
         if (auth.currentUser) {
           await onAfterAuth(auth.currentUser);
