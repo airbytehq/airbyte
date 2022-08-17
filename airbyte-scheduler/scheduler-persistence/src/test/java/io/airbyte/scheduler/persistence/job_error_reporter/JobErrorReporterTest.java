@@ -62,6 +62,7 @@ class JobErrorReporterTest {
   private static final String CONNECTOR_NAME_KEY = "connector_name";
   private static final String CONNECTOR_RELEASE_STAGE_KEY = "connector_release_stage";
   private static final String CONNECTOR_COMMAND_KEY = "connector_command";
+  private static final String NORMALIZATION_REPOSITORY_KEY = "normalization_repository";
 
   private ConfigRepository configRepository;
   private JobErrorReportingClient jobErrorReportingClient;
@@ -91,11 +92,16 @@ class JobErrorReporterTest {
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
+    final FailureReason normalizationFailureReason = new FailureReason()
+        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withFailureOrigin(FailureOrigin.NORMALIZATION)
+        .withFailureType(FailureType.SYSTEM_ERROR);
+
     final FailureReason nonTraceMessageFailureReason = new FailureReason().withFailureOrigin(FailureOrigin.SOURCE);
     final FailureReason replicationFailureReason = new FailureReason().withFailureOrigin(FailureOrigin.REPLICATION);
 
-    Mockito.when(mFailureSummary.getFailures())
-        .thenReturn(List.of(sourceFailureReason, destinationFailureReason, nonTraceMessageFailureReason, replicationFailureReason));
+    Mockito.when(mFailureSummary.getFailures()).thenReturn(List.of(
+        sourceFailureReason, destinationFailureReason, normalizationFailureReason, nonTraceMessageFailureReason, replicationFailureReason));
 
     final long syncJobId = 1L;
     final SyncJobReportingContext jobReportingContext = new SyncJobReportingContext(
@@ -153,9 +159,30 @@ class JobErrorReporterTest {
         Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
         Map.entry(CONNECTOR_RELEASE_STAGE_KEY, DESTINATION_RELEASE_STAGE.toString()));
 
+    final Map<String, String> expectedNormalizationMetadata = Map.ofEntries(
+        Map.entry(JOB_ID_KEY, String.valueOf(syncJobId)),
+        Map.entry(WORKSPACE_ID_KEY, WORKSPACE_ID.toString()),
+        Map.entry("connection_id", CONNECTION_ID.toString()),
+        Map.entry("connection_url", CONNECTION_URL),
+        Map.entry(DEPLOYMENT_MODE_KEY, DEPLOYMENT_MODE.name()),
+        Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
+        Map.entry(FAILURE_ORIGIN_KEY, "normalization"),
+        Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(NORMALIZATION_REPOSITORY_KEY, NORMALIZATION_IMAGE),
+        Map.entry(String.format("%s_%s", "source", CONNECTOR_DEFINITION_ID_KEY), SOURCE_DEFINITION_ID.toString()),
+        Map.entry(String.format("%s_%s", "source", CONNECTOR_REPOSITORY_KEY), SOURCE_DOCKER_REPOSITORY),
+        Map.entry(String.format("%s_%s", "source", CONNECTOR_NAME_KEY), SOURCE_DEFINITION_NAME),
+        Map.entry(String.format("%s_%s", "source", CONNECTOR_RELEASE_STAGE_KEY), SOURCE_RELEASE_STAGE.toString()),
+        Map.entry(CONNECTOR_DEFINITION_ID_KEY, DESTINATION_DEFINITION_ID.toString()),
+        Map.entry(CONNECTOR_REPOSITORY_KEY, DESTINATION_DOCKER_REPOSITORY),
+        Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
+        Map.entry(CONNECTOR_RELEASE_STAGE_KEY, DESTINATION_RELEASE_STAGE.toString()));
+
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE,
         expectedDestinationMetadata);
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(
+        mWorkspace, normalizationFailureReason, String.format("%s:%s", NORMALIZATION_IMAGE, NORMALIZATION_VERSION), expectedNormalizationMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
   }
 

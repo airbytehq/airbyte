@@ -477,9 +477,9 @@ public class WorkerApp {
         new JobErrorReporter(
             configRepository,
             configs.getDeploymentMode(),
+            configs.getAirbyteVersionOrWarning(),
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
             NormalizationRunnerFactory.NORMALIZATION_VERSION,
-            configs.getAirbyteVersionOrWarning(),
             webUrlHelper,
             jobErrorReportingClient);
 

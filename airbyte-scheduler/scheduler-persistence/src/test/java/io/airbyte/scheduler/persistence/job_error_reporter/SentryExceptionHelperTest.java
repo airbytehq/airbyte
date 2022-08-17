@@ -334,6 +334,29 @@ class SentryExceptionHelperTest {
                 FUNCTION, "receiveErrorResponse")));
   }
 
+  @Test
+  void testBuildSentryExceptionsNormalizationDbtDatabaseError() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        1 of 1 ERROR creating table model public.midaug_start_users............................................................. [[31mERROR[0m in 0.24s]
+        [33mDatabase Error in model midaug_start_users (models/generated/airbyte_incremental/public/midaug_start_users.sql)[0m
+          1292 (22007): Truncated incorrect DOUBLE value: 'ABC'
+          compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/public/midaug_start_users.sql
+        1 of 1 ERROR creating table model public.midaug_start_users............................................................. [[31mERROR[0m in 0.24s]
+        [33mDatabase Error in model midaug_start_users (models/generated/airbyte_incremental/public/midaug_start_users.sql)[0m
+          1292 (22007): Truncated incorrect DOUBLE value: 'ABC'
+          compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/public/midaug_start_users.sql
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError", "1292 (22007): Truncated incorrect DOUBLE value: 'ABC'", List.of());
+  }
+
   private void assertExceptionContent(final SentryException exception,
                                       final String type,
                                       final String value,

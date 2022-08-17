@@ -43,6 +43,7 @@ public class JobErrorReporter {
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
   private static final String CONNECTOR_RELEASE_STAGE_META_KEY = "connector_release_stage";
   private static final String CONNECTOR_COMMAND_META_KEY = "connector_command";
+  private static final String NORMALIZATION_REPOSITORY_META_KEY = "normalization_repository";
   private static final String JOB_ID_KEY = "job_id";
 
   private final ConfigRepository configRepository;
@@ -106,10 +107,13 @@ public class JobErrorReporter {
         } else if (failureOrigin == FailureOrigin.NORMALIZATION) {
           final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
           final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-          // since error could be arising from source or destination or normalization itself, we want all the metadata
-          // prefixing source keys so we don't overlap (destination as 'true' keys since normalization runs on the destination)
+          // since error could be arising from source or destination or normalization itself, we want all the
+          // metadata
+          // prefixing source keys so we don't overlap (destination as 'true' keys since normalization runs on
+          // the destination)
           final Map<String, String> metadata = MoreMaps.merge(
               commonMetadata,
+              getNormalizationMetadata(),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
           final String dockerImage = String.format("%s:%s", normalizationImage, normalizationVersion);
@@ -224,6 +228,11 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
         Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
+  }
+
+  private Map<String, String> getNormalizationMetadata() {
+    return Map.ofEntries(
+        Map.entry(NORMALIZATION_REPOSITORY_META_KEY, normalizationImage));
   }
 
   private Map<String, String> prefixConnectorMetadataKeys(final Map<String, String> connectorMetadata, final String prefix) {

@@ -195,7 +195,7 @@ public class SentryExceptionHelper {
       }
     }
 
-    if (!usefulError.equals("")) {
+    if (!"".equals(usefulError)) {
       final SentryException usefulException = new SentryException();
       usefulException.setValue(usefulError);
       usefulException.setType("DbtDatabaseError");
