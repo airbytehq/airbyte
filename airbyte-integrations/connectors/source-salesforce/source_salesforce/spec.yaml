@@ -93,6 +93,6 @@ authSpecification:
   provider: "salesforce"
   authUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
   accessTokenUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/token"
-  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret&{{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ code }}"
+  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret={{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ code }}"
   accessTokenHeaders: "{\"content-type\": \"application/x-www-form-urlencoded\"}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
