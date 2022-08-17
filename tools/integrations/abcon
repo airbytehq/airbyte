@@ -208,17 +208,17 @@ cmd_secrets() {
     mkdir -p secrets
     mkdir -p safe_secrets
 
+    local passphrase="$AB_SECRETS_PASSPHRASE"
     local options=()
-    [[ -z "$AB_SECRETS_PASSPHRASE" ]] || options+=("--passphrase-fd" "0" "--batch" "--yes")
+    [[ -z "${passphrase}" ]] || options+=("--passphrase-fd" "0" "--batch" "--yes")
 
     if [[ "$cmd" = "encrypt" ]]; then
         for f in secrets/*; do
-          echo -n "$AB_SECRETS_PASSPHRASE" | gpg "${options[@]}" -o "${f//secrets/safe_secrets}.gpg" --symmetric --cipher-algo AES256 "${f}"
+          echo -n "${passphrase}" | gpg "${options[@]}" -o "${f//secrets/safe_secrets}.gpg" --symmetric --cipher-algo AES256 "${f}"
         done
     elif [[ "$cmd" = "decrypt" ]]; then
-      mkdir -p secrets
       for f in safe_secrets/*; do
-        echo -n "$AB_SECRETS_PASSPHRASE" | gpg "${options[@]}" -o "secrets/$(basename "${f//.gpg/}")" --decrypt "${f}"
+        echo -n "${passphrase}" | gpg "${options[@]}" -o "secrets/$(basename "${f//.gpg/}")" --decrypt "${f}"
       done
     else
       _error "Invalid subcommand: $cmd"
