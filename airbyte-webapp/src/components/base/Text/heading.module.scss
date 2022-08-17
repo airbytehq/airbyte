@@ -13,19 +13,22 @@
   line-height: 1.2em;
 }
 
+.md,
+.lg,
+.xl {
+  line-height: 1.3em;
+}
+
 .md {
   font-size: 20px;
-  line-height: 1.48em;
 }
 
 .lg {
   font-size: 24px;
-  line-height: 1.7em;
 }
 
 .xl {
   font-size: 32px;
-  line-height: 2em;
 }
 
 .centered {
