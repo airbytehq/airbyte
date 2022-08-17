@@ -26,7 +26,7 @@ def mock_requests(requests_mock):
 
 @pytest.fixture
 def config():
-    start_date = pendulum.now().subtract(days=100).strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_date = pendulum.now().subtract(days=75).strftime("%Y-%m-%dT%H:%M:%SZ")
     config = {
         "client_id": "client-id",
         "client_secret": "********",
