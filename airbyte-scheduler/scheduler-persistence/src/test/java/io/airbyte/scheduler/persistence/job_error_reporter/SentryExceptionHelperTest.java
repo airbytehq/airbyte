@@ -354,7 +354,7 @@ class SentryExceptionHelperTest {
     final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(1, exceptionList.size());
 
-    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError", "1292 (22007): Truncated incorrect DOUBLE value: 'ABC'", List.of());
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError", "  1292 (22007): Truncated incorrect DOUBLE value: 'ABC'", List.of());
   }
 
   private void assertExceptionContent(final SentryException exception,
