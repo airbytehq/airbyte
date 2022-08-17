@@ -447,8 +447,8 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(5L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(4L);
-    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
-    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(3L);
+    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(6L);
+    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(3L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -562,8 +562,8 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap(STREAM1, 6L)));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(10L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(8L);
-    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(12L);
-    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(11L);
+    when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(12L);
+    when(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(11L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
