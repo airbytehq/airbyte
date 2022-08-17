@@ -59,6 +59,7 @@ jobs:
           - source-intercom
           - source-google-ads
           - source-salesforce
+          - source-google-analytics-data-api
 
     steps:
       - uses: actions/checkout@v2
