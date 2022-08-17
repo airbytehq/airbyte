@@ -32,6 +32,9 @@ jobs:
       - name: Create report
         run: |
           output=$(python ./tools/bin/ci_check_dependency.py ./changed_files.txt)
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
       - name: Print result
