@@ -41,27 +41,6 @@
         "required": ["auth_type"],
         "discriminator": {"propertyName": "auth_type" },
         "oneOf": [{
-          "title": "Service Account",
-          "required": ["credentials_json", "auth_type"],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "Service",
-              "default": "Service",
-              "order": 0
-            },
-            "credentials_json": {
-              "title": "Service Account JSON",
-              "type": "string",
-              "description": "The JSON key of the service account to use for authorization",
-              "examples": [
-                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                    ],
-              "airbyte_secret": true,
-              "multiline": true
-            }
-          }
-        }, {
           "title": "Google OAuth",
           "x-oauth2-provider": "google",
           "type": "object",
@@ -94,6 +73,28 @@
               "type": "string",
               "description": "Enter your Google application's refresh token",
               "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "title": "Service Account",
+          "required": ["credentials_json", "auth_type"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "Service",
+              "default": "Service",
+              "order": 0
+            },
+            "credentials_json": {
+              "title": "Service Account JSON",
+              "type": "string",
+              "description": "The JSON key of the service account to use for authorization",
+              "examples": [
+                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                    ],
+              "airbyte_secret": true,
+              "multiline": true
             }
           }
         }]
