@@ -156,7 +156,11 @@ help_test="Run connector unit tests"
 cmd_test() {
     echo "Testing connector"
 
-    python -m pytest -s unit_tests
+    if [[ -d unit_tests ]]; then
+      python -m pytest -s unit_tests
+    else
+      echo "'unit_tests' not present, no unit tests configured"
+    fi
 }
 
 help_format="Apply style to project"
@@ -197,6 +201,28 @@ cmd_container_sat() {
         --acceptance-test-config /test_input
 }
 
+help_secrets="Manage connector secrets. Subcommand: encrypt, decrypt"
+cmd_secrets() {
+    local cmd="$1"; shift || { echo "missing cmd"; cmd_help; exit 1; }
+
+    mkdir -p safe_secrets
+
+    if [[ "$cmd" = "encrypt" ]]; then
+        rm -f secrets/*.gpg
+        for f in secrets/*; do
+          gpg --symmetric --cipher-algo AES256 "${f}"
+          mv "$f.gpg" "${f//secrets/safe_secrets}.gpg"
+        done
+    elif [[ "$cmd" = "decrypt" ]]; then
+      mkdir -p secrets
+      for f in safe_secrets/*; do
+        gpg --decrypt "${f}" > "secrets/$(basename "${f//.gpg/}")"
+      done
+    else
+      _error "Invalid subcommand: $cmd"
+    fi
+}
+
 help_publish="Publish connector"
 cmd_publish() {
     echo "Publishing connector"
@@ -219,7 +245,7 @@ cmd_help() {
 }
 
 main() {
-    local cmd="$1"; shift || _error "missing cmd"
+    local cmd="$1"; shift || { echo "missing cmd"; cmd_help; exit 1; }
 
     [[ "--version" = "$cmd" ]] && { echo "$VERSION" ; exit 0; }
 
