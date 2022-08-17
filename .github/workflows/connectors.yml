@@ -60,6 +60,7 @@ jobs:
           - source-google-ads
           - source-salesforce
           - source-google-analytics-data-api
+          - source-linkedin-ads
 
     steps:
       - uses: actions/checkout@v2
