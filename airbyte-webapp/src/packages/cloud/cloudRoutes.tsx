@@ -136,7 +136,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
+  const { user, inited, providers } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -156,7 +156,7 @@ export const Routing: React.FC = () => {
     [user]
   );
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId);
+  useAnalyticsIdentifyUser(user?.userId, { providers });
   useTrackPageAnalytics();
 
   if (!inited) {
