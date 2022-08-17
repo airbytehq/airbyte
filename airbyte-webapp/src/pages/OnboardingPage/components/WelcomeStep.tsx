@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { BigButton } from "components/CenteredPageComponents";
+import { Button } from "components";
 
 import { useConfig } from "config";
 
@@ -68,9 +68,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
           link={config.links.demoLink}
         />
       </Videos>
-      <BigButton onClick={onNextStep} shadow>
-        <FormattedMessage id="onboarding.firstConnection" />
-      </BigButton>
+      <Button size="l" onClick={onNextStep} label={<FormattedMessage id="onboarding.firstConnection" />} />
     </>
   );
 };

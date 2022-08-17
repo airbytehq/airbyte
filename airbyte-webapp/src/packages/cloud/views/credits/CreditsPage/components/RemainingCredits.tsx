@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components";
 
 import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
@@ -30,7 +30,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0px;
+  margin: 10px 0;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -123,17 +123,21 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         </Count>
       </CreditView>
       <Actions>
-        <LoadingButton
+        <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
-        >
-          <FormattedMessage id="credits.buyCredits" />
-        </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales}>
-          <FormattedMessage id="credits.talkToSales" />
-        </Button>
+          label={<FormattedMessage id="credits.buyCredits" />}
+        />
+        <Button
+          // @ts-ignore
+          as="a"
+          target="_blank"
+          href={config.links.contactSales}
+          size="l"
+          label={<FormattedMessage id="credits.talkToSales" />}
+        />
       </Actions>
     </Block>
   );

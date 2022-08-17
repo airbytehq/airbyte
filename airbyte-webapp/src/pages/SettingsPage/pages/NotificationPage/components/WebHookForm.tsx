@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton, LabeledSwitch } from "components";
+import { Label, Input, LabeledSwitch, Button } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 import { WebhookPayload } from "hooks/services/useWorkspace";
@@ -72,19 +72,11 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
     }
 
     if (dirty) {
-      return (
-        <LoadingButton isLoading={isSubmitting} type="submit">
-          <FormattedMessage id="form.saveChanges" />
-        </LoadingButton>
-      );
+      return <Button isLoading={isSubmitting} type="submit" label={<FormattedMessage id="form.saveChanges" />} />;
     }
 
     if (webhook) {
-      return (
-        <LoadingButton isLoading={isSubmitting} type="submit">
-          <FormattedMessage id="settings.test" />
-        </LoadingButton>
-      );
+      return <Button isLoading={isSubmitting} type="submit" label={<FormattedMessage id="settings.test" />} />;
     }
 
     return null;

@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Input, LoadingButton } from "components";
+import { Input, Button } from "components";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
@@ -106,13 +106,12 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
                 </InputField>
               )}
             </Field>
-            <LoadingButton
+            <Button
               isLoading={isSubmitting}
               type="submit"
               disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
-            >
-              <FormattedMessage id="form.change" />
-            </LoadingButton>
+              label={<FormattedMessage id="form.change" />}
+            />
           </Form>
         )}
       </Formik>

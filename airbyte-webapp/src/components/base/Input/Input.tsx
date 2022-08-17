@@ -5,7 +5,7 @@ import React, { useCallback, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
-import Button from "../Button";
+import { Button } from "../Button";
 import styles from "./Input.module.scss";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -96,8 +96,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
       {isVisibilityButtonVisible ? (
         <Button
           className={styles.visibilityButton}
-          ref={buttonRef}
-          iconOnly
+          buttonRef={buttonRef}
           onClick={() => {
             toggleIsContentVisible();
             focusOnInputElement();
@@ -107,9 +106,8 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
             id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
           })}
           data-testid="toggle-password-visibility-button"
-        >
-          <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />
-        </Button>
+          icon={<FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />}
+        />
       ) : null}
     </div>
   );

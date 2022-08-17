@@ -84,9 +84,11 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
         <div />
       )}
       <div>
-        <Button type="submit" disabled={isSubmitting || !isValid}>
-          <FormattedMessage id="onboarding.setUpConnection" />
-        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting || !isValid}
+          label={<FormattedMessage id="onboarding.setUpConnection" />}
+        />
       </div>
     </ButtonContainer>
   );

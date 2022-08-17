@@ -2,7 +2,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { LoadingButton } from "components";
+import { Button } from "components";
 import { LabeledInput } from "components/LabeledInput";
 
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
@@ -74,9 +74,11 @@ const PasswordSection: React.FC = () => {
                   )}
                 </Field>
               </FieldItem>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
-                <FormattedMessage id="settings.accountSettings.updatePassword" />
-              </LoadingButton>
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                label={<FormattedMessage id="settings.accountSettings.updatePassword" />}
+              />
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isSubmitting} />
             </Form>
           )}

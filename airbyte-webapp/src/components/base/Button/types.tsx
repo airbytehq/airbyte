@@ -1,10 +1,23 @@
+import React, { MutableRefObject } from "react";
+
+export enum ButtonType {
+  Primary = "primary",
+  Secondary = "secondary",
+  Danger = "danger",
+  LightGrey = "lightGrey",
+}
+
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  full?: boolean;
-  danger?: boolean;
-  secondary?: boolean;
-  isLoading?: boolean;
-  iconOnly?: boolean;
-  wasActive?: boolean;
+  buttonRef?: MutableRefObject<HTMLButtonElement | null>;
+  buttonType?: ButtonType;
   clickable?: boolean;
-  size?: "m" | "xl";
+  customStyles?: string;
+  full?: boolean;
+  icon?: React.ReactElement;
+  iconPosition?: "left" | "right";
+  isLoading?: boolean;
+  label?: string | React.ReactNode;
+  size?: "xs" | "s" | "l";
+  wasActive?: boolean;
+  width?: number;
 }

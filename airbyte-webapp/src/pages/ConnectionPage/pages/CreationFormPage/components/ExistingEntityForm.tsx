@@ -110,9 +110,11 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                 )}
               </Field>
               <BottomBlock>
-                <Button disabled={isSubmitting} type="submit">
-                  <FormattedMessage id={`connectionForm.${type}Use`} />
-                </Button>
+                <Button
+                  disabled={isSubmitting}
+                  type="submit"
+                  label={<FormattedMessage id={`connectionForm.${type}Use`} />}
+                />
               </BottomBlock>
             </FormContent>
           )}

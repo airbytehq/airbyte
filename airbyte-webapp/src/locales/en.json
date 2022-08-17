@@ -343,7 +343,7 @@
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
 
-  "connection.newConnection": "+ New connection",
+  "connection.newConnection": "New connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
   "connection.disabledConnection": "Disabled connection",

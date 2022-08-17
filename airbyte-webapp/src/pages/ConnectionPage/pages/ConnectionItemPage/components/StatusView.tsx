@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard, LoadingButton } from "components";
+import { Button, ContentCard, ButtonType } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -113,6 +113,13 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     setActiveJob((state) => ({ ...state, isCanceling: true } as ActiveJob));
     return cancelJob(activeJob.id);
   };
+  let label = null;
+  if (activeJob?.action === ActionType.RESET) {
+    label = <FormattedMessage id="connection.cancelReset" />;
+  }
+  if (activeJob?.action === ActionType.SYNC) {
+    label = <FormattedMessage id="connection.cancelSync" />;
+  }
 
   const onLoadMoreJobs = () => {
     setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_INCREMENT);
@@ -130,11 +137,13 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   };
 
   const cancelJobBtn = (
-    <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
-      <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
-      {activeJob?.action === ActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
-      {activeJob?.action === ActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
-    </Button>
+    <Button
+      className={styles.cancelButton}
+      disabled={!activeJob?.id || activeJob.isCanceling}
+      onClick={onCancelJob}
+      icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
+      label={label}
+    />
   );
 
   return (
@@ -148,15 +157,23 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
               <div className={styles.actions}>
                 {!activeJob?.action && (
                   <>
-                    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
-                      <FormattedMessage id="connection.resetData" />
-                    </Button>
-                    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-                      <div className={styles.iconRotate}>
-                        <RotateIcon />
-                      </div>
-                      <FormattedMessage id="sources.syncNow" />
-                    </Button>
+                    <Button
+                      className={styles.resetButton}
+                      buttonType={ButtonType.Secondary}
+                      onClick={onResetDataButtonClick}
+                      label={<FormattedMessage id="connection.resetData" />}
+                    />
+                    <Button
+                      className={styles.syncButton}
+                      disabled={!allowSync}
+                      onClick={onSyncNowButtonClick}
+                      icon={
+                        <div className={styles.iconRotate}>
+                          <RotateIcon />
+                        </div>
+                      }
+                      label={<FormattedMessage id="sources.syncNow" />}
+                    />
                   </>
                 )}
                 {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
@@ -175,9 +192,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
-          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+          <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
-          </LoadingButton>
+          </Button>
         </footer>
       )}
     </div>

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { H3, Button } from "components/base";
+import { H3, Button, ButtonType } from "components/base";
 
 import FeedbackButton from "./FeedbackButton";
 
@@ -38,9 +38,11 @@ const ModalBody: React.FC<ModalBodyProps> = ({ onClose, onPassFeedback }) => {
         <FeedbackButton isBad onClick={() => onPassFeedback("dislike")} />
         <FeedbackButton onClick={() => onPassFeedback("like")} />
       </FeedbackButtons>
-      <Button secondary onClick={onClose}>
-        <FormattedMessage id="onboarding.skipFeedback" />
-      </Button>
+      <Button
+        buttonType={ButtonType.Secondary}
+        onClick={onClose}
+        label={<FormattedMessage id="onboarding.skipFeedback" />}
+      />
     </Body>
   );
 };

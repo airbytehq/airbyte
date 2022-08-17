@@ -3,7 +3,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
+import { Button, ButtonType, LabeledInput, Label, LabeledSwitch } from "components";
 import { InfoTooltip } from "components/base/Tooltip";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -42,9 +42,12 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings" />
-            <Button type="button" onClick={exitWorkspace} data-testid="button.changeWorkspace">
-              <FormattedMessage id="settings.generalSettings.changeWorkspace" />
-            </Button>
+            <Button
+              type="button"
+              onClick={exitWorkspace}
+              data-testid="button.changeWorkspace"
+              label={<FormattedMessage id="settings.generalSettings.changeWorkspace" />}
+            />
           </div>
         }
       >
@@ -92,12 +95,14 @@ export const WorkspaceSettingsView: React.FC = () => {
                 </Field>
 
                 <div className={classNames(styles.formItem, styles.buttonGroup)}>
-                  <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
-                    cancel
-                  </Button>
-                  <LoadingButton type="submit" disabled={!isValid} isLoading={isSubmitting}>
-                    save changes
-                  </LoadingButton>
+                  <Button
+                    type="button"
+                    buttonType={ButtonType.Secondary}
+                    disabled={!dirty}
+                    onClick={() => resetForm()}
+                    label="cancel"
+                  />
+                  <Button type="submit" disabled={!isValid} isLoading={isSubmitting} label="save changes" />
                 </div>
               </Content>
             </Form>
@@ -108,13 +113,12 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
-            <LoadingButton
+            <Button
               isLoading={removeWorkspace.isLoading}
-              danger
+              buttonType={ButtonType.Danger}
               onClick={() => removeWorkspace.mutateAsync(workspace.workspaceId)}
-            >
-              <FormattedMessage id="settings.generalSettings.deleteText" />
-            </LoadingButton>
+              label={<FormattedMessage id="settings.generalSettings.deleteText" />}
+            />
           </div>
         }
       />

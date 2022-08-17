@@ -4,9 +4,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
+import { Button } from "components";
 
-const UpdateButton = styled(LoadingButton)`
+const UpdateButton = styled(Button)`
   margin: -6px 0;
   min-width: 120px;
 `;
@@ -48,16 +48,13 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
           <FormattedMessage id="form.someError" />
         </ErrorBlock>
       )}
-      <UpdateButton onClick={onUpdate} isLoading={isLoading} wasActive={hasSuccess}>
-        {hasSuccess ? (
-          <FormattedMessage id="admin.upgraded" />
-        ) : (
-          <>
-            <TryArrow icon={faRedoAlt} />
-            <FormattedMessage id="admin.upgradeAll" />
-          </>
-        )}
-      </UpdateButton>
+      <UpdateButton
+        onClick={onUpdate}
+        isLoading={isLoading}
+        wasActive={hasSuccess}
+        icon={hasSuccess ? undefined : <TryArrow icon={faRedoAlt} />}
+        label={hasSuccess ? <FormattedMessage id="admin.upgraded" /> : <FormattedMessage id="admin.upgradeAll" />}
+      />
     </UpdateButtonContent>
   );
 };

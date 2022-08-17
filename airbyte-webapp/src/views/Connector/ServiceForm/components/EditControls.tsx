@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { ButtonType } from "../../../../components";
 import { useServiceForm } from "../serviceFormContext";
 import { TestingConnectionError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
@@ -66,19 +67,28 @@ const EditControls: React.FC<IProps> = ({
       {renderStatusMessage()}
       <Controls>
         <div>
-          <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
-            <FormattedMessage id="form.saveChangesAndTest" />
-          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}
+            label={<FormattedMessage id="form.saveChangesAndTest" />}
+          />
           <ButtonContainer>
-            <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={onCancelClick}>
-              <FormattedMessage id="form.cancel" />
-            </Button>
+            <Button
+              type="button"
+              buttonType={ButtonType.Secondary}
+              disabled={isSubmitting || !dirty}
+              onClick={onCancelClick}
+              label={<FormattedMessage id="form.cancel" />}
+            />
           </ButtonContainer>
         </div>
         {onRetestClick && (
-          <Button type="button" onClick={onRetestClick} disabled={!isValid}>
-            <FormattedMessage id={`form.${formType}Retest`} />
-          </Button>
+          <Button
+            type="button"
+            onClick={onRetestClick}
+            disabled={!isValid}
+            label={<FormattedMessage id={`form.${formType}Retest`} />}
+          />
         )}
       </Controls>
     </>

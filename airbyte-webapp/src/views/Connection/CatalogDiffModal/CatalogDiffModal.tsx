@@ -5,7 +5,7 @@ import { Button } from "components";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 
-import { ModalBody, ModalFooter } from "../../../components/Modal";
+import { ModalBody, ModalFooter } from "../../../components";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
@@ -33,9 +33,7 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={() => onClose()}>
-          <FormattedMessage id="connection.updateSchema.confirm" />
-        </Button>
+        <Button onClick={() => onClose()} label={<FormattedMessage id="connection.updateSchema.confirm" />} />
       </ModalFooter>
     </>
   );

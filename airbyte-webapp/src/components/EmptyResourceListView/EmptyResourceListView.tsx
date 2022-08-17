@@ -88,9 +88,13 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
-      <Button onClick={onCreateClick} disabled={disableCreateButton} size="xl" data-id={`new-${singularResourceType}`}>
-        <FormattedMessage id={buttonMessageId} />
-      </Button>
+      <Button
+        onClick={onCreateClick}
+        disabled={disableCreateButton}
+        size="l"
+        data-id={`new-${singularResourceType}`}
+        label={<FormattedMessage id={buttonMessageId} />}
+      />
     </Container>
   );
 };

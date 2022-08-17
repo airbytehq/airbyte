@@ -26,22 +26,18 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.actions}>
         <Button
           type="button"
-          iconOnly
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
           disabled={disabled}
-        >
-          <PencilIcon />
-        </Button>
+          icon={<PencilIcon />}
+        />
         <Button
           type="button"
-          iconOnly
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
           disabled={disabled}
-        >
-          <CrossIcon />
-        </Button>
+          icon={<CrossIcon />}
+        />
       </div>
     </div>
   );

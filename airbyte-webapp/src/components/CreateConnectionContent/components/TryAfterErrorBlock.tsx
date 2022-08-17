@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, H4, StatusIcon } from "components";
+import { Button, ButtonType, H4, StatusIcon } from "components";
 
 const Block = styled.div`
   padding: 40px;
@@ -26,9 +26,7 @@ const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClic
   <Block>
     <StatusIcon big />
     <Title center>{message || <FormattedMessage id="form.schemaFailed" />}</Title>
-    <AgainButton onClick={onClick} danger>
-      <FormattedMessage id="form.tryAgain" />
-    </AgainButton>
+    <AgainButton onClick={onClick} buttonType={ButtonType.Danger} label={<FormattedMessage id="form.tryAgain" />} />
   </Block>
 );
 
