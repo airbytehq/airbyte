@@ -33,6 +33,7 @@ export type AuthSignUp = (form: {
 }) => Promise<void>;
 
 export type AuthChangeEmail = (email: string, password: string) => Promise<void>;
+export type AuthChangeName = (name: string) => Promise<void>;
 
 export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
@@ -49,6 +50,7 @@ interface AuthContextApi {
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
+  updateName: AuthChangeName;
   requirePasswordReset: AuthRequirePasswordReset;
   confirmPasswordReset: AuthConfirmPasswordReset;
   sendEmailVerification: AuthSendEmailVerification;
@@ -59,7 +61,7 @@ interface AuthContextApi {
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [state, { loggedIn, emailVerified, authInited, loggedOut }] = useTypesafeReducer<
+  const [state, { loggedIn, emailVerified, authInited, loggedOut, updateUserName }] = useTypesafeReducer<
     AuthServiceState,
     typeof actions
   >(authStateReducer, initialState, actions);
@@ -113,6 +115,14 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         queryClient.removeQueries();
         loggedOut();
+      },
+      async updateName(name: string): Promise<void> {
+        if (!state.currentUser) {
+          return;
+        }
+        await userService.changeName(state.currentUser.authUserId, state.currentUser.userId, name);
+        await authService.updateProfile(name);
+        updateUserName({ value: name });
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);

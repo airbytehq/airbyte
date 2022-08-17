@@ -27,7 +27,7 @@ definitions:
           "$ref": "#/definitions/DbStreamState"
   DbStreamState:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - stream_name
       - stream_namespace

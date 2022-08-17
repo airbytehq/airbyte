@@ -44,7 +44,7 @@ Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/09-contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
+See our [Contributing guide](docs/contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 

@@ -37,16 +37,24 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
+import static java.util.stream.Collectors.toList;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
@@ -59,8 +67,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
-      "requireSSL=true",
-      "verifyServerCertificate=false");
+      "requireSSL=true");
+
+  public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
+  public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -147,22 +157,35 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // in the setJsonField method in MySqlSourceOperations.java
     jdbcUrl.append("&yearIsDateType=true");
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append("&").append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
-
+    Map<String, String> additionalParameters = new HashMap<>();
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
+      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
+        additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
+        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+                .append(JdbcUtils.AMPERSAND);
+        if (additionalParameters.isEmpty()) {
+          jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+        } else {
+          jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
+        }
+      } else {
+        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+      }
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
+    configBuilder.putAll(additionalParameters);
+
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
-
     return Jsons.jsonNode(configBuilder.build());
   }
 

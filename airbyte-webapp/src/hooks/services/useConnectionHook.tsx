@@ -171,15 +171,24 @@ const useCreateConnection = () => {
 const useDeleteConnection = () => {
   const service = useConnectionService();
   const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
 
-  return useMutation((connectionId: string) => service.delete(connectionId), {
-    onSuccess: (_data, connectionId) => {
-      queryClient.removeQueries(connectionsKeys.detail(connectionId));
+  return useMutation((connection: WebBackendConnectionRead) => service.delete(connection.connectionId), {
+    onSuccess: (_data, connection) => {
+      analyticsService.track(Namespace.CONNECTION, Action.DELETE, {
+        actionDescription: "Connection deleted",
+        connector_source: connection.source?.sourceName,
+        connector_source_definition_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.destinationName,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      });
+
+      queryClient.removeQueries(connectionsKeys.detail(connection.connectionId));
       queryClient.setQueryData(
         connectionsKeys.lists(),
         (lst: ListConnection | undefined) =>
           ({
-            connections: lst?.connections.filter((conn) => conn.connectionId !== connectionId) ?? [],
+            connections: lst?.connections.filter((conn) => conn.connectionId !== connection.connectionId) ?? [],
           } as ListConnection)
       );
     },

@@ -109,7 +109,7 @@ To view the sync log summary:
 
 3. Under Sync History, a list of syncs for that connection is displayed.
 
-    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).  
+    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](#sync-log-summary).  
 
 4. For more information about a sync, click the sync log dropdown.  
  
@@ -168,11 +168,11 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
  To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **star icon**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **coin icon**.
     
     The Credits page displays.
 
-2. If you are unsure of how many credits you need, click **Talk to sales** to find the right amount for your team.
+2. If you are unsure of how many credits you need, click **Talk to Sales** to find the right amount for your team.
 
 3. Click **Buy credits**. The Stripe payment page displays.
 
@@ -186,7 +186,9 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
     To buy more credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
-5. Fill out the payment information.
+5. Fill out the payment information.  
+    
+    After you enter your billing address, sales tax is calculated and added to the total.
 
 6. Click **Pay**.
     

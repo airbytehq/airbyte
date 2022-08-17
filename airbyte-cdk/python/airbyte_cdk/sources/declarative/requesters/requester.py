@@ -55,7 +55,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_params(
+    def get_request_params(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -81,7 +81,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_headers(
+    def get_request_headers(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -93,7 +93,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_body_data(
+    def get_request_body_data(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -111,7 +111,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_body_json(
+    def get_request_body_json(
         self,
         *,
         stream_state: Optional[StreamState] = None,

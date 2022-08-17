@@ -140,7 +140,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
@@ -148,7 +148,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))

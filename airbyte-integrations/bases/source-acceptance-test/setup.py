@@ -21,8 +21,11 @@ MAIN_REQUIREMENTS = [
     "jsonschema~=3.2.0",
     "jsonref==0.2",
     "deepdiff~=5.8.0",
-    "requests-mock",
+    "requests-mock~=1.9.3",
     "pytest-mock~=3.6.1",
+    "pytest-cov~=3.0.0",
+    "hypothesis~=6.54.1",
+    "hypothesis-jsonschema~=0.20.1",  # TODO alafanechere upgrade to latest when jsonschema lib is upgraded to >= 4.0.0 in airbyte-cdk and SAT
 ]
 
 setuptools.setup(
