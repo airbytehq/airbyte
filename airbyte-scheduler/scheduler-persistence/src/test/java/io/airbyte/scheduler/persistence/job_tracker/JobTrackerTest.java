@@ -37,12 +37,16 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
@@ -108,6 +112,10 @@ class JobTrackerTest {
       .put("duration", SYNC_DURATION)
       .put("volume_rows", SYNC_RECORDS_SYNC)
       .put("volume_mb", SYNC_BYTES_SYNC)
+      .put("count_state_messages_from_source", 3L)
+      .put("count_state_messages_from_destination", 1L)
+      .put("max_seconds_before_source_state_message_emitted", 5L)
+      .put("mean_seconds_before_source_state_message_emitted", 4L)
       .build();
   private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
       .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
@@ -118,6 +126,9 @@ class JobTrackerTest {
       .put("table_prefix", false)
       .put("operation_count", 0)
       .build();
+  private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers
+      .createConfiguredAirbyteCatalog("stream_name", "stream_namespace",
+          Field.of("int_field", JsonSchemaType.NUMBER));
 
   private static final ConnectorSpecification SOURCE_SPEC;
   private static final ConnectorSpecification DESTINATION_SPEC;
@@ -275,7 +286,9 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
@@ -286,7 +299,7 @@ class JobTrackerTest {
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
-        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false).withCatalog(CATALOG)
             .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
@@ -393,7 +406,8 @@ class JobTrackerTest {
 
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, LONG_JOB_ID);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(LONG_JOB_ID)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -472,14 +486,20 @@ class JobTrackerTest {
     final JobOutput jobOutput = mock(JobOutput.class);
     final StandardSyncOutput syncOutput = mock(StandardSyncOutput.class);
     final StandardSyncSummary syncSummary = mock(StandardSyncSummary.class);
+    final SyncStats syncStats = mock(SyncStats.class);
 
     when(syncSummary.getStartTime()).thenReturn(SYNC_START_TIME);
     when(syncSummary.getEndTime()).thenReturn(SYNC_END_TIME);
     when(syncSummary.getBytesSynced()).thenReturn(SYNC_BYTES_SYNC);
     when(syncSummary.getRecordsSynced()).thenReturn(SYNC_RECORDS_SYNC);
     when(syncOutput.getStandardSyncSummary()).thenReturn(syncSummary);
+    when(syncSummary.getTotalStats()).thenReturn(syncStats);
     when(jobOutput.getSync()).thenReturn(syncOutput);
     when(attempt.getOutput()).thenReturn(java.util.Optional.of(jobOutput));
+    when(syncStats.getSourceStateMessagesEmitted()).thenReturn(3L);
+    when(syncStats.getDestinationStateMessagesEmitted()).thenReturn(1L);
+    when(syncStats.getMaxSecondsBeforeSourceStateMessageEmitted()).thenReturn(5L);
+    when(syncStats.getMeanSecondsBeforeSourceStateMessageEmitted()).thenReturn(4L);
     return attempt;
   }
 
@@ -562,6 +582,7 @@ class JobTrackerTest {
         .put("namespace_definition", NamespaceDefinitionType.SOURCE)
         .put("table_prefix", false)
         .put("operation_count", 0)
+        .put("number_of_streams", 1)
         .build();
   }
 
