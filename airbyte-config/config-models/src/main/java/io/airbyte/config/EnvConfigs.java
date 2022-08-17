@@ -119,10 +119,6 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_CLOUD_CLIENT_CERT = "TEMPORAL_CLOUD_CLIENT_CERT";
   private static final String TEMPORAL_CLOUD_CLIENT_KEY = "TEMPORAL_CLOUD_CLIENT_KEY";
 
-  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
-  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
-  private static final String CONTROL_PLANE_GOOGLE_ENDPOINT = "CONTROL_PLANE_GOOGLE_ENDPOINT";
-
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
@@ -134,13 +130,17 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+  private static final String WORKER_PLANE = "WORKER_PLANE";
 
-  // Control/Data plane configs
-  private static final String SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS = "SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS";
-  private static final String PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE";
-  private static final String SYNC_DATA_PLANE_TASK_QUEUES = "SYNC_DATA_PLANE_TASK_QUEUES";
+  // Worker - Control plane configs
+  private static final String DEFAULT_DATA_PLANE_TASK_QUEUE = "DEFAULT_DATA_PLANE_TASK_QUEUE";
   private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
-  private static final String INITIALIZE_AS_DATA_PLANE_WORKER = "INITIALIZE_AS_DATA_PLANE_WORKER";
+
+  // Worker - Data Plane configs
+  private static final String DATA_PLANE_TASK_QUEUES = "DATA_PLANE_TASK_QUEUES";
+  private static final String CONTROL_PLANE_GOOGLE_ENDPOINT = "CONTROL_PLANE_GOOGLE_ENDPOINT";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
@@ -171,9 +171,13 @@ public class EnvConfigs implements Configs {
   static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
 
+  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
+  private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -186,19 +190,12 @@ public class EnvConfigs implements Configs {
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
   private static final String DEFAULT_AIRBYTE_API_AUTH_HEADER_NAME = "X-Endpoint-API-UserInfo";
   private static final String DEFAULT_AIRBYTE_API_AUTH_HEADER_VALUE = "eyJ1c2VyX2lkIjogImNsb3VkLWFwaSIsICJlbWFpbF92ZXJpZmllZCI6ICJ0cnVlIn0K";
-
-  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
-  private static final String VAULT_PREFIX = "VAULT_PREFIX";
-  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
-
-  public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
-  public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
-  public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
-  public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
-
-  public static final String DEFAULT_NETWORK = "host";
-
-  public static final String DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "SYNC";
+  private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
+  private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
+  private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
+  private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
+  private static final String DEFAULT_NETWORK = "host";
+  private static final String DEFAULT_FOR_DEFAULT_DATA_PLANE_TASK_QUEUE = "SYNC";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -465,21 +462,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getTemporalCloudClientKey() {
     return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_KEY, "");
-  }
-
-  @Override
-  public String getDataPlaneServiceAccountCredentialsPath() {
-    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH, "");
-  }
-
-  @Override
-  public String getDataPlaneServiceAccountEmail() {
-    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
-  }
-
-  @Override
-  public String getControlPlaneGoogleEndpoint() {
-    return getEnvOrDefault(CONTROL_PLANE_GOOGLE_ENDPOINT, "");
   }
 
   // Airbyte Services
@@ -940,18 +922,15 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean shouldHandleSyncControlPlaneTasks() {
-    final boolean result = getEnvOrDefault(SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS, true);
-    if (result && !shouldRunSyncWorkflows()) {
-      throw new IllegalArgumentException(
-          String.format("%s cannot be true when %s is false", SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS, SHOULD_RUN_SYNC_WORKFLOWS));
-    }
-    return result;
+  public WorkerPlane getWorkerPlane() {
+    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.COMBINED, s -> WorkerPlane.valueOf(s.toUpperCase()));
   }
 
+  // Worker - Control plane
+
   @Override
-  public String primarySyncDataPlaneTaskQueue() {
-    return getEnvOrDefault(PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE, DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE);
+  public boolean isControlPlaneWorker() {
+    return getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE) || getWorkerPlane().equals(WorkerPlane.COMBINED);
   }
 
   @Override
@@ -964,8 +943,20 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Set<String> getSyncDataPlaneTaskQueues() {
-    final var taskQueues = getEnvOrDefault(SYNC_DATA_PLANE_TASK_QUEUES, primarySyncDataPlaneTaskQueue());
+  public String getDefaultDataPlaneTaskQueue() {
+    return getEnvOrDefault(DEFAULT_DATA_PLANE_TASK_QUEUE, DEFAULT_FOR_DEFAULT_DATA_PLANE_TASK_QUEUE);
+  }
+
+  // Worker - Data plane
+
+  @Override
+  public boolean isDataPlaneWorker() {
+    return getWorkerPlane().equals(WorkerPlane.DATA_PLANE) || getWorkerPlane().equals(WorkerPlane.COMBINED);
+  }
+
+  @Override
+  public Set<String> getDataPlaneTaskQueues() {
+    final var taskQueues = getEnvOrDefault(DATA_PLANE_TASK_QUEUES, getDefaultDataPlaneTaskQueue());
     if (taskQueues.isEmpty()) {
       return new HashSet<>();
     }
@@ -973,8 +964,18 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Boolean initializeAsDataPlaneWorker() {
-    return getEnvOrDefault(INITIALIZE_AS_DATA_PLANE_WORKER, false);
+  public String getControlPlaneGoogleEndpoint() {
+    return getEnvOrDefault(CONTROL_PLANE_GOOGLE_ENDPOINT, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountCredentialsPath() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountEmail() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
   }
 
   /**
@@ -984,12 +985,11 @@ public class EnvConfigs implements Configs {
    */
   private void validateSyncWorkflowConfigs() {
     if (shouldRunSyncWorkflows()) {
-      if (!shouldHandleSyncControlPlaneTasks() && getSyncDataPlaneTaskQueues().isEmpty()) {
+      if (!isControlPlaneWorker() && getDataPlaneTaskQueues().isEmpty()) {
         throw new IllegalArgumentException(String.format(
-            "When %s is true, either %s must also be true, or %s must be non-empty.",
+            "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
             SHOULD_RUN_SYNC_WORKFLOWS,
-            SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS,
-            SYNC_DATA_PLANE_TASK_QUEUES));
+            DATA_PLANE_TASK_QUEUES));
       }
     }
   }

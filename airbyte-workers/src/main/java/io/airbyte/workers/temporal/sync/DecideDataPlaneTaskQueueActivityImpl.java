@@ -22,7 +22,7 @@ public class DecideDataPlaneTaskQueueActivityImpl implements DecideDataPlaneTask
     if (configs.connectionIdsForAwsDataPlane().contains(connectionId.toString())) {
       return AWS_DATA_PLANE_TASK_QUEUE;
     }
-    return configs.primarySyncDataPlaneTaskQueue();
+    return configs.getDefaultDataPlaneTaskQueue();
   }
 
 }

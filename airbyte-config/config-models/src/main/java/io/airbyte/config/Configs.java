@@ -30,6 +30,7 @@ public interface Configs {
 
   // CORE
   // General
+
   /**
    * Distinguishes internal Airbyte deployments. Internal-use only.
    */
@@ -71,6 +72,7 @@ public interface Configs {
   Path getWorkspaceRoot();
 
   // Docker Only
+
   /**
    * Defines the name of the Airbyte docker volume.
    */
@@ -90,6 +92,7 @@ public interface Configs {
   Path getLocalRoot();
 
   // Secrets
+
   /**
    * Defines the GCP Project to store secrets in. Alpha support.
    */
@@ -126,6 +129,7 @@ public interface Configs {
   String getVaultToken();
 
   // Database
+
   /**
    * Define the Jobs Database user.
    */
@@ -216,25 +220,6 @@ public interface Configs {
    */
   String getTemporalCloudClientKey();
 
-  // Data Plane. Internal-Use Only.
-  /**
-   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
-   * only.
-   */
-  String getDataPlaneServiceAccountCredentialsPath();
-
-  /**
-   * Return the service account email a data plane uses to authenticate with a control plane.
-   * Internal-use only.
-   */
-  String getDataPlaneServiceAccountEmail();
-
-  /**
-   * Return the control plane endpoint a data plane will hit. This is used for authentication and
-   * separate from the actual endpoint being hit. Internal-use only.
-   */
-  String getControlPlaneGoogleEndpoint();
-
   // Airbyte Services
 
   /**
@@ -262,15 +247,11 @@ public interface Configs {
 
   /**
    * Define the header name used to authenticate with the Airbyte API
-   *
-   * @return
    */
   String getAirbyteApiAuthHeaderName();
 
   /**
    * Define the header value used to authenticate with the Airbyte API
-   *
-   * @return
    */
   String getAirbyteApiAuthHeaderValue();
 
@@ -280,6 +261,7 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
+
   /**
    * Define the number of attempts a sync will attempt before failing.
    */
@@ -352,6 +334,7 @@ public interface Configs {
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
+
   /**
    * Define the check job container's minimum CPU request. Defaults to
    * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
@@ -484,6 +467,7 @@ public interface Configs {
   String getJobKubeNamespace();
 
   // Logging/Monitoring/Tracking
+
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
    * involved here. Please see {@link CloudStorageConfigs} for more info.
@@ -542,6 +526,7 @@ public interface Configs {
 
   // APPLICATIONS
   // Worker
+
   /**
    * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
@@ -574,20 +559,21 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  // Worker - Control/Data Plane configs
+  /**
+   * Define if the worker is operating as a Control Plane worker, a Data Plane worker, or as a
+   * combined worker. - Control plane workers process tasks related to control-flow, like scheduling
+   * and routing. - Data plane workers process tasks related to data syncing, and are typically
+   * deployed outside of Airbyte's internal network. - Combined workers process all tasks, and are the
+   * default for OSS deployments. - Internal-use only.
+   */
+  WorkerPlane getWorkerPlane();
+
+  // Worker - Control Plane configs
 
   /**
-   * Define if the worker should register a workflow handler for the SYNC Task Queue. - Requires
-   * `shouldRunSyncWorkflows` to be `true`. - Should be `true` only for Control-plane workers.
-   * Internal-use only.
+   * Return true if the WorkerPlane is CONTROL_PLANE or COMBINED. Internal-use only.
    */
-  boolean shouldHandleSyncControlPlaneTasks();
-
-  /**
-   * Define the default task queue for sync activities that are not routed to a separate data plane.
-   * Internal-use only.
-   */
-  String primarySyncDataPlaneTaskQueue();
+  boolean isControlPlaneWorker();
 
   /**
    * TEMPORARY: Define a set of connection IDs that should run in Airbyte's AWS Data Plane. - This
@@ -598,16 +584,42 @@ public interface Configs {
   Set<String> connectionIdsForAwsDataPlane();
 
   /**
-   * Define a set of Temporal Task Queue names for which the worker should register sync activity
-   * handlers for. - Requires `shouldRunSyncWorkflows` to be `true`. - Entries should correspond with
-   * the Data Plane where the worker is deployed. Internal-use only.
+   * Define the task queue where the Control Plane worker will route Data Plane tasks to by default.
+   * Internal-use only.
    */
-  Set<String> getSyncDataPlaneTaskQueues();
+  String getDefaultDataPlaneTaskQueue();
+
+  // Worker - Data Plane configs
 
   /**
-   * Define if database availability checks should be skipped. Internal-use only.
+   * Return true if the WorkerPlane is DATA_PLANE or COMBINED. Internal-use only.
    */
-  Boolean initializeAsDataPlaneWorker();
+  boolean isDataPlaneWorker();
+
+  /**
+   * Define a set of Temporal Task Queue names for which the Data Plane worker should register
+   * handlers for. Entries should correspond with the Data Plane where the worker is deployed.
+   * Internal-use only.
+   */
+  Set<String> getDataPlaneTaskQueues();
+
+  /**
+   * Return the control plane endpoint a data plane will hit. This is used for authentication and
+   * separate from the actual endpoint being hit. Internal-use only.
+   */
+  String getControlPlaneGoogleEndpoint();
+
+  /**
+   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
+   * only.
+   */
+  String getDataPlaneServiceAccountCredentialsPath();
+
+  /**
+   * Return the service account email a data plane uses to authenticate with a control plane.
+   * Internal-use only.
+   */
+  String getDataPlaneServiceAccountEmail();
 
   // Worker - Kube only
 
@@ -617,6 +629,7 @@ public interface Configs {
   Set<Integer> getTemporalWorkerPorts();
 
   // Container Orchestrator
+
   /**
    * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
@@ -708,6 +721,12 @@ public interface Configs {
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
     VAULT
+  }
+
+  enum WorkerPlane {
+    CONTROL_PLANE,
+    DATA_PLANE,
+    COMBINED
   }
 
 }

@@ -241,7 +241,7 @@ public class WorkerApp {
    * Plane.
    */
   private void registerSyncDataPlaneWorkers(final WorkerFactory factory) {
-    if (!configs.getSyncDataPlaneTaskQueues().isEmpty()) {
+    if (configs.isDataPlaneWorker() && !configs.getDataPlaneTaskQueues().isEmpty()) {
       final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
       // Note that the configuration injected here is for the normalization orchestrator, and not the
       // normalization pod itself.
@@ -252,7 +252,7 @@ public class WorkerApp {
           defaultProcessFactory);
       final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(airbyteApiClient, featureFlags);
 
-      for (final String taskQueue : configs.getSyncDataPlaneTaskQueues()) {
+      for (final String taskQueue : configs.getDataPlaneTaskQueues()) {
         // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
         final Worker worker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
         worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
@@ -265,7 +265,7 @@ public class WorkerApp {
    * task to decide which task queue to use for Data Plane tasks.
    */
   private void registerSyncControlPlaneWorkers(final WorkerFactory factory) {
-    if (configs.shouldHandleSyncControlPlaneTasks()) {
+    if (configs.isControlPlaneWorker()) {
       // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
@@ -438,7 +438,7 @@ public class WorkerApp {
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
-    LOGGER.info("Initialising as data plane worker: {}", configs.initializeAsDataPlaneWorker());
+    LOGGER.info("Initialising for plane: {}", configs.getWorkerPlane());
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(null, configs);
 
@@ -646,7 +646,7 @@ public class WorkerApp {
             JWT_TTL_SECONDS)
         : configs.getAirbyteApiAuthHeaderValue();
 
-    final var scheme = configs.initializeAsDataPlaneWorker() ? "https" : "http";
+    final var scheme = configs.isDataPlaneWorker() ? "https" : "http";
     LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}, Auth-Token: {}",
         scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader,
         authToken);
@@ -721,7 +721,7 @@ public class WorkerApp {
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, WorkerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
-        if (!configs.initializeAsDataPlaneWorker()) {
+        if (configs.isControlPlaneWorker()) {
           // Ensure that the Configuration database is available
           DatabaseCheckFactory
               .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
@@ -736,7 +736,7 @@ public class WorkerApp {
           new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
         }
 
-        if (configs.initializeAsDataPlaneWorker()) {
+        if (configs.isDataPlaneWorker()) {
           launchDataPlaneWorkerApp(configs);
         } else {
           launchWorkerApp(configs, configsDslContext, jobsDslContext);
