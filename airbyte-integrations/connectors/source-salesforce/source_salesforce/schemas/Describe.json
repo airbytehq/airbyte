@@ -330,7 +330,7 @@
       "type": ["null", "boolean"]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "namedLayoutInfos": {
       "type": ["null", "array"],
@@ -396,5 +396,6 @@
     "urlNew": {
       "type": ["null", "string"]
     }
-  }
+  },
+  "required": ["name"]
 }
