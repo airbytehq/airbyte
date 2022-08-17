@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 
 import jwt
 import requests
-
 from source_google_analytics_data_api import utils
 
 
@@ -30,7 +33,7 @@ class GoogleServiceKeyAuthenticator(requests.auth.AuthBase):
             "scope": self._google_oauth2_scope_endpoint,
             "aud": self._google_oauth2_token_endpoint,
             "exp": utils.datetime_to_secs(expiry),
-            "iat": utils.datetime_to_secs(now)
+            "iat": utils.datetime_to_secs(now),
         }
 
     def _get_headers(self):
@@ -43,10 +46,7 @@ class GoogleServiceKeyAuthenticator(requests.auth.AuthBase):
         claims = self._get_claims()
         headers = self._get_headers()
         assertion = jwt.encode(claims, self._client_secret, headers=headers, algorithm=self._jwt_encode_algorithm)
-        return {
-            "grant_type": self._google_oauth2_grant_type_urn,
-            "assertion": str(assertion)
-        }
+        return {"grant_type": self._google_oauth2_grant_type_urn, "assertion": str(assertion)}
 
     def _token_expired(self):
         if not self._token:
@@ -56,16 +56,12 @@ class GoogleServiceKeyAuthenticator(requests.auth.AuthBase):
     def _rotate(self):
         if self._token_expired():
             try:
-                response = requests.request(
-                    method="POST",
-                    url=self._google_oauth2_token_endpoint,
-                    params=self._get_signed_payload()
-                ).json()
+                response = requests.request(method="POST", url=self._google_oauth2_token_endpoint, params=self._get_signed_payload()).json()
             except requests.exceptions.RequestException as e:
                 raise Exception(f"Error refreshing access token: {e}") from e
             self._token = dict(
                 **response,
-                expires_at=utils.datetime_to_secs(datetime.datetime.utcnow() + datetime.timedelta(seconds=response["expires_in"]))
+                expires_at=utils.datetime_to_secs(datetime.datetime.utcnow() + datetime.timedelta(seconds=response["expires_in"])),
             )
 
     def __call__(self, r: requests.Request) -> requests.Request:

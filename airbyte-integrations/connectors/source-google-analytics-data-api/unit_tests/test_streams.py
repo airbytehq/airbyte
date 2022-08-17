@@ -1,17 +1,18 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import datetime
+
 import copy
+import datetime
 import random
 from http import HTTPStatus
-from typing import Mapping, Any
+from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiGenericStream
 
-json_credentials = '''
+json_credentials = """
 {
     "type": "service_account",
     "project_id": "unittest-project-id",
@@ -24,7 +25,7 @@ json_credentials = '''
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-analytics-access%40unittest-project-id.iam.gserviceaccount.com"
 }
-'''
+"""
 
 
 @pytest.fixture
@@ -37,32 +38,34 @@ def patch_base_class(mocker):
     return {
         "config": {
             "property_id": "496180525",
-            "credentials": {
-                "auth_type": "Service",
-                "credentials_json": json_credentials
-            },
-            "dimensions": ['date', 'deviceCategory', 'operatingSystem', 'browser'],
-            "metrics": ['totalUsers', 'newUsers', 'sessions', 'sessionsPerUser', 'averageSessionDuration', 'screenPageViews',
-                        'screenPageViewsPerSession', 'bounceRate'],
+            "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
+            "dimensions": ["date", "deviceCategory", "operatingSystem", "browser"],
+            "metrics": [
+                "totalUsers",
+                "newUsers",
+                "sessions",
+                "sessionsPerUser",
+                "averageSessionDuration",
+                "screenPageViews",
+                "screenPageViewsPerSession",
+                "bounceRate",
+            ],
             "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
         }
     }
 
 
 def test_request_params(patch_base_class):
-    assert GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"]).request_params(
-        stream_state=MagicMock(),
-        stream_slice=MagicMock(),
-        next_page_token=MagicMock()
-    ) == {}
+    assert (
+        GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"]).request_params(
+            stream_state=MagicMock(), stream_slice=MagicMock(), next_page_token=MagicMock()
+        )
+        == {}
+    )
 
 
 def test_request_body_json(patch_base_class):
-    request_body_params = {
-        "stream_state": MagicMock(),
-        "stream_slice": MagicMock(),
-        "next_page_token": None
-    }
+    request_body_params = {"stream_state": MagicMock(), "stream_slice": MagicMock(), "next_page_token": None}
 
     expected_body_json = {
         "metrics": [
@@ -81,7 +84,7 @@ def test_request_body_json(patch_base_class):
             {"name": "operatingSystem"},
             {"name": "browser"},
         ],
-        "dateRanges": [request_body_params["stream_slice"]]
+        "dateRanges": [request_body_params["stream_slice"]],
     }
 
     request_body_json = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"]).request_body_json(**request_body_params)
@@ -92,21 +95,9 @@ def test_next_page_token_equal_chunk(patch_base_class):
     stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {
-            "limit": 100000,
-            "offset": 0,
-            "rowCount": 200000
-        },
-        {
-            "limit": 100000,
-            "offset": 100000,
-            "rowCount": 200000
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-            "rowCount": 200000
-        }
+        {"limit": 100000, "offset": 0, "rowCount": 200000},
+        {"limit": 100000, "offset": 100000, "rowCount": 200000},
+        {"limit": 100000, "offset": 200000, "rowCount": 200000},
     ]
     inputs = {"response": response}
 
@@ -119,7 +110,7 @@ def test_next_page_token_equal_chunk(patch_base_class):
             "limit": 100000,
             "offset": 200000,
         },
-        None
+        None,
     ]
 
     for expected_token in expected_tokens:
@@ -130,26 +121,10 @@ def test_next_page_token(patch_base_class):
     stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {
-            "limit": 100000,
-            "offset": 0,
-            "rowCount": 250000
-        },
-        {
-            "limit": 100000,
-            "offset": 100000,
-            "rowCount": 250000
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-            "rowCount": 250000
-        },
-        {
-            "limit": 100000,
-            "offset": 300000,
-            "rowCount": 250000
-        }
+        {"limit": 100000, "offset": 0, "rowCount": 250000},
+        {"limit": 100000, "offset": 100000, "rowCount": 250000},
+        {"limit": 100000, "offset": 200000, "rowCount": 250000},
+        {"limit": 100000, "offset": 300000, "rowCount": 250000},
     ]
     inputs = {"response": response}
 
@@ -166,7 +141,7 @@ def test_next_page_token(patch_base_class):
             "limit": 100000,
             "offset": 300000,
         },
-        None
+        None,
     ]
 
     for expected_token in expected_tokens:
@@ -177,146 +152,48 @@ def test_parse_response(patch_base_class):
     stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
 
     response_data = {
-        "dimensionHeaders": [
-            {
-                "name": "date"
-            },
-            {
-                "name": "deviceCategory"
-            },
-            {
-                "name": "operatingSystem"
-            },
-            {
-                "name": "browser"
-            }
-        ],
+        "dimensionHeaders": [{"name": "date"}, {"name": "deviceCategory"}, {"name": "operatingSystem"}, {"name": "browser"}],
         "metricHeaders": [
-            {
-                "name": "totalUsers",
-                "type": "TYPE_INTEGER"
-            },
-            {
-                "name": "newUsers",
-                "type": "TYPE_INTEGER"
-            },
-            {
-                "name": "sessions",
-                "type": "TYPE_INTEGER"
-            },
-            {
-                "name": "sessionsPerUser",
-                "type": "TYPE_FLOAT"
-            },
-            {
-                "name": "averageSessionDuration",
-                "type": "TYPE_SECONDS"
-            },
-            {
-                "name": "screenPageViews",
-                "type": "TYPE_INTEGER"
-            },
-            {
-                "name": "screenPageViewsPerSession",
-                "type": "TYPE_FLOAT"
-            },
-            {
-                "name": "bounceRate",
-                "type": "TYPE_FLOAT"
-            }
+            {"name": "totalUsers", "type": "TYPE_INTEGER"},
+            {"name": "newUsers", "type": "TYPE_INTEGER"},
+            {"name": "sessions", "type": "TYPE_INTEGER"},
+            {"name": "sessionsPerUser", "type": "TYPE_FLOAT"},
+            {"name": "averageSessionDuration", "type": "TYPE_SECONDS"},
+            {"name": "screenPageViews", "type": "TYPE_INTEGER"},
+            {"name": "screenPageViewsPerSession", "type": "TYPE_FLOAT"},
+            {"name": "bounceRate", "type": "TYPE_FLOAT"},
         ],
         "rows": [
             {
-                "dimensionValues": [
-                    {
-                        "value": "20220731"
-                    },
-                    {
-                        "value": "desktop"
-                    },
-                    {
-                        "value": "Macintosh"
-                    },
-                    {
-                        "value": "Chrome"
-                    }
-                ],
+                "dimensionValues": [{"value": "20220731"}, {"value": "desktop"}, {"value": "Macintosh"}, {"value": "Chrome"}],
                 "metricValues": [
-                    {
-                        "value": "344"
-                    },
-                    {
-                        "value": "169"
-                    },
-                    {
-                        "value": "420"
-                    },
-                    {
-                        "value": "1.2209302325581395"
-                    },
-                    {
-                        "value": "194.76313766428572"
-                    },
-                    {
-                        "value": "614"
-                    },
-                    {
-                        "value": "1.4619047619047618"
-                    },
-                    {
-                        "value": "0.47857142857142859"
-                    }
-                ]
+                    {"value": "344"},
+                    {"value": "169"},
+                    {"value": "420"},
+                    {"value": "1.2209302325581395"},
+                    {"value": "194.76313766428572"},
+                    {"value": "614"},
+                    {"value": "1.4619047619047618"},
+                    {"value": "0.47857142857142859"},
+                ],
             },
             {
-                "dimensionValues": [
-                    {
-                        "value": "20220731"
-                    },
-                    {
-                        "value": "desktop"
-                    },
-                    {
-                        "value": "Windows"
-                    },
-                    {
-                        "value": "Chrome"
-                    }
-                ],
+                "dimensionValues": [{"value": "20220731"}, {"value": "desktop"}, {"value": "Windows"}, {"value": "Chrome"}],
                 "metricValues": [
-                    {
-                        "value": "322"
-                    },
-                    {
-                        "value": "211"
-                    },
-                    {
-                        "value": "387"
-                    },
-                    {
-                        "value": "1.2018633540372672"
-                    },
-                    {
-                        "value": "249.21595714211884"
-                    },
-                    {
-                        "value": "669"
-                    },
-                    {
-                        "value": "1.7286821705426356"
-                    },
-                    {
-                        "value": "0.42377260981912146"
-                    }
-                ]
-            }
+                    {"value": "322"},
+                    {"value": "211"},
+                    {"value": "387"},
+                    {"value": "1.2018633540372672"},
+                    {"value": "249.21595714211884"},
+                    {"value": "669"},
+                    {"value": "1.7286821705426356"},
+                    {"value": "0.42377260981912146"},
+                ],
+            },
         ],
         "rowCount": 54,
-        "metadata": {
-            "currencyCode": "USD",
-            "timeZone": "America/Los_Angeles"
-        },
-        "kind": "analyticsData#runReport"
+        "metadata": {"currencyCode": "USD", "timeZone": "America/Los_Angeles"},
+        "kind": "analyticsData#runReport",
     }
 
     expected_data = copy.deepcopy(response_data)
@@ -350,15 +227,12 @@ def test_parse_response(patch_base_class):
             "screenPageViews": 669,
             "screenPageViewsPerSession": 1.7286821705426356,
             "bounceRate": 0.42377260981912146,
-        }
+        },
     ]
 
     response = MagicMock()
     response.json.return_value = response_data
-    inputs = {
-        "response": response,
-        "stream_state": {}
-    }
+    inputs = {"response": response, "stream_state": {}}
     actual_records: Mapping[str, Any] = next(iter(stream.parse_response(**inputs)))
     for record in actual_records["records"]:
         del record["uuid"]

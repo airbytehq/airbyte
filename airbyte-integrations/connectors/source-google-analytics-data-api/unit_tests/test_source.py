@@ -1,15 +1,16 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 from unittest.mock import MagicMock
+
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 
-
-json_credentials = '''
+json_credentials = """
 {
     "type": "service_account",
     "project_id": "unittest-project-id",
@@ -22,7 +23,7 @@ json_credentials = '''
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-analytics-access%40unittest-project-id.iam.gserviceaccount.com"
 }
-'''
+"""
 
 
 @pytest.fixture
@@ -30,10 +31,7 @@ def patch_base_class(mocker):
     return {
         "config": {
             "property_id": "108176369",
-            "credentials": {
-                "auth_type": "Service",
-                "credentials_json": json_credentials
-            },
+            "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
             "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
         }
     }
@@ -46,11 +44,7 @@ def test_check_connection(mocker, patch_base_class):
     logger_mock, config_mock = MagicMock(), MagicMock()
     config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
 
-    mocker.patch.object(
-        HttpStream,
-        "read_records",
-        return_value=[record]
-    )
+    mocker.patch.object(HttpStream, "read_records", return_value=[record])
     assert source.check(logger_mock, config_mock) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
 

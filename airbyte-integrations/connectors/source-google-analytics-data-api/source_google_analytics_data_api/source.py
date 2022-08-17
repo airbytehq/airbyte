@@ -1,26 +1,23 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import collections
 import datetime
 import json
 import logging
 import pkgutil
 import uuid
-
 from abc import ABC
-from typing import Mapping, Any, List, Tuple, Optional, Union, Iterable, MutableMapping, Dict
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http import auth
-
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.http import HttpStream, auth
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
-
 
 metrics_data_types_map: Dict = {
     "METRIC_TYPE_UNSPECIFIED": "string",
@@ -69,12 +66,7 @@ def get_dimensions_type(d: str) -> str:
 
 
 authenticator_class_map: Dict = {
-    "Service": (
-        GoogleServiceKeyAuthenticator,
-        lambda credentials: {
-            "credentials": json.loads(credentials["credentials_json"])
-        }
-    ),
+    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": json.loads(credentials["credentials_json"])}),
     "Client": (
         auth.Oauth2Authenticator,
         lambda credentials: {
@@ -82,9 +74,9 @@ authenticator_class_map: Dict = {
             "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
             "client_secret": credentials["client_secret"],
             "client_id": credentials["client_id"],
-            "refresh_token": credentials["refresh_token"]
-        }
-    )
+            "refresh_token": credentials["refresh_token"],
+        },
+    ),
 }
 
 
@@ -103,21 +95,19 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             authenticator = (
-                instance.authenticator if not isinstance(instance.authenticator, auth.NoAuth)
+                instance.authenticator
+                if not isinstance(instance.authenticator, auth.NoAuth)
                 else get_authenticator(instance.config["credentials"])
             )
-            stream = GoogleAnalyticsDataApiTestConnectionStream(
-                config=instance.config,
-                authenticator=authenticator
-            )
+            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=authenticator)
             try:
                 metadata = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
             except Exception as e:
                 raise e
 
             self._metadata = {
-                "dimensions": {m['apiName']: m for m in metadata["dimensions"]},
-                "metrics": {m['apiName']: m for m in metadata["metrics"]}
+                "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
+                "metrics": {m["apiName"]: m for m in metadata["metrics"]},
             }
 
         return self._metadata
@@ -159,7 +149,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     @staticmethod
     def add_metrics(metrics, metric_types, row) -> dict:
-
         def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
             metric_name, metric_value = metric_data
             python_type = metrics_type_to_python(metric_types[metric_name])
@@ -177,28 +166,26 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "additionalProperties": True,
             "properties": {
                 "property_id": {"type": ["string"]},
-                "uuid": {
-                    "type": ["string"],
-                    "description": "Custom unique identifier for each record, to support primary key"
-                }
+                "uuid": {"type": ["string"], "description": "Custom unique identifier for each record, to support primary key"},
             },
         }
 
-        schema["properties"].update({
-            d: {
-                "type": get_dimensions_type(d),
-                "description": self.metadata["dimensions"].get(d, {}).get("description", d)
+        schema["properties"].update(
+            {
+                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                for d in self.config["dimensions"]
             }
-            for d in self.config["dimensions"]
-        })
+        )
 
-        schema["properties"].update({
-            m: {
-                "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
-                "description": self.metadata["metrics"].get(m, {}).get("description", m)
+        schema["properties"].update(
+            {
+                m: {
+                    "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
+                    "description": self.metadata["metrics"].get(m, {}).get("description", m),
+                }
+                for m in self.config["metrics"]
             }
-            for m in self.config["metrics"]
-        })
+        )
 
         return schema
 
@@ -211,17 +198,21 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             if total_rows <= offset:
                 return None
 
-            return {
-                "limit": limit,
-                "offset": offset + limit
-            }
+            return {"limit": limit, "offset": offset + limit}
 
-    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-             next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"properties/{self.config['property_id']}:runReport"
 
-    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-                       next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         r = response.json()
 
         dimensions = [h["name"] for h in r["dimensionHeaders"]]
@@ -232,12 +223,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         for row in r.get("rows", []):
             rows.append(
-                collections.ChainMap(*[
-                    self.add_primary_key(),
-                    self.add_property_id(self.config["property_id"]),
-                    self.add_dimensions(dimensions, row),
-                    self.add_metrics(metrics, metrics_type_map, row),
-                ])
+                collections.ChainMap(
+                    *[
+                        self.add_primary_key(),
+                        self.add_property_id(self.config["property_id"]),
+                        self.add_dimensions(dimensions, row),
+                        self.add_metrics(metrics, metrics_type_map, row),
+                    ]
+                )
             )
         r["records"] = rows
 
@@ -277,7 +270,7 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
         return {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
-            "dateRanges": [stream_slice]
+            "dateRanges": [stream_slice],
         }
 
     def read_records(
@@ -289,12 +282,7 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
             return []
-        records = super().read_records(
-            sync_mode=sync_mode,
-            cursor_field=cursor_field,
-            stream_slice=stream_slice,
-            stream_state=stream_state
-        )
+        records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         for record in records:
             for row in record["records"]:
                 next_cursor_value = utils.string_to_date(row[self.cursor_field], self._record_date_format)
@@ -316,10 +304,12 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
             if timedelta > 1 and end_date > today:
                 end_date: datetime.date = start_date + datetime.timedelta(days=timedelta - (end_date - today).days)
 
-            dates.append({
-                "startDate": utils.date_to_string(start_date, self._date_format),
-                "endDate": utils.date_to_string(end_date, self._date_format)
-            })
+            dates.append(
+                {
+                    "startDate": utils.date_to_string(start_date, self._date_format),
+                    "endDate": utils.date_to_string(end_date, self._date_format),
+                }
+            )
 
             start_date: datetime.date = end_date + datetime.timedelta(days=1)
 
@@ -333,12 +323,19 @@ class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractS
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-             next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"properties/{self.config['property_id']}/metadata"
 
-    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-                       next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         yield response.json()
 
 
@@ -372,8 +369,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         return [
             type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
-                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]),
-                authenticator=authenticator
+                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=authenticator
             )
             for report in reports
         ]
