@@ -6,8 +6,8 @@ import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
-import { CheckConnectionRead } from "core/request/AirbyteClient";
-import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { CheckConnectionRead, SynchronousJobRead } from "core/request/AirbyteClient";
+import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
@@ -25,7 +25,7 @@ export const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
-    jobInfo?: SynchronousJobReadWithStatus | null;
+    jobInfo?: SynchronousJobRead | null;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -62,8 +62,8 @@ export const ConnectorCard: React.FC<
 
       analyticsService.track(namespace, actionType, {
         actionDescription,
-        connector_source: connector?.name,
-        connector_source_definition_id: Connector.id(connector),
+        connector: connector?.name,
+        connector_definition_id: Connector.id(connector),
       });
     };
 

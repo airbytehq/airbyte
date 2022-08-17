@@ -332,6 +332,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
                 additionalControl={additionalSchemaControl}
                 component={SchemaField}
+                isSubmitting={isSubmitting}
                 mode={mode}
               />
             </StyledSection>
