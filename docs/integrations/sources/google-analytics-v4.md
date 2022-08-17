@@ -10,7 +10,7 @@ This connector supports [Google Analytics v4](https://developers.google.com/anal
 * OAuth 2.0 credentials for the service account that has access to Google Analytics
 * Property ID
 * Custom reports in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["metric-name", ...]}`
-* Date Range Start Date 
+* Date Range Start Date
 * Data request time increment in days (Optional)
 
 ## Step 1: Set up Source
