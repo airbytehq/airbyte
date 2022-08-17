@@ -223,7 +223,7 @@ def test_check_connection_rate_limit(stream_config):
     logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
-    url = "https://estuary-dev-ed.my.salesforce.com/services/oauth2/token"
+    url = "https://login.salesforce.com/services/oauth2/token"
     with requests_mock.Mocker() as m:
         m.register_uri("POST", url, json=json_response, status_code=403)
         result, msg = source.check_connection(logger, stream_config)
