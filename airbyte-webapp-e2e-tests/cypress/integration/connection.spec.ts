@@ -67,10 +67,13 @@ it("Update connection (pokeAPI)", () => {
     expect(interception.request).property('body').to.contain({
       name: 'Test update connection PokeAPI source cypress <> Test update connection destination cypress',
       prefix: 'auto_test',
-      shedule: {
+      namespaceDefinition: 'source',
+      namespaceFormat: '${SOURCE_NAMESPACE}',
+      /*schedule: {
         units: 5,
         timeUnit: 'minutes'
-      }
+      },*/
+      status: 'active',
     })
     
   })
