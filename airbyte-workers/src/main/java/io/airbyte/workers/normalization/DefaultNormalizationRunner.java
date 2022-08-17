@@ -157,7 +157,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         // picks up error logs from dbt
         dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
 
-        if (!dbtErrorStack.equals("")) {
+        if (!"".equals(dbtErrorStack)) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
               .withType(Type.TRACE)
               .withTrace(new AirbyteTraceMessage()

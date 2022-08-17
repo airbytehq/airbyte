@@ -106,8 +106,12 @@ public class JobErrorReporter {
         } else if (failureOrigin == FailureOrigin.NORMALIZATION) {
           final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
           final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+          // since error could be arising from source or destination or normalization itself, we want all the metadata
+          // prefixing source keys so we don't overlap (destination as 'true' keys since normalization runs on the destination)
           final Map<String, String> metadata = MoreMaps.merge(
-              commonMetadata, getSourceMetadata(sourceDefinition), getDestinationMetadata(destinationDefinition));
+              commonMetadata,
+              prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
+              getDestinationMetadata(destinationDefinition));
           final String dockerImage = String.format("%s:%s", normalizationImage, normalizationVersion);
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
@@ -220,6 +224,14 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
         Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
+  }
+
+  private Map<String, String> prefixConnectorMetadataKeys(final Map<String, String> connectorMetadata, final String prefix) {
+    Map<String, String> prefixedMetadata = new HashMap<>();
+    for (final Map.Entry<String, String> entry : connectorMetadata.entrySet()) {
+      prefixedMetadata.put(String.format("%s_%s", prefix, entry.getKey()), entry.getValue());
+    }
+    return prefixedMetadata;
   }
 
   private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
