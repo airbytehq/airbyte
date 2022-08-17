@@ -21,16 +21,14 @@ jobs:
       - name: Extract changes
         run: |
           git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }} > ./changed_files.txt
-          files=($(git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}))
         id: extract_changed_files
       - name: Debbug
         run: |
           echo "!!! DEBBUG !!! "
           cat ./changed_files.txt
-          echo "!!! DEBBUG 2!!! "
-          git diff --name-only remotes/origin/master...${{ steps.extract_branch.outputs.branch }}
-          echo "!!! DEBBUG 3!!! "
-          echo ${files[0]}
-          echo ${files[1]}
-          echo ${files[2]}
+      - name: Display changes
+        run: |
+          ./tools/bin/ci_check_dependency.sh
+        id: check_dependency
+
 
