@@ -39,8 +39,6 @@ $ python -m pytest integration_tests -p integration_tests.acceptance
 
 Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte).
 
-See your [Contributiong guide]() on how to get started releasing your connector.
-
 ## Read more:
 
 - [Error handling](../error-handling.md)
