@@ -109,6 +109,7 @@ class DeclarativeComponentFactory:
         This method will also traverse and instantiate its subcomponents if needed.
         :param component_definition: The definition of the object to create.
         :param config: Connector's config
+        :param instantiate: The factory should create the component when True or instead perform schema validation when False
         :return: The object to create
         """
         kwargs = copy.deepcopy(component_definition)
@@ -118,6 +119,9 @@ class DeclarativeComponentFactory:
             class_name = CLASS_TYPES_REGISTRY[kwargs.pop("type")]
         else:
             raise ValueError(f"Failed to create component because it has no class_name or type. Definition: {component_definition}")
+
+        # Because configs are sometimes stored on a component a parent definition, we should remove it and rely on the config
+        # that is passed down through the factory instead
         kwargs.pop("config", None)
         return self.build(
             class_name,
