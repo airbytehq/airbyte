@@ -17,10 +17,11 @@ In order to get an `Client ID` and `Secret` please go to [this](https://develope
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Paypal Transaction connector and select **Paypal Transaction** from the Source type dropdown.
-4. For Airbyte Cloud, click **Authenticate your Paypal Transaction account** to sign in with Paypal and authorize your account.
-5. Choose if your account is sandbox
-6. Enter the date you want your sync to start from
-7. Click **Set up source**.
+4. Enter your client id
+5. Enter your secret
+6. Choose if your account is sandbox
+7. Enter the date you want your sync to start from
+8. Click **Set up source**.
 
 ### For Airbyte OSS:
 1. Navigate to the Airbyte Open Source dashboard
