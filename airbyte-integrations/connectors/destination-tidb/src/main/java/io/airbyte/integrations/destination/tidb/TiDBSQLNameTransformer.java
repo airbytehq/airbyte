@@ -7,10 +7,16 @@ package io.airbyte.integrations.destination.tidb;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 /**
- * TiDB has some limitations on identifier length. https://docs.pingcap.com/tidb/stable/tidb-limitations
+ * TiDB has some limitations on identifier length.
+ * https://docs.pingcap.com/tidb/stable/tidb-limitations
  * <p>
- * Identifier type	| Maximum length (number of characters allowed) Database        	64 Table	            64 Column	            64 Index	            64
- * View	            64 Sequence	        64
+ * Identifier type	| Maximum length (number of characters allowed)
+ * Database        	  64
+ * Table	            64
+ * Column	            64
+ * Index	            64
+ * View	              64
+ * Sequence	          64
  * <p>
  * TiDBSQLNameTransformer is reference to io.airbyte.integrations.destination.mysql.MySQLNameTransformer.
  */

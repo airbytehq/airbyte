@@ -339,7 +339,7 @@ class DbtIntegrationTest(object):
             "arey/mysql-client",
             "--host=tidb",
             "--user=root",
-            f"--port=4000",
+            "--port=4000",
             f"--execute=CREATE DATABASE IF NOT EXISTS {self.target_schema}",
         ]
         print("Executing: ", " ".join(command_create_db))
