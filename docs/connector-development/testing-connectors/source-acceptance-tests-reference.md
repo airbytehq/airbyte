@@ -117,7 +117,7 @@ Verify that a check operation issued to the connector with the input config file
 ## Test Discovery
 
 Verifies when a `discover` operation is run on the connector using the given config file, a valid catalog is produced by the connector.
-Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. 
+Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped. 
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
 | Input | Type | Default | Note |
