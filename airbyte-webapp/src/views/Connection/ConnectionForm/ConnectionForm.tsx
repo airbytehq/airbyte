@@ -9,6 +9,7 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { ModalCancel } from "hooks/services/Modal";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -115,6 +116,7 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
 
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
+  onAfterSubmit?: () => void;
   className?: string;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -134,6 +136,7 @@ interface ConnectionFormProps {
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
+  onAfterSubmit,
   onCancel,
   className,
   onDropDownSelect,
@@ -167,21 +170,20 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
       setSubmitError(null);
       try {
-        const result = await onSubmit(formValues);
-
-        if (result?.submitCancelled) {
-          return;
-        }
+        await onSubmit(formValues);
 
         formikHelpers.resetForm({ values });
         clearFormChange(formId);
 
-        result?.onSubmitComplete?.();
+        // result?.onSubmitComplete?.();
+        onAfterSubmit?.();
       } catch (e) {
-        setSubmitError(e);
+        if (!(e instanceof ModalCancel)) {
+          setSubmitError(e);
+        }
       }
     },
-    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
+    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;

@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense } from "react";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
@@ -10,10 +10,10 @@ import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
 
-import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -30,7 +30,7 @@ interface CreateConnectionContentProps {
   additionBottomControls?: React.ReactNode;
   source: SourceRead;
   destination: DestinationRead;
-  afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
+  afterSubmitConnection?: () => void;
 }
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
@@ -41,21 +41,19 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
+  const { push } = useRouter();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
-  const connection = useMemo<ConnectionFormProps["connection"]>(
-    () => ({
-      syncCatalog: schema,
-      destination,
-      source,
-      catalogId,
-    }),
-    [schema, destination, source, catalogId]
-  );
+  const connection = {
+    syncCatalog: schema,
+    destination,
+    source,
+    catalogId,
+  };
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
-    const connection = await createConnection({
+    const createdConnection = await createConnection({
       values,
       source,
       destination,
@@ -69,11 +67,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       sourceCatalogId: catalogId,
     });
 
-    return {
-      onSubmitComplete: () => {
-        afterSubmitConnection?.(connection);
-      },
-    };
+    push(`../${createdConnection.connectionId}`);
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
@@ -116,6 +110,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         additionBottomControls={additionBottomControls}
         onDropDownSelect={onSelectFrequency}
         onSubmit={onSubmitConnectionStep}
+        onAfterSubmit={afterSubmitConnection}
       />
     </Suspense>
   );

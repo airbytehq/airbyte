@@ -11,7 +11,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useModalService } from "hooks/services/Modal";
+import { ModalCancel, useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
   useConnectionService,
@@ -154,9 +154,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
       });
       if (result.type === "canceled") {
-        return {
-          submitCancelled: true,
-        };
+        // eslint-disable-next-line no-throw-literal
+        throw new ModalCancel();
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
       await saveConnection(values, { skipReset: !result.reason });

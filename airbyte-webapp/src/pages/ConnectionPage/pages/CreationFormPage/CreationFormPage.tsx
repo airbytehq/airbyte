@@ -21,7 +21,6 @@ import {
   DestinationRead,
   SourceDefinitionRead,
   SourceRead,
-  WebBackendConnectionRead,
 } from "../../../../core/request/AirbyteClient";
 import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
@@ -160,32 +159,12 @@ export const CreationFormPage: React.FC = () => {
       }
     }
 
-    const afterSubmitConnection = (connection: WebBackendConnectionRead) => {
-      switch (type) {
-        case EntityStepsTypes.DESTINATION:
-          push(`../${source?.sourceId}`);
-          break;
-        case EntityStepsTypes.SOURCE:
-          push(`../${destination?.destinationId}`);
-          break;
-        default:
-          push(`../${connection.connectionId}`);
-          break;
-      }
-    };
-
     if (!source || !destination) {
       console.error("unexpected state met");
       return <LoadingPage />;
     }
 
-    return (
-      <CreateConnectionContent
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-      />
-    );
+    return <CreateConnectionContent source={source} destination={destination} />;
   };
 
   const steps =
