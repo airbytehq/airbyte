@@ -21,7 +21,7 @@ interface TextProps extends BaseProps {
 }
 
 interface HeadingProps extends BaseProps {
-  as?: HeadingElementType;
+  as: HeadingElementType;
   size?: HeadingSize;
 }
 
@@ -52,7 +52,7 @@ const isHeadingType = (props: TextProps | HeadingProps): props is HeadingProps =
 
 export const Text: React.FC<TextProps | HeadingProps> = React.memo((props) => {
   const isHeading = isHeadingType(props);
-  const { as = isHeading ? "h1" : "p", centered = false, children } = props;
+  const { as = "p", centered = false, children } = props;
 
   const className = classNames(
     isHeading
