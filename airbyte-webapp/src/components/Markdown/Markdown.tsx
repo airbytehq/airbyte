@@ -7,9 +7,8 @@ import remarkDirective from "remark-directive";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 
+import styles from "./Markdown.module.scss";
 import { remarkAdmonitionsPlugin } from "./remarkAdmonitionsPlugin";
-
-import "./Markdown.styles.scss";
 
 interface MarkdownProps {
   content?: string;
@@ -22,7 +21,7 @@ export const Markdown: React.VFC<MarkdownProps> = ({ content, className, rehypeP
     <ReactMarkdown
       // Open everything except fragment only links in a new tab
       linkTarget={(href) => (href.startsWith("#") ? undefined : "_blank")}
-      className={classNames("airbyte-markdown", className)}
+      className={classNames(styles.markdown, className)}
       skipHtml
       // @ts-expect-error remarkFrontmatter currently has type conflicts due to duplicate vfile dependencies
       // This is not actually causing any issues, but requires to disable TS on this for now.

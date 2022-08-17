@@ -17,7 +17,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -51,6 +51,14 @@
   dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/apify-dataset
   icon: apify.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Appfollow
+  sourceDefinitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
+  dockerRepository: airbyte/source-appfollow
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/appfollow
+  icon: appfollow.svg
   sourceType: api
   releaseStage: alpha
 - name: Appstore
@@ -88,7 +96,7 @@
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   dockerRepository: airbyte/source-bigcommerce
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigcommerce
   icon: bigcommerce.svg
   sourceType: api
@@ -639,7 +647,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.2
+  dockerImageTag: 0.6.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -964,7 +972,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.36
+  dockerImageTag: 0.1.37
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -1071,6 +1079,14 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
   icon: webflow.svg
+  sourceType: api
+  releaseStage: alpha
+- name: WooCommerce
+  sourceDefinitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
+  dockerRepository: airbyte/source-woocommerce
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/woocommerce
+  icon: woocommerce.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat

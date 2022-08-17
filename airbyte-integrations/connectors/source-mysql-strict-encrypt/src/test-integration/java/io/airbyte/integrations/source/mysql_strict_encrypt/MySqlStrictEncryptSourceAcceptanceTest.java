@@ -43,6 +43,10 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
+
+    var sslMode = ImmutableMap.builder()
+            .put(JdbcUtils.MODE_KEY, "required")
+            .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());
@@ -52,6 +56,7 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_MODE_KEY, sslMode)
         .put("replication_method", replicationMethod)
         .build());
 
