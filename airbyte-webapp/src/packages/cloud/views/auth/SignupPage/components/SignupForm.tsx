@@ -21,7 +21,6 @@ interface FormValues {
   email: string;
   password: string;
   news: boolean;
-  security: boolean;
 }
 
 const MarginBlock = styled.div`
@@ -131,39 +130,26 @@ export const NewsField: React.FC = () => {
   );
 };
 
-export const SecurityField: React.FC = () => {
-  const { formatMessage } = useIntl();
+export const Disclaimer: React.FC = () => {
   const config = useConfig();
-
   return (
-    <Field name="security">
-      {({ field, meta }: FieldProps<string>) => (
-        <CheckBoxControl
-          {...field}
-          onChange={(e) => field.onChange(e)}
-          checked={!!field.value}
-          checkbox
-          label={
-            <FormattedMessage
-              id="login.security"
-              values={{
-                terms: (terms: React.ReactNode) => (
-                  <Link $clear target="_blank" href={config.links.termsLink} as="a">
-                    {terms}
-                  </Link>
-                ),
-                privacy: (privacy: React.ReactNode) => (
-                  <Link $clear target="_blank" href={config.links.privacyLink} as="a">
-                    {privacy}
-                  </Link>
-                ),
-              }}
-            />
-          }
-          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-        />
-      )}
-    </Field>
+    <div className={styles.disclaimer}>
+      <FormattedMessage
+        id="login.disclaimer"
+        values={{
+          terms: (terms: React.ReactNode) => (
+            <Link $clear target="_blank" href={config.links.termsLink} as="a">
+              {terms}
+            </Link>
+          ),
+          privacy: (privacy: React.ReactNode) => (
+            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
+              {privacy}
+            </Link>
+          ),
+        }}
+      />
+    </div>
   );
 };
 
@@ -199,7 +185,6 @@ export const SignupForm: React.FC = () => {
       password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
       name: yup.string(),
       companyName: yup.string(),
-      security: yup.boolean().oneOf([true], "form.empty.error"),
     };
     if (showName) {
       shape.name = shape.name.required("form.empty.error");
@@ -218,7 +203,6 @@ export const SignupForm: React.FC = () => {
         email: "",
         password: "",
         news: true,
-        security: false,
       }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
@@ -233,7 +217,7 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, values, status }) => (
+      {({ isValid, isSubmitting, status }) => (
         <Form>
           {(showName || showCompanyName) && (
             <RowFieldItem>
@@ -250,10 +234,9 @@ export const SignupForm: React.FC = () => {
           </FieldItem>
           <FieldItem>
             <NewsField />
-            <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+            <SignupButton isLoading={isSubmitting} disabled={!isValid} />
             {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
           </BottomBlock>
         </Form>
