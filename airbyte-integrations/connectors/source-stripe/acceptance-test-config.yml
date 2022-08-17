@@ -15,6 +15,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"
+      empty_streams: ["external_account_bank_accounts"]
     # TEST 1 - Reading catalog without invoice_line_items
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/non_invoice_line_items_catalog.json"

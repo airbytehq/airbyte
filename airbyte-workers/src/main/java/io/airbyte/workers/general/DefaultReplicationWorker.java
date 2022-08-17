@@ -201,7 +201,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
           .withBytesEmitted(messageTracker.getTotalBytesEmitted())
-          .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
+          .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
+          .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted())
+          .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
+          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage());
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -217,7 +220,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         final SyncStats syncStats = new SyncStats()
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
-            .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
+            .withSourceStateMessagesEmitted(null)
+            .withDestinationStateMessagesEmitted(null);
 
         if (outputStatus == ReplicationStatus.COMPLETED) {
           syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
