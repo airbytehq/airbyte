@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -14,7 +15,8 @@ class DeclarativeAuthenticator:
     """
 
 
-class NoAuth(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+@dataclass
+class NoAuth(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     @property
     def auth_header(self) -> str:
         return ""
