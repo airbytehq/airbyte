@@ -31,13 +31,13 @@ def test_parse_response(patch_incremental_german_history_cases):
         expected_response = response.json().get("data")
         assert stream.parse_response(response) == expected_response
     else:
-        expected_response = [{"error": "data unavailable on date."}]
+        expected_response = [{}]
         assert stream.parse_response(response) == expected_response
 
 
 def check_diff(start_date):
     diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-    if diff.days == 0:
+    if diff.days <= 0:
         return str(1)
     return str(diff.days)
 
