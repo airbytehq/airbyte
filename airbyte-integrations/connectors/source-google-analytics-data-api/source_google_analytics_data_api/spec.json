@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4",
+  "documentationUrl": "https://go.estuary.dev/RIcwJU",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics Data API Spec",
@@ -24,8 +24,9 @@
         "oneOf": [
           {
             "title": "Authenticate via Google (Oauth)",
+            "x-oauth2-provider": "google",
             "type": "object",
-            "required": ["client_id", "client_secret", "refresh_token"],
+            "required": ["auth_type", "client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -95,12 +96,12 @@
         "order": 3,
         "type": "string",
         "title": "Custom Reports (Optional)",
-        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
+        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See  our docs for more info about exactly how to fill out this field: https://go.estuary.dev/fz3SSy"
       },
       "window_in_days": {
         "type": "integer",
         "title": "Data request time increment in days (Optional)",
-        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. ",
+        "description": "The time increment used by the connector when requesting data from the Google Analytics API.  We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.  More info can be found in our docs: https://go.estuary.dev/C9pwjr",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1,
         "order": 4
@@ -108,11 +109,10 @@
     }
   },
   "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
-    }
+    "provider": "google",
+    "authUrlTemplate": "https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&scope=https://www.googleapis.com/auth/analytics.readonly&state={{ state }}",
+    "accessTokenUrlTemplate": "https://oauth2.googleapis.com/token",
+    "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
+    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
   }
 }
