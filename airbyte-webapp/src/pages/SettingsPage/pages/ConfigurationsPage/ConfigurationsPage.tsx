@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { Button, ContentCard, Link, LoadingButton } from "components";
+import { Button, ContentCard, Link } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { useConfig } from "config";
@@ -92,9 +92,11 @@ const ConfigurationsPage: React.FC = () => {
       <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]} />
       <ContentCard title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
-          <LoadingButton onClick={onExport} isLoading={loadingExport}>
-            <FormattedMessage id="admin.exportConfiguration" />
-          </LoadingButton>
+          <Button
+            onClick={onExport}
+            isLoading={loadingExport}
+            label={<FormattedMessage id="admin.exportConfiguration" />}
+          />
           <Text>
             <FormattedMessage
               id="admin.exportConfigurationText"
@@ -112,9 +114,7 @@ const ConfigurationsPage: React.FC = () => {
 
       <ControlContent title={<FormattedMessage id="admin.import" />}>
         <ButtonContent>
-          <Button onClick={() => setIsModalOpen(true)}>
-            <FormattedMessage id="admin.importConfiguration" />
-          </Button>
+          <Button onClick={() => setIsModalOpen(true)} label={<FormattedMessage id="admin.importConfiguration" />} />
           <Text>
             <FormattedMessage
               id="admin.importConfigurationText"

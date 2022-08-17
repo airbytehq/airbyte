@@ -7,7 +7,7 @@ import { useToggle } from "react-use";
 import styled from "styled-components";
 import { Theme } from "theme";
 
-import Button from "../Button";
+import { Button } from "../Button";
 
 type IStyleProps = InputProps & { theme: Theme };
 
@@ -121,16 +121,14 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
       />
       {isVisibilityButtonVisible ? (
         <VisibilityButton
-          iconOnly
           onClick={() => setIsContentVisible()}
           type="button"
           aria-label={formatMessage({
             id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
           })}
           data-testid="toggle-password-visibility-button"
-        >
-          <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />
-        </VisibilityButton>
+          icon={<FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />}
+        />
       ) : null}
     </InputContainer>
   );

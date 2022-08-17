@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LoadingButton } from "components";
+import { Button } from "components";
 import { LabeledInput } from "components/LabeledInput";
 
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
@@ -54,9 +54,12 @@ export const NameSection: React.FC = () => {
                   )}
                 </Field>
               </RowFieldItem>
-              <LoadingButton disabled={!isValid || !dirty} type="submit" isLoading={isSubmitting}>
-                <FormattedMessage id="settings.accountSettings.updateName" />
-              </LoadingButton>
+              <Button
+                disabled={!isValid || !dirty}
+                type="submit"
+                isLoading={isSubmitting}
+                label={<FormattedMessage id="settings.accountSettings.updateName" />}
+              />
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} />
             </Form>
           )}

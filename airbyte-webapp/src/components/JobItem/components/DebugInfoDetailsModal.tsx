@@ -6,6 +6,7 @@ import { Button } from "components";
 import Modal from "components/Modal";
 
 import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
+import { ButtonType } from "../../base/Button/types";
 
 export interface IProps {
   onClose: () => void;
@@ -109,12 +110,12 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         <Section>{getSourceDetails()}</Section>
         <Section>{getDestinationDetails()}</Section>
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} secondary>
-            <FormattedMessage id="form.cancel" />
-          </ButtonWithMargin>
-          <Button onClick={onCopyClick}>
-            <FormattedMessage id="sources.copyText" />
-          </Button>
+          <ButtonWithMargin
+            onClick={onClose}
+            buttonType={ButtonType.Secondary}
+            label={<FormattedMessage id="form.cancel" />}
+          />
+          <Button onClick={onCopyClick} label={<FormattedMessage id="sources.copyText" />} />
         </ButtonContent>
       </Content>
     </Modal>

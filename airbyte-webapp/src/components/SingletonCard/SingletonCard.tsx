@@ -76,11 +76,7 @@ const SingletonCard: React.FC<SingletonCardProps> = (props) => (
       <Title hasError={props.hasError}>{props.title}</Title>
       {props.text && <Text>{props.text}</Text>}
     </div>
-    {props.onClose && (
-      <CloseButton iconOnly onClick={props.onClose}>
-        <FontAwesomeIcon icon={faTimes} />
-      </CloseButton>
-    )}
+    {props.onClose && <CloseButton onClick={props.onClose} icon={<FontAwesomeIcon icon={faTimes} />} />}
   </Singleton>
 );
 

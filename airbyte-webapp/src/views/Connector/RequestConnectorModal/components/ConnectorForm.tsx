@@ -4,8 +4,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Input, ControlLabels, DropDown, Button } from "components";
+import { Button, ControlLabels, DropDown, Input } from "components";
 
+import { ButtonType } from "../../../../components/base/Button/types";
 import { Values } from "../types";
 
 const Buttons = styled.div`
@@ -136,16 +137,24 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
             </Field>
           )}
           <Buttons>
-            <Button type="button" secondary onClick={onCancel} disabled={hasFeedback}>
-              <FormattedMessage id="form.cancel" />
-            </Button>
-            <RequestButton type="submit" wasActive={hasFeedback}>
-              {hasFeedback ? (
-                <FormattedMessage id="connector.requested" />
-              ) : (
-                <FormattedMessage id="connector.request" />
-              )}
-            </RequestButton>
+            <Button
+              type="button"
+              buttonType={ButtonType.Secondary}
+              onClick={onCancel}
+              disabled={hasFeedback}
+              label={<FormattedMessage id="form.cancel" />}
+            />
+            <RequestButton
+              type="submit"
+              wasActive={hasFeedback}
+              label={
+                hasFeedback ? (
+                  <FormattedMessage id="connector.requested" />
+                ) : (
+                  <FormattedMessage id="connector.request" />
+                )
+              }
+            />
           </Buttons>
         </Form>
       )}

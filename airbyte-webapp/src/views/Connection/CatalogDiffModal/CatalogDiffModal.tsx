@@ -33,9 +33,7 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={() => onClose()}>
-          <FormattedMessage id="connection.updateSchema.confirm" />
-        </Button>
+        <Button onClick={() => onClose()} label={<FormattedMessage id="connection.updateSchema.confirm" />} />
       </ModalFooter>
     </>
   );

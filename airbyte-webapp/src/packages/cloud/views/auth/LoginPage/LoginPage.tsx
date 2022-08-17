@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link, Button } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import useRouter from "hooks/useRouter";
@@ -96,9 +96,12 @@ const LoginPage: React.FC = () => {
                 >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
-                  <FormattedMessage id="login.login" />
-                </LoadingButton>
+                <Button
+                  className={styles.logInBtn}
+                  type="submit"
+                  isLoading={isSubmitting}
+                  label={<FormattedMessage id="login.login" />}
+                />
               </>
             </BottomBlock>
           </Form>

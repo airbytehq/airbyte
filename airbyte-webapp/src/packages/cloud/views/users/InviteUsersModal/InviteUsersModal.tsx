@@ -6,11 +6,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
+import { Button, DropDown, H5, Input, ButtonType, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+
+import styles from "./InviteUsersModal.module.scss";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -30,10 +32,6 @@ const Controls = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 26px;
-`;
-
-const SendInvitationButton = styled(LoadingButton)`
-  margin-left: 10px;
 `;
 
 const FormHeader = styled(Header)`
@@ -138,7 +136,6 @@ export const InviteUsersModal: React.FC<{
                           )}
                           <DeleteButton
                             type="button"
-                            iconOnly
                             disabled={values.users.length < 2}
                             onClick={() => {
                               setFieldValue("users", [
@@ -146,10 +143,9 @@ export const InviteUsersModal: React.FC<{
                                 ...values.users.slice(index + 1),
                               ]);
                             }}
-                            secondary
-                          >
-                            <FontAwesomeIcon icon={faTimes} />
-                          </DeleteButton>
+                            buttonType={ButtonType.Secondary}
+                            icon={<FontAwesomeIcon icon={faTimes} />}
+                          />
                         </FormRow>
                       ))}
                       <Button
@@ -161,26 +157,28 @@ export const InviteUsersModal: React.FC<{
                             role: ROLE_OPTIONS[0].value,
                           })
                         }
-                        secondary
-                      >
-                        <FormattedMessage id="modals.addUser.button.addUser" />
-                      </Button>
+                        buttonType={ButtonType.Secondary}
+                        label={<FormattedMessage id="modals.addUser.button.addUser" />}
+                      />
                     </>
                   )}
                 />
 
                 <Controls>
-                  <Button type="button" secondary onClick={() => props.onClose()}>
-                    <FormattedMessage id="modals.addUser.button.cancel" />
-                  </Button>
-                  <SendInvitationButton
+                  <Button
+                    type="button"
+                    buttonType={ButtonType.Secondary}
+                    onClick={() => props.onClose()}
+                    label={<FormattedMessage id="modals.addUser.button.cancel" />}
+                  />
+                  <Button
+                    customStyles={styles.send_invitation_button}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}
-                  >
-                    <FormattedMessage id="modals.addUser.button.submit" />
-                  </SendInvitationButton>
+                    label={<FormattedMessage id="modals.addUser.button.submit" />}
+                  />
                 </Controls>
               </Content>
             </Form>

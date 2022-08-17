@@ -8,6 +8,8 @@ import ContentCard from "components/ContentCard";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
 
+import { ButtonType } from "../base/Button/types";
+
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
@@ -55,9 +57,12 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
         </H5>
         <FormattedMessage id={`tables.${type}DataDelete`} />
       </Text>
-      <Button danger onClick={onDeleteButtonClick} data-id="open-delete-modal">
-        <FormattedMessage id={`tables.${type}Delete`} />
-      </Button>
+      <Button
+        buttonType={ButtonType.Danger}
+        onClick={onDeleteButtonClick}
+        data-id="open-delete-modal"
+        label={<FormattedMessage id={`tables.${type}Delete`} />}
+      />
     </DeleteBlockComponent>
   );
 };

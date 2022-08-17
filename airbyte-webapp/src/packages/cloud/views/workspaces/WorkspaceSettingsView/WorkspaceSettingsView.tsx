@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LabeledInput, LoadingButton } from "components";
+import { Button, ButtonType, LabeledInput } from "components";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
@@ -45,9 +45,12 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button type="button" onClick={exitWorkspace} data-testid="button.changeWorkspace">
-              <FormattedMessage id="settings.generalSettings.changeWorkspace" />
-            </Button>
+            <Button
+              type="button"
+              onClick={exitWorkspace}
+              data-testid="button.changeWorkspace"
+              label={<FormattedMessage id="settings.generalSettings.changeWorkspace" />}
+            />
           </Header>
         }
       >
@@ -78,12 +81,14 @@ export const WorkspaceSettingsView: React.FC = () => {
                   )}
                 </Field>
                 <Buttons>
-                  <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
-                    cancel
-                  </Button>
-                  <LoadingButton type="submit" disabled={!isValid} isLoading={isSubmitting}>
-                    save changes
-                  </LoadingButton>
+                  <Button
+                    type="button"
+                    buttonType={ButtonType.Secondary}
+                    disabled={!dirty}
+                    onClick={() => resetForm()}
+                    label="cancel"
+                  />
+                  <Button type="submit" disabled={!isValid} isLoading={isSubmitting} label="save changes" />
                 </Buttons>
               </Content>
             </Form>
@@ -94,13 +99,12 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
-            <LoadingButton
+            <Button
               isLoading={removeWorkspace.isLoading}
-              danger
+              buttonType={ButtonType.Danger}
               onClick={() => removeWorkspace.mutateAsync(workspace.workspaceId)}
-            >
-              <FormattedMessage id="settings.generalSettings.deleteText" />
-            </LoadingButton>
+              label={<FormattedMessage id="settings.generalSettings.deleteText" />}
+            />
           </Header>
         }
       />

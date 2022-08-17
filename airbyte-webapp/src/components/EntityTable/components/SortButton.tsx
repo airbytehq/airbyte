@@ -29,9 +29,11 @@ interface IProps {
 
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (
-    <SortButtonView wasActive={wasActive} onClick={onClick} iconOnly>
-      <FontAwesomeIcon icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown} />
-    </SortButtonView>
+    <SortButtonView
+      wasActive={wasActive}
+      onClick={onClick}
+      icon={<FontAwesomeIcon icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown} />}
+    />
   );
 };
 

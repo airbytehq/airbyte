@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -9,6 +11,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 
+import { ButtonType } from "../../../../components/base/Button/types";
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
@@ -29,9 +32,14 @@ const AllConnectionsPage: React.FC = () => {
             <PageTitle
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
-                <Button onClick={onCreateClick} disabled={!allowCreateConnection}>
-                  <FormattedMessage id="connection.newConnection" />
-                </Button>
+                <Button
+                  buttonType={ButtonType.Primary}
+                  size="s"
+                  icon={<FontAwesomeIcon icon={faPlus} />}
+                  onClick={onCreateClick}
+                  disabled={!allowCreateConnection}
+                  label={<FormattedMessage id="connection.newConnection" />}
+                />
               }
             />
           }

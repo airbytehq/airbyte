@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
+import { Button, LabeledSwitch, ModalBody, ModalFooter, ButtonType } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
@@ -59,12 +59,17 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
         </p>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
-          <FormattedMessage id="form.cancel" />
-        </Button>
-        <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
-          <FormattedMessage id="connection.save" />
-        </Button>
+        <Button
+          onClick={onCancel}
+          buttonType={ButtonType.Secondary}
+          data-testid="resetModal-cancel"
+          label={<FormattedMessage id="form.cancel" />}
+        />
+        <Button
+          onClick={() => onClose(withReset)}
+          data-testid="resetModal-save"
+          label={<FormattedMessage id="connection.save" />}
+        />
       </ModalFooter>
     </>
   );
@@ -219,10 +224,13 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
           onCancel={onCancelConnectionFormEdit}
           canSubmitUntouchedForm={activeUpdatingSchemaMode}
           additionalSchemaControl={
-            <Button onClick={onRefreshSourceSchema} type="button" secondary>
-              <TryArrow icon={faSyncAlt} />
-              <FormattedMessage id="connection.updateSchema" />
-            </Button>
+            <Button
+              onClick={onRefreshSourceSchema}
+              type="button"
+              buttonType={ButtonType.Secondary}
+              icon={<TryArrow icon={faSyncAlt} />}
+              label={<FormattedMessage id="connection.updateSchema" />}
+            />
           }
           onFormDirtyChanges={onDirtyChanges}
         />

@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components";
 
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -121,18 +121,22 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         </Count>
       </CreditView>
       <Actions>
-        <LoadingButton
+        <Button
           disabled={!selfServiceCheckoutEnabled}
-          size="xl"
+          size="l"
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
-        >
-          <FormattedMessage id="credits.buyCredits" />
-        </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales} size="xl">
-          <FormattedMessage id="credits.talkToSales" />
-        </Button>
+          label={<FormattedMessage id="credits.buyCredits" />}
+        />
+        <Button
+          // @ts-ignore
+          as="a"
+          target="_blank"
+          href={config.links.contactSales}
+          size="l"
+          label={<FormattedMessage id="credits.talkToSales" />}
+        />
       </Actions>
     </Block>
   );

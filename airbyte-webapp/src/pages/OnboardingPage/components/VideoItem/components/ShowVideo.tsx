@@ -26,9 +26,7 @@ const CloseButton = styled(Button)`
 const ShowVideo: React.FC<ShowVideoProps> = ({ videoId, onClose }) => {
   return (
     <Modal onClose={onClose} clear closeOnBackground>
-      <CloseButton onClick={onClose} iconOnly>
-        <FontAwesomeIcon icon={faTimes} />
-      </CloseButton>
+      <CloseButton onClick={onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
       <iframe
         width="940"
         height="528"

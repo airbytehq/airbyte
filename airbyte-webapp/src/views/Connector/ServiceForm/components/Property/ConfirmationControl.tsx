@@ -4,15 +4,12 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { ButtonType } from "../../../../../components/base/Button/types";
+
 const ComponentContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`;
-
-const SmallButton = styled(Button)`
-  margin-left: 8px;
-  padding: 6px 8px 7px;
 `;
 
 interface ConfirmationControlProps {
@@ -57,17 +54,30 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
       })}
       {isEditInProgress ? (
         <>
-          <SmallButton onClick={onDone} type="button" disabled={disabled}>
-            <FormattedMessage id="form.done" />
-          </SmallButton>
-          <SmallButton onClick={onCancel} type="button" secondary disabled={disabled}>
-            <FormattedMessage id="form.cancel" />
-          </SmallButton>
+          <Button
+            size="xs"
+            onClick={onDone}
+            type="button"
+            disabled={disabled}
+            label={<FormattedMessage id="form.done" />}
+          />
+          <Button
+            size="xs"
+            onClick={onCancel}
+            type="button"
+            buttonType={ButtonType.Secondary}
+            disabled={disabled}
+            label={<FormattedMessage id="form.cancel" />}
+          />
         </>
       ) : (
-        <SmallButton onClick={handleStartEdit} type="button" disabled={disabled}>
-          <FormattedMessage id="form.edit" />
-        </SmallButton>
+        <Button
+          size="xs"
+          onClick={handleStartEdit}
+          type="button"
+          disabled={disabled}
+          label={<FormattedMessage id="form.edit" />}
+        />
       )}
     </ComponentContainer>
   );

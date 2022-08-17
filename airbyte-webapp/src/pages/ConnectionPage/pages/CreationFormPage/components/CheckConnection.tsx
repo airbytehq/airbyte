@@ -7,6 +7,8 @@ import StatusIcon from "components/StatusIcon";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
+import { ButtonType } from "../../../../../components/base/Button/types";
+
 interface IProps {
   isLoading?: boolean;
   success?: boolean;
@@ -57,9 +59,12 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
           <LinkButton full as={Link} to={linkToSettings}>
             <FormattedMessage id={`connection.${type}CheckSettings`} />
           </LinkButton>
-          <Button secondary full onClick={retry}>
-            <FormattedMessage id={`connection.${type}TestAgain`} />
-          </Button>
+          <Button
+            buttonType={ButtonType.Secondary}
+            full
+            onClick={retry}
+            label={<FormattedMessage id={`connection.${type}TestAgain`} />}
+          />
         </ButtonBox>
       </Content>
     );

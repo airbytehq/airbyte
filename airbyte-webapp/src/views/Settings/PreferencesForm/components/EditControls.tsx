@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { Button } from "components";
 import Spinner from "components/Spinner";
 
+import { ButtonType } from "../../../../components/base/Button/types";
+
 interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
@@ -59,13 +61,19 @@ const EditControls: React.FC<IProps> = ({ isSubmitting, isValid, dirty, resetFor
 
   return (
     <Controls>
-      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
-        <FormattedMessage id="form.saveChanges" />
-      </Button>
+      <Button
+        type="submit"
+        disabled={isSubmitting || !isValid || !dirty}
+        label={<FormattedMessage id="form.saveChanges" />}
+      />
       <ButtonContainer>
-        <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={resetForm}>
-          <FormattedMessage id="form.cancel" />
-        </Button>
+        <Button
+          type="button"
+          buttonType={ButtonType.Secondary}
+          disabled={isSubmitting || !dirty}
+          onClick={resetForm}
+          label={<FormattedMessage id="form.cancel" />}
+        />
       </ButtonContainer>
       {showStatusMessage()}
     </Controls>

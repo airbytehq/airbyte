@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LoadingButton, LabeledInput, Link } from "components";
+import { LabeledInput, Link, Button } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
@@ -73,9 +73,12 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
-                <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                data-testid="login.resetPassword"
+                label={<FormattedMessage id="login.resetPassword" />}
+              />
             </BottomBlock>
           </Form>
         )}

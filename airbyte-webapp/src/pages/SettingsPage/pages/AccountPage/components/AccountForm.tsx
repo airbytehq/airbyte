@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LoadingButton } from "components";
+import { Button } from "components";
 import LabeledInput from "components/LabeledInput";
 import { Row, Cell } from "components/SimpleTableComponents";
 
@@ -82,9 +82,12 @@ const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessa
               </Field>
             </Cell>
             <ButtonCell>
-              <LoadingButton isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
-                <FormattedMessage id="form.saveChanges" />
-              </LoadingButton>
+              <Button
+                isLoading={isSubmitting}
+                type="submit"
+                disabled={!dirty || !values.email}
+                label={<FormattedMessage id="form.saveChanges" />}
+              />
             </ButtonCell>
           </InputRow>
           {!dirty &&

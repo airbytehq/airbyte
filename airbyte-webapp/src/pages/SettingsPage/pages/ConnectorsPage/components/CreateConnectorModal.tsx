@@ -4,9 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
+import { Button, LabeledInput, Link, Modal, StatusIcon, ButtonType } from "components";
 
 import { useConfig } from "config";
+
+import styles from "./CreateConnectorModal.module.scss";
 
 export interface IProps {
   errorMessage?: string;
@@ -29,10 +31,6 @@ const ButtonContent = styled.div`
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-`;
-
-const ButtonWithMargin = styled(Button)`
-  margin-right: 12px;
 `;
 
 const Label = styled.div`
@@ -210,12 +208,18 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <ButtonWithMargin onClick={onClose} type="button" secondary>
-                    <FormattedMessage id="form.cancel" />
-                  </ButtonWithMargin>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
-                    <FormattedMessage id="form.add" />
-                  </Button>
+                  <Button
+                    customStyles={styles.button_with_margin}
+                    onClick={onClose}
+                    type="button"
+                    buttonType={ButtonType.Secondary}
+                    label={<FormattedMessage id="form.cancel" />}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !dirty || !isValid}
+                    label={<FormattedMessage id="form.add" />}
+                  />
                 </div>
               </ButtonContent>
             </Form>

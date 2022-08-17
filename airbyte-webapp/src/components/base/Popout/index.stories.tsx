@@ -1,7 +1,7 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import React from "react";
 
-import Button from "../Button";
+import { Button } from "../Button";
 import { Popout } from "./Popout";
 
 export default {
@@ -10,7 +10,7 @@ export default {
 } as ComponentMeta<typeof Popout>;
 
 const Target: React.FC<{ onOpen: () => void; title: string }> = ({ onOpen, title }) => {
-  return <Button onClick={() => onOpen()}>{title}</Button>;
+  return <Button onClick={() => onOpen()} label={title} />;
 };
 
 const options = [

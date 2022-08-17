@@ -97,9 +97,11 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           }}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen} disabled={!allowCreateConnection}>
-              <FormattedMessage id={`tables.${type}Add`} />
-            </Button>
+            <Button
+              onClick={onOpen}
+              disabled={!allowCreateConnection}
+              label={<FormattedMessage id={`tables.${type}Add`} />}
+            />
           )}
         />
       </Content>

@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link, Button } from "components";
 
 import { useConfig } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -185,9 +185,13 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   disabled,
   buttonMessageId = "login.signup.submitButton",
 }) => (
-  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
-    <FormattedMessage id={buttonMessageId} />
-  </LoadingButton>
+  <Button
+    className={styles.signUpButton}
+    type="submit"
+    isLoading={isLoading}
+    disabled={disabled}
+    label={<FormattedMessage id={buttonMessageId} />}
+  />
 );
 
 export const SignupFormStatusMessage: React.FC = ({ children }) => (

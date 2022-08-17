@@ -20,11 +20,7 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, o
           <FormattedMessage id="errorView.title" />
         </H2>
         <p className={styles.message}>{message}</p>
-        {onCtaButtonClick && ctaButtonText && (
-          <Button size="xl" onClick={onCtaButtonClick}>
-            {ctaButtonText}
-          </Button>
-        )}
+        {onCtaButtonClick && ctaButtonText && <Button size="l" onClick={onCtaButtonClick} label={ctaButtonText} />}
       </div>
     </div>
   );

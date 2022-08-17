@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button, ButtonType } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
@@ -151,13 +151,17 @@ const OnboardingPage: React.FC = () => {
             </ApiErrorBoundary>
           </Suspense>
           <Footer>
-            <Button secondary onClick={() => handleFinishOnboarding()}>
-              {currentStep === StepType.FINAL ? (
-                <FormattedMessage id="onboarding.closeOnboarding" />
-              ) : (
-                <FormattedMessage id="onboarding.skipOnboarding" />
-              )}
-            </Button>
+            <Button
+              buttonType={ButtonType.Secondary}
+              onClick={() => handleFinishOnboarding()}
+              label={
+                currentStep === StepType.FINAL ? (
+                  <FormattedMessage id="onboarding.closeOnboarding" />
+                ) : (
+                  <FormattedMessage id="onboarding.skipOnboarding" />
+                )
+              }
+            />
           </Footer>
         </Content>
       </ScreenContent>

@@ -2,7 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components";
+
+import { ButtonType } from "../../../../components/base/Button/types";
 
 interface EditControlProps {
   isSubmitting: boolean;
@@ -23,7 +25,7 @@ const Buttons = styled.div`
   margin-top: 16px;
 `;
 
-const ControlButton = styled(LoadingButton)`
+const ControlButton = styled(Button)`
   margin-left: 10px;
 `;
 
@@ -70,16 +72,19 @@ const EditControls: React.FC<EditControlProps> = ({
       <Buttons>
         <div>{showStatusMessage()}</div>
         <div>
-          <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
-            <FormattedMessage id="form.cancel" />
-          </Button>
+          <Button
+            type="button"
+            buttonType={ButtonType.Secondary}
+            disabled={isSubmitting || (!dirty && !enableControls)}
+            onClick={resetForm}
+            label={<FormattedMessage id="form.cancel" />}
+          />
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
-          >
-            <FormattedMessage id="form.saveChanges" />
-          </ControlButton>
+            label={<FormattedMessage id="form.saveChanges" />}
+          />
         </div>
       </Buttons>
     </>

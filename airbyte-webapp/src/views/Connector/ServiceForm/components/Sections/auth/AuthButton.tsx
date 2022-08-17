@@ -62,14 +62,15 @@ export const AuthButton: React.FC = () => {
 
   const definitionId = ConnectorSpecification.id(selectedConnector);
   const Component = getButtonComponent(definitionId);
+  const buttonLabel = done ? (
+    <FormattedMessage id="connectorForm.reauthenticate" />
+  ) : (
+    <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
+  );
   return (
     <AuthSectionRow>
-      <Component isLoading={loading} type="button" onClick={() => run()}>
-        {done ? (
-          <FormattedMessage id="connectorForm.reauthenticate" />
-        ) : (
-          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
-        )}
+      <Component isLoading={loading} type="button" onClick={() => run()} label={buttonLabel}>
+        {buttonLabel}
       </Component>
       {done && (
         <SuccessMessage>

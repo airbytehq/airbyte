@@ -1,10 +1,12 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Button, H5, LoadingButton } from "components";
+import { Button, H5, ButtonType } from "components";
 import Table from "components/Table";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -24,9 +26,12 @@ const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ w
   const { isLoading, mutate: removeUser } = removeUserLogic;
 
   return (
-    <LoadingButton secondary onClick={() => removeUser({ email, workspaceId })} isLoading={isLoading}>
-      <FormattedMessage id="userSettings.user.remove" />
-    </LoadingButton>
+    <Button
+      buttonType={ButtonType.Secondary}
+      onClick={() => removeUser({ email, workspaceId })}
+      isLoading={isLoading}
+      label={<FormattedMessage id="userSettings.user.remove" />}
+    />
   );
 };
 
@@ -74,7 +79,7 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button secondary>send again</Button>,
+            // cell.value === "invited" && <Button buttonType={ButtonType.Secondary}>send again</Button>,
           ].filter(Boolean),
       },
     ],
@@ -87,9 +92,12 @@ export const UsersSettingsView: React.FC = () => {
         <H5>
           <FormattedMessage id="userSettings.table.title" />
         </H5>
-        <Button onClick={toggleModal} data-testid="userSettings.button.addNewUser">
-          + <FormattedMessage id="userSettings.button.addNewUser" />
-        </Button>
+        <Button
+          data-testid="userSettings.button.addNewUser"
+          icon={<FontAwesomeIcon icon={faPlus} />}
+          label={<FormattedMessage id="userSettings.button.addNewUser" />}
+          onClick={toggleModal}
+        />
       </Header>
       <Table data={users ?? []} columns={columns} />
       {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}

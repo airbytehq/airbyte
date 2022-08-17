@@ -7,6 +7,8 @@ import { Button } from "components";
 
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
 
+import { ButtonType } from "../../base/Button/types";
+
 interface DownloadButtonProps {
   jobDebugInfo: JobDebugInfoRead;
   fileName: string;
@@ -30,13 +32,12 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName 
   return (
     <Button
       onClick={downloadFileWithLogs}
-      secondary
+      buttonType={ButtonType.Secondary}
       title={formatMessage({
         id: "sources.downloadLogs",
       })}
-    >
-      <FontAwesomeIcon icon={faFileDownload} />
-    </Button>
+      icon={<FontAwesomeIcon icon={faFileDownload} />}
+    />
   );
 };
 

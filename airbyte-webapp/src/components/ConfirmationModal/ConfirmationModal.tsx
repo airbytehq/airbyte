@@ -2,11 +2,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
 import { Button } from "components/base/Button";
 import Modal from "components/Modal";
 
 import useLoadingState from "../../hooks/useLoadingState";
+import { ButtonType } from "../base/Button/types";
 
 const Content = styled.div`
   width: 585px;
@@ -53,12 +53,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <Content>
         <FormattedMessage id={text} />
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} type="button" secondary disabled={isLoading}>
-            <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
-          </ButtonWithMargin>
-          <LoadingButton danger onClick={onSubmitBtnClick} data-id={submitButtonDataId} isLoading={isLoading}>
-            <FormattedMessage id={submitButtonText} />
-          </LoadingButton>
+          <ButtonWithMargin
+            onClick={onClose}
+            type="button"
+            buttonType={ButtonType.Secondary}
+            disabled={isLoading}
+            label={<FormattedMessage id={cancelButtonText ?? "form.cancel"} />}
+          />
+          <Button
+            buttonType={ButtonType.Danger}
+            onClick={onSubmitBtnClick}
+            data-id={submitButtonDataId}
+            isLoading={isLoading}
+            label={<FormattedMessage id={submitButtonText} />}
+          />
         </ButtonContent>
       </Content>
     </Modal>
