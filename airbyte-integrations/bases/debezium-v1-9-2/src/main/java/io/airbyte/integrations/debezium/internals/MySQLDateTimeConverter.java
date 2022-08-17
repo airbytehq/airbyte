@@ -5,11 +5,11 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
-import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDateTimeConverter.class);
 
-  private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME"};
+  private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME", "TIMESTAMP"};
 
   @Override
   public void configure(final Properties props) {}
@@ -42,18 +42,22 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
     }
   }
 
-  /**
-   * The debezium driver replaces Zero-value by Null even when this column is mandatory. According to
-   * the doc, it should be done by driver, but it fails.
-   */
-  private Object convertDefaultValueNullDate(final RelationalColumn field) {
-    final var defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
-    return (defaultValue == null && !field.isOptional() ? DataTypeUtils.toISO8601String(LocalDate.EPOCH) : defaultValue);
-  }
-
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(),
-        x -> x == null ? convertDefaultValueNullDate(field) : DebeziumConverterUtils.convertDate(x));
+    final var fieldType = field.typeName();
+
+    registration.register(SchemaBuilder.string().optional(), x -> {
+      if (x == null) {
+        return DebeziumConverterUtils.convertDefaultValue(field);
+      }
+
+      return switch (fieldType.toUpperCase(Locale.ROOT)) {
+        case "DATETIME" -> DateTimeConverter.convertToTimestamp(x);
+        case "DATE" -> DateTimeConverter.convertToDate(x);
+        case "TIME" -> DateTimeConverter.convertToTime(x);
+        case "TIMESTAMP" -> DateTimeConverter.convertToTimestampWithTimezone(x);
+        default -> throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
+      };
+    });
   }
 
 }
