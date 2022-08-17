@@ -1,6 +1,6 @@
 @use "../../scss/colors";
 
-.airbyte-markdown {
+.markdown {
   * {
     color: colors.$dark-blue;
     line-height: 24px;
@@ -9,13 +9,13 @@
   }
 
   h1 {
-    font-size: 48px;
+    font-size: 32px;
     line-height: 56px;
     font-weight: bold;
   }
 
   h2 {
-    font-size: 24px;
+    font-size: 22px;
     line-height: 36px;
     font-weight: bold;
   }
@@ -67,13 +67,15 @@
   code {
     white-space: break-spaces;
     background: colors.$grey-50;
+    font-family: Menlo, Monaco, Consolas, monospace;
+  }
 
-    &.language-sql,
-    &.language-text {
-      display: block;
-      padding: 15px;
-      overflow: auto;
-    }
+  pre > code {
+    display: block;
+    padding: 15px;
+    overflow: auto;
+    border-radius: 8px;
+    border-bottom: 2px solid colors.$grey-100;
   }
 
   img {
