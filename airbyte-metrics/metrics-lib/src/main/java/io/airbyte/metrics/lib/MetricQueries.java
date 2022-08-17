@@ -153,43 +153,63 @@ public class MetricQueries {
    * are not matching with the number of expected runs according to the schedule settings. Refer to
    * playbook for detailed discussion.
    */
-  public static Long numOfJobsNotRunningOnSchedule(final DSLContext ctx) {
+  public static Long percentOfJobsNotRunningOnSchedule(final DSLContext ctx) {
     final var countField = "cnt";
     final var query = """
-                      SELECT count(1) as cnt FROM ((
-                      	SELECT
+                      with abnormal_sync_jobs as
+                      (
+                      select count(1) as cnt
+                      from
+                      	(
+                      	select
                       		c.id,
                       		count(*) as cnt
-                      	FROM
+                      	from
                       		connection c
-                      	LEFT JOIN Jobs j ON j.scope::uuid = c.id
-                      	WHERE
-                      		c.schedule IS NOT null
-                      		AND c.schedule != 'null'
-                      		AND j.created_at > now() - interval '24 hours 1 minutes'
-                      		AND c.status = 'active'
-                      		AND j.config_type = 'sync'
-                      		AND c.updated_at < now() - interval '24 hours 1 minutes'
-                      		AND cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
-                      	GROUP BY 1
-                      	HAVING count(*) < 24 / cast(c.schedule::jsonb->'units' as integer))
-                      UNION (
-                      SELECT
-                      	c.id,
-                      	count(*) as cnt
-                      FROM connection c
-                      LEFT JOIN Jobs j ON j.scope::uuid = c.id
-                      WHERE
-                      	c.schedule IS NOT null
-                      	AND c.schedule != 'null'
-                      	AND j.created_at > now() - interval '1 hours 1 minutes'
-                      	AND c.status = 'active'
-                      	AND j.config_type = 'sync'
-                      	AND c.updated_at < now() - interval '1 hours 1 minutes'
-                      	AND cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
-                      GROUP BY 1
-                      HAVING count(*) < 60 / cast(c.schedule::jsonb->'units' as integer))) as abnormal_sync_jobs
-                      	""";
+                      	left join Jobs j on
+                      		j.scope::uuid = c.id
+                      	where
+                      		c.schedule is not null
+                      		and c.schedule != 'null'
+                      		and j.created_at > now() - interval '24 hours 1 minutes'
+                      		and c.status = 'active'
+                      		and j.config_type = 'sync'
+                      		and c.updated_at < now() - interval '24 hours 1 minutes'
+                      		and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
+                      	group by 1
+                      	having count(*) < 24 / cast(c.schedule::jsonb->'units' as integer)
+                      union
+                      	select
+                      		c.id,
+                      		count(*) as cnt
+                      	from
+                      		connection c
+                      	left join Jobs j on
+                      		j.scope::uuid = c.id
+                      	where
+                      		c.schedule is not null
+                      		and c.schedule != 'null'
+                      		and j.created_at > now() - interval '1 hours 1 minutes'
+                      		and c.status = 'active'
+                      		and j.config_type = 'sync'
+                      		and c.updated_at < now() - interval '1 hours 1 minutes'
+                      		and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
+                      	group by 1
+                      	having count(*) < 60 / cast(c.schedule::jsonb->'units' as integer) ) as abnormals),
+                      total_sync_jobs as (
+                      select count(1) as cnt
+                      from connection c
+                      where
+                      	(c.updated_at < now() - interval '24 hours 1 minutes'
+                      		and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"')
+                      		or (c.updated_at < now() - interval '1 hours 1 minutes'
+                      			and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'))
+
+                      select 100.0 * guilty.cnt / total.cnt
+                      from
+                      	abnormal_sync_jobs as guilty,
+                      	total_sync_jobs as total
+                                            	""";
     return ctx.fetch(query).getValues(countField, long.class).get(0).longValue();
   }
 

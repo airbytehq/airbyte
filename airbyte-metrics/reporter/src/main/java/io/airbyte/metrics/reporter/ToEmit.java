@@ -49,9 +49,9 @@ public enum ToEmit {
       MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
     }
   })),
-  NUM_ABNORMAL_SCHEDULED_SYNCS(countMetricEmission(() -> {
-    final var count = ReporterApp.configDatabase.query(MetricQueries::numOfJobsNotRunningOnSchedule);
-    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS, count);
+  PCT_ABNORMAL_SCHEDULED_SYNCS(countMetricEmission(() -> {
+    final var count = ReporterApp.configDatabase.query(MetricQueries::percentOfJobsNotRunningOnSchedule);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.PCT_ABNORMAL_SCHEDULED_SYNCS, count);
   }), 1, TimeUnit.HOURS),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);

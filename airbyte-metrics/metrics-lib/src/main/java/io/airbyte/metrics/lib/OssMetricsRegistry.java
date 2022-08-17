@@ -87,10 +87,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_active_conn_per_workspace",
       "number of active connections per workspace"),
-  NUM_ABNORMAL_SCHEDULED_SYNCS(
+  PCT_ABNORMAL_SCHEDULED_SYNCS(
       MetricEmittingApps.METRICS_REPORTER,
       "num_abnormal_scheduled_syncs",
-      "number of abnormal syncs that have skipped at least 1 scheduled run recently."),
+      "percent of abnormal syncs that have skipped at least 1 scheduled run recently."),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
