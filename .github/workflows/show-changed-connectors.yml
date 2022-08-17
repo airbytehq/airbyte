@@ -26,9 +26,21 @@ jobs:
         run: |
           echo "!!! DEBBUG !!! "
           cat ./changed_files.txt
-      - name: Display changes
-        run: |
+
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
+      - name: Write Integration Test Credentials
+        run: ./tools/bin/ci_credentials.sh ${{ github.event.inputs.connector }}
+        env:
+          GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      - run: |
           ./tools/bin/ci_check_dependency.sh
+        name: Display changes
         id: check_dependency
+        env:
+          ACTION_RUN_ID: ${{github.run_id}}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
 
 
