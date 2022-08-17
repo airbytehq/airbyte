@@ -267,7 +267,7 @@ const useFrequencyDropdownData = (
           frequency?.timeUnit === additionalFrequency.timeUnit && frequency?.units === additionalFrequency.units
       );
       if (!additionalFreqAlreadyPresent) {
-        frequencies.unshift(additionalFrequency);
+        frequencies.push(additionalFrequency);
       }
     }
 
