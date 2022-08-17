@@ -32,6 +32,7 @@ connectionSpecification:
             href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
           type: string
           order: 2
+          airbyte_secret: true
         client_secret:
           title: Client Secret
           description: Enter your Salesforce developer application's <a
@@ -93,6 +94,6 @@ authSpecification:
   provider: "salesforce"
   authUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
   accessTokenUrlTemplate: "https://estuary-dev-ed.my.salesforce.com/services/oauth2/token"
-  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret={{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ code }}"
+  accessTokenBody: "grant_type=authorization_code&client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&redirect_uri={{ urlencode redirect_uri }}&code={{ urlencode code }}"
   accessTokenHeaders: "{\"content-type\": \"application/x-www-form-urlencoded\"}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
