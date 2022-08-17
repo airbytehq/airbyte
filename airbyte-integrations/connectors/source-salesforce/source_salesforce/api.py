@@ -290,7 +290,7 @@ class Salesforce:
 
     def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         response = self.describe(stream_name, stream_options)
-        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}, "required": ["Id"]}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
         return schema
