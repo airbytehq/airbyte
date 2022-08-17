@@ -19,6 +19,8 @@ from .fields import HitsFields, VisitsFields
 STATE_CHECKPOINT_INTERVAL = 20
 
 # Full refresh streams
+
+
 class YandexMetricaStream(HttpStream, ABC):
     url_base = "https://api-metrica.yandex.net/management/v1/counter/"
 

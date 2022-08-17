@@ -253,14 +253,14 @@ def test_check_should_retry(patch_base_class):
     stream = patch_base_class["check_substream"]
     inputs = {"response": MockResponse({"log_request": {"status": "created"}}, 200)}
 
-    assert stream.should_retry(**inputs) == True
+    assert stream.should_retry(**inputs) is True
 
 
 def test_check_should_not_retry(patch_base_class):
     stream = patch_base_class["check_substream"]
     inputs = {"response": MockResponse({"log_request": {"status": "processed"}}, 200)}
 
-    assert stream.should_retry(**inputs) == False
+    assert stream.should_retry(**inputs) is not True
 
 
 def test_check_backoff_time(patch_base_class):
