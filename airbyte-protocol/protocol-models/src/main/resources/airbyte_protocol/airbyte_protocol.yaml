@@ -27,7 +27,6 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
-          - VERSION
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -48,9 +47,6 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
-      version:
-        description: "the protocol version of the current message"
-        type: string
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -431,6 +427,9 @@ definitions:
             type: string
           oauth_config_specification:
             "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector"
+        type: string
   OAuthConfigSpecification:
     type: object
     additionalProperties: true
