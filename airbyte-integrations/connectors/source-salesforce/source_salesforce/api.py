@@ -263,7 +263,7 @@ class Salesforce:
         return resp
 
     def login(self):
-        login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
+        login_url = f"https://{'test' if self.is_sandbox else 'estuary-dev-ed.my'}.salesforce.com/services/oauth2/token"
         login_body = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
