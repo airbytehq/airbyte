@@ -1,12 +1,12 @@
 {
   "views": {
-    "end_date": "2022-07-19",
-    "start_date": "2022-07-19",
-    "ym:pv:dateTime": "2022-07-19 03:00:00"
+    "end_date": "2022-07-20",
+    "start_date": "2022-07-20",
+    "ym:pv:dateTime": "2022-07-20 01:00:00"
   },
   "sessions": {
-    "end_date": "2022-07-19",
-    "start_date": "2022-07-19",
-    "ym:s:dateTime": "2022-07-19 03:00:00"
+    "end_date": "2022-07-20",
+    "start_date": "2022-07-20",
+    "ym:s:dateTime": "2022-07-20 01:0:00"
   }
 }

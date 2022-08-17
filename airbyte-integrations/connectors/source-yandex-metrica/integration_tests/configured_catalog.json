@@ -2,20 +2,6 @@
   "streams": [
     {
       "stream": {
-        "name": "views",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["ym:pv:dateTime"],
-        "source_defined_primary_key": [["ym:pv:watchID"]]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["ym:pv:dateTime"],
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["ym:pv:watchID"]]
-    },
-    {
-      "stream": {
         "name": "sessions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -27,6 +13,20 @@
       "cursor_field": ["ym:s:dateTime"],
       "destination_sync_mode": "append",
       "primary_key": [["ym:s:visitID"]]
+    },
+    {
+      "stream": {
+        "name": "views",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["ym:pv:dateTime"],
+        "source_defined_primary_key": [["ym:pv:watchID"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["ym:pv:dateTime"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ym:pv:watchID"]]
     }
   ]
 }
