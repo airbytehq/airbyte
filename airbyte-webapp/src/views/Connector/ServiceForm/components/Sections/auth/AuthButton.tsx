@@ -1,28 +1,21 @@
+import classnames from "classnames";
+import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Button } from "components";
 
 import { ConnectorSpecification } from "core/domain/connector";
+import { FormBlock } from "core/form/types";
 
 import { useServiceForm } from "../../../serviceFormContext";
+import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 
-const AuthSectionRow = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const SuccessMessage = styled.div`
-  color: ${({ theme }) => theme.successColor};
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 17px;
-  margin-left: 14px;
-`;
+interface AuthButtonProps {
+  authFormFields: FormBlock[];
+}
 
 function isGoogleConnector(connectorDefinitionId: string): boolean {
   return [
@@ -50,7 +43,8 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
   return "connectorForm.authenticate";
 }
 
-export const AuthButton: React.FC = () => {
+export const AuthButton: React.FC<AuthButtonProps> = ({ authFormFields }) => {
+  const { getFieldMeta, submitCount } = useFormikContext();
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
@@ -62,8 +56,20 @@ export const AuthButton: React.FC = () => {
 
   const definitionId = ConnectorSpecification.id(selectedConnector);
   const Component = getButtonComponent(definitionId);
+
+  const hasOauthError =
+    authFormFields.filter((formField) => {
+      const meta = getFieldMeta(formField.path);
+      return submitCount > 0 && meta.error;
+    }).length > 0;
+
+  const messageStyle = classnames(styles.message, {
+    [styles.error]: hasOauthError,
+    [styles.success]: !hasOauthError,
+  });
+
   return (
-    <AuthSectionRow>
+    <div className={styles.authSectionRow}>
       <Component isLoading={loading} type="button" onClick={() => run()}>
         {done ? (
           <FormattedMessage id="connectorForm.reauthenticate" />
@@ -72,10 +78,15 @@ export const AuthButton: React.FC = () => {
         )}
       </Component>
       {done && (
-        <SuccessMessage>
+        <div className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
-        </SuccessMessage>
+        </div>
       )}
-    </AuthSectionRow>
+      {hasOauthError && (
+        <div className={messageStyle}>
+          <FormattedMessage id="connectorForm.authenticate.required" />
+        </div>
+      )}
+    </div>
   );
 };

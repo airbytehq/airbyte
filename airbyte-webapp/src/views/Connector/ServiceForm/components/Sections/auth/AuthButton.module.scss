@@ -1,0 +1,22 @@
+@use "../../../../../../scss/colors";
+
+.authSectionRow {
+  display: flex;
+  align-items: center;
+}
+
+.message {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  margin-left: 14px;
+}
+
+.error {
+  color: colors.$red;
+}
+
+.success {
+  color: colors.$green;
+}
