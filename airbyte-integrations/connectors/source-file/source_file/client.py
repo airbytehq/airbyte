@@ -372,6 +372,8 @@ class Client:
         if self._reader_format == "yaml":
             df_list = [self.load_yaml(fp)]
         else:
+            if self.binary_source:
+                fp = self._cache_stream(fp)
             df_list = self.load_dataframes(fp, skip_data=False)
         fields = {}
         for df in df_list:
