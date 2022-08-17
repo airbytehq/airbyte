@@ -9,10 +9,7 @@ import { useFrequencyDropdownData } from "./formConfig";
 describe("useFrequencyDropdownData", () => {
   it("should return only default frequencies when no additional frequency is provided", () => {
     const { result } = renderHook(() => useFrequencyDropdownData(undefined), { wrapper });
-    const stringifiedResult = JSON.stringify(result.current.map((item) => item.value));
-    const stringifiedConfig = JSON.stringify(FrequencyConfig.map((item) => item.config));
-
-    expect(stringifiedResult).toEqual(stringifiedConfig);
+    expect(result.current.map((item) => item.value)).toEqual(FrequencyConfig.map((item) => item.config));
   });
 
   it("should return only default frequencies when additional frequency is already present", () => {
@@ -21,10 +18,7 @@ describe("useFrequencyDropdownData", () => {
       timeUnit: ConnectionScheduleTimeUnit["hours"],
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
-    const stringifiedResult = JSON.stringify(result.current.map((item) => item.value));
-    const stringifiedConfig = JSON.stringify(FrequencyConfig.map((item) => item.config));
-
-    expect(stringifiedResult).toEqual(stringifiedConfig);
+    expect(result.current.map((item) => item.value)).toEqual(FrequencyConfig.map((item) => item.config));
   });
 
   it("should include additional frequency when provided and unique", () => {
@@ -35,10 +29,6 @@ describe("useFrequencyDropdownData", () => {
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
 
     expect(result.current.length).toEqual(FrequencyConfig.length + 1);
-    expect(
-      result.current.some(
-        (item) => item.label === "Every 7 minutes" && item.value.units === 7 && item.value.timeUnit === "minutes"
-      )
-    ).toBeTruthy();
+    expect(result.current).toContainEqual({ label: "Every 7 minutes", value: { units: 7, timeUnit: "minutes" } });
   });
 });
