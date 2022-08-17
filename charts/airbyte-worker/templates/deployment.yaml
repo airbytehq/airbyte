@@ -10,6 +10,8 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -300,9 +302,45 @@ spec:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
         {{- end }}
-        {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: worker-secrets
+              key: {{ $k }}
         {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.extraEnv }}
+        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        {{- if and .Values.gsm .Values.global.env }}
+        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "%s-%s" $.Values.global.env $v }}
+              key: {{ $k }}
+            {{- end }}
+        {{- end }}
+
+        {{- if and .Values.gsm (not .Values.global.env) }}
+        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "%%s" $v }}
+              key: {{ $k }}
+            {{- end }}
+        {{- end }}
+
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -364,10 +402,12 @@ spec:
         {{- if .Values.containerSecurityContext }}
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
+        {{- if eq .Values.global.deploymentMode "oss" }}
         volumeMounts:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+        {{- end }}
         {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
@@ -378,9 +418,17 @@ spec:
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
+      {{- if eq .Values.global.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}
+      {{- end }}
+      {{- if .Values.gsm }}
+      - name: gsm-creds-volume
+          secret:
+            secretName: {{ .Values.global.env | default .Release.Name }}-gsm-creds
+      {{- end }}
+      {{- if .Values.extraVolumes }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}

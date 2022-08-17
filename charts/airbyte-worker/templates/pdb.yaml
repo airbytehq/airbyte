@@ -1,9 +1,8 @@
-# Create secrets only for the local deployment
-{{- if .Values.secrets }}
-apiVersion: v1
-kind: Secret
+{{- if not (eq .Values.global.deploymentMode "oss") }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
 metadata:
-  name: webapp-secrets
+  name: worker-pdb
   labels:
     app.kubernetes.io/name: {{ include "airbyte.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -12,9 +11,10 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
   annotations:
-type: Opaque
-data:
-  {{- range $k, $v := mergeOverwrite .Values.secrets .Values.global.secrets }}
-  {{ $k }}: {{ if $v }}{{ $v | b64enc  }} {{else}}""{{end}}
-  {{- end }}
+    helm.sh/hook: post-install,post-upgrade
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      airbyte: worker
 {{- end }}

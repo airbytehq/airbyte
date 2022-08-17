@@ -188,3 +188,4 @@ extraContainers: []
 extraInitContainers: []
 
 secrets: {}
+gsm: {}

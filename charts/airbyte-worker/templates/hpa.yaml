@@ -1,0 +1,35 @@
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: airbyte-worker-hpa
+  labels:
+    app.kubernetes.io/name: {{ include "airbyte.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "airbyte.chart" . }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: airbyte-worker
+  minReplicas: 10
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 90
+{{- end }}

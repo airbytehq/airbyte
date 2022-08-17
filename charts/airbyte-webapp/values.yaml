@@ -180,3 +180,4 @@ extraVolumes: []
 extraContainers: []
 
 secrets: {}
+gsm: {}

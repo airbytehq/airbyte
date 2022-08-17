@@ -82,9 +82,29 @@ spec:
         - name: {{ $k }}
           valueFrom:
             secretKeyRef:
-              name: bootloader-secrets
+              name: webapp-secrets
               key: {{ $k }}
         {{- end }}
+        {{- end }}
+
+        {{- if and .Values.gsm .Values.global.env }}
+        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "%s-%s" $.Values.global.env $v }}
+              key: {{ $k }}
+            {{- end }}
+        {{- end }}
+
+        {{- if and .Values.gsm (not .Values.global.env) }}
+        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "%%s" $v }}
+              key: {{ $k }}
+            {{- end }}
         {{- end }}
 
         # Values from env
