@@ -55,6 +55,7 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -208,6 +209,8 @@ public class ServerApp implements ServerRunnable {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 

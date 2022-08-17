@@ -36,6 +36,8 @@ class JobErrorReporterTest {
   private static final String CONNECTION_URL = "http://localhost:8000/connection/my_connection";
   private static final DeploymentMode DEPLOYMENT_MODE = DeploymentMode.OSS;
   private static final String AIRBYTE_VERSION = "0.1.40";
+  private static final String NORMALIZATION_IMAGE = "airbyte/normalization";
+  private static final String NORMALIZATION_VERSION = "0.2.18";
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final String SOURCE_DEFINITION_NAME = "stripe";
   private static final String SOURCE_DOCKER_REPOSITORY = "airbyte/source-stripe";
@@ -71,7 +73,8 @@ class JobErrorReporterTest {
     configRepository = mock(ConfigRepository.class);
     jobErrorReportingClient = mock(JobErrorReportingClient.class);
     webUrlHelper = mock(WebUrlHelper.class);
-    jobErrorReporter = new JobErrorReporter(configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, webUrlHelper, jobErrorReportingClient);
+    jobErrorReporter = new JobErrorReporter(
+        configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, NORMALIZATION_IMAGE, NORMALIZATION_VERSION, webUrlHelper, jobErrorReportingClient);
   }
 
   @Test
