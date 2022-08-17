@@ -31,6 +31,16 @@ jobs:
           ./tools/bin/ci_check_dependency.sh
         name: Display changes
         id: check_dependency
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+      - name: Create report
+        run: |
+          output=$(python release_mail_generator.py ./changed_files.txt)
+          echo "::set-output name=changed_files_report::$output"
+        id: dependency_report
+      - name: Print result
+        run: echo "${{ steps.dependency_report.outputs.changed_files_report }}"
 
 
 
