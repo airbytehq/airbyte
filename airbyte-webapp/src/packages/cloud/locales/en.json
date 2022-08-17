@@ -149,5 +149,8 @@
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
-  "webapp.cannotReachServer": "Cannot reach server."
+  "webapp.cannotReachServer": "Cannot reach server.",
+
+  "inviteUsersHint.message": "Need help from a teammate to configure your {connector}?",
+  "inviteUsersHint.cta": "Invite users"
 }

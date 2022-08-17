@@ -9,7 +9,9 @@ import { PageHeader } from "components/ui/PageHeader";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import { InviteUsersHint } from "packages/cloud/views/users/InviteUsersHint";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { isCloudApp } from "utils/app";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
 import { SourceForm } from "./components/SourceForm";
@@ -47,6 +49,7 @@ const CreateSourcePage: React.FC = () => {
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
+          {isCloudApp() && <InviteUsersHint connectorType="source" />}
         </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>

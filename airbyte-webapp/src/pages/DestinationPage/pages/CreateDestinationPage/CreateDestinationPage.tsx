@@ -9,7 +9,9 @@ import { PageHeader } from "components/ui/PageHeader";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { InviteUsersHint } from "packages/cloud/views/users/InviteUsersHint";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { isCloudApp } from "utils/app";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { DestinationForm } from "./components/DestinationForm";
@@ -50,6 +52,7 @@ export const CreateDestinationPage: React.FC = () => {
             destinationDefinitions={destinationDefinitions}
             hasSuccess={successRequest}
           />
+          {isCloudApp() && <InviteUsersHint connectorType="destination" />}
         </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>
