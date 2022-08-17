@@ -5,6 +5,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { CheckBox, H5 } from "components";
+import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
@@ -70,6 +71,7 @@ const LearnMoreLink = styled.a`
 interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  isSubmitting: boolean;
   mode?: ConnectionFormMode;
 }
 
@@ -172,6 +174,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   additionalControl,
   field,
   form,
+  isSubmitting,
   mode,
 }) => {
   const { value: streams, name: fieldName } = field;
@@ -209,7 +212,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <div>
+      <LoadingBackdrop loading={isSubmitting}>
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>
@@ -236,7 +239,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
             mode={mode}
           />
         </TreeViewContainer>
-      </div>
+      </LoadingBackdrop>
     </BatchEditProvider>
   );
 };
