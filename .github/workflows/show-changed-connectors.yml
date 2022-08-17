@@ -31,7 +31,7 @@ jobs:
           python -m pip install --upgrade pip
       - name: Create report
         run: |
-          output=$(python release_mail_generator.py ./changed_files.txt)
+          output=$(python ci_check_dependency.py ./changed_files.txt)
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
       - name: Print result
