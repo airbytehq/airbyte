@@ -212,7 +212,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <LoadingBackdrop isActive={isSubmitting}>
+      <LoadingBackdrop loading={isSubmitting}>
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>

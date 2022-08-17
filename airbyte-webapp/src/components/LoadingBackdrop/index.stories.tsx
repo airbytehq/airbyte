@@ -6,7 +6,7 @@ export default {
   title: "Ui/LoadingBackdrop",
   component: LoadingBackdrop,
   argTypes: {
-    isActive: { type: "boolean", required: true },
+    loading: { type: "boolean", required: true },
     small: { type: "boolean", required: false },
   },
 } as ComponentMeta<typeof LoadingBackdrop>;
