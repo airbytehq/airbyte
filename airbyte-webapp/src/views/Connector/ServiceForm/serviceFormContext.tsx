@@ -83,10 +83,12 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
 
   const authFieldsToHide = useMemo(
     () =>
-      Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
-        makeConnectionConfigurationPath(f.path_in_connector_config)
-      ),
-    [selectedConnector]
+      isAuthFlowSelected
+        ? Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
+            makeConnectionConfigurationPath(f.path_in_connector_config)
+          )
+        : [],
+    [selectedConnector, isAuthFlowSelected]
   );
 
   const ctx = useMemo<ServiceFormContext>(() => {
@@ -94,7 +96,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
     return {
       widgetsInfo,
       isAuthFlowSelected,
-      authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
+      authFieldsToHide,
       getValues,
       setUiWidgetsInfo,
       selectedService,
