@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import List
 
 import dpath.exceptions
 import dpath.util
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import FieldPointer
+from airbyte_cdk.sources.declarative.types import FieldPointer, Record
 
 
 class RemoveFields(RecordTransformation):
@@ -39,14 +39,13 @@ class RemoveFields(RecordTransformation):
         """
         self._field_pointers = field_pointers
 
-    def transform(self, record: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
+    def transform(self, record: Record, **kwargs) -> Record:
         """
         :param record: The record to be transformed
         :return: the input record with the requested fields removed
         """
         for pointer in self._field_pointers:
             # the dpath library by default doesn't delete fields from arrays
-
             try:
                 dpath.util.delete(record, pointer)
             except dpath.exceptions.PathNotFound:

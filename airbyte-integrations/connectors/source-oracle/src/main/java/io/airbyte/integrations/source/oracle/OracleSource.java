@@ -51,7 +51,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
+    return new SshWrappedSource(new OracleSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -67,40 +67,40 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
      */
     additionalParameters.add("oracle.jdbc.useFetchSizeWithLongColumn=true");
 
-    final Protocol protocol = config.has("encryption")
-        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
+    final Protocol protocol = config.has(JdbcUtils.ENCRYPTION_KEY)
+        ? obtainConnectionProtocol(config.get(JdbcUtils.ENCRYPTION_KEY), additionalParameters)
         : Protocol.TCP;
     final String connectionString = String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
         protocol,
-        config.get("host").asText(),
-        config.get("port").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
         config.get("sid").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", connectionString);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, connectionString);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // Use the upper-cased username by default.
-    schemas = List.of(config.get("username").asText().toUpperCase(Locale.ROOT));
-    if (config.has("schemas") && config.get("schemas").isArray()) {
+    schemas = List.of(config.get(JdbcUtils.USERNAME_KEY).asText().toUpperCase(Locale.ROOT));
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : config.get("schemas")) {
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
     }
 
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
-      additionalParameters.addAll(List.of(config.get("jdbc_url_params").asText().split("&")));
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      additionalParameters.addAll(List.of(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
     }
 
     if (!additionalParameters.isEmpty()) {
       final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
-      configBuilder.put("connection_properties", connectionParams);
+      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());

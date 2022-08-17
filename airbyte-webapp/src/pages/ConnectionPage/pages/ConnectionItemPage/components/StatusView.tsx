@@ -23,10 +23,6 @@ interface StatusViewProps {
   isStatusUpdating?: boolean;
 }
 
-const Content = styled.div`
-  margin: 0 10px;
-`;
-
 const StyledContentCard = styled(ContentCard)`
   margin-bottom: 20px;
 `;
@@ -109,27 +105,25 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
   );
 
   return (
-    <Content>
-      <StyledContentCard
-        title={
-          <Title>
-            <FormattedMessage id="sources.syncHistory" />
-            {connection.status === ConnectionStatus.active && (
-              <div>
-                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id="connection.pendingSync" />
-                </ToolTip>
-                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id="connection.pendingSync" />
-                </ToolTip>
-              </div>
-            )}
-          </Title>
-        }
-      >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </StyledContentCard>
-    </Content>
+    <StyledContentCard
+      title={
+        <Title>
+          <FormattedMessage id="sources.syncHistory" />
+          {connection.status === ConnectionStatus.active && (
+            <div>
+              <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+              <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+            </div>
+          )}
+        </Title>
+      }
+    >
+      {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+    </StyledContentCard>
   );
 };
 

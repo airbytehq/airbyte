@@ -797,7 +797,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.10"
+- dockerImage: "airbyte/destination-clickhouse:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -2763,7 +2763,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.4"
+- dockerImage: "airbyte/destination-mongodb:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
@@ -3070,7 +3070,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.18"
+- dockerImage: "airbyte/destination-oracle:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -3082,6 +3082,7 @@
       - "port"
       - "username"
       - "sid"
+      additionalProperties: true
       properties:
         host:
           title: "Host"
@@ -3116,6 +3117,13 @@
           type: "string"
           airbyte_secret: true
           order: 4
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 5
         schema:
           title: "Default Schema"
           description: "The default schema is used as the target schema for all statements\
@@ -3127,13 +3135,13 @@
           examples:
           - "airbyte"
           default: "airbyte"
-          order: 5
+          order: 6
         encryption:
           title: "Encryption"
           type: "object"
           description: "The encryption method which is used when communicating with\
             \ the database."
-          order: 6
+          order: 7
           oneOf:
           - title: "Unencrypted"
             description: "Data transfer will not be encrypted."
@@ -4396,7 +4404,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.33"
+- dockerImage: "airbyte/destination-snowflake:0.4.34"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4465,8 +4473,8 @@
           description: ""
           type: "object"
           oneOf:
-          - type: "object"
-            title: "OAuth2.0"
+          - title: "OAuth2.0"
+            type: "object"
             order: 0
             required:
             - "access_token"
@@ -4499,11 +4507,37 @@
                 title: "Refresh Token"
                 description: "Enter your application's Refresh Token"
                 airbyte_secret: true
+          - title: "Key Pair Authentication"
+            type: "object"
+            order: 1
+            required:
+            - "private_key"
+            properties:
+              auth_type:
+                type: "string"
+                const: "Key Pair Authentication"
+                enum:
+                - "Key Pair Authentication"
+                default: "Key Pair Authentication"
+                order: 0
+              private_key:
+                type: "string"
+                title: "Private Key"
+                description: "RSA Private key to use for Snowflake connection. See\
+                  \ the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\"\
+                  >docs</a> for more information on how to obtain this key."
+                multiline: true
+                airbyte_secret: true
+              private_key_password:
+                type: "string"
+                title: "Passphrase (Optional)"
+                description: "Passphrase for private key"
+                airbyte_secret: true
           - title: "Username and Password"
             type: "object"
             required:
             - "password"
-            order: 1
+            order: 2
             properties:
               password:
                 description: "Enter the password associated with the username."

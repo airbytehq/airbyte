@@ -29,7 +29,7 @@ select
     bigint
 ) as id,
     cast("User Id" as 
-    VARCHAR(max)) as "User Id",
+    NVARCHAR(max)) as "User Id",
     cast(user_id as 
     float
 ) as user_id,
@@ -40,7 +40,7 @@ select
     float
 ) as "user id_2",
     cast("User@Id" as 
-    VARCHAR(max)) as "User@Id",
+    NVARCHAR(max)) as "User@Id",
     cast(userid as 
     float
 ) as userid,
@@ -59,14 +59,14 @@ select
     
 
     concat(concat(coalesce(cast(id as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("User Id" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(user_id as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("User id_1" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("user id_2" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("User@Id" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(userid as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_multiple_col__ames_conflicts_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("User Id" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(user_id as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("User id_1" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("user id_2" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("User@Id" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(userid as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_multiple_col__ames_conflicts_hashid,
     tmp.*
 from __dbt__cte__multiple_column_names_conflicts_ab2 tmp
 -- multiple_column_names_conflicts

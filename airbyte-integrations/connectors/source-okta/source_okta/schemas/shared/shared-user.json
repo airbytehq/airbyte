@@ -2,9 +2,6 @@
   "$id": "shared-users.json",
   "properties": {
     "_links": {
-      "additionalProperties": {
-        "type": ["object", "null"]
-      },
       "type": ["object", "null"]
     },
     "activated": {

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -32,11 +33,11 @@ public class MSSQLDestinationTest {
   private Map<String, String> baseParameters(final String sslMethod) {
     return ImmutableMap.<String, String>builder()
         .put("ssl_method", sslMethod)
-        .put("host", "localhost")
-        .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.PORT_KEY, "1773")
+        .put(JdbcUtils.DATABASE_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
         .build();
   }
 
@@ -167,48 +168,48 @@ public class MSSQLDestinationTest {
   void testNoExtraParams() {
     final JsonNode config = buildConfigNoJdbcParameters();
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY));
+    assertNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
   @Test
   void testEmptyExtraParams() {
     final String extraParam = "";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
   }
 
   @Test
   void testExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
 
   }
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
-        "host", "localhost",
-        "port", "1773",
-        "database", "db",
-        "username", "username",
-        "password", "verysecure"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, "1773",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure"));
   }
 
-  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
+  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
-        "host", "localhost",
-        "port", "1773",
-        "database", "db",
-        "username", "username",
-        "password", "verysecure",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, "1773",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
 }

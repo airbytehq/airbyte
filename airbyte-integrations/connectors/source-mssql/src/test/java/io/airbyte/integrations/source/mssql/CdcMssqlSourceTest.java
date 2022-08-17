@@ -28,6 +28,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
@@ -87,12 +88,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         "data_to_sync", "Existing and New",
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication", replicationConfig)
         .build());
 
@@ -342,12 +343,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
-        DataSourceFactory.create(config.get("username").asText(),
-            config.get("password").asText(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-                config.get("host").asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 dbName)),
         new MssqlSourceOperations(),
         AdaptiveStreamingQueryConfig::new);

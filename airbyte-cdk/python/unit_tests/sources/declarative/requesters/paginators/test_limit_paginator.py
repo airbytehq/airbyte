@@ -102,7 +102,7 @@ def test_limit_paginator(
     expected_next_page_token,
 ):
     limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit")
-    cursor_value = "{{ decoded_response.next }}"
+    cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
     config = {}
     strategy = CursorPaginationStrategy(cursor_value, stop_condition=stop_condition, decoder=JsonDecoder(), config=config)
@@ -130,7 +130,7 @@ def test_limit_paginator(
 def test_limit_cannot_be_set_in_path():
     limit_request_option = RequestOption(inject_into=RequestOptionType.path)
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset")
-    cursor_value = "{{ decoded_response.next }}"
+    cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
     config = {}
     strategy = CursorPaginationStrategy(cursor_value, config)

@@ -92,7 +92,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
     final AirbyteSource airbyteSource =
-        sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource(
+        WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 

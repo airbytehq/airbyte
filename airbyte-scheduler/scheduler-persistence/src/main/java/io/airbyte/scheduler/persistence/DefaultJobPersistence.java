@@ -742,7 +742,7 @@ public class DefaultJobPersistence implements JobPersistence {
     try (final Stream<Record> records = jobDatabase.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
       return records.map(record -> {
         final Set<String> jsonFieldNames = Arrays.stream(record.fields())
-            .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+            .filter(f -> "jsonb".equals(f.getDataType().getTypeName()))
             .map(Field::getName)
             .collect(Collectors.toSet());
         final JsonNode row = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
@@ -834,7 +834,7 @@ public class DefaultJobPersistence implements JobPersistence {
           ctx.batch(insertStep).execute();
         }
       });
-      final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
+      final Optional<Field<?>> idColumn = columns.stream().filter(f -> "id".equals(f.getName())).findFirst();
       if (idColumn.isPresent())
         resetIdentityColumn(ctx, schema, tableType);
     }

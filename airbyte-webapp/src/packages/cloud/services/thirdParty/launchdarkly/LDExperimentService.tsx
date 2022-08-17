@@ -93,7 +93,7 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
         // The LaunchDarkly promise resolved before the timeout, so we're good to use LD.
         setState("initialized");
         // Make sure enabled experiments are added to each analytics event
-        addAnalyticsContext({ experiments: ldClient.current?.allFlags() });
+        addAnalyticsContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
         // Check for overwritten i18n messages
         updateI18nMessages();
         updateFeatureOverwrites(ldClient.current?.variation(FEATURE_FLAG_EXPERIMENT, ""));
@@ -118,7 +118,7 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
   useEffectOnce(() => {
     const onFeatureFlagsChanged = () => {
       // Update analytics context whenever a flag changes
-      addAnalyticsContext({ experiments: ldClient.current?.allFlags() });
+      addAnalyticsContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
       // Check for overwritten i18n messages
       updateI18nMessages();
     };

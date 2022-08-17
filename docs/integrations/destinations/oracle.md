@@ -92,6 +92,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version     | Date | Pull Request                                             | Subject                                                                                             |
 |:------------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.19      | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/)    | Destination Oracle: added custom JDBC parameters support.                                           |
 | 0.1.18      | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
 | unpublished | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.16      | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
@@ -113,6 +114,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request                                            | Subject                                                                                                                     |
 |:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------|
+| 0.1.19   | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/) | Destination Oracle: added custom JDBC parameters support.                                        |
 | 0.1.7   | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
 | 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                    |

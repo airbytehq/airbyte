@@ -4,7 +4,7 @@
 
 [Airbyte](http://airbyte.io) is the upcoming open-source standard for EL(T). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
 
-Airbyte is remote friendly, with most of the team still based in San Francisco. We’re fully open as a company. Our **[company handbook](https://handbook.airbyte.io)**, **[culture & values](https://handbook.airbyte.io/company/culture-and-values)**, **[strategy](https://handbook.airbyte.io/strategy/strategy)** and **[roadmap](../project-overview/roadmap.md)** are open to all.
+Airbyte is remote friendly, with most of the team still based in San Francisco. We’re fully open as a company. Our **[company handbook](https://handbook.airbyte.io)**, **[culture & values](https://handbook.airbyte.io/company/culture-and-values)**, **[strategy](https://handbook.airbyte.io/strategy/strategy)** and **[roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap)** are open to all.
 
 We raised a total of $31.2M by some of the world's [top investors](./#our-investors) (Benchmark, Accel, YCombinator, co-founders or CEOs of Segment, Elastic, MongoDB, Cloudera, etc.) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 

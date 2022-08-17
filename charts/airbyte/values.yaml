@@ -5,7 +5,8 @@
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
-  
+  deploymentMode: "oss"
+
   secretName: "airbyte-secrets"
   database:
     secretName: "test-postgresql"
@@ -143,7 +144,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.39.41-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -419,7 +420,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.39.41-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -547,7 +548,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.39.41-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -666,7 +667,7 @@ airbyte-bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.39.41-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -721,7 +722,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ## @param temporal.service.type The Kubernetes Service Type
   ## @param temporal.service.port The temporal port and exposed kubernetes port

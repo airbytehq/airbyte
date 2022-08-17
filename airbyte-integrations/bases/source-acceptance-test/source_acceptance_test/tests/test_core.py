@@ -29,7 +29,7 @@ from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.common import find_key_inside_schema, find_keyword_schema
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -135,8 +135,7 @@ class TestSpec(BaseTest):
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
-        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
-
+        check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
@@ -163,6 +162,20 @@ class TestSpec(BaseTest):
 
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_additional_properties_is_true(self, actual_connector_spec):
+        """Check that value of the "additionalProperties" field is always true.
+        A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        additional_properties_values = find_all_values_for_key_in_schema(
+            actual_connector_spec.connectionSpecification, "additionalProperties"
+        )
+        if additional_properties_values:
+            assert all(
+                [additional_properties_value is True for additional_properties_value in additional_properties_values]
+            ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 @pytest.mark.default_timeout(30)
@@ -217,8 +230,8 @@ class TestDiscovery(BaseTest):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
-            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
-            if check_result is not None:
+            check_result = list(find_all_values_for_key_in_schema(stream.json_schema, "$ref"))
+            if check_result:
                 schemas_errors.append({stream_name: check_result})
 
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
@@ -248,6 +261,19 @@ class TestDiscovery(BaseTest):
         for _, stream in discovered_catalog.items():
             assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
             assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
+
+    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+        """Check that value of the "additionalProperties" field is always true.
+        A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        for stream in discovered_catalog.values():
+            additional_properties_values = list(find_all_values_for_key_in_schema(stream.json_schema, "additionalProperties"))
+            if additional_properties_values:
+                assert all(
+                    [additional_properties_value is True for additional_properties_value in additional_properties_values]
+                ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 def primary_keys_for_records(streams, records):

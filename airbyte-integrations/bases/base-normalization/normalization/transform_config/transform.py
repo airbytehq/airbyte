@@ -219,6 +219,12 @@ class TransformConfig:
             dbt_config["oauth_client_id"] = credentials["client_id"]
             dbt_config["oauth_client_secret"] = credentials["client_secret"]
             dbt_config["token"] = credentials["refresh_token"]
+        elif credentials.get("private_key"):
+            with open("private_key_path.txt", "w") as f:
+                f.write(credentials["private_key"])
+            dbt_config["private_key_path"] = "private_key_path.txt"
+            if credentials.get("private_key_password"):
+                dbt_config["private_key_passphrase"] = credentials["private_key_password"]
         elif credentials.get("password"):
             dbt_config["password"] = credentials["password"]
         else:

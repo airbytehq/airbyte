@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,13 +46,16 @@ public class AirbyteDebeziumHandler {
   private final JsonNode config;
   private final CdcTargetPosition targetPosition;
   private final boolean trackSchemaHistory;
+  private final Duration firstRecordWaitTime;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition targetPosition,
-                                final boolean trackSchemaHistory) {
+                                final boolean trackSchemaHistory,
+                                final Duration firstRecordWaitTime) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
+    this.firstRecordWaitTime = firstRecordWaitTime;
   }
 
   public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
@@ -79,7 +83,8 @@ public class AirbyteDebeziumHandler {
         queue,
         targetPosition,
         publisher::hasClosed,
-        publisher::close);
+        publisher::close,
+        firstRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
@@ -108,7 +113,8 @@ public class AirbyteDebeziumHandler {
         queue,
         targetPosition,
         publisher::hasClosed,
-        publisher::close);
+        publisher::close,
+        firstRecordWaitTime);
 
     // convert to airbyte message.
     final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators

@@ -21,9 +21,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends AbstractConfigsDatabaseTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_39_17_001__AddStreamDescriptorsToStateTableTest.class);
   private final String STATE_TABLE = "State";
 
   private UUID connection1;
@@ -57,8 +60,8 @@ class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends AbstractConfigs
         .values(newState, connection1, "new_stream")
         .execute();
 
-    System.out.println(context.selectFrom("connection").fetch());
-    System.out.println(context.selectFrom(STATE_TABLE).fetch());
+    LOGGER.info(String.valueOf(context.selectFrom("connection").fetch()));
+    LOGGER.info(String.valueOf(context.selectFrom(STATE_TABLE).fetch()));
 
     // Our two initial rows and the new row should be LEGACY
     Assertions.assertEquals(3,

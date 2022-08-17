@@ -26,7 +26,7 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.connectionId(search.getConnectionId() == null ? query.getConnectionId() : search.getConnectionId());
     fromSearch.destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
-    fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || search.getNamespaceFormat().equals("null")
+    fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || "null".equals(search.getNamespaceFormat())
         ? query.getNamespaceFormat()
         : search.getNamespaceFormat());
     fromSearch.namespaceDefinition(

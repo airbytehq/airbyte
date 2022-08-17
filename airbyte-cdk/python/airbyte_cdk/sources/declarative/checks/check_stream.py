@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
@@ -15,8 +15,13 @@ class CheckStream(ConnectionChecker):
     Checks the connections by trying to read records from one or many of the streams selected by the developer
     """
 
-    def __init__(self, stream_names: List[str]):
+    def __init__(self, stream_names: List[str], **options: Optional[Mapping[str, Any]]):
+        """
+        :param stream_names: name of streams to read records from
+        :param options: Additional runtime parameters to be used for string interpolation
+        """
         self._stream_names = set(stream_names)
+        self._options = options
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)

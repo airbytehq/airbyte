@@ -23,17 +23,18 @@ class CursorPaginationStrategy(PaginationStrategy):
         cursor_value: Union[InterpolatedString, str],
         config: Config,
         stop_condition: Optional[InterpolatedBoolean] = None,
-        decoder: Decoder = None,
+        decoder: Optional[Decoder] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
-
         :param cursor_value: template string evaluating to the cursor value
         :param config: connection config
         :param stop_condition: template string evaluating when to stop paginating
         :param decoder: decoder to decode the response
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if isinstance(cursor_value, str):
-            cursor_value = InterpolatedString(cursor_value)
+            cursor_value = InterpolatedString.create(cursor_value, options=options)
         self._cursor_value = cursor_value
         self._config = config
         self._decoder = decoder or JsonDecoder()
@@ -43,10 +44,8 @@ class CursorPaginationStrategy(PaginationStrategy):
         decoded_response = self._decoder.decode(response)
         headers = response.headers
         if self._stop_condition:
-            should_stop = self._stop_condition.eval(
-                self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
-            )
+            should_stop = self._stop_condition.eval(self._config, response=decoded_response, headers=headers, last_records=last_records)
             if should_stop:
                 return None
-        token = self._cursor_value.eval(config=self._config, last_records=last_records, decoded_response=self._decoder.decode(response))
+        token = self._cursor_value.eval(config=self._config, last_records=last_records, response=decoded_response)
         return token if token else None

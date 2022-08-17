@@ -19,7 +19,9 @@ const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, page
         {headTitle}
         {pageTitle}
       </div>
-      <div className={styles.content}>{children}</div>
+      <div className={styles.contentContainer}>
+        <div className={styles.content}>{children}</div>
+      </div>
     </div>
   );
 };

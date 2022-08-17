@@ -5,34 +5,55 @@
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+
 
 class RequestOptionsProvider(ABC):
-    @abstractmethod
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        pass
+    """
+    Defines the request options to set on an outgoing HTTP request
+
+    Options can be passed by
+    - request parameter
+    - request headers
+    - body data
+    - json content
+    """
 
     @abstractmethod
-    def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Optional[Union[Mapping, str]]:
-        pass
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        """
+        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
-    @abstractmethod
-    def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Optional[Mapping]:
-        pass
-
-    @abstractmethod
-    def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
+        E.g: you might want to define query parameters for paging if next_page_token is not None.
+        """
         pass
 
     @abstractmethod
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Mapping[str, Any]:
-        pass
+        """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
+
+    @abstractmethod
+    def request_body_data(
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Optional[Union[Mapping, str]]:
+        """
+        Specifies how to populate the body of the request with a non-JSON payload.
+
+        If returns a ready text that it will be sent as is.
+        If returns a dict that it will be converted to a urlencoded form.
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+
+        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
+        """
+
+    @abstractmethod
+    def request_body_json(
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Optional[Mapping]:
+        """
+        Specifies how to populate the body of the request with a JSON payload.
+
+        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
+        """

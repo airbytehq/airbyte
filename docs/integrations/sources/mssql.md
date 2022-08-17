@@ -18,7 +18,7 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 You may run into an issue where the connector provides wrong values for some data types. See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
 
-Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check 
+Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check
 [this ticket](https://github.com/airbytehq/airbyte/issues/14411)
 
 
@@ -306,6 +306,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
+| 0.4.11   | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
 | 0.4.10   | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.4.9   | 2022-07-05 | [14379](https://github.com/airbytehq/airbyte/pull/14379) | Aligned Normal and CDC migration + added some fixes for datatypes processing                         |
 | 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) | Omit using 'USE' keyword on Azure SQL with CDC                                                       |

@@ -42,6 +42,7 @@ from source_zendesk_support.streams import (
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
+from utils import read_full_refresh
 
 # prepared config
 STREAM_ARGS = {
@@ -91,7 +92,7 @@ def test_token_authenticator():
     # we expect base64 from creds input
     expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
     result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -112,7 +113,7 @@ def test_convert_config2stream_args(config):
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
     result = SourceZendeskSupport().get_authenticator(config=config)
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -803,3 +804,38 @@ class TestSourceZendeskSupportTicketEventsExportStream:
         stream = stream_cls(**STREAM_ARGS)
         result = stream.event_type
         assert result == expected
+
+
+def test_read_tickets_stream(requests_mock):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets.json",
+        json={
+            "tickets": [
+                {"custom_fields": []},
+                {},
+                {
+                    "custom_fields": [
+                        {"id": 360023382300, "value": None},
+                        {"id": 360004841380, "value": "customer_tickets"},
+                        {"id": 360022469240, "value": "5"},
+                        {"id": 360023712840, "value": False},
+                    ]
+                },
+            ]
+        },
+    )
+
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == [
+        {"custom_fields": []},
+        {},
+        {
+            "custom_fields": [
+                {"id": 360023382300, "value": None},
+                {"id": 360004841380, "value": "customer_tickets"},
+                {"id": 360022469240, "value": "5"},
+                {"id": 360023712840, "value": "False"},
+            ]
+        },
+    ]

@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -19,29 +19,43 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
 
     def __init__(
         self,
-        token_refresh_endpoint: str,
-        client_id: str,
-        client_secret: str,
-        refresh_token: str,
+        token_refresh_endpoint: Union[InterpolatedString, str],
+        client_id: Union[InterpolatedString, str],
+        client_secret: Union[InterpolatedString, str],
+        refresh_token: Union[InterpolatedString, str],
         config: Mapping[str, Any],
-        scopes: List[str] = None,
-        token_expiry_date: str = None,
-        access_token_name: str = "access_token",
-        expires_in_name: str = "expires_in",
-        refresh_request_body: Mapping[str, Any] = None,
+        scopes: Optional[List[str]] = None,
+        token_expiry_date: Optional[Union[InterpolatedString, str]] = None,
+        access_token_name: Union[InterpolatedString, str] = "access_token",
+        expires_in_name: Union[InterpolatedString, str] = "expires_in",
+        refresh_request_body: Optional[Mapping[str, Any]] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
+        """
+        :param token_refresh_endpoint: The endpoint to refresh the access token
+        :param client_id: The client id
+        :param client_secret: Client secret
+        :param refresh_token: The token used to refresh the access token
+        :param config: The user-provided configuration as specified by the source's spec
+        :param scopes: The scopes to request
+        :param token_expiry_date: The access token expiration date
+        :param access_token_name: THe field to extract access token from in the response
+        :param expires_in_name:The field to extract expires_in from in the response
+        :param refresh_request_body: The request body to send in the refresh request
+        :param options: Additional runtime parameters to be used for string interpolation
+        """
         self.config = config
-        self.token_refresh_endpoint = InterpolatedString(token_refresh_endpoint)
-        self.client_secret = InterpolatedString(client_secret)
-        self.client_id = InterpolatedString(client_id)
-        self.refresh_token = InterpolatedString(refresh_token)
+        self.token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint, options=options)
+        self.client_secret = InterpolatedString.create(client_secret, options=options)
+        self.client_id = InterpolatedString.create(client_id, options=options)
+        self.refresh_token = InterpolatedString.create(refresh_token, options=options)
         self.scopes = scopes
-        self.access_token_name = InterpolatedString(access_token_name)
-        self.expires_in_name = InterpolatedString(expires_in_name)
-        self.refresh_request_body = InterpolatedMapping(refresh_request_body)
+        self.access_token_name = InterpolatedString.create(access_token_name, options=options)
+        self.expires_in_name = InterpolatedString.create(expires_in_name, options=options)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, options=options)
 
         self.token_expiry_date = (
-            pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
+            pendulum.parse(InterpolatedString.create(token_expiry_date, options=options).eval(self.config))
             if token_expiry_date
             else pendulum.now().subtract(days=1)
         )

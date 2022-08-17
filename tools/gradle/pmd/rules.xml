@@ -16,14 +16,6 @@
         <exclude name="GuardLogStatement" />
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
-        <!-- to be applied eventually -->
-        <exclude name="LiteralsFirstInComparisons"/>
-        <exclude name="LooseCoupling"/>
-        <exclude name="PreserveStackTrace"/>
-        <exclude name="SwitchStmtsShouldHaveDefault"/>
-        <exclude name="SystemPrintln"/>
-        <exclude name="UseCollectionIsEmpty"/>
-        <exclude name="UseVarargs"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <!-- exclude permanently -->

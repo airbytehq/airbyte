@@ -25,22 +25,22 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
   @Test
   public void testEncrytion() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    ((ObjectNode) clone).put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "3DES168")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format("jdbc:oracle:thin:@//%s:%d/%s",
-                clone.get("host").asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
@@ -58,12 +58,12 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText())));
 
     final String networkServiceBanner =
@@ -76,22 +76,22 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
   @Test
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    ((ObjectNode) clone).put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "AES256")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "

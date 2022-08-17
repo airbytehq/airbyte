@@ -84,9 +84,3 @@ def test_error_on_create_for_both_request_json_and_data():
     request_data = "interpolate_me=5&invalid={{ config['option'] }}"
     with pytest.raises(ValueError):
         InterpolatedRequestOptionsProvider(config=config, request_body_json=request_json, request_body_data=request_data)
-
-
-def test_interpolated_request_kwargs_is_empty():
-    provider = InterpolatedRequestOptionsProvider(config=config)
-    actual_request_kwargs = provider.request_kwargs(state, stream_slice, next_page_token)
-    assert {} == actual_request_kwargs

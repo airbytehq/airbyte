@@ -91,7 +91,7 @@ public class ArchiveHandler {
       fileTtlManager.register(archive.toPath());
       return archive;
     } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
-      throw new InternalServerKnownException(String.format("Failed to export Workspace configuration due to: %s", e.getMessage()));
+      throw new InternalServerKnownException(String.format("Failed to export Workspace configuration due to: %s", e.getMessage()), e);
     }
   }
 
