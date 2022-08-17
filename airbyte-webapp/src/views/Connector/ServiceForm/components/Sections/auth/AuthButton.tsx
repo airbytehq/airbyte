@@ -6,16 +6,11 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components";
 
 import { ConnectorSpecification } from "core/domain/connector";
-import { FormBlock } from "core/form/types";
 
 import { useServiceForm } from "../../../serviceFormContext";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
-
-interface AuthButtonProps {
-  authFormFields: FormBlock[];
-}
 
 function isGoogleConnector(connectorDefinitionId: string): boolean {
   return [
@@ -43,7 +38,8 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
   return "connectorForm.authenticate";
 }
 
-export const AuthButton: React.FC<AuthButtonProps> = ({ authFormFields }) => {
+export const AuthButton: React.FC = () => {
+  const { authFieldsToHide } = useServiceForm();
   const { getFieldMeta, submitCount } = useFormikContext();
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -58,8 +54,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ authFormFields }) => {
   const Component = getButtonComponent(definitionId);
 
   const hasOauthError =
-    authFormFields.filter((formField) => {
-      const meta = getFieldMeta(formField.path);
+    authFieldsToHide.filter((fieldString) => {
+      const meta = getFieldMeta(fieldString);
       return submitCount > 0 && meta.error;
     }).length > 0;
 

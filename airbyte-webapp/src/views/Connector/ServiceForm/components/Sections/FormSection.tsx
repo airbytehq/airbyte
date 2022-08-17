@@ -56,12 +56,9 @@ const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend
 
   const { selectedConnector, isAuthFlowSelected, authFieldsToHide } = useServiceForm();
 
-  const authFormFields = sections.filter(
-    (formField) => isAuthFlowSelected && authFieldsToHide.includes(formField.path)
-  );
   return (
     <>
-      {hasOauth && <AuthSection key="authSection" authFormFields={authFormFields} />}
+      {hasOauth && <AuthSection key="authSection" />}
       {sections
         .filter(
           (formField) =>
@@ -79,7 +76,7 @@ const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend
 
           return (
             <React.Fragment key={sectionPath}>
-              {isAuthSection && <AuthSection authFormFields={authFormFields} />}
+              {isAuthSection && <AuthSection />}
               <FormNode formField={formField} sectionPath={sectionPath} disabled={disabled} />
             </React.Fragment>
           );
