@@ -429,6 +429,5 @@ spec:
             secretName: {{ .Values.global.env | default .Release.Name }}-gsm-creds
       {{- end }}
       {{- if .Values.extraVolumes }}
-      {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}

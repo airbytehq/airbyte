@@ -1,4 +1,4 @@
-{{- if .Values.hpa.enabled }}
+{{- if eq .Values.hpa.enabled true }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
