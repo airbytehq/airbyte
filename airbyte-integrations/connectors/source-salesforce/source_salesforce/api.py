@@ -179,18 +179,16 @@ class Salesforce:
 
     def __init__(
         self,
-        refresh_token: str = None,
         token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
+        credentials: Mapping[str, Any] = {},
         is_sandbox: bool = None,
         start_date: str = None,
         **kwargs: Any,
     ) -> None:
-        self.refresh_token = refresh_token
+        self.refresh_token = credentials["refresh_token"]
         self.token = token
-        self.client_id = client_id
-        self.client_secret = client_secret
+        self.client_id = credentials["client_id"]
+        self.client_secret = credentials["client_secret"]
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()

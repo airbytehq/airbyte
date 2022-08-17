@@ -28,9 +28,11 @@ def state():
 def stream_config():
     """Generates streams settings for BULK logic"""
     return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
+        "credentials": {
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token"
+        },
         "start_date": "2010-01-18T21:18:20Z",
         "is_sandbox": False,
         "wait_timeout": 15,
@@ -41,9 +43,11 @@ def stream_config():
 def stream_config_date_format():
     """Generates streams settings with `start_date` in format YYYY-MM-DD"""
     return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
+        "credentials": {
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token"
+        },
         "start_date": "2010-01-18",
         "is_sandbox": False,
         "wait_timeout": 15,
@@ -54,9 +58,11 @@ def stream_config_date_format():
 def stream_config_without_start_date():
     """Generates streams settings for REST logic without start_date"""
     return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
+        "credentials": {
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token"
+        },
         "is_sandbox": False,
         "wait_timeout": 15,
     }
