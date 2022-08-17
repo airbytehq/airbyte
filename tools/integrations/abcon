@@ -205,18 +205,19 @@ help_secrets="Manage connector secrets. Subcommand: encrypt, decrypt"
 cmd_secrets() {
     local cmd="$1"; shift || { echo "missing cmd"; cmd_help; exit 1; }
 
+    mkdir -p secrets
     mkdir -p safe_secrets
 
+    local options=()
+    [[ -z "$ABCON_SECRET_PASSPHRASE" ]] || options+=("--passphrase-fd" "0" "--batch" "--yes")
+
     if [[ "$cmd" = "encrypt" ]]; then
-        rm -f secrets/*.gpg
         for f in secrets/*; do
-          gpg --symmetric --cipher-algo AES256 "${f}"
-          mv "$f.gpg" "${f//secrets/safe_secrets}.gpg"
+          echo -n "$ABCON_SECRET_PASSPHRASE" | gpg "${options[@]}" -o "${f//secrets/safe_secrets}.gpg" --symmetric --cipher-algo AES256 "${f}"
         done
     elif [[ "$cmd" = "decrypt" ]]; then
-      mkdir -p secrets
       for f in safe_secrets/*; do
-        gpg --decrypt "${f}" > "secrets/$(basename "${f//.gpg/}")"
+        echo -n "$ABCON_SECRET_PASSPHRASE" | gpg "${options[@]}" -o "secrets/$(basename "${f//.gpg/}")" --decrypt "${f}"
       done
     else
       _error "Invalid subcommand: $cmd"
