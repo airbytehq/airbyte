@@ -20,7 +20,7 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
-import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionForm } from "views/Connection/ConnectionForm";
 import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 
 interface ReplicationViewProps {

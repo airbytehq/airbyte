@@ -19,7 +19,6 @@ const AgainButton = styled(Button)`
 interface TryAfterErrorBlockProps {
   message?: React.ReactNode;
   onClick: () => void;
-  additionControl?: React.ReactNode;
 }
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (

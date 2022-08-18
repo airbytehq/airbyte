@@ -114,13 +114,12 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
-interface ConnectionFormProps {
+export interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   onAfterSubmit?: () => void;
   className?: string;
-  additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
+  onFrequencySelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
   onFormDirtyChanges?: (dirty: boolean) => void;
 
@@ -134,15 +133,14 @@ interface ConnectionFormProps {
     | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 }
 
-const ConnectionForm: React.FC<ConnectionFormProps> = ({
+export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onAfterSubmit,
   onCancel,
   className,
-  onDropDownSelect,
+  onFrequencySelect,
   mode,
   successMessage,
-  additionBottomControls,
   canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
@@ -256,7 +254,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       error={!!meta.error && meta.touched}
                       options={frequencies}
                       onChange={(item) => {
-                        onDropDownSelect?.(item);
+                        onFrequencySelect?.(item);
                         setFieldValue(field.name, item.value);
                       }}
                     />
@@ -364,7 +362,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onEndEditTransformation={toggleEditingTransformation}
               />
               <CreateControls
-                additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
                 errorMessage={
@@ -378,6 +375,3 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     </Formik>
   );
 };
-
-export type { ConnectionFormProps };
-export default ConnectionForm;

@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import styled from "styled-components";
 
 import { ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -11,23 +10,13 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
-import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
-const SkipButton = styled.div`
-  margin-top: 6px;
-
-  & > button {
-    min-width: 239px;
-    margin-left: 9px;
-  }
-`;
-
 interface CreateConnectionContentProps {
-  additionBottomControls?: React.ReactNode;
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: () => void;
@@ -37,7 +26,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,
-  additionBottomControls,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
@@ -70,7 +58,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     push(`../${createdConnection.connectionId}`);
   };
 
-  const onSelectFrequency = (item: IDataItem | null) => {
+  const onFrequencySelect = (item: IDataItem | null) => {
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
     if (item) {
@@ -91,10 +79,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard>
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
+        <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
       </ContentCard>
     );
@@ -107,8 +92,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       <ConnectionForm
         mode="create"
         connection={connection}
-        additionBottomControls={additionBottomControls}
-        onDropDownSelect={onSelectFrequency}
+        onFrequencySelect={onFrequencySelect}
         onSubmit={onSubmitConnectionStep}
         onAfterSubmit={afterSubmitConnection}
       />
