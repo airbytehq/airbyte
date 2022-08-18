@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react-hooks";
 
-import frequencyConfig from "config/frequencyConfig";
+import { frequencyConfig } from "config/frequencyConfig";
 import { ConnectionScheduleTimeUnit } from "core/request/AirbyteClient";
 import { TestWrapper as wrapper } from "utils/testutils";
 

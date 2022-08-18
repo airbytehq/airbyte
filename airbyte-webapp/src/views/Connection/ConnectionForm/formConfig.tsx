@@ -4,7 +4,7 @@ import * as yup from "yup";
 
 import { DropDownRow } from "components";
 
-import frequencyConfig from "config/frequencyConfig";
+import { frequencyConfig } from "config/frequencyConfig";
 import { SyncSchema } from "core/domain/catalog";
 import {
   isDbtTransformation,
