@@ -59,6 +59,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    * not returned.
    */
   private boolean unreliableCommittedCounts;
+  /**
+   * If the StateTimestampMetricsTracker throws an exception, this flag is set to true and the metrics
+   * around max and mean time between state message emitted and committed are unreliable
+   */
+  private boolean unreliableStateTimingMetrics;
 
   private enum ConnectorType {
     SOURCE,
@@ -86,6 +91,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.stateTimestampMetricsTracker = stateTimestampMetricsTracker;
     this.nextStreamIndex = 0;
     this.unreliableCommittedCounts = false;
+    this.unreliableStateTimingMetrics = false;
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
     this.stateAggregator = stateAggregator;
@@ -148,6 +154,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
+      }
+      if (!unreliableStateTimingMetrics) {
         stateTimestampMetricsTracker.addState(stateMessage, stateHash, timeEmittedStateMessage);
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
@@ -158,6 +166,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     } catch (final StateTimestampMetricsTracker.StateTimestampMetricsTrackerException e) {
       log.warn("The StateTimestampMetricsTracker encountered an issue that prevents new state metrics from being recorded");
       log.warn("This only affects metrics and does not indicate a problem with actual sync data.");
+      unreliableStateTimingMetrics = true;
     }
     streamToRunningCount.clear();
   }
@@ -364,13 +373,26 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public Long getMaxSecondsBetweenStateMessageEmittedAndCommitted() {
-    return stateTimestampMetricsTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted();
+  public Optional<Long> getMaxSecondsBetweenStateMessageEmittedAndCommitted() {
+    if (unreliableStateTimingMetrics) {
+      return Optional.empty();
+    }
+
+    return Optional.of(stateTimestampMetricsTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted());
   }
 
   @Override
-  public Long getMeanSecondsBetweenStateMessageEmittedAndCommitted() {
-    return stateTimestampMetricsTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted();
+  public Optional<Long> getMeanSecondsBetweenStateMessageEmittedAndCommitted() {
+    if (unreliableStateTimingMetrics) {
+      return Optional.empty();
+    }
+
+    return Optional.of(stateTimestampMetricsTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted());
+  }
+
+  @Override
+  public Boolean getUnreliableStateTimingMetrics() {
+    return unreliableStateTimingMetrics;
   }
 
 }

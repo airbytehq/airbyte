@@ -26,4 +26,9 @@ public class WorkerMetricReporter {
         new MetricAttribute("docker_version", dockerVersion), new MetricAttribute("stream", stream));
   }
 
+  public void trackStateTimestampMetricError() {
+    metricClient.count(OssMetricsRegistry.STATE_TIMESTAMP_METRIC_ERROR, 1, new MetricAttribute("docker_repo", dockerRepo),
+        new MetricAttribute("docker_version", dockerVersion));
+  }
+
 }
