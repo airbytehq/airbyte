@@ -75,8 +75,7 @@ def get_depended_connectors(changed_connectors_files, all_build_gradle_files):
 
 
 def write_report(depended_connectors):
-    empty_report_test = []
-    for depended_connector in empty_report_test:
+    for depended_connector in depended_connectors:
         print("- " + depended_connector)
 
 
