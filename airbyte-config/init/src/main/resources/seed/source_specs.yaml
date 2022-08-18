@@ -1213,7 +1213,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.11"
+- dockerImage: "airbyte/source-clickhouse:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1390,7 +1390,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.15"
+- dockerImage: "airbyte/source-cockroachdb:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -4016,7 +4016,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.13"
+- dockerImage: "airbyte/source-db2:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -5882,7 +5882,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mongodb-v2:0.1.15"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
@@ -7545,7 +7545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.2"
+- dockerImage: "airbyte/source-postgres:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8145,7 +8145,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.11"
+- dockerImage: "airbyte/source-redshift:0.3.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -9319,7 +9319,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.17"
+- dockerImage: "airbyte/source-snowflake:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
