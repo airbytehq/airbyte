@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import inspect
 import json
 import logging
 import typing
@@ -132,10 +133,9 @@ class YamlDeclarativeSource(DeclarativeSource):
         """
         generic_type = typing.get_origin(field_type)
         if generic_type is None:
-            module = field_type.__module__
-            # We can only continue parsing declarative components since we explicitly inherit from the JsonSchemaMixin class which is
-            # used to generate the final json schema
-            if "airbyte_cdk.sources.declarative" in module and not isinstance(field_type, EnumMeta):
+            # We can only continue parsing declarative that inherit from the JsonSchemaMixin class because it is used
+            # to generate the final json schema
+            if inspect.isclass(field_type) and issubclass(field_type, JsonSchemaMixin) and not isinstance(field_type, EnumMeta):
                 subclasses = field_type.__subclasses__()
                 if subclasses:
                     return subclasses
