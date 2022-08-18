@@ -11,6 +11,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
 import { ModalCancel, useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
@@ -180,6 +181,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   };
 
   const onRefreshSourceSchema = async () => {
+    // TODO: Yeet
     if (connectionFormDirtyRef.current) {
       // The form is dirty so we show a warning before proceeding.
       openConfirmationModal({
@@ -209,21 +211,24 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   return (
     <Content>
       {!isRefreshingCatalog && connection ? (
-        <ConnectionForm
-          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+        <ConnectionFormProvider
           connection={connection}
-          onSubmit={onSubmitForm}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          onCancel={onCancelConnectionFormEdit}
-          canSubmitUntouchedForm={activeUpdatingSchemaMode}
-          additionalSchemaControl={
-            <Button onClick={onRefreshSourceSchema} type="button" secondary>
-              <TryArrow icon={faSyncAlt} />
-              <FormattedMessage id="connection.updateSchema" />
-            </Button>
-          }
-          onFormDirtyChanges={onDirtyChanges}
-        />
+          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+        >
+          <ConnectionForm
+            onSubmit={onSubmitForm}
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+            onCancel={onCancelConnectionFormEdit}
+            canSubmitUntouchedForm={activeUpdatingSchemaMode}
+            additionalSchemaControl={
+              <Button onClick={onRefreshSourceSchema} type="button" secondary>
+                <TryArrow icon={faSyncAlt} />
+                <FormattedMessage id="connection.updateSchema" />
+              </Button>
+            }
+            onFormDirtyChanges={onDirtyChanges}
+          />
+        </ConnectionFormProvider>
       ) : (
         <LoadingSchema />
       )}

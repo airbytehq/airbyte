@@ -163,7 +163,7 @@
   "form.entrypoint.docs": "Learn more",
   "form.gitBranch": "Git branch name (leave blank for default branch)",
   "form.selectType": "Select a type",
-  "form.repositoryUrl.placeholder": "https://github.com/<organisation>/<git_repo>.git",
+  "form.repositoryUrl.placeholder": "https://github.com/\\<organisation\\>/\\<git_repo\\>.git",
 
   "form.sourceNamespace": "Source namespace",
   "form.sourceStreamName": "Source stream name",

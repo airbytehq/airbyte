@@ -19,7 +19,6 @@ import {
   getInitialNormalization,
   getInitialTransformations,
   mapFormPropsToOperation,
-  useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
@@ -55,7 +54,6 @@ const CustomTransformationsCard: React.FC<{
   onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
-  const defaultTransformation = useDefaultTransformation();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const initialValues = useMemo(
@@ -81,7 +79,6 @@ const CustomTransformationsCard: React.FC<{
       <FieldArray name="transformations">
         {(formProps) => (
           <TransformationField
-            defaultTransformation={defaultTransformation}
             {...formProps}
             mode={mode}
             onStartEdit={toggleEditingTransformation}

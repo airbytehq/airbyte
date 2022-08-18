@@ -7,10 +7,10 @@ import styled from "styled-components";
 import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { ModalCancel } from "hooks/services/Modal";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
@@ -25,7 +25,6 @@ import {
   FormikConnectionFormValues,
   mapFormPropsToOperation,
   useFrequencyDropdownData,
-  useInitialValues,
 } from "./formConfig";
 
 const ConnectorLabel = styled(ControlLabels)`
@@ -60,7 +59,7 @@ export const RightFieldCol = styled.div`
   max-width: 300px;
 `;
 
-const StyledSection = styled.div`
+export const StyledSection = styled.div`
   padding: 20px 20px;
   display: flex;
   flex-direction: column;
@@ -125,12 +124,7 @@ export interface ConnectionFormProps {
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
-  mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
-
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 }
 
 export const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -139,14 +133,12 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onCancel,
   className,
   onFrequencySelect,
-  mode,
   successMessage,
   canSubmitUntouchedForm,
   additionalSchemaControl,
-  connection,
   onFormDirtyChanges,
 }) => {
-  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
+  const { initialValues, connection, mode } = useConnectionFormService();
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
   const [submitError, setSubmitError] = useState<Error | null>(null);
@@ -154,8 +146,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const { formatMessage } = useIntl();
 
-  const isEditMode: boolean = mode !== "create";
-  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
 
   const onFormSubmit = useCallback(
@@ -197,7 +187,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
           {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
-          {!isEditMode && (
+          {mode !== "create" && (
             <Section>
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
@@ -328,11 +318,9 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <StyledSection>
               <Field
                 name="syncCatalog.streams"
-                destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
                 additionalControl={additionalSchemaControl}
                 component={SchemaField}
                 isSubmitting={isSubmitting}
-                mode={mode}
               />
             </StyledSection>
           </Card>
@@ -352,12 +340,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
           {mode === "create" && (
             <>
               <OperationsSection
-                wrapper={({ children }) => (
-                  <Card>
-                    <StyledSection>{children}</StyledSection>
-                  </Card>
-                )}
-                destDefinition={destDefinition}
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}
               />

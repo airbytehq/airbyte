@@ -4,15 +4,15 @@ import { FormattedMessage } from "react-intl";
 
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
 
-import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
+import { OperationRead } from "core/request/AirbyteClient";
 import { isDefined } from "utils/common";
 import TransformationForm from "views/Connection/TransformationForm";
 
 import { ConnectionFormMode } from "../ConnectionForm";
+import { useDefaultTransformation } from "../formConfig";
 
 interface TransformationFieldProps extends ArrayHelpers {
   form: FormikProps<{ transformations: OperationRead[] }>;
-  defaultTransformation: OperationCreate;
   mode?: ConnectionFormMode;
   onStartEdit?: () => void;
   onEndEdit?: () => void;
@@ -23,12 +23,12 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
   push,
   replace,
   form,
-  defaultTransformation,
   mode,
   onStartEdit,
   onEndEdit,
 }) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
+  const defaultTransformation = useDefaultTransformation();
 
   return (
     <ArrayOfObjectsEditor

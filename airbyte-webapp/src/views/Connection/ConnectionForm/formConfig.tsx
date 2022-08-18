@@ -251,7 +251,21 @@ const useInitialValues = (
     }
 
     return initialValues;
-  }, [initialSchema, connection, isEditMode, destDefinition]);
+  }, [
+    connection.connectionId,
+    connection.destination.name,
+    connection.name,
+    connection.namespaceDefinition,
+    connection.namespaceFormat,
+    connection.operations,
+    connection.prefix,
+    connection.schedule,
+    connection.source.name,
+    destDefinition.supportsDbt,
+    destDefinition.supportsNormalization,
+    initialSchema,
+    isEditMode,
+  ]);
 };
 
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {

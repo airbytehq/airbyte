@@ -9,9 +9,10 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
+import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
 import { render } from "utils/testutils";
 
-import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormMode, ConnectionFormProps } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -68,10 +69,12 @@ jest.mock("services/workspaces/WorkspacesService", () => {
   };
 });
 
-const renderConnectionForm = (props: ConnectionFormProps) =>
+const renderConnectionForm = (props: ConnectionFormProps, mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionForm {...props} />
+      <ConnectionFormProvider mode={mode} connection={connection}>
+        <ConnectionForm {...props} />
+      </ConnectionFormProvider>
     </ConfirmationModalService>
   );
 
@@ -79,11 +82,12 @@ describe("<ConnectionForm />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "edit",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm(
+        {
+          onSubmit: jest.fn(),
+        },
+        "edit"
+      );
 
       container = renderResult.container;
     });
@@ -100,11 +104,12 @@ describe("<ConnectionForm />", () => {
   });
   describe("readonly mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "readonly",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm(
+        {
+          onSubmit: jest.fn(),
+        },
+        "readonly"
+      );
 
       container = renderResult.container;
     });

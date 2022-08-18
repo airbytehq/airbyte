@@ -12,6 +12,7 @@ import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
 
@@ -75,7 +76,8 @@ interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   mode?: ConnectionFormMode;
 }
 
-const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
+const CatalogHeader: React.FC = () => {
+  const { mode } = useConnectionFormService();
   const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
   const catalogHeaderStyle = classnames({
@@ -140,7 +142,9 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
   );
 };
 
-const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
+const CatalogSubheader: React.FC = () => {
+  const { mode } = useConnectionFormService();
+
   const catalogSubheaderStyle = classnames({
     [styles.catalogSubheader]: mode !== "readonly",
     [styles.readonlyCatalogSubheader]: mode === "readonly",
@@ -169,14 +173,9 @@ const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => 
   );
 };
 
-const SyncCatalogField: React.FC<SchemaViewProps> = ({
-  destinationSupportedSyncModes,
-  additionalControl,
-  field,
-  form,
-  isSubmitting,
-  mode,
-}) => {
+const SyncCatalogField: React.FC<SchemaViewProps> = ({ additionalControl, field, form, isSubmitting }) => {
+  const { mode } = useConnectionFormService();
+
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
@@ -228,16 +227,11 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           )}
         </HeaderBlock>
         {mode !== "readonly" && <Search onSearch={setSearchString} />}
-        <CatalogHeader mode={mode} />
-        <CatalogSubheader mode={mode} />
-        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
+        <CatalogHeader />
+        <CatalogSubheader />
+        <BulkHeader />
         <TreeViewContainer mode={mode}>
-          <CatalogTree
-            streams={filteredStreams}
-            onChangeStream={onChangeStream}
-            destinationSupportedSyncModes={destinationSupportedSyncModes}
-            mode={mode}
-          />
+          <CatalogTree streams={filteredStreams} onChangeStream={onChangeStream} />
         </TreeViewContainer>
       </LoadingBackdrop>
     </BatchEditProvider>
