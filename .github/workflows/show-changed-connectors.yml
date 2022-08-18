@@ -60,18 +60,30 @@ jobs:
       - name: Debug
         run: |
           echo "Github token 2 ${{ secrets.GITHUB_TOKEN }}"
-      - name: Comment result
-        uses: actions/github-script@v6
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '⚠️ Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:\n
-              ${{steps.dependency_report.outputs.changed_files_report}}'
-            })
+          issue-number: 1
+          body: |
+            This is a multi-line test comment
+            - With GitHub **Markdown** :sparkles:
+            - Created by [create-or-update-comment][1]
+
+            [1]: https://github.com/peter-evans/create-or-update-comment
+
+#      - name: Comment result
+#        uses: actions/github-script@v6
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          script: |
+#            github.rest.issues.createComment({
+#              issue_number: context.issue.number,
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              body: '⚠️ Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:\n
+#              ${{steps.dependency_report.outputs.changed_files_report}}'
+#            })
 
 
 
