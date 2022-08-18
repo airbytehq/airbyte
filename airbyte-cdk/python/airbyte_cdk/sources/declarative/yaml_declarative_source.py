@@ -7,7 +7,7 @@ import json
 import logging
 import typing
 from dataclasses import dataclass, fields
-from enum import EnumMeta
+from enum import Enum, EnumMeta
 from typing import Any, List, Mapping, Union
 
 from airbyte_cdk.sources.declarative.checks import CheckStream
@@ -17,7 +17,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
 from jsonschema.validators import validate
@@ -151,8 +150,6 @@ class YamlDeclarativeSource(DeclarativeSource):
 
 class SchemaEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, property):
-            return str(obj)
-        elif isinstance(obj, HttpMethod):
+        if isinstance(obj, property) or isinstance(obj, Enum):
             return str(obj)
         return json.JSONEncoder.default(self, obj)
