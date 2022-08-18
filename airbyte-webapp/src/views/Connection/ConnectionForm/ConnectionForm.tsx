@@ -1,31 +1,21 @@
-import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import { Field, FieldProps, Form, Formik } from "formik";
+import React, { useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
+import { Card, ControlLabels, DropDown, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { ModalCancel } from "hooks/services/Modal";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { OperationsSection } from "./components/OperationsSection";
 import SchemaField from "./components/SyncCatalogField";
-import {
-  ConnectionFormValues,
-  connectionValidationSchema,
-  FormikConnectionFormValues,
-  mapFormPropsToOperation,
-  useFrequencyDropdownData,
-} from "./formConfig";
+import { connectionValidationSchema } from "./formConfig";
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -114,12 +104,8 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
 };
 
 export interface ConnectionFormProps {
-  onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
-  onAfterSubmit?: () => void;
   className?: string;
   successMessage?: React.ReactNode;
-  onFrequencySelect?: (item: DropDownRow.IDataItem) => void;
-  onCancel?: () => void;
   onFormDirtyChanges?: (dirty: boolean) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
@@ -128,53 +114,25 @@ export interface ConnectionFormProps {
 }
 
 export const ConnectionForm: React.FC<ConnectionFormProps> = ({
-  onSubmit,
-  onAfterSubmit,
-  onCancel,
   className,
-  onFrequencySelect,
   successMessage,
   canSubmitUntouchedForm,
   additionalSchemaControl,
   onFormDirtyChanges,
 }) => {
-  const { initialValues, connection, mode } = useConnectionFormService();
-  const { clearFormChange } = useFormChangeTrackerService();
-  const formId = useUniqueFormId();
-  const [submitError, setSubmitError] = useState<Error | null>(null);
+  const {
+    initialValues,
+    formId,
+    mode,
+    onFormSubmit,
+    errorMessage,
+    frequencies,
+    onFrequencySelect,
+    onCancel,
+    formDirty,
+  } = useConnectionFormService();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
-
   const { formatMessage } = useIntl();
-
-  const workspace = useCurrentWorkspace();
-
-  const onFormSubmit = useCallback(
-    async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
-        context: { isRequest: true },
-      }) as unknown as ConnectionFormValues;
-
-      formValues.operations = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
-
-      setSubmitError(null);
-      try {
-        await onSubmit(formValues);
-
-        formikHelpers.resetForm({ values });
-        clearFormChange(formId);
-
-        onAfterSubmit?.();
-      } catch (e) {
-        if (!(e instanceof ModalCancel)) {
-          setSubmitError(e);
-        }
-      }
-    },
-    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
-  );
-
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-  const frequencies = useFrequencyDropdownData();
 
   return (
     <Formik
@@ -186,7 +144,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
-          {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
+          {formDirty.next(dirty)}
           {mode !== "create" && (
             <Section>
               <Field name="name">

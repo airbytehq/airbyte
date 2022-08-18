@@ -165,6 +165,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     }
   };
 
+  // TODO: Move this into the service next
+  // Utilize the observer: formDirty
   const refreshSourceSchema = async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
@@ -214,11 +216,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         <ConnectionFormProvider
           connection={connection}
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+          onSubmit={onSubmitForm}
+          onCancel={onCancelConnectionFormEdit}
         >
           <ConnectionForm
-            onSubmit={onSubmitForm}
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-            onCancel={onCancelConnectionFormEdit}
             canSubmitUntouchedForm={activeUpdatingSchemaMode}
             additionalSchemaControl={
               <Button onClick={onRefreshSourceSchema} type="button" secondary>

@@ -12,7 +12,7 @@ import { ConfirmationModalService } from "hooks/services/ConfirmationModal/Confi
 import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
 import { render } from "utils/testutils";
 
-import { ConnectionForm, ConnectionFormMode, ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -69,11 +69,11 @@ jest.mock("services/workspaces/WorkspacesService", () => {
   };
 });
 
-const renderConnectionForm = (props: ConnectionFormProps, mode: ConnectionFormMode, connection = mockConnection) =>
+const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionFormProvider mode={mode} connection={connection}>
-        <ConnectionForm {...props} />
+      <ConnectionFormProvider mode={mode} connection={connection} onSubmit={jest.fn()}>
+        <ConnectionForm />
       </ConnectionFormProvider>
     </ConfirmationModalService>
   );
@@ -82,12 +82,7 @@ describe("<ConnectionForm />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm(
-        {
-          onSubmit: jest.fn(),
-        },
-        "edit"
-      );
+      const renderResult = await renderConnectionForm("edit");
 
       container = renderResult.container;
     });
@@ -104,12 +99,7 @@ describe("<ConnectionForm />", () => {
   });
   describe("readonly mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm(
-        {
-          onSubmit: jest.fn(),
-        },
-        "readonly"
-      );
+      const renderResult = await renderConnectionForm("readonly");
 
       container = renderResult.container;
     });

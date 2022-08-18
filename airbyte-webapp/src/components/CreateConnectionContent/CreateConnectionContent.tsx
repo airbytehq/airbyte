@@ -90,12 +90,14 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionFormProvider connection={connection} mode="create">
-        <ConnectionForm
-          onFrequencySelect={onFrequencySelect}
-          onSubmit={onSubmitConnectionStep}
-          onAfterSubmit={afterSubmitConnection}
-        />
+      <ConnectionFormProvider
+        connection={connection}
+        mode="create"
+        onSubmit={onSubmitConnectionStep}
+        onAfterSubmit={afterSubmitConnection}
+        onFrequencySelect={onFrequencySelect}
+      >
+        <ConnectionForm />
       </ConnectionFormProvider>
     </Suspense>
   );
