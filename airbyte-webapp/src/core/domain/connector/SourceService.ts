@@ -83,7 +83,7 @@ export class SourceService extends AirbyteRequestService {
 
     if (!result.jobInfo?.succeeded || !result.catalog) {
       // @ts-expect-error TODO: address this case
-      const e = new CommonRequestError(result);
+      const e = result.jobInfo?.logs ? new LogsRequestError(result.jobInfo) : new CommonRequestError(result);
       // Generate error with failed status and received logs
       e._status = 400;
       // @ts-expect-error address this case
