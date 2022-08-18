@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -70,6 +71,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MySqlSourceOperations());
   }
 
+  private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
   private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
       stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
@@ -117,6 +122,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(MySqlSource::overrideSyncModes)
           .map(MySqlSource::removeIncrementalWithoutPk)
           .map(MySqlSource::setIncrementalToSourceDefined)
           .map(MySqlSource::addCdcMetadataColumns)
