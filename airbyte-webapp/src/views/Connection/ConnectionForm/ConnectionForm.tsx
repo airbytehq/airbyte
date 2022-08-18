@@ -175,7 +175,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         formikHelpers.resetForm({ values });
         clearFormChange(formId);
 
-        // result?.onSubmitComplete?.();
         onAfterSubmit?.();
       } catch (e) {
         if (!(e instanceof ModalCancel)) {

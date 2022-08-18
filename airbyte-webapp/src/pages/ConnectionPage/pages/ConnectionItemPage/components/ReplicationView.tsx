@@ -154,7 +154,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
       });
       if (result.type === "canceled") {
-        // eslint-disable-next-line no-throw-literal
         throw new ModalCancel();
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
