@@ -185,7 +185,6 @@ Helm chart to deploy airbyte
 | webapp.ingress.enabled | bool | `false` |  |
 | webapp.ingress.hosts | list | `[]` |  |
 | webapp.ingress.tls | list | `[]` |  |
-| webapp.isDemo | bool | `false` |  |
 | webapp.livenessProbe.enabled | bool | `true` |  |
 | webapp.livenessProbe.failureThreshold | int | `3` |  |
 | webapp.livenessProbe.initialDelaySeconds | int | `30` |  |
