@@ -5,3 +5,9 @@
   line-height: 15px;
   color: colors.$grey;
 }
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

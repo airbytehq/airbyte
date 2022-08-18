@@ -4,9 +4,12 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -55,11 +58,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
       for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
-          final NormalizationInput normalizationInput = new NormalizationInput()
-              .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-              .withCatalog(syncOutput.getOutputCatalog())
-              .withResourceRequirements(syncInput.getDestinationResourceRequirements());
-
+          final Configs configs = new EnvConfigs();
+          final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput, configs);
           final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
           syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
@@ -78,6 +78,21 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     }
 
     return syncOutput;
+  }
+
+  private NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput,
+                                                        final StandardSyncOutput syncOutput,
+                                                        final Configs configs) {
+    final ResourceRequirements resourceReqs = new ResourceRequirements()
+        .withCpuRequest(configs.getNormalizationJobMainContainerCpuRequest())
+        .withCpuLimit(configs.getNormalizationJobMainContainerCpuLimit())
+        .withMemoryRequest(configs.getNormalizationJobMainContainerMemoryRequest())
+        .withMemoryLimit(configs.getNormalizationJobMainContainerMemoryLimit());
+
+    return new NormalizationInput()
+        .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+        .withCatalog(syncOutput.getOutputCatalog())
+        .withResourceRequirements(resourceReqs);
   }
 
 }
