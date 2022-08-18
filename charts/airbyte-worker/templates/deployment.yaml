@@ -321,26 +321,6 @@ spec:
         {{- end }}
         {{- end }}
 
-        {{- if and .Values.gsm .Values.global.env }}
-        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
-        - name: {{ $k }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ printf "%s-%s" $.Values.global.env $v }}
-              key: {{ $k }}
-            {{- end }}
-        {{- end }}
-
-        {{- if and .Values.gsm (not .Values.global.env) }}
-        {{- range $k, $v := mergeOverwrite .Values.gsm .Values.global.gsm }}
-        - name: {{ $k }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ printf "%%s" $v }}
-              key: {{ $k }}
-            {{- end }}
-        {{- end }}
-
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -411,6 +391,9 @@ spec:
         {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
+        {{- if .Values.global.extraVolumeMounts }}
+{{ toYaml .Values.global.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       {{- if .Values.extraContainers }}
       {{ toYaml .Values.extraContainers | indent 8 }}
       {{- end }}
@@ -423,11 +406,9 @@ spec:
         secret:
           secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}
       {{- end }}
-      {{- if .Values.gsm }}
-      - name: gsm-creds-volume
-          secret:
-            secretName: {{ .Values.global.env | default .Release.Name }}-gsm-creds
-      {{- end }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.extraVolumes }}
+{{ toYaml .Values.global.extraVolumes | nindent 6 }}
       {{- end }}
