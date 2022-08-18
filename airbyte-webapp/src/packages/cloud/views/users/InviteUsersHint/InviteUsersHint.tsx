@@ -1,6 +1,7 @@
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Button from "components/base/Button";
+import { Text } from "components/base/Text";
 
 import {
   InviteUsersModalServiceProvider,
@@ -23,12 +24,14 @@ const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType
 
   return (
     <div className={styles.container}>
-      <FormattedMessage
-        id="inviteUsersHint.message"
-        values={{
-          connector: formatMessage({ id: `connector.${connectorType}` }).toLowerCase(),
-        }}
-      />
+      <Text size="sm">
+        <FormattedMessage
+          id="inviteUsersHint.message"
+          values={{
+            connector: formatMessage({ id: `connector.${connectorType}` }).toLowerCase(),
+          }}
+        />
+      </Text>
       <Button secondary onClick={onCtaClick}>
         <FormattedMessage id="inviteUsersHint.cta" />
       </Button>

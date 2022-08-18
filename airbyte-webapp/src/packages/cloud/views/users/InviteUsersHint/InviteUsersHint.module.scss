@@ -1,10 +1,11 @@
+@use "../../../../../scss/variables";
+
 .container {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: variables.$spacing-md;
   justify-content: center;
   align-items: center;
 
-  margin-top: 15px;
-  font-size: 12px;
+  margin-top: variables.$spacing-lg;
 }
