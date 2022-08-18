@@ -392,16 +392,16 @@ class SentryExceptionHelperTest {
         	  [33mDatabase Error in model tdym_api_data (models/generated/airbyte_tables/tdym_processing_test/tdym_api_data.sql)[0m
         	  Invalid input
         	  DETAIL:
-        
-        
+
+
         --	    error:  Invalid input
         	    code:      8001
         	    context:   SUPER value exceeds export size.
         	    query:     3667701
         	    location:  partiql_export.cpp:9
         	    process:   query0_127_3667701 [pid=17836]
-        
-        
+
+
         --	  compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_tables/tdym_processing_test/tdym_api_data.sql
         Setting attempt to FAILED because the job was cancelled
         """;
@@ -460,7 +460,7 @@ class SentryExceptionHelperTest {
         ("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})
         	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions_ab2[0m
         	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_p95_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_p95_watched_actions_ab2[0m
-        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions_ab2[0m          
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions_ab2[0m
         """;
 
     final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
@@ -469,7 +469,8 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtUnhandledError",
-        "(\"{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None\", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})", List.of());
+        "(\"{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None\", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})",
+        List.of());
   }
 
   @Test
@@ -483,7 +484,7 @@ class SentryExceptionHelperTest {
         	  which relation to use, dbt will move on. Please delete "Data_integration"."dbo"."sheet1", or rename it to be less ambiguous.
         	  Searched for: "data_integration"."dbo"."sheet1"
         	  Found: "Data_integration"."dbo"."sheet1"
-        
+
         	  > in macro materialization_table_default (macros/materializations/models/table/table.sql)
         	  > called by model sheet1 (models/generated/airbyte_tables/dbo/sheet1.sql)
         """;
@@ -494,7 +495,8 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtCompilationAmbiguousRelationError",
-        "When searching for a relation, dbt found an approximate match. Instead of guessing which relation to use, dbt will move on. Please delete \"Data_integration\".\"dbo\".\"sheet1\", or rename it to be less ambiguous.", List.of());
+        "When searching for a relation, dbt found an approximate match. Instead of guessing which relation to use, dbt will move on. Please delete \"Data_integration\".\"dbo\".\"sheet1\", or rename it to be less ambiguous.",
+        List.of());
   }
 
   @Test
@@ -513,7 +515,8 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtCompilationError",
-        "Model 'model.airbyte_utils.banking_test' (models/generated/airbyte_tables/public/banking_test.sql) depends on a source named 'public._airbyte_raw_banking_test' which was not found", List.of());
+        "Model 'model.airbyte_utils.banking_test' (models/generated/airbyte_tables/public/banking_test.sql) depends on a source named 'public._airbyte_raw_banking_test' which was not found",
+        List.of());
   }
 
   @Test
@@ -532,7 +535,8 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtRuntimeError",
-        "Code: 102. Unexpected packet from server abcdefg.eu-west-1.aws.clickhouse.cloud:8443 (expected Hello or Exception, got Unknown packet)", List.of());
+        "Code: 102. Unexpected packet from server abcdefg.eu-west-1.aws.clickhouse.cloud:8443 (expected Hello or Exception, got Unknown packet)",
+        List.of());
   }
 
   @Test
@@ -554,7 +558,8 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtRuntimeDatabaseError",
-        "250001 (08001): Failed to connect to DB: xyzxyz.us-east-2.aws.snowflakecomputing.com:443. The user you were trying to authenticate as differs from the user tied to the access token.", List.of());
+        "250001 (08001): Failed to connect to DB: xyzxyz.us-east-2.aws.snowflakecomputing.com:443. The user you were trying to authenticate as differs from the user tied to the access token.",
+        List.of());
   }
 
   @Test

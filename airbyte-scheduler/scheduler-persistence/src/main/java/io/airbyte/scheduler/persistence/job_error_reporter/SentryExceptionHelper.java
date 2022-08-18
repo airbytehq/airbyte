@@ -184,7 +184,8 @@ public class SentryExceptionHelper {
 
     Map<String, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
 
-    // if our errorMessage from the function != stacktrace then we know we've pulled out something useful
+    // if our errorMessage from the function != stacktrace then we know we've pulled out something
+    // useful
     if (!usefulErrorMap.get(ERROR_MAP_MESSAGE_KEY).equals(stacktrace)) {
       final SentryException usefulException = new SentryException();
       usefulException.setValue(usefulErrorMap.get(ERROR_MAP_MESSAGE_KEY));
@@ -206,10 +207,12 @@ public class SentryExceptionHelper {
     String[] stacktraceLines = stacktrace.split("\n");
 
     boolean defaultNextLine = false;
-    // TODO: this whole code block is quite ugh, commented to try and make each part clear but could be much more readable.
+    // TODO: this whole code block is quite ugh, commented to try and make each part clear but could be
+    // much more readable.
     mainLoop: for (int i = 0; i < stacktraceLines.length; i++) {
       // This order is important due to how these errors can co-occur.
-      // This order attempts to keep error definitions consistent based on our observations of possible dbt error structures.
+      // This order attempts to keep error definitions consistent based on our observations of possible
+      // dbt error structures.
       try {
         // Database Errors
         if (stacktraceLines[i].contains("Database Error in model")) {
@@ -221,7 +224,7 @@ public class SentryExceptionHelper {
           }
           // Database Error: Invalid input
           else if (stacktraceLines[i + 1].contains("Invalid input")) {
-            for (String followingLine : Arrays.copyOfRange(stacktraceLines, i+1, stacktraceLines.length)) {
+            for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
               if (followingLine.trim().startsWith("context:")) {
                 errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, String.format("%s\n%s", stacktraceLines[i + 1].trim(), followingLine.trim()));
                 errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseInvalidInputError");
@@ -263,10 +266,10 @@ public class SentryExceptionHelper {
         // Runtime Errors
         else if (stacktraceLines[i].contains("Runtime Error")) {
           // Runtime Error: Database error
-          for (String followingLine : Arrays.copyOfRange(stacktraceLines, i+1, stacktraceLines.length)) {
+          for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
             if ("Database Error".equals(followingLine.trim())) {
               errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY,
-                  String.format("%s", stacktraceLines[Arrays.stream(stacktraceLines).toList().indexOf(followingLine)+1].trim()));
+                  String.format("%s", stacktraceLines[Arrays.stream(stacktraceLines).toList().indexOf(followingLine) + 1].trim()));
               errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtRuntimeDatabaseError");
               break mainLoop;
             }
@@ -275,7 +278,8 @@ public class SentryExceptionHelper {
           errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtRuntimeError");
           defaultNextLine = true;
         }
-        // Database Error: formatted differently, catch last to avoid counting other types of errors as Database Error
+        // Database Error: formatted differently, catch last to avoid counting other types of errors as
+        // Database Error
         else if ("Database Error".equals(stacktraceLines[i].trim())) {
           errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseError");
           defaultNextLine = true;
@@ -297,7 +301,5 @@ public class SentryExceptionHelper {
     }
     return errorMessageAndType;
   }
-
-
 
 }
