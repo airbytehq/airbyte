@@ -60,11 +60,9 @@ jobs:
         with:
           issue-number: ${{steps.findPr.outputs.pr}}
           body: |
-            This is a multi-line test comment
-            - With GitHub **Markdown** :sparkles:
-            - Created by [create-or-update-comment][1]
+            **NOTE** :warning: Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
+            ${{steps.dependency_report.outputs.changed_files_report}}
 
-            [1]: https://github.com/peter-evans/create-or-update-comment
 
 #      - name: Comment result
 #        uses: actions/github-script@v6
