@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import random
+from unittest.mock import MagicMock
 from urllib.parse import urlparse
 
 import pendulum
 import pytest
 import requests
-from source_zendesk_talk.streams import ZendeskTalkIncrementalStream, ZendeskTalkSingleRecordStream, ZendeskTalkStream
+from source_zendesk_talk.streams import ZendeskTalkIncrementalStream, ZendeskTalkSingleRecordStream, ZendeskTalkStream, IVRMenus, IVRRoutes
 
 
 class NonIncrementalStream(ZendeskTalkStream):
@@ -233,3 +234,50 @@ class TestSingleRecordZendeskTalkStream:
         result = list(stream.parse_response(response=response))
 
         assert result == [{"field1": "value", "field2": 3, stream.primary_key: int(now().timestamp())}]
+
+
+class TestIVRMenusStream:
+    def test_ivr_menus_parse_response(self, mocker):
+        stream = IVRMenus(subdomain="stest-domain", authenticator=mocker.Mock())
+        ivrs = [
+            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
+            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
+            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
+            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
+        ]
+        response_data = {
+            "ivrs": ivrs
+        }
+        response = MagicMock()
+        response.json.side_effect = [response_data]
+        for i, menu in enumerate(stream.parse_response(response)):
+            assert menu == {"ivr_id": ivrs[i]["id"], **ivrs[i]["menus"][0]}
+
+
+class TestIVRRoutesStream:
+    def test_ivr_menus_parse_response(self, mocker):
+        stream = IVRRoutes(subdomain="test-domain", authenticator=mocker.Mock())
+        ivr_routes = [
+            {
+                "id": 1,
+                "menus": [
+                    {
+                        "id": 1.1,
+                        "routes": [{"route": "1.1.1 route"}, {"route": "1.1.2 route"}]
+                    },
+                    {
+                        "id": 1.2,
+                        "routes": [{"route": "1.2 route"}]
+                    }
+                ]
+            },
+        ]
+        response = MagicMock()
+        response.json.side_effect = [{"ivrs": ivr_routes}]
+
+        assert [record for record in stream.parse_response(response)] == [
+            {'ivr_id': 1, 'ivr_menu_id': 1.1, 'id': 1.1, 'routes': [{'route': '1.1.1 route'}, {'route': '1.1.2 route'}]},
+            {'ivr_id': 1, 'ivr_menu_id': 1.1, 'id': 1.2, 'routes': [{'route': '1.2 route'}]},
+            {'ivr_id': 1, 'ivr_menu_id': 1.2, 'id': 1.1, 'routes': [{'route': '1.1.1 route'}, {'route': '1.1.2 route'}]},
+            {'ivr_id': 1, 'ivr_menu_id': 1.2, 'id': 1.2, 'routes': [{'route': '1.2 route'}]}
+        ]
