@@ -6,9 +6,29 @@ on:
       - "gitbook/v1"
 
 jobs:
+
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+
   show-affected-connectors:
     name: "Show affected connectors"
     runs-on: ubuntu-latest
+    needs: find_valid_pat
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,6 +60,7 @@ jobs:
       - name: Comment result
         uses: actions/github-script@v6
         with:
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
