@@ -2,7 +2,8 @@
 
 ## Data Security
 
-Airbyte provides a secure environment for customers and users that protects all user data following industry standard practices. From day 1, we have designed and adapted our product with security as a part of the foundation. We are currently completing the SOC2 (Type 2) data compliance certification and will undergo an independent review annually.
+Airbyte provides a secure environment for customers and users that protects all user data following industry standard practices. From day 1, we have designed and adapted our product with security as a part of the foundation. An independent third-party completed a SOC2 Type 2 assessment and found effective operational controls in place.
+
 Below we have detailed information on various parts of our security practices.
 
 **Flow of Customer Data**
