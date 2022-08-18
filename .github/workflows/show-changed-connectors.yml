@@ -59,7 +59,7 @@ jobs:
         id: dependency_report
       - name: Debug
         run: |
-        echo "Github token 2 ${{ secrets.GITHUB_TOKEN }}"
+          echo "Github token 2 ${{ secrets.GITHUB_TOKEN }}"
       - name: Comment result
         uses: actions/github-script@v6
         with:
