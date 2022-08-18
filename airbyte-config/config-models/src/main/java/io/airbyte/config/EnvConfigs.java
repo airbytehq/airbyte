@@ -188,8 +188,6 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
-  private static final String DEFAULT_AIRBYTE_API_AUTH_HEADER_NAME = "X-Endpoint-API-UserInfo";
-  private static final String DEFAULT_AIRBYTE_API_AUTH_HEADER_VALUE = "eyJ1c2VyX2lkIjogImNsb3VkLWFwaSIsICJlbWFpbF92ZXJpZmllZCI6ICJ0cnVlIn0K";
   private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
@@ -487,12 +485,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getAirbyteApiAuthHeaderName() {
-    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_NAME, DEFAULT_AIRBYTE_API_AUTH_HEADER_NAME);
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_NAME, "");
   }
 
   @Override
   public String getAirbyteApiAuthHeaderValue() {
-    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_VALUE, DEFAULT_AIRBYTE_API_AUTH_HEADER_VALUE);
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_VALUE, "");
   }
 
   @Override

@@ -120,7 +120,7 @@ public class WorkerApp {
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
-  private static final int JWT_TTL_SECONDS = 10000;
+  private static final int JWT_TTL_MINUTES = 5;
 
   private static Configs configs;
   private static ProcessFactory defaultProcessFactory;
@@ -382,22 +382,12 @@ public class WorkerApp {
     }
   }
 
-  private static AirbyteApiClient getApiClient(final Configs configs) throws IOException {
-    final var authHeader = configs.getAirbyteApiAuthHeaderName().isBlank()
-        ? "Authorization"
-        : configs.getAirbyteApiAuthHeaderName();
-
-    final var authToken = configs.getAirbyteApiAuthHeaderValue().isBlank()
-        ? "Bearer " + generateJwt(configs.getDataPlaneServiceAccountCredentialsPath(),
-            configs.getDataPlaneServiceAccountEmail(),
-            configs.getControlPlaneGoogleEndpoint(),
-            JWT_TTL_SECONDS)
-        : configs.getAirbyteApiAuthHeaderValue();
+  private static AirbyteApiClient getApiClient(final Configs configs) {
+    final var authHeader = configs.getAirbyteApiAuthHeaderName();
 
     final var scheme = configs.isDataPlaneWorker() ? "https" : "http";
-    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}, Auth-Token: {}",
-        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader,
-        authToken);
+    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
+        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader);
 
     final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
@@ -406,53 +396,57 @@ public class WorkerApp {
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
             .setRequestInterceptor(builder -> {
-              // do something to generate on demand, might end up generating blank (for OSS, for example)
-              builder.setHeader(authHeader, authToken);
-              builder.setHeader("User-Agent", "WorkerApp"); // TODO make constant
+              builder.setHeader(authHeader, generateAuthToken());
+              builder.setHeader("User-Agent", "WorkerApp");
             }));
     return airbyteApiClient;
   }
 
-  // Could make this default to a blank token (like if OSS deployment called this).
-  // how would an OSS user use this? if authTokenValue set, use it, otherwise fall back to this?
-  // basically,
-  public static String generateJwt(final String saKeyfile,
-                                   final String saEmail,
-                                   final String audience,
-                                   final int expiryLengthSeconds)
-      throws IOException {
+  /**
+   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
+   * for each request.
+   *
+   * For Data Plane workers, generate a signed JWT as described here:
+   * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
+   *
+   * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
+   */
+  private static String generateAuthToken() {
+    if (configs.isDataPlaneWorker()) {
+      try {
+        final Date now = new Date();
+        final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));
+        final String saEmail = configs.getDataPlaneServiceAccountEmail();
+        // Build the JWT payload
+        final JWTCreator.Builder token = JWT.create()
+            .withIssuedAt(now)
+            // Expires after 'expiryLength' seconds
+            .withExpiresAt(expTime)
+            // Must match 'issuer' in the security configuration in your
+            // swagger spec (e.g. service account email)
+            .withIssuer(saEmail)
+            // Must be either your Endpoints service name, or match the value
+            // specified as the 'x-google-audience' in the OpenAPI document
+            .withAudience(configs.getControlPlaneGoogleEndpoint())
+            // Subject and email should match the service account's email
+            .withSubject(saEmail)
+            .withClaim("email", saEmail);
 
-    final Date now = new Date();
-    final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(expiryLengthSeconds));
-    try {
-      // Build the JWT payload
-      final JWTCreator.Builder token = JWT.create()
-          .withIssuedAt(now)
-          // Expires after 'expiryLength' seconds
-          .withExpiresAt(expTime)
-          // Must match 'issuer' in the security configuration in your
-          // swagger spec (e.g. service account email)
-          .withIssuer(saEmail)
-          // Must be either your Endpoints service name, or match the value
-          // specified as the 'x-google-audience' in the OpenAPI document
-          .withAudience(audience)
-          // Subject and email should match the service account's email
-          .withSubject(saEmail)
-          .withClaim("email", saEmail);
-
-      // Sign the JWT with a service account
-      // TODO can pull this up so we're not reading the file stream every API call
-
-      // TODO be extra aware of this during scale testing, make sure token generation isn't adding a bunch
-      // of overhead when done on-demand
-      final FileInputStream stream = new FileInputStream(saKeyfile);
-      final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
-      final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
-      final Algorithm algorithm = Algorithm.RSA256(null, key);
-      return token.sign(algorithm);
-    } catch (final Exception e) {
-      LOGGER.error("Error occurred while generating JWT", e);
-      return "";
+        // TODO multi-cloud phase 2: check performance of on-demand token generation in load testing. might
+        // need
+        // to pull some of this outside of this method which is called for every API request
+        final FileInputStream stream = new FileInputStream(configs.getDataPlaneServiceAccountCredentialsPath());
+        final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
+        final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
+        final Algorithm algorithm = Algorithm.RSA256(null, key);
+        return "Bearer " + token.sign(algorithm);
+      } catch (final Throwable t) {
+        LOGGER.warn("An issue occurred while generating a data plane auth token. Defaulting to empty string.", t);
+        return "";
+      }
+    } else {
+      // not data plane, so just use env configs
+      return configs.getAirbyteApiAuthHeaderValue();
     }
   }
 
