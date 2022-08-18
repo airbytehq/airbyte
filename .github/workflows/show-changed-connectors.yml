@@ -57,10 +57,14 @@ jobs:
           output="${output//$'\r'/'%0D'}" 
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
+      - name: Debug
+        run: |
+        echo "Github token 1 ${{ needs.find_valid_pat.outputs.pat }}"
+        echo "Github token 2 ${{ secrets.GITHUB_TOKEN }}"
       - name: Comment result
         uses: actions/github-script@v6
         with:
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
