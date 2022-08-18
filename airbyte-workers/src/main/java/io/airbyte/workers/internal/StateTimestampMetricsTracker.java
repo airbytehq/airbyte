@@ -1,0 +1,241 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.workers.internal;
+
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.StreamDescriptor;
+import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
+public class StateTimestampMetricsTracker {
+
+  private static final int STATE_HASH_SIZE = Integer.BYTES;
+  private static final int EPOCH_TIME_SIZE = Long.BYTES;
+  private static final int BYTE_ARRAY_SIZE = STATE_HASH_SIZE + EPOCH_TIME_SIZE;
+
+  private final List<byte[]> stateHashesAndTimestamps;
+  private final Map<String, List<byte[]>> streamStateHashesAndTimestamps;
+  private LocalDateTime firstRecordReceivedAt;
+  private final LocalDateTime lastStateMessageReceivedAt;
+  private Long maxSecondsToReceiveSourceStateMessage;
+  private Long meanSecondsToReceiveSourceStateMessage;
+  private Long maxSecondsBetweenStateMessageEmittedandCommitted;
+  private Long meanSecondsBetweenStateMessageEmittedandCommitted;
+  private final AtomicLong totalSourceEmittedStateMessages;
+  private final AtomicLong totalDestinationEmittedStateMessages;
+  private long remainingCapacity;
+  private Boolean capacityExceeded;
+
+  public StateTimestampMetricsTracker(final Long memoryLimitBytes) {
+    this.stateHashesAndTimestamps = new ArrayList<>();
+    this.streamStateHashesAndTimestamps = new HashMap<>();
+    this.firstRecordReceivedAt = null;
+    this.lastStateMessageReceivedAt = null;
+    this.maxSecondsToReceiveSourceStateMessage = 0L;
+    this.meanSecondsToReceiveSourceStateMessage = 0L;
+    this.maxSecondsBetweenStateMessageEmittedandCommitted = 0L;
+    this.meanSecondsBetweenStateMessageEmittedandCommitted = 0L;
+    this.totalSourceEmittedStateMessages = new AtomicLong(0L);
+    this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
+    this.remainingCapacity = memoryLimitBytes;
+    this.capacityExceeded = false;
+  }
+
+  public synchronized void addState(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeEmitted)
+      throws StateTimestampMetricsTrackerException {
+    final long epochTime = timeEmitted.toEpochSecond(ZoneOffset.UTC);
+
+    if (capacityExceeded || remainingCapacity < BYTE_ARRAY_SIZE) {
+      capacityExceeded = true;
+      throw new StateTimestampMetricsTrackerException("Memory capacity is exceeded for StateTimestampMetricsTracker.");
+    }
+
+    if (AirbyteStateType.STREAM == stateMessage.getType()) {
+      addStateMessageToStreamToStateHashTimestampTracker(stateMessage, stateHash, epochTime);
+    } else {
+      // do not track state message timestamps per stream for GLOBAL or LEGACY state
+      final byte[] stateTimestampByteArray = populateStateTimestampByteArray(stateHash, epochTime);
+      stateHashesAndTimestamps.add(stateTimestampByteArray);
+      remainingCapacity -= stateTimestampByteArray.length;
+    }
+  }
+
+  public synchronized void updateStates(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeCommitted) {
+    final LocalDateTime startingTime;
+    if (AirbyteStateType.STREAM == stateMessage.getType()) {
+      final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
+      final String streamNameAndNamespace = streamDescriptor.getName() + streamDescriptor.getNamespace();
+      final List<byte[]> stateMessagesForStream = streamStateHashesAndTimestamps.get(streamNameAndNamespace);
+      startingTime = findStartingTimeStampAndRemoveOlderEntries(stateMessagesForStream, stateHash);
+    } else {
+      startingTime = findStartingTimeStampAndRemoveOlderEntries(stateHashesAndTimestamps, stateHash);
+    }
+    updateMaxAndMeanSeconds(startingTime, timeCommitted);
+  }
+
+  void addStateMessageToStreamToStateHashTimestampTracker(final AirbyteStateMessage stateMessage,
+                                                          final int stateHash,
+                                                          final Long epochTimeEmitted) {
+
+    final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
+    final String streamNameAndNamespace = streamDescriptor.getName() + streamDescriptor.getNamespace();
+    final byte[] stateHashAndTimestamp = populateStateTimestampByteArray(stateHash, epochTimeEmitted);
+
+    if (streamStateHashesAndTimestamps.get(streamNameAndNamespace) == null) {
+      final List stateHashesAndTimestamps = new ArrayList<>();
+      stateHashesAndTimestamps.add(stateHashAndTimestamp);
+      streamStateHashesAndTimestamps.put(streamNameAndNamespace, stateHashesAndTimestamps);
+    } else {
+      final List<byte[]> streamDescriptorValue = streamStateHashesAndTimestamps.get(streamNameAndNamespace);
+      streamDescriptorValue.add(stateHashAndTimestamp);
+    }
+  }
+
+  void updateMaxAndMeanSeconds(final LocalDateTime startingTime, final LocalDateTime timeCommitted) {
+    final Long secondsUntilCommit = calculateSecondsBetweenStateEmittedAndCommitted(startingTime, timeCommitted);
+    if (maxSecondsBetweenStateMessageEmittedandCommitted < secondsUntilCommit) {
+      maxSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
+    }
+
+    if (totalDestinationEmittedStateMessages.get() == 1) {
+      meanSecondsBetweenStateMessageEmittedandCommitted = secondsUntilCommit;
+    } else {
+      final Long newMeanSeconds =
+          calculateMean(meanSecondsBetweenStateMessageEmittedandCommitted, totalDestinationEmittedStateMessages.get(), secondsUntilCommit);
+      meanSecondsBetweenStateMessageEmittedandCommitted = newMeanSeconds;
+    }
+  }
+
+  private LocalDateTime findStartingTimeStampAndRemoveOlderEntries(final List<byte[]> stateList, final int stateHash) {
+    // iterate through each [state_hash, timestamp] in the list
+    // update the first timestamp to equal min_timestamp
+    // and remove all items from the list as we iterate through
+    // break once we reach the state hash equal to the input(destination) state hash
+    Long minTime = null;
+    final Iterator<byte[]> iterator = stateList.iterator();
+    while (iterator.hasNext()) {
+      final byte[] stateMessageTime = iterator.next();
+      final ByteBuffer current = ByteBuffer.wrap(stateMessageTime);
+      remainingCapacity += current.capacity();
+      final int currentStateHash = current.getInt();
+      final Long epochTime = current.getLong();
+      if (minTime == null) {
+        minTime = epochTime;
+      }
+      iterator.remove();
+
+      if (stateHash == currentStateHash) {
+        break;
+      }
+    }
+    return LocalDateTime.ofEpochSecond(minTime, 0, ZoneOffset.UTC);
+  }
+
+  Long calculateSecondsBetweenStateEmittedAndCommitted(final LocalDateTime stateMessageEmittedAt, final LocalDateTime stateMessageCommittedAt) {
+    return stateMessageEmittedAt.until(stateMessageCommittedAt, ChronoUnit.SECONDS);
+  }
+
+  protected Long calculateMean(final Long currentMean, final Long totalCount, final Long newDataPoint) {
+    final Long previousCount = totalCount - 1;
+    final double result = (Double.valueOf(currentMean * previousCount) / totalCount) + (Double.valueOf(newDataPoint) / totalCount);
+    return (long) result;
+  }
+
+  public void updateMaxAndMeanSecondsToReceiveStateMessage(final LocalDateTime stateMessageReceivedAt) {
+    final Long secondsSinceLastStateMessage = calculateSecondsSinceLastStateEmitted(stateMessageReceivedAt);
+    if (maxSecondsToReceiveSourceStateMessage < secondsSinceLastStateMessage) {
+      maxSecondsToReceiveSourceStateMessage = secondsSinceLastStateMessage;
+    }
+
+    if (meanSecondsToReceiveSourceStateMessage == 0) {
+      meanSecondsToReceiveSourceStateMessage = secondsSinceLastStateMessage;
+    } else {
+      final Long newMeanSeconds =
+          calculateMean(meanSecondsToReceiveSourceStateMessage, totalSourceEmittedStateMessages.get(), secondsSinceLastStateMessage);
+      meanSecondsToReceiveSourceStateMessage = newMeanSeconds;
+    }
+  }
+
+  private Long calculateSecondsSinceLastStateEmitted(final LocalDateTime stateMessageReceivedAt) {
+    if (lastStateMessageReceivedAt != null) {
+      return lastStateMessageReceivedAt.until(stateMessageReceivedAt, ChronoUnit.SECONDS);
+    } else if (firstRecordReceivedAt != null) {
+      return firstRecordReceivedAt.until(stateMessageReceivedAt, ChronoUnit.SECONDS);
+    } else {
+      // If we receive a State Message before a Record Message there is no previous timestamp to use for a
+      // calculation
+      return 0L;
+    }
+  }
+
+  public LocalDateTime getFirstRecordReceivedAt() {
+    return firstRecordReceivedAt;
+  }
+
+  public void setFirstRecordReceivedAt(final LocalDateTime receivedAt) {
+    firstRecordReceivedAt = receivedAt;
+  }
+
+  public void incrementTotalSourceEmittedStateMessages() {
+    totalSourceEmittedStateMessages.incrementAndGet();
+  }
+
+  public Long getTotalSourceStateMessageEmitted() {
+    return totalSourceEmittedStateMessages.get();
+  }
+
+  public Long getTotalDestinationStateMessageEmitted() {
+    return totalDestinationEmittedStateMessages.get();
+  }
+
+  public Long getMaxSecondsToReceiveSourceStateMessage() {
+    return maxSecondsToReceiveSourceStateMessage;
+  }
+
+  public Long getMeanSecondsToReceiveSourceStateMessage() {
+    return meanSecondsToReceiveSourceStateMessage;
+  }
+
+  public Long getMaxSecondsBetweenStateMessageEmittedAndCommitted() {
+    return maxSecondsBetweenStateMessageEmittedandCommitted;
+  }
+
+  public Long getMeanSecondsBetweenStateMessageEmittedAndCommitted() {
+    return meanSecondsBetweenStateMessageEmittedandCommitted;
+  }
+
+  protected void incrementTotalDestinationEmittedStateMessages() {
+    totalDestinationEmittedStateMessages.incrementAndGet();
+  }
+
+  private byte[] populateStateTimestampByteArray(final int stateHash, final Long epochTime) {
+    // allocate num of bytes of state hash + num bytes of epoch time long
+    final ByteBuffer delta = ByteBuffer.allocate(BYTE_ARRAY_SIZE);
+    delta.putInt(stateHash);
+    delta.putLong(epochTime);
+    return delta.array();
+  }
+
+  /**
+   * Thrown when the StateTimestampMetricsTracker exceeds its allotted memory
+   */
+  public static class StateTimestampMetricsTrackerException extends Exception {
+
+    public StateTimestampMetricsTrackerException(final String message) {
+      super(message);
+    }
+
+  }
+
+}
