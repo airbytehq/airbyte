@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.77
+- Add schema validation for declarative YAML connector configs
+
 ## 0.1.76
 - Bugfix: Correctly set parent slice stream for sub-resource streams
 
