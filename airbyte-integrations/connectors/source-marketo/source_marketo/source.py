@@ -184,12 +184,8 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             export = self.create_export(param)
 
-            status, export_id = export.get("status", "").lower(), export.get("exportId")
-            if status != "created" or not export_id:
-                self.logger.warning(f"Failed to create export job for data slice {date_slice}!")
-                continue
-            date_slice["id"] = export_id
-            yield date_slice
+            date_slice["id"] = export["exportId"]
+        return date_slices
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
         while True:
@@ -269,6 +265,16 @@ class MarketoExportCreate(MarketoStream):
 
     def path(self, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/create.json"
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429 or 500 <= response.status_code < 600:
+            return True
+        record = next(self.parse_response(response, {}))
+        status, export_id = record.get("status", "").lower(), record.get("exportId")
+        if status != "created" or not export_id:
+            self.logger.warning(f"Failed to create export job! Status is {status}!")
+            return True
+        return False
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         params = {"format": "CSV"}
@@ -382,7 +388,7 @@ class Activities(MarketoExportBase):
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "properties": properties,
         }
 
