@@ -11,7 +11,9 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
   annotations:
-    # helm.sh/hook: pre-install,pre-upgrade
+    {{- if eq .Values.global.deploymentMode "oss" }}
+    helm.sh/hook: pre-install,pre-upgrade
+    {{- end }}
     {{- if .Values.podAnnotations }}
       {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 4 }}
     {{- end }}
@@ -108,5 +110,5 @@ spec:
               key: {{ $k }}
             {{- end }}
         {{- end }}
-
+      
       resources: {{- toYaml .Values.resources | nindent 8 }}
