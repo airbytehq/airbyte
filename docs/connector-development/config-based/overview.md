@@ -106,7 +106,8 @@ There is currently only one implementation, the `HttpRequester`, which is define
 6. An error handler: Defines how to handle errors
 
 More details on authentication can be found in the [authentication section](authentication.md).
-More details on error handling can be found in the [error handling section](error-handling.md)
+
+More details on error handling can be found in the [error handling section](error-handling.md).
 
 ## Connection Checker
 
