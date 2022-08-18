@@ -76,7 +76,7 @@ def get_depended_connectors(changed_connectors_files, all_build_gradle_files):
 
 def write_report(depended_connectors):
     for depended_connector in depended_connectors:
-        print(depended_connector)
+        print("- " + depended_connector)
 
 
 if __name__ == "__main__":
