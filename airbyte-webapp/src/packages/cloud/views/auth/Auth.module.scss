@@ -1,28 +1,39 @@
 @use "../../../../scss/colors";
 
 .container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   background: colors.$white;
-  display: grid;
-  height: 100%;
-  grid-template-columns: minmax(max-content, 50%) minmax(500px, 50%);
 }
 
 .leftSide {
-  flex: 1 0 0;
+  width: 100%;
   padding: 20px 36px 39px 46px;
-  height: 100%;
 }
 
 .rightSide {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 100%;
 }
 
 .rightSideFrame {
-  width: 100%;
   height: 100%;
+  width: 100%;
   border: none;
   overflow: hidden;
+}
+
+@media (min-width: 992px) and (min-height: 720px) {
+  .container {
+    flex-direction: row;
+    height: 100%;
+  }
+
+  .leftSide,
+  .rightSide {
+    height: 100%;
+  }
 }
