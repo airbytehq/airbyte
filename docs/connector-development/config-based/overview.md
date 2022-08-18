@@ -87,9 +87,11 @@ The `SimpleRetriever`'s data flow can be described as follows:
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
 
-More details on the record selector can be found in the [record selector section](record-selector.md)
-More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
-More details on the paginator can be found in the [pagination section](pagination.md)
+More details on the record selector can be found in the [record selector section](record-selector.md).
+
+More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md).
+
+More details on the paginator can be found in the [pagination section](pagination.md).
 
 ## Requester
 
