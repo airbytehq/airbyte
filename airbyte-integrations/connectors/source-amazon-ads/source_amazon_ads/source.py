@@ -101,7 +101,8 @@ class SourceAmazonAds(AbstractSource):
 
     @staticmethod
     def _set_defaults(config: Mapping[str, Any]):
-        config["region"] = AmazonAdsRegion.NA
+        if not config.get("region"): 
+            config["region"] = AmazonAdsRegion.NA
 
     @staticmethod
     def _choose_profiles(config: Mapping[str, Any], profiles: List[Profile]):
