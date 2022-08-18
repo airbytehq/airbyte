@@ -53,7 +53,7 @@ public class JdbcUtils {
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
+      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
