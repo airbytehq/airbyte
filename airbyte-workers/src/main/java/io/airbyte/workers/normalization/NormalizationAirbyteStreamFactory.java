@@ -93,9 +93,10 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         try (final var mdcScope = containerLogMdcBuilder.build()) {
           switch (logLevel) {
             case "debug" -> logger.debug(logMsg);
+            case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            default -> logger.info(logMsg); // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(jsonLine.asText()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
       } catch (final Exception e) {

@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
@@ -211,21 +212,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   private String buildInternalErrorMessageFromDbtStackTrace() {
-    // Most dbt errors we see in Airbyte are `Database Errors`
-    // The relevant error message is often the line following the "Database Error..." line
-    // e.g. "Column 10 in UNION ALL has incompatible types: DATETIME, TIMESTAMP"
-    boolean nextLine = false;
-    for (String errorLine : streamFactory.getDbtErrors()) {
-      // previous line was "Database Error..." so this is our useful message line
-      if (nextLine) {
-        return errorLine;
-      }
-      if (errorLine.contains("Database Error in model")) {
-        nextLine = true;
-      }
-    }
-    // Not all errors are Database Errors, for other types, we just return the stacktrace
-    return dbtErrorStack;
+    Map<String, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+    return errorMap.get(SentryExceptionHelper.ERROR_MAP_MESSAGE_KEY);
   }
 
   @VisibleForTesting

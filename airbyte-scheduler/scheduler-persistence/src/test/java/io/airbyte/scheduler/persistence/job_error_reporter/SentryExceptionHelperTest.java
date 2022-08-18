@@ -12,8 +12,12 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class SentryExceptionHelperTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelperTest.class);
 
   private static final String ERROR_PATH = "/airbyte/connector-errors/error.py";
   private static final String ABS_PATH = "abspath";
@@ -335,7 +339,7 @@ class SentryExceptionHelperTest {
   }
 
   @Test
-  void testBuildSentryExceptionsNormalizationDbtDatabaseError() {
+  void testBuildSentryExceptionsDbtDatabaseErrorDefault() {
     final String stacktrace =
         """
         AirbyteDbtError:\s
@@ -354,7 +358,223 @@ class SentryExceptionHelperTest {
     final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(1, exceptionList.size());
 
-    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError", "  1292 (22007): Truncated incorrect DOUBLE value: 'ABC'", List.of());
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError",
+        "1292 (22007): Truncated incorrect DOUBLE value: 'ABC'", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtDatabaseErrorSqlComp() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        4 of 14 ERROR creating incremental model RAW.GENERAL_LEDGER_TRANS....................................................... [[31mERROR[0m in 11.47s]
+        	  [33mDatabase Error in model GENERAL_LEDGER_TRANS (models/generated/airbyte_incremental/RAW/GENERAL_LEDGER_TRANS.sql)[0m
+        	  001003 (42000): SQL compilation error:
+        	  syntax error line 47 at position 19 unexpected '-'.
+        Setting attempt to FAILED because the job was cancelled
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseSQLCompilationError",
+        "001003 (42000): SQL compilation error: syntax error line 47 at position 19 unexpected '-'.", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtDatabaseErrorInvalidInput() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        1 of 1 ERROR creating table model tdym_processing_test.tdym_api_data.................................................... [[31mERROR[0m in 0.61s]
+        	  [33mDatabase Error in model tdym_api_data (models/generated/airbyte_tables/tdym_processing_test/tdym_api_data.sql)[0m
+        	  Invalid input
+        	  DETAIL:
+        
+        
+        --	    error:  Invalid input
+        	    code:      8001
+        	    context:   SUPER value exceeds export size.
+        	    query:     3667701
+        	    location:  partiql_export.cpp:9
+        	    process:   query0_127_3667701 [pid=17836]
+        
+        
+        --	  compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_tables/tdym_processing_test/tdym_api_data.sql
+        Setting attempt to FAILED because the job was cancelled
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseInvalidInputError",
+        "Invalid input\ncontext:   SUPER value exceeds export size.", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtDatabaseErrorSyntax() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        1 of 3 ERROR creating incremental model _airbyte_public.products_stg.................................................... [[31mERROR[0m in 0.89s]
+        	  [33mDatabase Error in model products_stg (models/generated/airbyte_incremental/public/products_stg.sql)[0m
+            syntax error at or near "text"
+        	  LINE 6:                add column Base name text
+        	                                              ^
+        	1 of 3 ERROR creating incremental model _airbyte_public.products_stg.................................................... [[31mERROR[0m in 0.89s]
+        	  [33mDatabase Error in model products_stg (models/generated/airbyte_incremental/public/products_stg.sql)[0m
+        	  syntax error at or near "text"
+        	  LINE 6:                add column Base name text
+        	                                              ^
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseSyntaxError",
+        "syntax error at or near \"text\"\nLINE 6:                add column Base name text", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtUnhandledError() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+         [31mUnhandled error while executing model.airbyte_utils.1595965687212073_ads_insights_cost_per_2_sec_continuous_video_view_ab2[0m
+        ("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})
+        	[31mUnhandled error while executing model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions_ab2[0m
+        ("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})
+        	10 of 48 SKIP relation ba__facebook_ads.1595965687212073_ads_insights_cost_per_2_sec_continuous_video_view due to ephemeral model error [[31mERROR SKIP[0m]
+        	[33m("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})[0m
+        	23 of 48 SKIP relation ba__facebook_ads.1595965687212073_ads_insights_video_avg_time_watched_actions due to ephemeral model error [[31mERROR SKIP[0m]
+        	[33m("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})[0m
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_cost_per_2_sec_continuous_video_view, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_cost_per_2_sec_continuous_video_view_ab2[0m
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions_ab2[0m
+        	[31mUnhandled error while executing model.airbyte_utils.1595965687212073_ads_insights_cost_per_2_sec_continuous_video_view_ab2[0m
+        ("{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_avg_time_watched_actions_ab2[0m
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_p95_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_p95_watched_actions_ab2[0m
+        	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions_ab2[0m          
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtUnhandledError",
+        "(\"{'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}: None\", {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}})", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtCompilationErrorAmbigRelation() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        1 of 1 ERROR creating table model dbo.sheet1............................................................................ [[31mERROR[0m in 0.11s]
+        	[33mCompilation Error in model sheet1 (models/generated/airbyte_tables/dbo/sheet1.sql)[0m
+        	  When searching for a relation, dbt found an approximate match. Instead of guessing
+        	  which relation to use, dbt will move on. Please delete "Data_integration"."dbo"."sheet1", or rename it to be less ambiguous.
+        	  Searched for: "data_integration"."dbo"."sheet1"
+        	  Found: "Data_integration"."dbo"."sheet1"
+        
+        	  > in macro materialization_table_default (macros/materializations/models/table/table.sql)
+        	  > called by model sheet1 (models/generated/airbyte_tables/dbo/sheet1.sql)
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtCompilationAmbiguousRelationError",
+        "When searching for a relation, dbt found an approximate match. Instead of guessing which relation to use, dbt will move on. Please delete \"Data_integration\".\"dbo\".\"sheet1\", or rename it to be less ambiguous.", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtCompilationErrorDefault() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        Encountered an error:
+        Compilation Error in model banking_test (models/generated/airbyte_tables/public/banking_test.sql)
+          Model 'model.airbyte_utils.banking_test' (models/generated/airbyte_tables/public/banking_test.sql) depends on a source named 'public._airbyte_raw_banking_test' which was not found
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtCompilationError",
+        "Model 'model.airbyte_utils.banking_test' (models/generated/airbyte_tables/public/banking_test.sql) depends on a source named 'public._airbyte_raw_banking_test' which was not found", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtRuntimeErrorDefault() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        Encountered an error:
+        Runtime Error
+          Code: 102. Unexpected packet from server abcdefg.eu-west-1.aws.clickhouse.cloud:8443 (expected Hello or Exception, got Unknown packet)
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtRuntimeError",
+        "Code: 102. Unexpected packet from server abcdefg.eu-west-1.aws.clickhouse.cloud:8443 (expected Hello or Exception, got Unknown packet)", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtRuntimeErrorDatabase() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        Encountered an error:
+        Runtime Error
+          Database error while listing schemas in database ""AIRBYTE_DATABASE""
+          Database Error
+            250001 (08001): Failed to connect to DB: xyzxyz.us-east-2.aws.snowflakecomputing.com:443. The user you were trying to authenticate as differs from the user tied to the access token.
+        message='io.temporal.serviceclient.CheckedExceptionWrapper: java.util.concurrent.ExecutionException: java.lang.RuntimeException: io.airbyte.workers.exception.WorkerException: Running the launcher replication-orchestrator failed', type='java.lang.RuntimeException', nonRetryable=false
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtRuntimeDatabaseError",
+        "250001 (08001): Failed to connect to DB: xyzxyz.us-east-2.aws.snowflakecomputing.com:443. The user you were trying to authenticate as differs from the user tied to the access token.", List.of());
+  }
+
+  @Test
+  void testBuildSentryExceptionsDbtDatabaseErrorOther() {
+    final String stacktrace =
+        """
+        AirbyteDbtError:\s
+        Encountered an error:
+        Database Error
+          Access Denied: Project upside-cloud-prod: User does not have bigquery.datasets.create permission in project upside-cloud-prod.
+        Setting attempt to FAILED because the job was cancelled
+        """;
+
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "DbtDatabaseError",
+        "Access Denied: Project upside-cloud-prod: User does not have bigquery.datasets.create permission in project upside-cloud-prod.", List.of());
   }
 
   private void assertExceptionContent(final SentryException exception,
@@ -364,42 +584,44 @@ class SentryExceptionHelperTest {
     Assertions.assertEquals(type, exception.getType());
     Assertions.assertEquals(value, exception.getValue());
 
-    final SentryStackTrace stackTrace = exception.getStacktrace();
-    Assertions.assertNotNull(stackTrace);
-    final List<SentryStackFrame> sentryFrames = stackTrace.getFrames();
-    Assertions.assertNotNull(sentryFrames);
-    Assertions.assertEquals(frames.size(), sentryFrames.size());
+    if (!frames.isEmpty()) {
+      final SentryStackTrace stackTrace = exception.getStacktrace();
+      Assertions.assertNotNull(stackTrace);
+      final List<SentryStackFrame> sentryFrames = stackTrace.getFrames();
+      Assertions.assertNotNull(sentryFrames);
+      Assertions.assertEquals(frames.size(), sentryFrames.size());
 
-    for (int i = 0; i < frames.size(); i++) {
-      final Map<String, Object> expectedFrame = frames.get(i);
-      final SentryStackFrame sentryFrame = sentryFrames.get(i);
+      for (int i = 0; i < frames.size(); i++) {
+        final Map<String, Object> expectedFrame = frames.get(i);
+        final SentryStackFrame sentryFrame = sentryFrames.get(i);
 
-      if (expectedFrame.containsKey(MODULE)) {
-        Assertions.assertEquals(expectedFrame.get(MODULE), sentryFrame.getModule());
-      }
+        if (expectedFrame.containsKey(MODULE)) {
+          Assertions.assertEquals(expectedFrame.get(MODULE), sentryFrame.getModule());
+        }
 
-      if (expectedFrame.containsKey(FILENAME)) {
-        Assertions.assertEquals(expectedFrame.get(FILENAME), sentryFrame.getFilename());
-      }
+        if (expectedFrame.containsKey(FILENAME)) {
+          Assertions.assertEquals(expectedFrame.get(FILENAME), sentryFrame.getFilename());
+        }
 
-      if (expectedFrame.containsKey(ABS_PATH)) {
-        Assertions.assertEquals(expectedFrame.get(ABS_PATH), sentryFrame.getAbsPath());
-      }
+        if (expectedFrame.containsKey(ABS_PATH)) {
+          Assertions.assertEquals(expectedFrame.get(ABS_PATH), sentryFrame.getAbsPath());
+        }
 
-      if (expectedFrame.containsKey(FUNCTION)) {
-        Assertions.assertEquals(expectedFrame.get(FUNCTION), sentryFrame.getFunction());
-      }
+        if (expectedFrame.containsKey(FUNCTION)) {
+          Assertions.assertEquals(expectedFrame.get(FUNCTION), sentryFrame.getFunction());
+        }
 
-      if (expectedFrame.containsKey(LINE_NO)) {
-        Assertions.assertEquals(expectedFrame.get(LINE_NO), sentryFrame.getLineno());
-      }
+        if (expectedFrame.containsKey(LINE_NO)) {
+          Assertions.assertEquals(expectedFrame.get(LINE_NO), sentryFrame.getLineno());
+        }
 
-      if (expectedFrame.containsKey(CONTEXT_LINE)) {
-        Assertions.assertEquals(expectedFrame.get(CONTEXT_LINE), sentryFrame.getContextLine());
-      }
+        if (expectedFrame.containsKey(CONTEXT_LINE)) {
+          Assertions.assertEquals(expectedFrame.get(CONTEXT_LINE), sentryFrame.getContextLine());
+        }
 
-      if (expectedFrame.containsKey("isNative")) {
-        Assertions.assertEquals(expectedFrame.get("isNative"), sentryFrame.isNative());
+        if (expectedFrame.containsKey("isNative")) {
+          Assertions.assertEquals(expectedFrame.get("isNative"), sentryFrame.isNative());
+        }
       }
     }
   }
