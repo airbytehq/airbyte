@@ -6,6 +6,7 @@ import csv
 import io
 from abc import ABC
 from datetime import datetime, timedelta
+import re
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -110,7 +111,7 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
 
     @state.setter  # State setter
     def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, "1970-01-01 00:00:00")
+        self._cursor_value = value.get(self.cursor_field, "1970-01-01T00:00:00")
         self._start_date = value.get("start_date", self.params["start_date"])
         self._end_date = value.get("end_date", self.params["end_date"])
 
@@ -157,6 +158,7 @@ class Views(IncrementalYandexMetricaStream):
         schema = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
         fields = {key: HitsFields.get_all_fields()[key] for key in self.fields_list}
         for key, value in fields.items():
+            key = re.sub(r"(ym:s:|ym:pv:)", "", key)
             schema["properties"][key] = value
 
         return schema
@@ -198,6 +200,7 @@ class Sessions(IncrementalYandexMetricaStream):
         schema = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
         fields = {key: VisitsFields.get_all_fields()[key] for key in self.fields_list}
         for key, value in fields.items():
+            key = re.sub(r"(ym:s:|ym:pv:)", "", key)
             schema["properties"][key] = value
 
         return schema
@@ -385,10 +388,14 @@ class Download(YandexMetricaStream):
     ) -> Iterable[Mapping]:
         reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
         for row in reader:
-            # Transform datetime fields
-            row[self.cursor_field] = row[self.cursor_field].replace(" ", "T")
-            if hasattr(row, "ym:s:dateTimeUTC"):
-                row["ym:s:dateTimeUTC"] = row["ym:s:dateTimeUTC"].replace(" ", "T")
+            # Remove 'ym:s:' or 'ym:pv:' prefix
+            row = {re.sub(r"(ym:s:|ym:pv:)", "", key): value for key, value in row.items()}
+            try:
+                # Transform datetime fields
+                row[self.cursor_field] = row[self.cursor_field].replace(" ", "T")
+                row["dateTimeUTC"] = row["dateTimeUTC"].replace(" ", "T")
+            except:
+                pass
 
             yield row
 

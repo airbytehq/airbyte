@@ -12,16 +12,16 @@ class YMSource:
 
 
 class YMPrimaryKey:
-    VIEWS = "ym:pv:watchID"
-    SESSIONS = "ym:s:visitID"
+    VIEWS = "watchID"
+    SESSIONS = "visitID"
 
     def __str__(self):
         return self.value
 
 
 class YMCursor:
-    VIEWS = "ym:pv:dateTime"
-    SESSIONS = "ym:s:dateTime"
+    VIEWS = "dateTime"
+    SESSIONS = "dateTime"
 
     def __str__(self):
         return self.value
