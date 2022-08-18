@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import enum
 import importlib
+import inspect
 import typing
 from dataclasses import fields
 from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 from jsonschema.validators import validate
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -294,8 +296,7 @@ class DeclarativeComponentFactory:
         if generic_type is None:
             # Functions as the base case since the origin is none for non-typing classes. If it is an interface then we derive
             # and return the union of its subclasses or return the original type if it is a concrete class or a primitive type
-            module = field_type.__module__
-            if "airbyte_cdk.sources.declarative" in module:
+            if inspect.isclass(field_type) and issubclass(field_type, JsonSchemaMixin):
                 subclasses = field_type.__subclasses__()
                 if subclasses:
                     return Union[tuple(subclasses)]

@@ -9,7 +9,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DeclarativeAuthenticator:
+class DeclarativeAuthenticator(JsonSchemaMixin):
     """
     Interface used to associate which authenticators can be used as part of the declarative framework
     """
