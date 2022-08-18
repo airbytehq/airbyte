@@ -38,7 +38,17 @@ jobs:
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
       - name: Print result
-        run: echo "${{ steps.dependency_report.outputs.changed_files_report }}"
+      - uses: actions/github-script@v5
+        with:
+          github-token: ${{inputs.github-token}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:\n
+              ${{steps.dependency_report.outputs.changed_files_report}}'
+            })
 
 
 
