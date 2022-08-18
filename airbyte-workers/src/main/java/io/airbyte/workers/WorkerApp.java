@@ -102,6 +102,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
@@ -565,8 +566,6 @@ public class WorkerApp {
       checkProcessFactory = getJobProcessFactory(configs, checkWorkerConfigs);
       discoverProcessFactory = getJobProcessFactory(configs, discoverWorkerConfigs);
 
-      secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
-
       final Database configDatabase = new Database(configsDslContext);
       final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
           .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -631,6 +630,8 @@ public class WorkerApp {
           configs.getAirbyteVersionOrWarning(),
           webUrlHelper,
           jobErrorReportingClient);
+
+      initializeSecretsHydrator(configsDslContext);
     }
   }
 
@@ -647,6 +648,30 @@ public class WorkerApp {
     replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
 
     containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
+    initializeSecretsHydrator(null);
+  }
+
+  /**
+   * The secretsHydrator is a common dependency for both Control Plane and Data Plane workers. In some
+   * cases, it uses a database as its backing persistence, so a configsDslContext is passed in.
+   * However, Data Plane workers don't support using a database as a backing store, and the
+   * configsDslContext doesn't exist in that case. So, this method can be called multiple times, with
+   * or without a configsDslContext, to initialize the secretsHydrator correctly based on the type of
+   * worker.
+   */
+  private static void initializeSecretsHydrator(final @Nullable DSLContext configsDslContext) {
+    if (secretsHydrator != null) {
+      LOGGER.debug("secretsHydrator was already initialized!");
+      return;
+    }
+
+    if (configs.isControlPlaneWorker()) {
+      secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
+    } else {
+      // Data Plane-only workers call a dedicated method to get a secretsHydrator without a
+      // configsDslContext
+      secretsHydrator = SecretPersistence.getDataPlaneSecretsHydrator(configs);
+    }
   }
 
   public static void main(final String[] args) {
