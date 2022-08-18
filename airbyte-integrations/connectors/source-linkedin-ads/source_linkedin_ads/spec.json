@@ -9,13 +9,13 @@
     "properties": {
       "credentials": {
         "title": "Authentication *",
-        "x-oauth2-provider": "linkedin",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id", "client_secret", "refresh_token"],
+            "x-oauth2-provider": "linkedin",
+            "required": ["auth_method", "client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_method": {
                 "type": "string",
