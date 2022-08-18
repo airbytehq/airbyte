@@ -200,10 +200,13 @@ public class SentryExceptionHelper {
   }
 
   public static Map<String, String> getUsefulErrorMessageAndTypeFromDbtError(String stacktrace) {
-    // see this github comment chain for explanation behind the logic here
-    // https://github.com/airbytehq/airbyte/pull/15695#discussion_r949212665
+    // the dbt 'stacktrace' is really just all the log messages at 'error' level, stuck together.
+    // therefore there is not a totally consistent structure to these,
+    // see the docs: https://docs.getdbt.com/guides/legacy/debugging-errors
+    // the logic below is built based on the ~450 unique dbt errors we encountered before this PR
+    // and is a best effort to isolate the useful part of the error logs for debugging and grouping
+    // and bring some semblance of exception 'types' to differentiate between errors.
     Map<String, String> errorMessageAndType = new HashMap<>();
-
     String[] stacktraceLines = stacktrace.split("\n");
 
     boolean defaultNextLine = false;
