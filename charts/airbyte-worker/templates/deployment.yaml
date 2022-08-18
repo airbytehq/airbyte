@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
