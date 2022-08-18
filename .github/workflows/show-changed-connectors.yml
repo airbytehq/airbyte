@@ -38,10 +38,22 @@ jobs:
           output="${output//$'\r'/'%0D'}" 
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
+      - name: PR number
+        uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          # Can be "open", "closed", or "all".  Defaults to "open".
+          state: open
+      # This will echo "Your PR is 7", or be skipped if there is no current PR.
+      - run: echo "Your PR is ${PR}"
+        if: success() && steps.findPr.outputs.number
+        env:
+          PR: ${{ steps.findPr.outputs.pr }}
       - name: Debug
         run: |
           echo "Github issue number ${{github.event.issue.number}}"
           echo "Github event number ${{github.event.number}}"
+          echo "Github pr number ${{steps.findPr.outputs.pr}}"
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2
