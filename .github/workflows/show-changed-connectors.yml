@@ -37,8 +37,8 @@ jobs:
           output="${output//$'\r'/'%0D'}" 
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
-      - name: Print result
-      - uses: actions/github-script@v5
+      - name: Comment result
+        uses: actions/github-script@v5
         with:
           github-token: ${{inputs.github-token}}
           script: |
