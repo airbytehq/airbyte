@@ -400,8 +400,10 @@ public class WorkerApp {
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
             .setRequestInterceptor(builder -> {
-              builder.setHeader(authHeader, generateAuthToken());
               builder.setHeader("User-Agent", "WorkerApp");
+              if (!authHeader.isBlank()) {
+                builder.setHeader(authHeader, generateAuthToken());
+              }
             }));
     return airbyteApiClient;
   }
