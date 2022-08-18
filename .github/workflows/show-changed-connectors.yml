@@ -58,7 +58,7 @@ jobs:
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2
         with:
-          issue-number: ${{github.event.issue.number}}
+          issue-number: ${{steps.findPr.outputs.pr}}
           body: |
             This is a multi-line test comment
             - With GitHub **Markdown** :sparkles:
