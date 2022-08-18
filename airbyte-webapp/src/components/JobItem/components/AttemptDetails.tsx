@@ -99,7 +99,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
         ) : null}
       </div>
       {isFailed && (
-        <div>
+        <div className={styles.truncate}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",
