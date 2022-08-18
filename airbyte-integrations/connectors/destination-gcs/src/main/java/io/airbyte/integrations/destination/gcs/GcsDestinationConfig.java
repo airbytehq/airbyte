@@ -75,4 +75,5 @@ public class GcsDestinationConfig extends S3DestinationConfig {
     return credentialConfig;
   }
 
+
 }
