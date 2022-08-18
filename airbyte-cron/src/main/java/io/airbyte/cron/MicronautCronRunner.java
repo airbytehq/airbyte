@@ -4,9 +4,7 @@
 
 package io.airbyte.cron;
 
-import io.airbyte.cron.selfhealing.Temporal;
 import io.micronaut.runtime.Micronaut;
-import javax.inject.Inject;
 
 /**
  * Micronaut server responsible of running scheduled method. The methods need to be separated in
@@ -16,11 +14,11 @@ import javax.inject.Inject;
  */
 public class MicronautCronRunner {
 
-  @Inject
-  Temporal temporal;
-
   public static void main(final String[] args) {
-    Micronaut.run(MicronautCronRunner.class);
+    Micronaut.build(args)
+        .eagerInitSingletons(true)
+        .mainClass(MicronautCronRunner.class)
+        .start();
   }
 
 }
