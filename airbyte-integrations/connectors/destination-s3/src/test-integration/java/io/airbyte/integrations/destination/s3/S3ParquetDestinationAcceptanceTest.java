@@ -108,3 +108,4 @@ public class S3ParquetDestinationAcceptanceTest extends S3AvroParquetDestination
   }
 
 }
+
