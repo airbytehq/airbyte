@@ -105,8 +105,15 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
+task lint(type: NpmTask) {
+    dependsOn npmInstall
+    args = ['run', 'lint']
+    inputs.files commonConfigs
+    inputs.dir 'src'
+}
+
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test
+check.dependsOn validateLinks, licenseCheck, test, lint
 
 build.dependsOn buildStorybook
 
