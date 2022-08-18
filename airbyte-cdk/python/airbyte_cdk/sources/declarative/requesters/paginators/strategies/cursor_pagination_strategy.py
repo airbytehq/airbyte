@@ -30,12 +30,14 @@ class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
     cursor_value: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
-    stop_condition: Optional[InterpolatedBoolean] = None
+    stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
     decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.cursor_value, str):
             self.cursor_value = InterpolatedString.create(self.cursor_value, options=options)
+        if isinstance(self.stop_condition, str):
+            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)

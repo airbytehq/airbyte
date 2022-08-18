@@ -28,7 +28,7 @@ describe("Connection main actions", () => {
     cy.get("div[data-id='replication-step']").click();
 
     cy.get("div[data-testid='schedule']").click();
-    cy.get("div[data-testid='Every 5 minutes']").click();
+    cy.get("div[data-testid='Every hour']").click();
     cy.get("button[type=submit]").first().click();
     cy.wait("@updateConnection");
     cy.get("span[data-id='success-result']").should("exist");
