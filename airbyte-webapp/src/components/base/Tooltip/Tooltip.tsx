@@ -3,12 +3,12 @@ import classNames from "classnames";
 import React, { useState, useEffect } from "react";
 
 import { tooltipContext } from "./context";
-import styles from "./ToolTip.module.scss";
-import { ToolTipProps } from "./types";
+import styles from "./Tooltip.module.scss";
+import { TooltipProps } from "./types";
 
 const MOUSE_OUT_TIMEOUT_MS = 50;
 
-export const ToolTip: React.FC<ToolTipProps> = (props) => {
+export const Tooltip: React.FC<TooltipProps> = (props) => {
   const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
 
   const [isMouseOver, setIsMouseOver] = useState(false);

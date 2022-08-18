@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
+import { Tooltip } from "components/base/Tooltip";
 import { InfoIcon } from "components/icons/InfoIcon";
-import ToolTip from "components/ToolTip";
 
 const Info = styled.div`
   display: inline-block;
@@ -13,7 +13,7 @@ const Info = styled.div`
 
 const InformationToolTip: React.FC = ({ children }) => {
   return (
-    <ToolTip
+    <Tooltip
       control={
         <Info>
           <InfoIcon />
@@ -21,7 +21,7 @@ const InformationToolTip: React.FC = ({ children }) => {
       }
     >
       {children}
-    </ToolTip>
+    </Tooltip>
   );
 };
 

@@ -5,9 +5,9 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { CheckBox, H5 } from "components";
+import { TooltipLearnMoreLink } from "components/base/Tooltip/TooltipLearnMoreLink";
 import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
-import { TooltipLearnMoreLink } from "components/ToolTip/TooltipLearnMoreLink";
 
 import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";

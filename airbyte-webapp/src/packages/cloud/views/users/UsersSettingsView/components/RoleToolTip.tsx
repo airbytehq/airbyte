@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { Tooltip } from "components/base/Tooltip";
 import { InfoIcon } from "components/icons/InfoIcon";
-import ToolTip from "components/ToolTip";
 
 const Info = styled.div`
   margin-left: 7px;
@@ -28,7 +28,7 @@ const LineBlock = styled.div`
 
 const RoleToolTip: React.FC = () => {
   return (
-    <ToolTip
+    <Tooltip
       control={
         <Info>
           <InfoIcon />
@@ -47,7 +47,7 @@ const RoleToolTip: React.FC = () => {
           <FormattedMessage id="settings.accessManagement.roleAdmin" />
         </LineBlock>
       </>
-    </ToolTip>
+    </Tooltip>
   );
 };
 
