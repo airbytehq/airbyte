@@ -1,5 +1,4 @@
 import classnames from "classnames";
-import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -39,9 +38,7 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { authFieldsToHide } = useServiceForm();
-  const { getFieldMeta, submitCount } = useFormikContext();
-  const { selectedService, selectedConnector } = useServiceForm();
+  const { selectedService, hasAuthError, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
 
@@ -53,17 +50,10 @@ export const AuthButton: React.FC = () => {
   const definitionId = ConnectorSpecification.id(selectedConnector);
   const Component = getButtonComponent(definitionId);
 
-  const hasOauthError =
-    authFieldsToHide.filter((fieldString) => {
-      const meta = getFieldMeta(fieldString);
-      return submitCount > 0 && meta.error;
-    }).length > 0;
-
   const messageStyle = classnames(styles.message, {
-    [styles.error]: hasOauthError,
-    [styles.success]: !hasOauthError,
+    [styles.error]: hasAuthError,
+    [styles.success]: !hasAuthError,
   });
-
   return (
     <div className={styles.authSectionRow}>
       <Component isLoading={loading} type="button" onClick={() => run()}>
@@ -78,7 +68,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
         </div>
       )}
-      {hasOauthError && (
+      {hasAuthError && (
         <div className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.required" />
         </div>

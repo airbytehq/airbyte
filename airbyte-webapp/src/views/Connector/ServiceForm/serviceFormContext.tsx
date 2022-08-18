@@ -25,6 +25,7 @@ interface ServiceFormContext {
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
   validationSchema: AnySchema;
+  hasAuthError: boolean;
 }
 
 const serviceFormContext = React.createContext<ServiceFormContext | null>(null);
@@ -63,7 +64,8 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   validationSchema,
   isEditMode,
 }) => {
-  const { values, resetForm } = useFormikContext<ServiceFormValues>();
+  const { values, resetForm, getFieldMeta, submitCount } = useFormikContext<ServiceFormValues>();
+
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
   const { serviceType } = values;
@@ -91,9 +93,25 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
     [selectedConnector, isAuthFlowSelected]
   );
 
+  const hasAuthError = useMemo(() => {
+    //todo: we may want to return the entire error message, then in the component check if it is `form.empty.error`
+    //key of fieldname, value of error code
+
+    // we calculate by this rather than traversing the error object to look for auth errors
+    // because doing so would be difficult to match the correct error to the correct field due to differences in
+    // spec structure
+
+    return (
+      authFieldsToHide.filter((fieldString) => {
+        const meta = getFieldMeta(fieldString);
+        return submitCount > 0 && meta.error;
+      }).length > 0
+    );
+  }, [authFieldsToHide, getFieldMeta, submitCount]);
   const ctx = useMemo<ServiceFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
+      hasAuthError,
       widgetsInfo,
       isAuthFlowSelected,
       authFieldsToHide,
@@ -122,6 +140,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
       },
     };
   }, [
+    hasAuthError,
     widgetsInfo,
     isAuthFlowSelected,
     authFieldsToHide,
