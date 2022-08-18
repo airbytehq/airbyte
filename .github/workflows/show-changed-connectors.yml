@@ -38,9 +38,8 @@ jobs:
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
       - name: Comment result
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
