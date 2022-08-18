@@ -363,9 +363,10 @@ def test_generate_schema():
     assert {"type": "string"} in added_field_definition["properties"]["value"]["anyOf"]
 
     # There is something very strange about JsonSchemaMixin.json_schema(). For some reason, when this test is called independently
-    # it will pass. However, when it is invoked with the entire test, certain components won't get generated in the schema. Since
-    # the generate_schema() method is invoked by itself, this doesn't happen normally, but only in tests that are all called together
-    # One way to replicate this is add DefaultErrorHandler.json_schema() to the start of this test and uncomment the assertions below
+    # it will pass. However, when it is invoked with the entire test file, certain components won't get generated in the schema. Since
+    # the generate_schema() method is invoked by independently so this doesn't happen under normal circumstance when we generate the
+    # complete schema. It only happens when the tests are all called together.
+    # One way to replicate this is to add DefaultErrorHandler.json_schema() to the start of this test and uncomment the assertions below
 
     # assert {"$ref": "#/definitions/ConstantBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"]["items"]["anyOf"]
     # assert {"$ref": "#/definitions/ExponentialBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"]["items"][
