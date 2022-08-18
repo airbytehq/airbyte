@@ -8,7 +8,7 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import CreditsUsagePage from "./components/CreditsUsagePage";
+import CreditsUsage from "./components/CreditsUsage";
 import { EmailVerificationHint } from "./components/EmailVerificationHint";
 import RemainingCredits from "./components/RemainingCredits";
 
@@ -32,7 +32,7 @@ const CreditsPage: React.FC = () => {
       <Content>
         {!emailVerified && <EmailVerificationHintWithMargin />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
-        <CreditsUsagePage />
+        <CreditsUsage />
       </Content>
     </MainPageWithScroll>
   );
