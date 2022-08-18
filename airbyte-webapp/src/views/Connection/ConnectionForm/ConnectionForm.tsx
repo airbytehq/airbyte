@@ -1,5 +1,5 @@
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useEffect } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -91,17 +91,17 @@ export interface ConnectionFormSubmitResult {
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
-interface DirtyChangeTrackerProps {
-  dirty: boolean;
-  onChanges: (dirty: boolean) => void;
-}
+// interface DirtyChangeTrackerProps {
+//   dirty: boolean;
+//   onChanges: (dirty: boolean) => void;
+// }
 
-const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChanges }) => {
-  useEffect(() => {
-    onChanges(dirty);
-  }, [dirty, onChanges]);
-  return null;
-};
+// const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChanges }) => {
+//   useEffect(() => {
+//     onChanges(dirty);
+//   }, [dirty, onChanges]);
+//   return null;
+// };
 
 export interface ConnectionFormProps {
   className?: string;
@@ -133,6 +133,8 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   } = useConnectionFormService();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
+
+  formDirty.subscribe(onFormDirtyChanges);
 
   return (
     <Formik
