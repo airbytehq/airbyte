@@ -141,6 +141,8 @@ class CustomFields(WorkspaceRelatedStream):
 
 
 class Projects(WorkspaceRequestParamsRelatedStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "projects"
 
