@@ -3,10 +3,9 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import { AttemptRead, CheckConnectionReadStatus, JobStatus } from "../../core/request/AirbyteClient";
+import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
@@ -31,24 +30,20 @@ const LoadLogs = styled.div`
 `;
 
 interface JobItemProps {
-  job: SynchronousJobReadWithStatus | JobsWithJobs;
+  job: SynchronousJobRead | JobsWithJobs;
 }
 
-const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
-  return getJobStatus(job) !== "failed";
-};
+const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
+  "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
 
-export const getJobStatus: (
-  job: SynchronousJobReadWithStatus | JobsWithJobs
-) => JobStatus | CheckConnectionReadStatus = (job) => {
-  return "status" in job ? job.status : job.job.status;
-};
+export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
+  "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
 
-export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) => {
-  return "attempts" in job ? job.attempts : undefined;
-};
+export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
+  "attempts" in job ? job.attempts : undefined;
 
-export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) => ("id" in job ? job.id : job.job.id);
+export const getJobId = (job: SynchronousJobRead | JobsWithJobs): string | number =>
+  "id" in job ? job.id : job.job.id;
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
