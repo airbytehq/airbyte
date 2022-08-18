@@ -52,7 +52,7 @@ public enum ToEmit {
   NUM_ABNORMAL_SCHEDULED_SYNCS(countMetricEmission(() -> {
     final var count = ReporterApp.configDatabase.query(MetricQueries::numOfJobsNotRunningOnSchedule);
     MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS, count);
-  })),
+  }), 1, TimeUnit.HOURS),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {

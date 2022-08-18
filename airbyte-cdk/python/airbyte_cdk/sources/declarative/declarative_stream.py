@@ -20,8 +20,8 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
 
     Attributes:
-        stream_name (str): stream name
-        stream_primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream
+        name (str): stream name
+        primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream
         schema_loader (SchemaLoader): The schema loader
         retriever (Retriever): The retriever
         config (Config): The user-provided configuration as specified by the source's spec

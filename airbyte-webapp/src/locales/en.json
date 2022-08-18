@@ -451,6 +451,7 @@
   "admin.dropZoneTitle": "Drag 'n' drop file here, or click to select file",
   "admin.dropZoneSubtitle": "Only *.tar and *.gz files will be accepted",
   "admin.logs": "Logs",
+  "admin.logs.error": "Unable to download logs at this time.",
   "admin.downloadServerLogs": "Download Server Logs",
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
@@ -504,7 +505,7 @@
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
-  "credits.buyCredits": "Buy credits",
+  "credits.buyCredits": "+ Buy credits",
   "credits.talkToSales": "Talk to Sales",
   "credits.remainingCredits": "Remaining credits",
   "credits.creditUsage": "Credit Usage",

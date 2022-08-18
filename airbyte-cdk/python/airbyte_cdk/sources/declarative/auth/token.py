@@ -83,7 +83,7 @@ class BearerAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
 @dataclass
 class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     """
-    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
+    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
 
     The header is of the form

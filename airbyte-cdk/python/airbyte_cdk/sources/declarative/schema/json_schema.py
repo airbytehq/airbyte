@@ -25,7 +25,6 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
     """
 
     file_path: Union[InterpolatedString, str]
-    name: str
     config: Config
     options: InitVar[Mapping[str, Any]]
 
