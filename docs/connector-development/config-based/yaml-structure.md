@@ -271,3 +271,7 @@ For example,
 The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
 
 Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
+
+## Configuration Component Schema Reference
+
+A JSON schema representation of the relationships between the components that can be used in your YAML configuration can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json)
