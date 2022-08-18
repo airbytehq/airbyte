@@ -32,9 +32,7 @@ class ZenefitsStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        token = self.token
-        people_headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"}
-        return people_headers
+        return {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json", "Accept": "application/json"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json().get("data")
