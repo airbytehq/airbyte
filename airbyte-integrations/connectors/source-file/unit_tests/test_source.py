@@ -66,6 +66,7 @@ def test_nan_to_null():
         {
             "col1": {"type": ["string", "null"]},
             "col2": {"type": ["number", "null"]},
+            "col3": {"type": ["number", "null"]},
         }
     )
 
@@ -73,8 +74,8 @@ def test_nan_to_null():
     records = source.read(logger=logging.getLogger("airbyte"), config=config, catalog=catalog)
     records = [r.record.data for r in records]
     assert records == [
-        {"col1": "key1", "col2": 1.1},
-        {"col1": "key2", "col2": None},
-        {"col1": "key3", "col2": None},
-        {"col1": "key4", "col2": 2.2},
+        {'col1': 'key1', 'col2': 1.11, 'col3': None},
+        {'col1': 'key2', 'col2': None, 'col3': 5.55},
+        {'col1': 'key3', 'col2': None, 'col3': None},
+        {'col1': 'key4', 'col2': 2.22, 'col3': None}
     ]

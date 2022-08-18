@@ -1,5 +1,5 @@
-col1;col2
-key1;1.1
-key2;
-key3;
-key4;2.2
+col1;col2;col3
+key1;1.11;
+key2;;5.55
+key3;;
+key4;2.22;
