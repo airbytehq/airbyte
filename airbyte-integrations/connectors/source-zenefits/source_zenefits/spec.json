@@ -10,7 +10,7 @@
       "token":{
         "title":"token",
         "type": "string",
-        "description": "describe me"
+        "description": "Use Sync with Zenefits button on the link given on the readme file, and get the token to access the api"
       }
     }
   }
