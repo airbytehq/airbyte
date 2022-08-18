@@ -385,8 +385,11 @@ public class WorkerApp {
   private static AirbyteApiClient getApiClient(final Configs configs) {
     final var authHeader = configs.getAirbyteApiAuthHeaderName();
 
-    final var scheme = configs.isDataPlaneWorker() ? "https" : "http";
-    LOGGER.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
+    // control plane workers communicate with the Airbyte API within their internal network, so https
+    // isn't needed
+    final var scheme = configs.isControlPlaneWorker() ? "http" : "https";
+
+    LOGGER.debug("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
         scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader);
 
     final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
@@ -412,7 +415,11 @@ public class WorkerApp {
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */
   private static String generateAuthToken() {
-    if (configs.isDataPlaneWorker()) {
+    if (configs.isControlPlaneWorker()) {
+      // control plane workers communicate with the Airbyte API within their internal network, so a signed
+      // JWT isn't needed
+      return configs.getAirbyteApiAuthHeaderValue();
+    } else if (configs.isDataPlaneWorker()) {
       try {
         final Date now = new Date();
         final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));
@@ -445,8 +452,10 @@ public class WorkerApp {
         return "";
       }
     } else {
-      // not data plane, so just use env configs
-      return configs.getAirbyteApiAuthHeaderValue();
+      // shouldn't be possible to reach this state since a worker must be at least one of control/data
+      // plane
+      LOGGER.warn("Worker somehow wasn't a control plane or a data plane worker!");
+      return "";
     }
   }
 
@@ -487,7 +496,7 @@ public class WorkerApp {
     factory.start();
   }
 
-  private static void initializeCommonDependencies() throws IOException {
+  private static void initializeCommonDependencies() {
     LOGGER.debug("Initializing common worker dependencies.");
     configs = new EnvConfigs();
     LOGGER.info("workspaceRoot = " + configs.getWorkspaceRoot());
