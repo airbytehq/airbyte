@@ -3,7 +3,7 @@
 ## From scratch
 
 - [Overview](overview.md)
-- [Yaml structure](overview.md)
+- [Yaml structure](yaml-structure.md)
 - [Reference docs](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
 
 ## Concepts
