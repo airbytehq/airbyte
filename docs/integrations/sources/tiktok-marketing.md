@@ -537,7 +537,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 0.1.15  | 2022-08-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to API version 1.3                                                                    |                                               
+| 0.1.15  | 2022-08-19 | [15786](https://github.com/airbytehq/airbyte/pull/15786) | Migrate to API version 1.3                                                                    |                                               
 | 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |                                               
 | 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |                                                        |
 | 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                        |
