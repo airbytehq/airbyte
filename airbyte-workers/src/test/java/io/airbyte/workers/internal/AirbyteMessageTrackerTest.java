@@ -37,14 +37,12 @@ class AirbyteMessageTrackerTest {
   private StateDeltaTracker mStateDeltaTracker;
 
   @Mock
-  private StateTimestampMetricsTracker mStateTimestampMetricsTracker;
-
-  @Mock
   private StateAggregator mStateAggregator;
 
   @BeforeEach
   void setup() {
-    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator, mStateTimestampMetricsTracker);
+    final StateMetricsTracker stateMetricsTracker = new StateMetricsTracker(10L * 1024L * 1024L);
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator, stateMetricsTracker);
   }
 
   @Test

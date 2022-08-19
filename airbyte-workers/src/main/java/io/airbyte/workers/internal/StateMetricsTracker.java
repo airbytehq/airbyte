@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class StateTimestampMetricsTracker {
+public class StateMetricsTracker {
 
   private static final int STATE_HASH_SIZE = Integer.BYTES;
   private static final int EPOCH_TIME_SIZE = Long.BYTES;
@@ -37,7 +37,7 @@ public class StateTimestampMetricsTracker {
   private long remainingCapacity;
   private Boolean capacityExceeded;
 
-  public StateTimestampMetricsTracker(final Long memoryLimitBytes) {
+  public StateMetricsTracker(final Long memoryLimitBytes) {
     this.stateHashesAndTimestamps = new ArrayList<>();
     this.streamStateHashesAndTimestamps = new HashMap<>();
     this.firstRecordReceivedAt = null;
@@ -53,12 +53,12 @@ public class StateTimestampMetricsTracker {
   }
 
   public synchronized void addState(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeEmitted)
-      throws StateTimestampMetricsTrackerException {
+      throws StateMetricsTrackerException {
     final long epochTime = timeEmitted.toEpochSecond(ZoneOffset.UTC);
 
     if (capacityExceeded || remainingCapacity < BYTE_ARRAY_SIZE) {
       capacityExceeded = true;
-      throw new StateTimestampMetricsTrackerException("Memory capacity is exceeded for StateTimestampMetricsTracker.");
+      throw new StateMetricsTrackerException("Memory capacity is exceeded for StateMetricsTracker.");
     }
 
     if (AirbyteStateType.STREAM == stateMessage.getType()) {
@@ -228,11 +228,11 @@ public class StateTimestampMetricsTracker {
   }
 
   /**
-   * Thrown when the StateTimestampMetricsTracker exceeds its allotted memory
+   * Thrown when the StateMetricsTracker exceeds its allotted memory
    */
-  public static class StateTimestampMetricsTrackerException extends Exception {
+  public static class StateMetricsTrackerException extends Exception {
 
-    public StateTimestampMetricsTrackerException(final String message) {
+    public StateMetricsTrackerException(final String message) {
       super(message);
     }
 
