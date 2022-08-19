@@ -451,6 +451,7 @@
   "admin.dropZoneTitle": "Drag 'n' drop file here, or click to select file",
   "admin.dropZoneSubtitle": "Only *.tar and *.gz files will be accepted",
   "admin.logs": "Logs",
+  "admin.logs.error": "Unable to download logs at this time.",
   "admin.downloadServerLogs": "Download Server Logs",
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
@@ -531,6 +532,7 @@
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
+  "ui.learnMore": "Learn more",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
