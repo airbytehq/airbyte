@@ -19,6 +19,12 @@
         "description": "The Client Secret of your Paypal developer application.",
         "airbyte_secret": true
       },
+      "refresh_token": {
+        "type": "string",
+        "title": "Refresh token (Optional)",
+        "description": "The key to refresh the expired access token.",
+        "airbyte_secret": true
+      },
       "start_date": {
         "type": "string",
         "title": "Start Date",
