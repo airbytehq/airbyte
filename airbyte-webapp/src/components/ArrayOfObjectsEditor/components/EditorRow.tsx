@@ -46,5 +46,15 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
     </div>
   );
 
-  return <div className={styles.container}>{description ? <Tooltip control={body}>{description}</Tooltip> : body}</div>;
+  return (
+    <div className={styles.container}>
+      {description ? (
+        <Tooltip control={body} placement="top">
+          {description}
+        </Tooltip>
+      ) : (
+        body
+      )}
+    </div>
+  );
 };
