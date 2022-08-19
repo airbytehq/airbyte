@@ -10,6 +10,9 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,6 +43,8 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     try {
       final File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
 
+
+
       loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
 
       Files.delete(tmpFile.toPath());
@@ -61,7 +66,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
         final String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
 
         final String query = String.format(
-            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
+            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
             absoluteFile, schemaName, tmpTableName);
 
         try (final Statement stmt = connection.createStatement()) {
@@ -131,7 +136,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
             + "%s VARCHAR(256) PRIMARY KEY,\n"
             + "%s JSON,\n"
             + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
-            + ");\n",
+            + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
