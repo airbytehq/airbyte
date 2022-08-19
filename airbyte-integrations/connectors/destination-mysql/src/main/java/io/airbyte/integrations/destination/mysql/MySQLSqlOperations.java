@@ -10,9 +10,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,8 +39,6 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     verifyLocalFileEnabled(database);
     try {
       final File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
-
-
 
       loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
 
