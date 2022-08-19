@@ -83,7 +83,8 @@
     "provider": "linkedin",
     "authUrlTemplate": "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&scope=r_emailaddress%20r_liteprofile%20r_ads%20r_ads_reporting%20r_organization_social&state={{ state }}",
     "accessTokenUrlTemplate": "https://www.linkedin.com/oauth/v2/accessToken",
-    "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
+    "accessTokenBody": "grant_type=authorization_code&client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&redirect_uri={{ urlencode redirect_uri }}&code={{ urlencode code }}",
+    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
     "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
   }
 }
