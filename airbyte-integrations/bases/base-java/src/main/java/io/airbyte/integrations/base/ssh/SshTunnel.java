@@ -250,6 +250,7 @@ public class SshTunnel implements AutoCloseable {
       final PEMParser pemParser = new PEMParser(new StringReader(validatedKey));
       final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
       final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+
       return new KeyPair(
           converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
           converter.getPrivateKey(keypair.getPrivateKeyInfo()));
