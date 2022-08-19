@@ -151,7 +151,7 @@ fullstory:
 ## extraEnv:
 ## - name: SAMPLE_ENV_VAR
 ##   value: "key=sample-value"
-extraEnv: []
+extraEnv: {}
 
 ## @param webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
 ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -178,3 +178,5 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
+
+secrets: {}
