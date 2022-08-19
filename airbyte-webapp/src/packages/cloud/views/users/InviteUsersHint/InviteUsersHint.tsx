@@ -13,12 +13,9 @@ import { CloudSettingsRoutes } from "packages/cloud/views/settings/routePaths";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./InviteUsersHint.module.scss";
+import { InviteUsersHintProps } from "./types";
 
 const ACCESS_MANAGEMENT_PATH = `../../${RoutePaths.Settings}/${CloudSettingsRoutes.AccessManagement}`;
-
-interface InviteUsersHintProps {
-  connectorType: "source" | "destination";
-}
 
 const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType }) => {
   const { formatMessage } = useIntl();
