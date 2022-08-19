@@ -145,7 +145,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
 
   @Override
   public int getMaxConcurrentStreamsInBuffer() {
-    return FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER;
+    return FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
   }
 
   @Override

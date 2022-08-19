@@ -18,7 +18,6 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  private static final String AIRBYTE_DATETIME_PARSED_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
   private static final String POSTGRES_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   private static final String POSTGRES_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 

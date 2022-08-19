@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mongodb;
 
 import io.airbyte.db.mongodb.MongoDatabase;
@@ -31,11 +35,14 @@ public class MongodbRecordConsumerTest extends PerStreamStateMessageTest {
   @InjectMocks
   private MongodbRecordConsumer mongodbRecordConsumer;
 
-  @Override protected Consumer<AirbyteMessage> getMockedConsumer() {
+  @Override
+  protected Consumer<AirbyteMessage> getMockedConsumer() {
     return outputRecordCollector;
   }
 
-  @Override protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
+  @Override
+  protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return mongodbRecordConsumer;
   }
+
 }

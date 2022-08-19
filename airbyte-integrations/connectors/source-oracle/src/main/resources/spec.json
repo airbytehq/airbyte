@@ -30,9 +30,7 @@
           {
             "title": "Service name",
             "description": "Use service name",
-            "required": [
-              "service_name"
-            ],
+            "required": ["service_name"],
             "properties": {
               "connection_type": {
                 "type": "string",
@@ -50,9 +48,7 @@
           {
             "title": "System ID (SID)",
             "description": "Use SID (Oracle System Identifier)",
-            "required": [
-              "sid"
-            ],
+            "required": ["sid"],
             "properties": {
               "connection_type": {
                 "type": "string",
