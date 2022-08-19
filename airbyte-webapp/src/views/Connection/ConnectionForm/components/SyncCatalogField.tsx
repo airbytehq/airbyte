@@ -5,8 +5,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { CheckBox, H5 } from "components";
-import { InfoTooltip } from "components/base/Tooltip";
-import { TooltipLearnMoreLink } from "components/base/Tooltip/TooltipLearnMoreLink";
+import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
 import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
 
