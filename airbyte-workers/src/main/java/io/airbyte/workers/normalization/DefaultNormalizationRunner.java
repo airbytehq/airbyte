@@ -212,8 +212,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   private String buildInternalErrorMessageFromDbtStackTrace() {
-    Map<String, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
-    return errorMap.get(SentryExceptionHelper.ERROR_MAP_MESSAGE_KEY);
+    Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+    return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
   }
 
   @VisibleForTesting

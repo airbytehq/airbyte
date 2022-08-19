@@ -27,6 +27,11 @@ public class SentryExceptionHelper {
   public static final String ERROR_MAP_MESSAGE_KEY = "errorMessage";
   public static final String ERROR_MAP_TYPE_KEY = "errorType";
 
+  public enum ERROR_MAP_KEYS {
+    ERROR_MAP_MESSAGE_KEY,
+    ERROR_MAP_TYPE_KEY
+  }
+
   /**
    * Processes a raw stacktrace string into structured SentryExceptions
    * <p>
@@ -182,14 +187,14 @@ public class SentryExceptionHelper {
   private static Optional<List<SentryException>> buildNormalizationDbtSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
-    Map<String, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
+    Map<ERROR_MAP_KEYS, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
 
     // if our errorMessage from the function != stacktrace then we know we've pulled out something
     // useful
-    if (!usefulErrorMap.get(ERROR_MAP_MESSAGE_KEY).equals(stacktrace)) {
+    if (!usefulErrorMap.get(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY).equals(stacktrace)) {
       final SentryException usefulException = new SentryException();
-      usefulException.setValue(usefulErrorMap.get(ERROR_MAP_MESSAGE_KEY));
-      usefulException.setType(usefulErrorMap.get(ERROR_MAP_TYPE_KEY));
+      usefulException.setValue(usefulErrorMap.get(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY));
+      usefulException.setType(usefulErrorMap.get(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY));
       sentryExceptions.add(usefulException);
     }
 
@@ -199,14 +204,14 @@ public class SentryExceptionHelper {
     return Optional.of(sentryExceptions);
   }
 
-  public static Map<String, String> getUsefulErrorMessageAndTypeFromDbtError(String stacktrace) {
+  public static Map<ERROR_MAP_KEYS, String> getUsefulErrorMessageAndTypeFromDbtError(String stacktrace) {
     // the dbt 'stacktrace' is really just all the log messages at 'error' level, stuck together.
     // therefore there is not a totally consistent structure to these,
     // see the docs: https://docs.getdbt.com/guides/legacy/debugging-errors
     // the logic below is built based on the ~450 unique dbt errors we encountered before this PR
     // and is a best effort to isolate the useful part of the error logs for debugging and grouping
     // and bring some semblance of exception 'types' to differentiate between errors.
-    Map<String, String> errorMessageAndType = new HashMap<>();
+    Map<ERROR_MAP_KEYS, String> errorMessageAndType = new HashMap<>();
     String[] stacktraceLines = stacktrace.split("\n");
 
     boolean defaultNextLine = false;
@@ -221,48 +226,52 @@ public class SentryExceptionHelper {
         if (stacktraceLines[i].contains("Database Error in model")) {
           // Database Error : SQL compilation error
           if (stacktraceLines[i + 1].contains("SQL compilation error")) {
-            errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, String.format("%s %s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
-            errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseSQLCompilationError");
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
+                String.format("%s %s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtDatabaseSQLCompilationError");
             break;
           }
           // Database Error: Invalid input
           else if (stacktraceLines[i + 1].contains("Invalid input")) {
             for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
               if (followingLine.trim().startsWith("context:")) {
-                errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, String.format("%s\n%s", stacktraceLines[i + 1].trim(), followingLine.trim()));
-                errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseInvalidInputError");
+                errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
+                    String.format("%s\n%s", stacktraceLines[i + 1].trim(), followingLine.trim()));
+                errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtDatabaseInvalidInputError");
                 break mainLoop;
               }
             }
           }
           // Database Error: Syntax error
           else if (stacktraceLines[i + 1].contains("syntax error at or near \"")) {
-            errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, String.format("%s\n%s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
-            errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseSyntaxError");
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
+                String.format("%s\n%s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtDatabaseSyntaxError");
             break;
           }
           // Database Error: default
           else {
-            errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseError");
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtDatabaseError");
             defaultNextLine = true;
           }
         }
         // Unhandled Error
         else if (stacktraceLines[i].contains("Unhandled error while executing model")) {
-          errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtUnhandledError");
+          errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtUnhandledError");
           defaultNextLine = true;
         }
         // Compilation Errors
         else if (stacktraceLines[i].contains("Compilation Error")) {
           // Compilation Error: Ambiguous Relation
           if (stacktraceLines[i + 1].contains("When searching for a relation, dbt found an approximate match.")) {
-            errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, String.format("%s %s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
-            errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtCompilationAmbiguousRelationError");
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
+                String.format("%s %s", stacktraceLines[i + 1].trim(), stacktraceLines[i + 2].trim()));
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtCompilationAmbiguousRelationError");
             break;
           }
           // Compilation Error: default
           else {
-            errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtCompilationError");
+            errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtCompilationError");
             defaultNextLine = true;
           }
         }
@@ -271,25 +280,25 @@ public class SentryExceptionHelper {
           // Runtime Error: Database error
           for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
             if ("Database Error".equals(followingLine.trim())) {
-              errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY,
+              errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
                   String.format("%s", stacktraceLines[Arrays.stream(stacktraceLines).toList().indexOf(followingLine) + 1].trim()));
-              errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtRuntimeDatabaseError");
+              errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtRuntimeDatabaseError");
               break mainLoop;
             }
           }
           // Runtime Error: default
-          errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtRuntimeError");
+          errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtRuntimeError");
           defaultNextLine = true;
         }
         // Database Error: formatted differently, catch last to avoid counting other types of errors as
         // Database Error
         else if ("Database Error".equals(stacktraceLines[i].trim())) {
-          errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "DbtDatabaseError");
+          errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "DbtDatabaseError");
           defaultNextLine = true;
         }
         // handle the default case without repeating code
         if (defaultNextLine) {
-          errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, stacktraceLines[i + 1].trim());
+          errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY, stacktraceLines[i + 1].trim());
           break;
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
@@ -299,8 +308,8 @@ public class SentryExceptionHelper {
     }
     if (errorMessageAndType.isEmpty()) {
       // For anything we haven't caught, just return full stacktrace
-      errorMessageAndType.put(ERROR_MAP_MESSAGE_KEY, stacktrace);
-      errorMessageAndType.put(ERROR_MAP_TYPE_KEY, "AirbyteDbtError");
+      errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY, stacktrace);
+      errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_TYPE_KEY, "AirbyteDbtError");
     }
     return errorMessageAndType;
   }
