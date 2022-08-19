@@ -533,6 +533,7 @@
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
+  "ui.learnMore": "Learn more",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
