@@ -1,6 +1,7 @@
 import { flip, offset, shift, useFloating } from "@floating-ui/react-dom";
 import classNames from "classnames";
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { tooltipContext } from "./context";
 import styles from "./Tooltip.module.scss";
@@ -59,22 +60,24 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
       >
         {control}
       </div>
-      {canShowTooltip && (
-        <div
-          role="tooltip"
-          ref={floating}
-          className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
-          style={{
-            position: strategy,
-            top: y ?? 0,
-            left: x ?? 0,
-          }}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
-        >
-          <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
-        </div>
-      )}
+      {canShowTooltip &&
+        createPortal(
+          <div
+            role="tooltip"
+            ref={floating}
+            className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+            }}
+            onMouseOver={onMouseOver}
+            onMouseOut={onMouseOut}
+          >
+            <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
+          </div>,
+          document.body
+        )}
     </>
   );
 };
