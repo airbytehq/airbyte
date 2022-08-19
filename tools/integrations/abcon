@@ -30,7 +30,7 @@ _setup_airbyte() {
 
         cd "${build_path}"
 
-        [[ -d airbyte ]] || git clone "${AIRBYTE_REPO}"
+        [[ -d airbyte || -L airbyte ]] || git clone "${AIRBYTE_REPO}"
 
         cd airbyte
         git clean -qfd # remove all untracked files
