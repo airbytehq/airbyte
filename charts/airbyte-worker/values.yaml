@@ -226,7 +226,4 @@ extraVolumes: []
 
 extraContainers: []
 
-hpa:
-  enabled: false
 
-gsm: {}
