@@ -48,7 +48,8 @@ public class StateMetricsTrackerTest {
     stateMetricsTracker.addState(s2s1, 0, LocalDateTime.parse("2022-01-01 12:00:02", formatter)); // stream 2 state
     stateMetricsTracker.addState(s1s3, 2, LocalDateTime.parse("2022-01-01 12:00:03", formatter)); // stream 1 state
 
-    // Committed up to 2nd state message in stream 1 - time to commit is 5 seconds (second 00 to second 05)
+    // Committed up to 2nd state message in stream 1 - time to commit is 5 seconds (second 00 to second
+    // 05)
     stateMetricsTracker.incrementTotalDestinationEmittedStateMessages();
     stateMetricsTracker.updateStates(s1s2, 1, LocalDateTime.parse("2022-01-01 12:00:05", formatter));
 
