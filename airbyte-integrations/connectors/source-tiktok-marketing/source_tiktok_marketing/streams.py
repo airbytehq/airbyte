@@ -644,9 +644,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         params["data_level"] = f"AUCTION_{self.report_level}"
         params["dimensions"] = json.dumps(self._get_reporting_dimensions())
         params["metrics"] = json.dumps(self._get_metrics())
-        if self.report_granularity == ReportGranularity.LIFETIME:
-            params["lifetime"] = "true"
-        else:
+        if self.report_granularity != ReportGranularity.LIFETIME:
             params["start_date"] = stream_slice["start_date"]
             params["end_date"] = stream_slice["end_date"]
 

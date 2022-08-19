@@ -474,6 +474,6 @@ api_response_parameters = pytest.mark.parametrize(
         (ads_before, ads_after, "ads", "ad/get/"),
         (ad_groups_before, ad_groups_after, "ad_groups", "adgroup/get/"),
         (campaigns_before, campaigns_after, "campaigns", "campaign/get/"),
-        (report_before, report_after, "ad_groups_reports_daily", "reports/integrated/get/"),
+        (report_before, report_after, "ad_groups_reports_daily", "report/integrated/get/"),
     ),
 )

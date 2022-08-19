@@ -118,7 +118,7 @@ class v13_to_v12_adapter(APIResponseAdapter):
             "dynamic_destination",
         ),
         "ad_groups": ("shopping_ads_type", "product_source"),
-        "reports/integrated/get/": ("X-Tt-Ads-Throttle",),
+        "report/integrated/get/": ("X-Tt-Ads-Throttle",),
     }
     _renamed_fields_by_stream = {
         "ads": (
@@ -194,7 +194,7 @@ class v13_to_v12_adapter(APIResponseAdapter):
             ("catalog_authorized_bc_id", "catalog_authorized_bc"),
             ("auto_targeting_enabled", "automated_targeting"),
         ),
-        "reports/integrated/get/": (("metrics/placement_type", "metrics/placement"),),
+        "report/integrated/get/": (("metrics/placement_type", "metrics/placement"),),
     }
     _type_changed_fields_by_stream = {
         "ads": (
@@ -236,7 +236,7 @@ class v13_to_v12_adapter(APIResponseAdapter):
             ("product_set_id", int),
             ("schedule_id", int),
         ),
-        "reports/integrated/get/": (
+        "report/integrated/get/": (
             ("dimensions/advertiser_id", int),
             ("metrics/campaign_id", int),
             ("dimensions/adgroup_id", int),
