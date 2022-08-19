@@ -4,6 +4,8 @@
 
 import re
 from base64 import b64decode
+from datetime import timedelta
+from functools import partial
 from unittest import mock
 
 import pytest
@@ -301,7 +303,7 @@ def test_display_report_stream_backoff(mocker, config, modifiers, expected):
 def test_display_report_stream_slices_full_refresh(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    slices = stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field)
+    slices = list(stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
 
@@ -311,7 +313,7 @@ def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_state = {str(profiles[0].profileId): {"reportDate": "20210725"}}
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
         {"profile": profiles[0], "reportDate": "20210725"},
         {"profile": profiles[0], "reportDate": "20210726"},
@@ -321,13 +323,13 @@ def test_display_report_stream_slices_incremental(config):
     ]
 
     stream_state = {str(profiles[0].profileId): {"reportDate": "20210730"}}
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={}))
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
 
 
@@ -358,5 +360,56 @@ def test_stream_slices_different_timezones(config):
     profile1 = Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
+
+
+def test_stream_slices_lazy_evaluation(config):
+    with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
+        config["start_date"] = "2021-05-10"
+        profile1 = Profile(profileId=1, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+        profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+
+        stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
+        stream.REPORTING_PERIOD = 5
+
+        slices = []
+        for _slice in stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field):
+            slices.append(_slice)
+            frozen_datetime.tick(delta=timedelta(minutes=10))
+
+        assert slices == [
+            {"profile": profile1, "reportDate": "20220527"},
+            {"profile": profile2, "reportDate": "20220528"},
+            {"profile": profile1, "reportDate": "20220528"},
+            {"profile": profile2, "reportDate": "20220529"},
+            {"profile": profile1, "reportDate": "20220529"},
+            {"profile": profile2, "reportDate": "20220530"},
+            {"profile": profile1, "reportDate": "20220530"},
+            {"profile": profile2, "reportDate": "20220531"},
+            {"profile": profile1, "reportDate": "20220531"},
+            {"profile": profile2, "reportDate": "20220601"},
+            {"profile": profile1, "reportDate": "20220601"},
+            {"profile": profile2, "reportDate": "20220602"},
+            {"profile": profile1, "reportDate": "20220602"},
+        ]
+
+
+def test_get_date_range_lazy_evaluation():
+    get_date_range = partial(SponsoredProductsReportStream.get_date_range, SponsoredProductsReportStream)
+
+    with freeze_time("2022-06-01T12:00:00+00:00") as frozen_datetime:
+        date_range = list(get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"))
+        assert date_range == ["20220529", "20220530", "20220531", "20220601"]
+
+        date_range = list(get_date_range(start_date=Date(2022, 6, 1), timezone="UTC"))
+        assert date_range == ["20220601"]
+
+        date_range = list(get_date_range(start_date=Date(2022, 6, 2), timezone="UTC"))
+        assert date_range == []
+
+        date_range = []
+        for date in get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"):
+            date_range.append(date)
+            frozen_datetime.tick(delta=timedelta(hours=3))
+        assert date_range == ["20220529", "20220530", "20220531", "20220601", "20220602"]
