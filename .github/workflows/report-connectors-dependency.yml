@@ -50,3 +50,4 @@ jobs:
           body: |
             **NOTE** :warning: Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
             ${{steps.dependency_report.outputs.changed_files_report}}
+
