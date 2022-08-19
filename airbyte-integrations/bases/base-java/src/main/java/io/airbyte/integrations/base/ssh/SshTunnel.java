@@ -245,7 +245,7 @@ public class SshTunnel implements AutoCloseable {
     String type = pemObject.getType();
 
     if ("OPENSSH PRIVATE KEY".equals(type)) {
-      return PEMDecoder.decode(validatedKey.toCharArray(), null);// we do not support encrypted keys for now, otherwise keystore password should be added to UI
+      return PEMDecoder.decode(validatedKey.toCharArray(), null);// we do not support encrypted keys for now, otherwise keystore password should be aded to UI
     } else {
       final PEMParser pemParser = new PEMParser(new StringReader(validatedKey));
       final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
