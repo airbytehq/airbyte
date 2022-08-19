@@ -42,7 +42,7 @@
               "api_token": {
                 "title": "API Token",
                 "type": "string",
-                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide\">docs</a> for more information.",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information.",
                 "airbyte_secret": true
               }
             }
