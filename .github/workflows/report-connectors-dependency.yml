@@ -2,8 +2,6 @@ name: Report connectors dependency
 
 on:
   push:
-  pull_request:
-    types: [opened]
 
 jobs:
   report-affected-connectors:
@@ -34,19 +32,19 @@ jobs:
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
       - name: PR number
-        uses: jwalton/gh-find-current-pr@v1
-        id: findPr
+        uses: 8BitJonny/gh-get-current-pr@2.1.1
+        id: PR
         with:
-          state: open
-      - run: echo "Current PR is ${PR}"
-        if: success() && steps.findPr.outputs.number
+          filterOutClosed: true
+      - run: echo "PR ${prNumber}"
+        if: steps.PR.outcome == 'success'
         env:
-          PR: ${{ steps.findPr.outputs.pr }}
+          prNumber: ${{ steps.PR.outputs.number }}
       - name: Comment report in PR
         if: steps.dependency_report.outputs.changed_files_report != ''
         uses: peter-evans/create-or-update-comment@v2
         with:
-          issue-number: ${{steps.findPr.outputs.pr}}
+          issue-number: ${{steps.PR.outputs.number}}
           body: |
             **NOTE** :warning: Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
             ${{steps.dependency_report.outputs.changed_files_report}}
