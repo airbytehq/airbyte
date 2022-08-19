@@ -31,7 +31,7 @@ const Empty = styled.div`
 
 const LegendLabels = ["value"];
 
-const CreditsUsagePage: React.FC = () => {
+const CreditsUsage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
@@ -85,4 +85,4 @@ const CreditsUsagePage: React.FC = () => {
   );
 };
 
-export default CreditsUsagePage;
+export default CreditsUsage;
