@@ -61,6 +61,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
+    TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
+    TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
     TEST_TABLES = ImmutableSet
         .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
     COL_ID = "ID";
@@ -76,6 +78,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
   @BeforeEach
@@ -119,7 +123,12 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
             sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
-
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_TYPE))));
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE))));
     super.tearDown();
   }
 

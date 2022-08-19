@@ -135,7 +135,7 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 ## References
 
 Strings can contain references to previously defined values.
-The parser will dereference these values to produce a complete ConnectionDefinition
+The parser will dereference these values to produce a complete object definition.
 
 References can be defined using a "*ref({arg})" string.
 
@@ -230,7 +230,7 @@ nested.path: "uh oh"
 value: "uh oh"
 ```
 
-To resolve the ambiguity, we try looking for the reference key at the top level, and then traverse the structs downward
+To resolve the ambiguity, we try looking for the reference key at the top-level, and then traverse the structs downward
 until we find a key with the given path, or until there is nothing to traverse.
 
 More details on referencing values can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=yamlparser#airbyte_cdk.sources.declarative.parsers.yaml_parser.YamlParser).
@@ -264,10 +264,14 @@ This means that both these string templates will evaluate to the same string:
 1. `"{{ options.name }}"`
 2. `"{{ options['name'] }}"`
 
-In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
+In additional to passing additional values through the $options argument, macros can be called from within the string interpolation.
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
 The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
 
 Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
+
+## Component schema reference
+
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json).
