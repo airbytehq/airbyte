@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["campaign.id", "segments.date"],
   "properties": {
     "campaign.accessible_bidding_strategy": {
       "type": ["null", "string"]
@@ -87,7 +88,7 @@
       "type": ["null", "integer"]
     },
     "campaign.id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "campaign.labels": {
       "type": ["null", "array"],
@@ -258,7 +259,7 @@
       "type": ["null", "number"]
     },
     "segments.date": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date"
     }
   }
