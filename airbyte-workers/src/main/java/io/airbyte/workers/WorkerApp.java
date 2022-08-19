@@ -209,7 +209,6 @@ public class WorkerApp {
       final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(airbyteApiClient, featureFlags);
 
       for (final String taskQueue : configs.getDataPlaneTaskQueues()) {
-        // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
         final Worker worker = factory.newWorker(taskQueue, getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
         worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
       }
@@ -222,7 +221,6 @@ public class WorkerApp {
    */
   private static void registerSyncControlPlaneWorkers(final WorkerFactory factory) {
     if (configs.isControlPlaneWorker()) {
-      // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
@@ -445,8 +443,7 @@ public class WorkerApp {
             .withClaim("email", saEmail);
 
         // TODO multi-cloud phase 2: check performance of on-demand token generation in load testing. might
-        // need
-        // to pull some of this outside of this method which is called for every API request
+        // need to pull some of this outside of this method which is called for every API request
         final FileInputStream stream = new FileInputStream(configs.getDataPlaneServiceAccountCredentialsPath());
         final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
         final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
@@ -457,8 +454,6 @@ public class WorkerApp {
         return "";
       }
     } else {
-      // shouldn't be possible to reach this state since a worker must be at least one of control/data
-      // plane
       LOGGER.warn("Worker somehow wasn't a control plane or a data plane worker!");
       return "";
     }
