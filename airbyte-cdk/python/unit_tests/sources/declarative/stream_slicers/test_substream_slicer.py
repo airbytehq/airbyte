@@ -47,6 +47,8 @@ class MockStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        # The parent stream's records should always be read as full refresh
+        assert sync_mode == SyncMode.full_refresh
         if not stream_slice:
             yield from self._records
         else:
@@ -64,7 +66,7 @@ class MockStream(Stream):
                     stream=MockStream([{}], [], "first_stream"), parent_key="id", stream_slice_field="first_stream_id", options={}
                 )
             ],
-            [{"first_stream_id": None, "parent_slice": None}],
+            [{"first_stream_id": None, "parent_slice": {}}],
         ),
         (
             "test_single_parent_slices_with_records",
@@ -76,7 +78,7 @@ class MockStream(Stream):
                     options={},
                 )
             ],
-            [{"first_stream_id": 1, "parent_slice": None}, {"first_stream_id": 2, "parent_slice": None}],
+            [{"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 2, "parent_slice": {}}],
         ),
         (
             "test_with_parent_slices_and_records",
@@ -89,10 +91,10 @@ class MockStream(Stream):
                 )
             ],
             [
-                {"parent_slice": "first", "first_stream_id": 0},
-                {"parent_slice": "first", "first_stream_id": 1},
-                {"parent_slice": "second", "first_stream_id": 2},
-                {"parent_slice": "third", "first_stream_id": None},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+                {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+                {"parent_slice": {"slice": "third"}, "first_stream_id": None},
             ],
         ),
         (
@@ -112,12 +114,12 @@ class MockStream(Stream):
                 ),
             ],
             [
-                {"parent_slice": "first", "first_stream_id": 0},
-                {"parent_slice": "first", "first_stream_id": 1},
-                {"parent_slice": "second", "first_stream_id": 2},
-                {"parent_slice": "third", "first_stream_id": None},
-                {"parent_slice": "second_parent", "second_stream_id": 10},
-                {"parent_slice": "second_parent", "second_stream_id": 20},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+                {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+                {"parent_slice": {"slice": "third"}, "first_stream_id": None},
+                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 10},
+                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 20},
             ],
         ),
     ],

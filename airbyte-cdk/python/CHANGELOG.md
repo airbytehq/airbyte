@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.77
+- Add schema validation for declarative YAML connector configs
+
+## 0.1.76
+- Bugfix: Correctly set parent slice stream for sub-resource streams
+
 ## 0.1.75
 - Improve `filter_secrets` skip empty secret
 
