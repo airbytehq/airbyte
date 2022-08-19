@@ -24,7 +24,7 @@ task generateApiServerLegacy(type: GenerateTask) {
     invokerPackage = "io.airbyte.api.invoker.generated"
     modelPackage = "io.airbyte.api.model.generated"
 
-    importMappings = [
+    schemaMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
@@ -66,7 +66,7 @@ task generateApiServer(type: GenerateTask) {
     invokerPackage = "io.airbyte.api.invoker.generated"
     modelPackage = "io.airbyte.api.model.generated"
 
-    importMappings = [
+    schemaMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
@@ -113,7 +113,7 @@ task generateApiClient(type: GenerateTask) {
     invokerPackage = "io.airbyte.api.client.invoker.generated"
     modelPackage = "io.airbyte.api.client.model.generated"
 
-    importMappings = [
+    schemaMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
@@ -147,7 +147,7 @@ task generateApiDocs(type: GenerateTask) {
     invokerPackage = "io.airbyte.api.client.invoker.generated"
     modelPackage = "io.airbyte.api.client.model.generated"
 
-    importMappings = [
+    schemaMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
