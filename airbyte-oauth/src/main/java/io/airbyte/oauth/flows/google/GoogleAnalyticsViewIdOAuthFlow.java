@@ -9,16 +9,16 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.net.http.HttpClient;
 import java.util.function.Supplier;
 
-public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
+public class GoogleAnalyticsViewIdOAuthFlow extends GoogleOAuthFlow {
 
   public static final String SCOPE_URL = "https://www.googleapis.com/auth/analytics.readonly";
 
-  public GoogleAnalyticsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+  public GoogleAnalyticsViewIdOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  GoogleAnalyticsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  GoogleAnalyticsViewIdOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
