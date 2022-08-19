@@ -31,20 +31,11 @@ jobs:
           output="${output//$'\r'/'%0D'}" 
           echo "::set-output name=changed_files_report::$output"
         id: dependency_report
-      - name: PR number
-        uses: 8BitJonny/gh-get-current-pr@2.1.1
-        id: PR
-        with:
-          filterOutClosed: true
-      - run: echo "PR ${prNumber}"
-        if: steps.PR.outcome == 'success'
-        env:
-          prNumber: ${{ steps.PR.outputs.number }}
       - name: Comment report in PR
         if: steps.dependency_report.outputs.changed_files_report != ''
         uses: peter-evans/create-or-update-comment@v2
         with:
-          issue-number: ${{steps.PR.outputs.number}}
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
             **NOTE** :warning: Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
             ${{steps.dependency_report.outputs.changed_files_report}}
