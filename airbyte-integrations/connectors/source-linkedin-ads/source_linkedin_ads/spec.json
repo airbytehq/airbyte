@@ -19,7 +19,8 @@
             "properties": {
               "auth_method": {
                 "type": "string",
-                "const": "oAuth2.0"
+                "const": "oAuth2.0",
+                "default": "oAuth2.0"
               },
               "client_id": {
                 "type": "string",
