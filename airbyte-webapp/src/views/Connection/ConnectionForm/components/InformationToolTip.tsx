@@ -1,18 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import ToolTip, { InfoIcon } from "components/ToolTip";
-
-const ToolTipBlock = styled(ToolTip)`
-  top: calc(100%);
-  background: ${({ theme }) => theme.darkBlue90};
-  color: ${({ theme }) => theme.whiteColor};
-  padding: 11px 19px;
-  min-width: 250px;
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: 500;
-`;
+import { InfoIcon } from "components/icons/InfoIcon";
+import ToolTip from "components/ToolTip";
 
 const Info = styled.div`
   display: inline-block;
@@ -23,7 +13,7 @@ const Info = styled.div`
 
 const InformationToolTip: React.FC = ({ children }) => {
   return (
-    <ToolTipBlock
+    <ToolTip
       control={
         <Info>
           <InfoIcon />
@@ -31,7 +21,7 @@ const InformationToolTip: React.FC = ({ children }) => {
       }
     >
       {children}
-    </ToolTipBlock>
+    </ToolTip>
   );
 };
 
