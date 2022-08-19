@@ -12,9 +12,41 @@ server {
 
     add_header Content-Security-Policy "script-src * 'unsafe-inline'; worker-src self blob:;";
 
+    set $provided_password $cookie_basic_password;
+    set $expected_password "$PASSWORD";
+
+    if ($expected_password = '') {
+        break;
+    }
+
+    if ($provided_password = $expected_password) {
+        break;
+    }
+
+    if ($request_uri ~ "^/api") {
+        return 401 "Unauthorized access";
+    }
+
+    if ($uri !~ "^/index.html") {
+        rewrite ^/.* /basic_auth last;
+    }
+
+    location /basic_auth {
+        root   /usr/share/nginx/html;
+
+        try_files /basic_auth.html /basic_auth.html;
+
+        add_header X-uri "$uri";
+        add_header X-ruri "$request_uri";
+    }
+
     location / {
+
         root   /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;
+
+        add_header X-uri "$uri";
+        add_header X-ruri "$request_uri";
 
         sub_filter </head>
                 '</head><script language="javascript"\>
@@ -23,6 +55,11 @@ server {
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
                 window.IS_DEMO = "$IS_DEMO";
+
+                if ("$expected_password" === "abc") {
+                    setTimeout(function(){alert("You are using a default password. Please update PASSWORD in .env");}, 10000);
+                }
+
                 </script>';
         sub_filter_once on;
     }
@@ -42,4 +79,6 @@ server {
         client_max_body_size 200M;
         proxy_pass http://api-server/api/;
     }
+
+
 }

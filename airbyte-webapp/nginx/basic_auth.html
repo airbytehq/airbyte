@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <body style="background-color: rgb(254, 249, 244); text-align: center;">
+        <div id="content">
+            <form id="login">
+                <label id="password_label">Enter your password:</label>
+                <input id="password_input" type="password" placeholder="Your Password"/>
+                <button id="login_button" type="submit">Login</button>
+            </form>
+        </div>
+
+        <script>
+            function login(event) {
+                event.preventDefault();
+                var password = document.getElementById('password_input').value;
+                document.cookie = "basic_password=" + password + "; SameSite=strict; path=/";
+                location.reload();
+            }
+            document.getElementById('login').addEventListener('submit', login);
+            document.getElementById('password_input').focus();
+        </script>
+    </body>
+</html>

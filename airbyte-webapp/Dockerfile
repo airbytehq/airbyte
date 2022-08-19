@@ -3,5 +3,6 @@ FROM ${NGINX_IMAGE} as webapp
 
 EXPOSE 80
 
-COPY bin/build /usr/share/nginx/html
-COPY bin/nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY build /usr/share/nginx/html
+COPY nginx/basic_auth.html /usr/share/nginx/html
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
