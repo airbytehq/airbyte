@@ -16,8 +16,7 @@
         "required": [
           "client_id",
           "client_secret",
-          "refresh_token",
-          "developer_token"
+          "refresh_token"
         ],
         "properties": {
           "developer_token": {
