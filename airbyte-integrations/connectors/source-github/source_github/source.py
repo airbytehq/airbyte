@@ -152,7 +152,7 @@ class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self._get_authenticator(config)
-            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
             if not repositories:
                 return False, "no valid repositories found"
             return True, None
