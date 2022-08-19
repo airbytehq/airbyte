@@ -110,9 +110,12 @@ const TransformationForm: React.FC<TransformationProps> = ({
             >
               <Input
                 {...formik.getFieldProps("operatorConfiguration.dbt.gitRepoUrl")}
-                placeholder={formatMessage({
-                  id: "form.repositoryUrl.placeholder",
-                })}
+                placeholder={formatMessage(
+                  {
+                    id: "form.repositoryUrl.placeholder",
+                  },
+                  { angle: (node: React.ReactNode) => `<${node}>` }
+                )}
               />
             </ControlLabels>
           </div>
@@ -158,7 +161,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
           type="button"
           data-testid="done-button"
           isLoading={formik.isSubmitting}
-          disabled={!formik.dirty || equal(transformation, formik.values)}
+          disabled={!formik.isValid || !formik.dirty || equal(transformation, formik.values)}
         >
           <FormattedMessage id="form.saveTransformation" />
         </Button>
