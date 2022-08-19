@@ -3,7 +3,7 @@
 :warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
-When you're ready to start building a connector, you can start with [the tutorial](./tutorial/0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
+When you're ready to start building a connector, you can start with [the tutorial](./tutorial/0-getting-started.md), or dive into [more detailed documentation](./index.md).
 
 ## Overview
 
@@ -51,12 +51,12 @@ A stream generally corresponds to a resource within the API. They are analogous 
 A stream is defined by:
 
 1. A name
-2. Primary key (Optional): Used to uniquely identify records, enabling deduplication. Can be a string for single primary keys, a list of strings for composite primary keys, or a list of list of strings for composite primary keys consisting of nested fields.
+2. Primary key (Optional): Used to uniquely identify records, enabling deduplication. Can be a string for single primary keys, a list of strings for composite primary keys, or a list of list of strings for composite primary keys consisting of nested fields
 3. [Schema](../cdk-python/schemas.md): Describes the data to sync
 4. [Data retriever](overview.md#data-retriever): Describes how to retrieve the data from the API
-5. [Cursor field](../cdk-python/incremental-stream.md) (Optional): Field to use used as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.
+5. [Cursor field](../cdk-python/incremental-stream.md) (Optional): Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.
 6. [Transformations](./record-selector.md#transformations) (Optional): A set of transformations to be applied on the records read from the source before emitting them to the destination
-7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval, in number of records, at which incremental syncs should be checkpointed.
+7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval, in number of records, at which incremental syncs should be checkpointed
 
 More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
 
@@ -87,9 +87,11 @@ The `SimpleRetriever`'s data flow can be described as follows:
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
 
-More details on the record selector can be found in the [record selector section](record-selector.md)
-More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
-More details on the paginator can be found in the [pagination section](pagination.md)
+More details on the record selector can be found in the [record selector section](record-selector.md).
+
+More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md).
+
+More details on the paginator can be found in the [pagination section](pagination.md).
 
 ## Requester
 
@@ -104,7 +106,8 @@ There is currently only one implementation, the `HttpRequester`, which is define
 6. An error handler: Defines how to handle errors
 
 More details on authentication can be found in the [authentication section](authentication.md).
-More details on error handling can be found in the [error handling section](error-handling.md)
+
+More details on error handling can be found in the [error handling section](error-handling.md).
 
 ## Connection Checker
 

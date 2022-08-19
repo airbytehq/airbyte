@@ -8,7 +8,7 @@ To secure access to Airbyte you have three options:
 * Networking restrictions: deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 * Put Airbyte behind a reverse proxy and handle the access control on the reverse proxy side. 
 * If you deployed Airbyte on a cloud provider: 
-    * GCP: use the [Identidy-Aware proxy](https://cloud.google.com/iap) service
+    * GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
     * AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service
 
 **Non exhaustive** online resources list to set up auth on your reverse proxy:
