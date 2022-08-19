@@ -19,7 +19,11 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_tiktok_marketing.api_adapter import get_response_adapter
 
+# we cannot change output schema even though API response changed because the connector is in GA
+CURRENT_API_VERSION = "v1.3"
+TARGET_API_VERSION = "v1.2"
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
 DEFAULT_END_DATE = str(datetime.now().date())
@@ -152,6 +156,10 @@ class TiktokStream(HttpStream, ABC):
 
         # only sandbox has non-empty self._advertiser_id
         self.is_sandbox = bool(self._advertiser_id)
+        self.schema_adapter = get_response_adapter(CURRENT_API_VERSION, TARGET_API_VERSION, self.name, self.path())
+
+    def adjust_to_schema(self, record: MutableMapping[str, Any]):
+        self.schema_adapter(record)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
@@ -175,11 +183,11 @@ class TiktokStream(HttpStream, ABC):
         data = response.json()
         if data["code"]:
             raise TiktokException(data)
-            raise TiktokException(data["message"])
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
         for record in data:
+            self.adjust_to_schema(record)
             yield record
 
     @property
@@ -188,8 +196,8 @@ class TiktokStream(HttpStream, ABC):
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
-            return "https://sandbox-ads.tiktok.com/open_api/v1.2/"
-        return "https://business-api.tiktok.com/open_api/v1.2/"
+            return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
+        return "https://business-api.tiktok.com/open_api/v1.3/"
 
     def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
         # this data without listing
@@ -205,7 +213,8 @@ class TiktokStream(HttpStream, ABC):
         except Exception:
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
-        if data["code"] == 40100:
+        # 50002 == `Service error`
+        if data["code"] in (40100, 50002):
             return True
         return super().should_retry(response)
 
@@ -227,8 +236,14 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
+    @property
+    def url_base(self) -> str:
+        if self.is_sandbox:
+            return "https://sandbox-ads.tiktok.com/open_api/"
+        return "https://business-api.tiktok.com/open_api/"
+
     def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
-        super().__init__(advertiser_id=0, authenticator=None)
+        super().__init__(advertiser_id=None, authenticator=None)
 
         # for Production env
         self._secret = secret
@@ -270,17 +285,17 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         self._advertiser_ids = []
 
     @staticmethod
-    def convert_array_param(arr: List[Union[str, int]]) -> str:
+    def convert_array_param(arr: Iterable[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    def get_advertiser_ids(self) -> Iterable[int]:
+    def get_advertiser_ids(self) -> Iterable[str]:
         if self.is_sandbox:
             # for sandbox: just return advertiser_id provided in spec
             ids = [self._advertiser_id]
         else:
             # for prod: return list of all available ids from AdvertiserIds stream:
             advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
-            ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
+            ids = [str(advertiser["advertiser_id"]) for advertiser in advertiser_ids]
 
         self._advertiser_ids = ids
         return ids
@@ -565,7 +580,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 [
                     "campaign_id",
                     "adgroup_name",
-                    "placement",
+                    "placement_type",
                     "tt_app_id",
                     "tt_app_name",
                     "mobile_app_id",

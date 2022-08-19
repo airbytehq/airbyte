@@ -93,13 +93,13 @@ class SourceTiktokMarketing(AbstractSource):
             # used for new config format
             access_token = credentials["access_token"]
             secret = credentials.get("secret")
-            app_id = int(credentials.get("app_id", 0))
-            advertiser_id = int(credentials.get("advertiser_id", 0))
+            app_id = credentials.get("app_id", None)
+            advertiser_id = credentials.get("advertiser_id", None)
         else:
             access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
-            app_id = int(config.get("environment", {}).get("app_id", 0))
-            advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
+            app_id = config.get("environment", {}).get("app_id", None)
+            advertiser_id = config.get("environment", {}).get("advertiser_id", None)
 
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),

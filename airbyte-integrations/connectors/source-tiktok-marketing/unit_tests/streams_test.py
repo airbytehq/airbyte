@@ -43,7 +43,7 @@ CONFIG_SANDBOX = {
     "app_id": 1234,
     "advertiser_id": 2000,
 }
-ADV_IDS = [{"advertiser_id": 1}, {"advertiser_id": 2}]
+ADV_IDS = [{"advertiser_id": "1"}, {"advertiser_id": "2"}]
 
 
 @pytest.fixture(scope="module")
@@ -101,19 +101,19 @@ def test_stream_slices_basic_sandbox(advertiser_ids, config_name, slices_expecte
         (
             Lifetime,
             [
-                {"advertiser_id": 1, "end_date": END_DATE, "start_date": START_DATE},
-                {"advertiser_id": 2, "end_date": END_DATE, "start_date": START_DATE},
+                {"advertiser_id": "1", "end_date": END_DATE, "start_date": START_DATE},
+                {"advertiser_id": "2", "end_date": END_DATE, "start_date": START_DATE},
             ],
         ),
         (
             Daily,
             [
-                {"advertiser_id": 1, "end_date": "2020-01-30", "start_date": "2020-01-01"},
-                {"advertiser_id": 1, "end_date": "2020-02-29", "start_date": "2020-01-31"},
-                {"advertiser_id": 1, "end_date": "2020-03-01", "start_date": "2020-03-01"},
-                {"advertiser_id": 2, "end_date": "2020-01-30", "start_date": "2020-01-01"},
-                {"advertiser_id": 2, "end_date": "2020-02-29", "start_date": "2020-01-31"},
-                {"advertiser_id": 2, "end_date": "2020-03-01", "start_date": "2020-03-01"},
+                {"advertiser_id": "1", "end_date": "2020-01-30", "start_date": "2020-01-01"},
+                {"advertiser_id": "1", "end_date": "2020-02-29", "start_date": "2020-01-31"},
+                {"advertiser_id": "1", "end_date": "2020-03-01", "start_date": "2020-03-01"},
+                {"advertiser_id": "2", "end_date": "2020-01-30", "start_date": "2020-01-01"},
+                {"advertiser_id": "2", "end_date": "2020-02-29", "start_date": "2020-01-31"},
+                {"advertiser_id": "2", "end_date": "2020-03-01", "start_date": "2020-03-01"},
             ],
         ),
     ],

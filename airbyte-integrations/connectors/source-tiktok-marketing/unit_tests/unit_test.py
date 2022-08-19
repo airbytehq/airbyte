@@ -80,14 +80,14 @@ def unixtime2str(unix_time: int) -> str:
 def test_random_items(prepared_prod_args):
     stream = Ads(**prepared_prod_args)
     advertiser_count = 100
-    test_advertiser_ids = set([random_integer() for _ in range(advertiser_count)])
+    test_advertiser_ids = set([str(random_integer()) for _ in range(advertiser_count)])
     advertiser_count = len(test_advertiser_ids)
     page_size = 100
     with requests_mock.Mocker() as m:
         # mock for advertisers' list
         advertisers = [{"advertiser_id": i, "advertiser_name": str(i)} for i in test_advertiser_ids]
         for _, page_response in generate_pages(items=advertisers, page_size=advertiser_count):
-            m.register_uri("GET", "/open_api/v1.2/oauth2/advertiser/get/", json=page_response)
+            m.register_uri("GET", "/open_api/oauth2/advertiser/get/", json=page_response)
         stream = Ads(**prepared_prod_args)
         stream.page_size = page_size
         stream.get_advertiser_ids()
@@ -114,7 +114,7 @@ def test_random_items(prepared_prod_args):
 
             # mock for ads
             for page, page_response in generate_pages(items=ad_items, page_size=page_size, last_empty=True):
-                uri = f"/open_api/v1.2/ad/get/?page_size={page_size}&advertiser_id={advertiser_id}"
+                uri = f"/open_api/v1.3/ad/get/?page_size={page_size}&advertiser_id={advertiser_id}"
                 if page != 1:
                     uri += f"&page={page}"
                 m.register_uri("GET", uri, complete_qs=True, json=page_response)
