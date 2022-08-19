@@ -16,6 +16,6 @@ ENV APPLICATION source-snowflake
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.18-rc
+LABEL io.airbyte.version=0.1.18
 
 LABEL io.airbyte.name=airbyte/source-snowflake
