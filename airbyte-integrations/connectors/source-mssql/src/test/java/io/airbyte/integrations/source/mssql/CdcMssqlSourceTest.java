@@ -316,7 +316,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
-
   @Test
   void testCdcCheckOperationsWithDot() throws Exception {
     // assertCdcEnabledInDb and validate escape with special character
