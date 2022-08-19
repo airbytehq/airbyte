@@ -305,8 +305,8 @@ class TestInsightAsyncJob:
         ads_insights = AdsInsights(api=api)
         ads_insights._set_data({"items": [{"some_data": 123}, {"some_data": 77}]})
         with mocker.patch(
-                "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
-                side_effect=[FacebookBadObjectError("Bad data to set object data"), ads_insights]
+            "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
+            side_effect=[FacebookBadObjectError("Bad data to set object data"), ads_insights],
         ):
             # in case this is not retried, an error will be raised
             job.get_result()
