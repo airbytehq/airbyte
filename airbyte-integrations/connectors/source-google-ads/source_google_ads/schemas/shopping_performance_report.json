@@ -140,7 +140,7 @@
       "type": ["null", "string"]
     },
     "segments.product_item_id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "segments.product_condition": {
       "type": ["null", "string"]

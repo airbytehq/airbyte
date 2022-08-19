@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["ad_group_ad.ad.id", "segments.date "],
+  "required": ["ad_group_ad.ad.id", "segments.date"],
   "properties": {
     "ad_group_ad.ad.added_by_google_ads": {
       "type": ["null", "boolean"]
