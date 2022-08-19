@@ -60,8 +60,8 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private boolean unreliableCommittedCounts;
   /**
-   * If the StateMetricsTracker throws an exception, this flag is set to true and the metrics
-   * around max and mean time between state message emitted and committed are unreliable
+   * If the StateMetricsTracker throws an exception, this flag is set to true and the metrics around
+   * max and mean time between state message emitted and committed are unreliable
    */
   private boolean unreliableStateTimingMetrics;
 

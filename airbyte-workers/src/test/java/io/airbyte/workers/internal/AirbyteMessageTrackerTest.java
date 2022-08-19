@@ -325,42 +325,4 @@ class AirbyteMessageTrackerTest {
     assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
   }
 
-  // @Test
-  // void testCalculateMean() throws Exception {
-  // // Mean for 3 state messages is 5, 4th state message is 9, new mean should be 6
-  // assertEquals(6L, messageTracker.calculateMean(5L, 4L, 9L));
-  //
-  // // Mean for 5 state messages is 10, 4th state message is 12, new mean is 10.33 rounded down to 10
-  // assertEquals(10L, messageTracker.calculateMean(10L, 6L, 12L));
-  // }
-
-  // @Test
-  // void testMaxandMeanSecondsBetweenStateMessageEmittedandCommitted() {
-  // final AirbyteStateMessage s1 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 1);
-  // final AirbyteStateMessage s2 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 2);
-  // final AirbyteStateMessage s3 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 3);
-  //
-  // // 3 per-stream state messages emitted for the same stream
-  // final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-  // messageTracker.addStateMessageToStreamToStateHashTimestampTracker(s1, 0,
-  // LocalDateTime.parse("2022-01-01 12:00:00", formatter));
-  // messageTracker.addStateMessageToStreamToStateHashTimestampTracker(s2, 1,
-  // LocalDateTime.parse("2022-01-01 12:00:01", formatter));
-  // messageTracker.addStateMessageToStreamToStateHashTimestampTracker(s3, 2,
-  // LocalDateTime.parse("2022-01-01 12:00:02", formatter));
-  //
-  // // Committed up to 2nd state message - time to commit is 5 seconds (second 00 to second 05)
-  // messageTracker.incrementTotalDestinationEmittedStateMessages();
-  // messageTracker.updateStreamTimestampTrackerAndCalculateMaxAndMeanTimeToCommit(s2, 1,
-  // LocalDateTime.parse("2022-01-01 12:00:05", formatter));
-  //
-  // // Committed final state message - time to commit is 7 seconds (second 02 to second 09)
-  // messageTracker.incrementTotalDestinationEmittedStateMessages();
-  // messageTracker.updateStreamTimestampTrackerAndCalculateMaxAndMeanTimeToCommit(s2, 1,
-  // LocalDateTime.parse("2022-01-01 12:00:09", formatter));
-  //
-  // assertEquals(7L, messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted());
-  // assertEquals(6L, messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted());
-  // }
-
 }
