@@ -5,6 +5,8 @@
 
 export interface Experiments {
   "onboarding.hideOnboarding": boolean;
+  "connector.inviteUserHint.visible": boolean;
+  "connector.inviteUserHint.linkToUsersPage": false;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;
