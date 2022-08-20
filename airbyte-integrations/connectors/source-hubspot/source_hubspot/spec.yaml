@@ -120,5 +120,5 @@ authSpecification:
   provider: "hubspot"
   authUrlTemplate: "https://app.hubspot.com/oauth/authorize?client_id={{ client_id }}&scope=forms%20files%20tickets%20e-commerce%20sales-email-read%20forms-uploaded-files%20crm.lists.read%20crm.objects.contacts.read%20files.ui_hidden.read%20crm.schemas.contacts.read%20crm.objects.companies.read%20crm.objects.deals.read%20crm.schemas.companies.read%20crm.schemas.deals.read%20crm.objects.owners.read&optional_scope=content%20automation%20crm.objects.feedback_submissions.read&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
   accessTokenUrlTemplate: "https://api.hubapi.com/oauth/v1/token"
-  accessTokenBody: "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}"
+  accessTokenBody: "{grant_type: 'authorization_code', client_id: {{ client_id }}, client_secret: {{ client_secret }}, redirect_uri: {{ redirect_uri }}, code: {{ code }}}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\", \"access_token\": \"access_token\", \"expires_in\": \"expires_in\"}"
