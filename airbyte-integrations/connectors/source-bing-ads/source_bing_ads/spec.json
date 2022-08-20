@@ -12,9 +12,11 @@
     ],
     "additionalProperties": true,
     "properties": {
+      "x-oauth2-provider": "microsoft",
       "auth_method": {
         "type": "string",
-        "const": "oauth2.0"
+        "const": "oauth2.0",
+        "default": "oauth2.0"
       },
       "tenant_id": {
         "type": "string",
@@ -63,57 +65,13 @@
       }
     }
   },
-  "advanced_auth": {
-    "auth_flow_type": "oauth2.0",
-    "predicate_key": ["auth_method"],
-    "predicate_value": "oauth2.0",
-    "oauth_config_specification": {
-      "complete_oauth_output_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "refresh_token": {
-            "type": "string",
-            "path_in_connector_config": ["refresh_token"]
-          }
-        }
-      },
-      "complete_oauth_server_input_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "client_id": {
-            "type": "string"
-          },
-          "client_secret": {
-            "type": "string"
-          }
-        }
-      },
-      "complete_oauth_server_output_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "client_id": {
-            "type": "string",
-            "path_in_connector_config": ["client_id"]
-          },
-          "client_secret": {
-            "type": "string",
-            "path_in_connector_config": ["client_secret"]
-          }
-        }
-      },
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "tenant_id": {
-            "type": "string",
-            "path_in_connector_config": ["tenant_id"]
-          }
-        }
-      }
-    }
+  "authSpecification": {
+    "provider": "microsoft",
+    "authUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?clientid={{ client_id }}&scope=openid%20profile%20https://ads.microsoft.com/msads.manage%20offline_access&response_type=code&redirect_uri={{ redirect_uri }}&state={{ state }}&promt=login",
+    "accessTokenUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    "accessTokenBody": "client_id={{ urlencode client_id }}&scope=https://ads.microsoft.com/msads.manage%20offline_access&code={{ urlencode code }}&grant_type=authorization_code&redirect_uri={{ urlencode redirect_uri }}",
+    "accessTokenHeaders: "{\"content-type\": \"application/x-www-form-urlencoded\"}",
+    "accessTokenResponseMap": "{\"access_token\": \"/access_token\", \"expires_in\": \"/expires_in\", \"refresh_token\": \"/refresh_token\"}"
+      
   }
 }

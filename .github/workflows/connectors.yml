@@ -61,6 +61,7 @@ jobs:
           - source-salesforce
           - source-google-analytics-data-api
           - source-linkedin-ads
+          - source-bing-ads
 
     steps:
       - uses: actions/checkout@v2
