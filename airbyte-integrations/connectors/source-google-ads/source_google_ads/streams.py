@@ -348,14 +348,14 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.date", "customer.id", "campaign.id", "user_location_view.country_criterion_id"]
+    primary_key = ["segments.ad_network_type", "segments.date", "customer.id", "campaign.id", "user_location_view.resource_name"]
 
 class GeographicReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
     """
 
-    primary_key = ["segments.date", "ad_group.id", "geographic_view.country_criterion_id"]
+    primary_key = ["segments.date", "ad_group.id", "geographic_view.country_criterion_id", "customer.descriptive_name"]
 
 class KeywordReport(IncrementalGoogleAdsStream):
     """

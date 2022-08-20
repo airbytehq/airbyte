@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["segments.ad_network_type", "segments.date", "customer.id", "campaign.id", "user_location_view.country_criterion_id"],
+  "required": ["segments.ad_network_type", "segments.date", "customer.id", "campaign.id", "user_location_view.resource_name"],
   "properties": {
     "segments.date": {
       "type": ["string"],
@@ -38,10 +38,10 @@
       "type": ["null", "string"]
     },
     "user_location_view.country_criterion_id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "user_location_view.resource_name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "campaign.base_campaign": {
       "type": ["null", "string"]
