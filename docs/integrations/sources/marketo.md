@@ -91,6 +91,7 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 | Version | Date       | Pull Request                                             | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------|
+| `0.1.6` | 2022-08-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Improved unit test coverage                           |
 | `0.1.5` | 2022-08-16 | [15683](https://github.com/airbytehq/airbyte/pull/15683) | Retry failed creation of a job instead of skipping it |
 | `0.1.4` | 2022-06-20 | [13930](https://github.com/airbytehq/airbyte/pull/13930) | Process failing creation of export jobs               |
 | `0.1.3` | 2021-12-10 | [8429](https://github.com/airbytehq/airbyte/pull/8578)   | Updated titles and descriptions                       |
