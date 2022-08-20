@@ -51,13 +51,12 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,7 +251,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for date column the new way, trying the old way", e);
       super.setDate(preparedStatement, parameterIndex, value);
     }
@@ -263,7 +263,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
@@ -273,7 +274,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     }
@@ -285,8 +287,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     } catch (final DateTimeParseException e) {
       LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       super.setTime(preparedStatement, parameterIndex, value);
     }
   }
+
 }
