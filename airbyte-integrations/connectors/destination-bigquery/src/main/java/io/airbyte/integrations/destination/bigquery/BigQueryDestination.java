@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ImpersonatedCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
@@ -47,6 +48,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -182,8 +184,23 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    return GoogleCredentials.fromStream(
+    GoogleCredentials credentials = GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+    
+    if (config.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)){
+      return ImpersonatedCredentials.create(
+        credentials, 
+        config.get(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT).asText(), 
+        null,
+        Arrays.asList(
+          "https://www.googleapis.com/auth/bigquery",
+          "https://www.googleapis.com/auth/bigquery.insertdata",
+          "https://www.googleapis.com/auth/devstorage.read_write"
+        ), 
+        0); //0 = max = 3600 seconds
+    } else {
+      return credentials;
+    }
   }
 
   @Override

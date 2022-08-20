@@ -169,13 +169,19 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "impersonate_account": {
+        "type": "string",
+        "description": "The name of the service account you want to impersonate, if there is one.",
+        "title": "Service account name to impersonate (Optional)",
+        "order": 5
+      },
       "transformation_priority": {
         "type": "string",
         "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
         "title": "Transformation Query Run Type (Optional)",
         "default": "interactive",
         "enum": ["interactive", "batch"],
-        "order": 5
+        "order": 6
       },
       "big_query_client_buffer_size_mb": {
         "title": "Google BigQuery Client Chunk Size (Optional)",
@@ -185,7 +191,7 @@
         "maximum": 15,
         "default": 15,
         "examples": ["15"],
-        "order": 6
+        "order": 7
       }
     }
   }

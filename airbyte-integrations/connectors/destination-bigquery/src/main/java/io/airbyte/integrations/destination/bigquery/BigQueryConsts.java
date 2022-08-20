@@ -11,6 +11,7 @@ public class BigQueryConsts {
   public static final String CONFIG_PROJECT_ID = "project_id";
   public static final String CONFIG_DATASET_LOCATION = "dataset_location";
   public static final String CONFIG_CREDS = "credentials_json";
+  public static final String CONFIG_IMPERSONATE_ACCOUNT = "impersonate_account";
   public static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
   public static final String LOADING_METHOD = "loading_method";
