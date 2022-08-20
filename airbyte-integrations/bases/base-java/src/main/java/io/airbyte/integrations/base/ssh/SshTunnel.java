@@ -211,7 +211,7 @@ public class SshTunnel implements AutoCloseable {
   }
 
   /**
-   * Closes a tunnel if one was open, and otherwise doesn't do anything (safe to run)
+   * Closes a tunnel if one was open, and otherwise doesn't do anything (safe to run).
    */
   @Override
   public void close() {
