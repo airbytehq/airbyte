@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import boto3
 import botocore
 import google
+import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
@@ -357,7 +358,7 @@ class Client:
                     fp = self._cache_stream(fp)
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df = df.where(pd.notnull(df), None)
+                    df.replace({np.nan: None}, inplace=True)
                     yield from df[list(columns)].to_dict(orient="records")
 
     def _cache_stream(self, fp):

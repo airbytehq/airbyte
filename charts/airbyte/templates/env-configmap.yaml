@@ -20,7 +20,7 @@ data:
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
-  INTERNAL_API_HOST: {{ .Release.Name }}-server:{{ .Values.server.service.port }}
+  INTERNAL_API_HOST: {{ .Release.Name }}-server-svc:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
 {{- if $.Values.global.jobs.kube.annotations }}
   JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}

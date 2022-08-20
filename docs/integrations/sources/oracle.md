@@ -132,6 +132,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request | Subject                                         |
 |:--------|:-----------| :--- |:------------------------------------------------|
+| 0.3.20  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.3.19  | 2022-08-03 | [14953](https://github.com/airbytehq/airbyte/pull/14953) | Use Service Name to connect to database |
 | 0.3.18  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.3.17  | 2022-06-24 | [14092](https://github.com/airbytehq/airbyte/pull/14092) | Introduced a custom jdbc param field |
