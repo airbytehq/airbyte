@@ -35,11 +35,15 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()
         resource, schema_path = self.extract_resource_and_schema_path(json_schema_path)
-        json_schema = pkgutil.get_data(resource, schema_path)
+        raw_json_file = pkgutil.get_data(resource, schema_path)
 
-        if not json_schema:
-            raise FileNotFoundError("File not found: " + json_schema_path)
-        return json.loads(json_schema)
+        if not raw_json_file:
+            raise IOError(f"Cannot find file {json_schema_path}")
+        try:
+            raw_schema = json.loads(raw_json_file)
+        except ValueError as err:
+            raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
+        return raw_schema
 
     def _get_json_filepath(self):
         return self.file_path.eval(self.config)
