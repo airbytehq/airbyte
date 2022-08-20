@@ -7,11 +7,46 @@
     "required": ["start_date", "repository"],
     "additionalProperties": true,
     "properties": {
+      "start_date": {
+        "type": "string",
+        "title": "Start date",
+        "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the docs for more info: https://go.estuary.dev/xLGlPL",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 0
+      },
+      "repository": {
+        "type": "string",
+        "examples": [
+          "estuary/flow estuary/another-repo",
+          "estuary/*",
+          "estuary/connectors"
+        ],
+        "title": "GitHub Repositories",
+        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*` for get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
+        "order": 1
+      },
+      "branch": {
+        "type": "string",
+        "title": "Branch (Optional)",
+        "examples": ["estuary/flow/examples estuary/flow/scripts"],
+        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow`. If no branches are specified for a repository, the default branch will be pulled.",
+        "order": 2
+      },
+      "page_size_for_large_streams": {
+        "type": "integer",
+        "title": "Page size for large streams (Optional)",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10,
+        "description": "The Github connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
+        "order": 3
+      },
       "credentials": {
         "title": "Authentication *",
         "description": "Choose how to authenticate to GitHub",
         "type": "object",
-        "order": 0,
+        "order": 4,
         "oneOf": [
           {
             "type": "object",
@@ -22,7 +57,8 @@
               "option_title": {
                 "type": "string",
                 "const": "OAuth Credentials",
-                "order": 0
+                "order": 0,
+                "default": "OAuth Credentials"
               },
               "access_token": {
                 "type": "string",
@@ -51,41 +87,6 @@
             }
           }
         ]
-      },
-      "start_date": {
-        "type": "string",
-        "title": "Start date",
-        "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the docs for more info: https://go.estuary.dev/xLGlPL",
-        "examples": ["2021-03-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "order": 1
-      },
-      "repository": {
-        "type": "string",
-        "examples": [
-          "estuary/flow estuary/another-repo",
-          "estuary/*",
-          "estuary/connectors"
-        ],
-        "title": "GitHub Repositories",
-        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*` for get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
-        "order": 2
-      },
-      "branch": {
-        "type": "string",
-        "title": "Branch (Optional)",
-        "examples": ["estuary/flow/examples estuary/flow/scripts"],
-        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow`. If no branches are specified for a repository, the default branch will be pulled.",
-        "order": 3
-      },
-      "page_size_for_large_streams": {
-        "type": "integer",
-        "title": "Page size for large streams (Optional)",
-        "minimum": 1,
-        "maximum": 100,
-        "default": 10,
-        "description": "The Github connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
-        "order": 4
       }
     }
   },
