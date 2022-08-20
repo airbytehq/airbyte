@@ -1,0 +1,110 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "type": ["null", "string"]
+    },
+    "PhoneImpressions": {
+      "type": ["null", "integer"]
+    },
+    "PhoneCalls": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "Ptr": {
+      "type": ["null", "number"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "number"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "LowQualityClicks": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityClicksPercent": {
+      "type": ["null", "number"]
+    },
+    "LowQualityImpressions": {
+      "type": ["null", "integer"]
+    },
+    "LowQualitySophisticatedClicks": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversions": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversionRate": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
+    }
+  }
+}

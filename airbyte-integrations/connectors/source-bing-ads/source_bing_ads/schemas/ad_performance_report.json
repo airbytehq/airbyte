@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AdId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "DestinationUrl": {
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "CustomParameters": {
+      "type": ["null", "string"]
+    },
+    "FinalAppUrl": {
+      "type": ["null", "string"]
+    },
+    "AdDescription": {
+      "type": ["null", "string"]
+    },
+    "AdDescription2": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "number"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
+    }
+  }
+}
