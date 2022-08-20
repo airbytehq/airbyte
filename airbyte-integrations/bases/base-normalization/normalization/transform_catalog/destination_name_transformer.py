@@ -62,8 +62,6 @@ class DestinationNameTransformer:
             return False
         if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith("_"):
             return True
-        if self.destination_type.value == DestinationType.CLICKHOUSE.value:
-            return True
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
@@ -188,12 +186,12 @@ class DestinationNameTransformer:
         return result
 
     def apply_quote(self, input: str, literal=True) -> str:
-        if self.destination_type == DestinationType.CLICKHOUSE:
-            return f"'{input}'"
         if literal:
             input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
+            return f"quote({input})"
+        elif self.destination_type == DestinationType.CLICKHOUSE:
             return f"quote({input})"
         return f"adapter.quote({input})"
 
