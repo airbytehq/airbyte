@@ -26,6 +26,7 @@ from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
 from .sponsored_products import ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
+from .attribution_report import AttributionReportModel
 
 __all__ = [
     "BrandsAdGroup",
@@ -43,4 +44,5 @@ __all__ = [
     "ProductCampaign",
     "ProductTargeting",
     "Profile",
+    "AttributionReportModel",
 ]

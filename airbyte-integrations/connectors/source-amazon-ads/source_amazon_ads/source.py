@@ -31,6 +31,7 @@ from .streams import (
     SponsoredProductNegativeKeywords,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
+    AttributionReport,
 )
 
 # Oauth 2.0 authentication URL for amazon
@@ -87,6 +88,7 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
             SponsoredBrandsVideoReportStream,
+            AttributionReport,
         ]
         return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 

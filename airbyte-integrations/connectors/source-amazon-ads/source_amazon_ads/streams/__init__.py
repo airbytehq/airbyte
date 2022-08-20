@@ -18,6 +18,7 @@ from .sponsored_products import (
     SponsoredProductNegativeKeywords,
     SponsoredProductTargetings,
 )
+from .attribution_report import AttributionReport
 
 __all__ = [
     "Profiles",
@@ -38,4 +39,5 @@ __all__ = [
     "SponsoredProductsReportStream",
     "SponsoredBrandsReportStream",
     "SponsoredBrandsVideoReportStream",
+    AttributionReport
 ]
