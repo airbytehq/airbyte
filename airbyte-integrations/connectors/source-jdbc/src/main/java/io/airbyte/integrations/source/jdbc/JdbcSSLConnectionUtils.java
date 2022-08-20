@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JdbcSSLConnectionUtils {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSSLConnectionUtils.class.getClass());
   public static final String PARAM_CA_CERTIFICATE = "ca_certificate";
   public static final String PARAM_CLIENT_CERTIFICATE = "client_certificate";
