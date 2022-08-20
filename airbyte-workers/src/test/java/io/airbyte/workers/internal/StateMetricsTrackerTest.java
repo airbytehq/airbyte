@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StateMetricsTrackerTest {
+class StateMetricsTrackerTest {
 
   private StateMetricsTracker stateMetricsTracker;
   private static final String STREAM_1 = "stream1";
