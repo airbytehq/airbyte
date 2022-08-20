@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.78
+- Fix yaml config parsing when running from docker container
+
 ## 0.1.77
 - Add schema validation for declarative YAML connector configs
 
