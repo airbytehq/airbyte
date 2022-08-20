@@ -3,6 +3,7 @@
 #
 
 import json
+import pkgutil
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
@@ -33,8 +34,34 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()
-        with open(json_schema_path, "r") as f:
-            return json.loads(f.read())
+        resource, schema_path = self.extract_resource_and_schema_path(json_schema_path)
+        json_schema = pkgutil.get_data(resource, schema_path)
+
+        if not json_schema:
+            raise FileNotFoundError("File not found: " + json_schema_path)
+        return json.loads(json_schema)
 
     def _get_json_filepath(self):
         return self.file_path.eval(self.config)
+
+    @staticmethod
+    def extract_resource_and_schema_path(json_schema_path: str) -> (str, str):
+        """
+        When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
+        the resource from the first part of the schema path and the remaining path is used to find the schema file. This is a slight
+        hack to identify the source name while we are in the airbyte_cdk module.
+        :param json_schema_path: The path to the schema JSON file
+        :return: Tuple of the resource name and the path to the schema file
+        """
+        split_path = json_schema_path.split("/")
+
+        if split_path[0] == "" or split_path[0] == ".":
+            split_path = split_path[1:]
+
+        if len(split_path) == 0:
+            return "", ""
+
+        if len(split_path) == 1:
+            return "", split_path[0]
+
+        return split_path[0], "/".join(split_path[1:])
