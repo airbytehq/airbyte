@@ -45,10 +45,10 @@ public class MySqlSslConnectionUtils {
   public static final String ENCRYPT_FILE_NAME = "encrypt";
 
   public static Map<String, String> obtainConnection(final JsonNode encryption) {
-    Map<String, String> additionalParameters = new HashMap<>();
+    final Map<String, String> additionalParameters = new HashMap<>();
     if (!encryption.isNull()) {
       final var method = encryption.get(PARAM_MODE).asText().toUpperCase();
-      var keyStorePassword = checkOrCreatePassword(encryption);
+      final var keyStorePassword = checkOrCreatePassword(encryption);
       if (method.equals(VERIFY_CA) || method.equals(VERIFY_IDENTITY)) {
         additionalParameters.putAll(checkCertificatesAndObtainConnection(encryption, method, keyStorePassword));
       }
@@ -57,10 +57,10 @@ public class MySqlSslConnectionUtils {
   }
 
   public static String checkOrCreatePassword(final JsonNode encryption) {
-    String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
+    final String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
     var keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
     if (sslPassword.isEmpty()) {
-      var file = new File(ENCRYPT_FILE_NAME);
+      final var file = new File(ENCRYPT_FILE_NAME);
       if (file.exists()) {
         keyStorePassword = readFile(file);
       } else {
@@ -79,8 +79,8 @@ public class MySqlSslConnectionUtils {
 
   private static String readFile(final File file) {
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      String currentLine = reader.readLine();
+      final BufferedReader reader = new BufferedReader(new FileReader(file));
+      final String currentLine = reader.readLine();
       reader.close();
       return currentLine;
     } catch (final IOException e) {
@@ -91,9 +91,9 @@ public class MySqlSslConnectionUtils {
   private static Map<String, String> checkCertificatesAndObtainConnection(final JsonNode encryption,
                                                                           final String mode,
                                                                           final String clientKeyPassword) {
-    var clientCert = encryption.has(PARAM_CLIENT_CERTIFICATE) &&
+    final var clientCert = encryption.has(PARAM_CLIENT_CERTIFICATE) &&
         !encryption.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty() ? encryption.get(PARAM_CLIENT_CERTIFICATE).asText() : null;
-    var clientKey = encryption.has(PARAM_CLIENT_KEY) &&
+    final var clientKey = encryption.has(PARAM_CLIENT_KEY) &&
         !encryption.get(PARAM_CLIENT_KEY).asText().isEmpty() ? encryption.get(PARAM_CLIENT_KEY).asText() : null;
     if (Objects.nonNull(clientCert) && Objects.nonNull(clientKey)) {
       return obtainConnectionWithFullCertificatesOptions(encryption, mode, clientKeyPassword);
@@ -107,7 +107,7 @@ public class MySqlSslConnectionUtils {
   private static Map<String, String> obtainConnectionWithFullCertificatesOptions(final JsonNode encryption,
                                                                                  final String mode,
                                                                                  final String clientKeyPassword) {
-    Map<String, String> additionalParameters = new HashMap<>();
+    final Map<String, String> additionalParameters = new HashMap<>();
     try {
       convertAndImportFullCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(),
           encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
@@ -131,7 +131,7 @@ public class MySqlSslConnectionUtils {
   private static Map<String, String> obtainConnectionWithCaCertificateOptions(final JsonNode encryption,
                                                                               final String mode,
                                                                               final String clientKeyPassword) {
-    Map<String, String> additionalParameters = new HashMap<>();
+    final Map<String, String> additionalParameters = new HashMap<>();
     try {
       convertAndImportCaCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
@@ -187,7 +187,7 @@ public class MySqlSslConnectionUtils {
     System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
   }
 
-  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+  private static void createCertificateFile(final String fileName, final String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
@@ -199,6 +199,11 @@ public class MySqlSslConnectionUtils {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
+  }
+
+  protected Map<String, String> obtainSSLConnectionParameters(final JsonNode sslConfig) {
+    final Map<String, String> additionalParameters = new HashMap<>();
+    return additionalParameters; // TEMP
   }
 
 }

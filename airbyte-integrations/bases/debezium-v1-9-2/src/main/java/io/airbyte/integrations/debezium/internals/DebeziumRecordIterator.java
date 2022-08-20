@@ -35,7 +35,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final Duration SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
+  private static final Duration SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofSeconds(5);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition targetPosition;

@@ -152,33 +152,38 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
-    Map<String, String> additionalParameters = new HashMap<>();
-    // assume ssl if not explicitly mentioned.
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
-        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                .append(JdbcUtils.AMPERSAND);
-        if (additionalParameters.isEmpty()) {
-          jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
-        } else {
-          jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
-        }
-      } else {
-        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
-      }
-    }
+    final Map<String, String> sslParameters = parseSSLConfig(config);
+    jdbcUrl.append(JdbcUtils.AMPERSAND).append(sslConnection(sslParameters));
+
+//    final Map<String, String> additionalParameters = new HashMap<>();
+//    // assume ssl if not explicitly mentioned.
+//    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
+//      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
+//        additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
+//        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+//            .append(JdbcUtils.AMPERSAND);
+//        if (additionalParameters.isEmpty()) {
+//          jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+//        } else {
+//          jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
+//        }
+//      } else {
+//        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+//            .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+//      }
+//    }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
-    configBuilder.putAll(additionalParameters);
+//    configBuilder.putAll(additionalParameters);
+    configBuilder.putAll(sslParameters);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
+    LOGGER.info("map: {}", configBuilder.build());
     return Jsons.jsonNode(configBuilder.build());
   }
 
@@ -197,7 +202,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, Duration.ofMinutes(5));
+          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, /*Duration.ofMinutes(5)*/
+          Duration.ofSeconds(1));
 
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
       final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));

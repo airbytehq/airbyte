@@ -180,7 +180,7 @@ public class DataSourceFactory {
     private int port = 5432;
     private String username;
     private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
+    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(5);
 
     private DataSourceBuilder() {}
 

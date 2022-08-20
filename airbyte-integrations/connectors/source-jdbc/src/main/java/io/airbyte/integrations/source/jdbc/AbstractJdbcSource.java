@@ -17,10 +17,15 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.SSL_MODE;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -39,11 +44,14 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.net.URI;
+import java.nio.file.FileSystem;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,6 +67,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -319,7 +329,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
     return database;
   }
 
@@ -381,4 +390,96 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     dataSources.clear();
   }
 
+  public static final List<String> SSL_PARAMETERS = List.of(
+      "useSSL=true",
+      "requireSSL=true");
+  public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
+  public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
+  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
+  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
+  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
+  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
+  public static final String PARAM_MODE = "mode";
+  FileSystem inMemFS;
+  URI caCertKeyStoreUri;
+  Pair<URI, String> clientCertKeyStorePair;
+
+  protected enum SslMode {
+    DISABLED("disable", "DISABLED"),
+    PREFERRED("preferred", "PREFERRED"),
+    REQUIRED("required", "REQUIRED"),
+    VERIFY_CA("verify_ca", "VERIFY_CA"),
+    VERIFY_IDENTITY("verify_identity", "VERIFY_IDENTITY");
+
+    public final String spec;
+    public final String jdbc;
+
+    SslMode(final String spec, final String jdbc) {
+      this.spec = spec;
+      this.jdbc = jdbc;
+    }
+
+    public static Optional<SslMode> bySpec(final String spec) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.spec.equals(spec))
+          .findFirst();
+    }
+
+    public static Optional<SslMode> byJdbc(final String jdbc) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.jdbc.equals(jdbc))
+          .findFirst();
+    }
+
+  }
+
+  public Map<String, String> parseSSLConfig(final JsonNode config) {
+    LOGGER.info("*** config: {}", config);
+    final Map<String, String> additionalParameters = new HashMap<>();
+    // assume ssl if not explicitly mentioned.
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
+        final String mode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
+        additionalParameters.put(SSL_MODE,
+            SslMode.bySpec(mode).orElseThrow(IllegalArgumentException::new).jdbc); //TODO: add text to exception
+
+        if (Objects.isNull(inMemFS)) {
+          inMemFS = Jimfs.newFileSystem(Configuration.unix());
+        }
+
+        if (Objects.isNull(caCertKeyStoreUri)) {
+          caCertKeyStoreUri = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config, inMemFS);
+        }
+
+        if (Objects.nonNull(caCertKeyStoreUri)) {
+          LOGGER.info("*** uri for ca cert keystore: {}", caCertKeyStoreUri.toString());
+          additionalParameters.put(TRUST_KEY_STORE_URL, caCertKeyStoreUri.toString());
+        }
+
+        if (Objects.isNull(clientCertKeyStorePair)) {
+          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config, inMemFS);
+        }
+
+        if (Objects.nonNull(clientCertKeyStorePair)) {
+          LOGGER.info("*** uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
+          additionalParameters.putAll(Map.of(
+              CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toString(),
+              CLIENT_KEY_STORE_PASS,clientCertKeyStorePair.getRight(),
+              CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+        }
+      } else {
+        additionalParameters.put(SSL_MODE, SslMode.DISABLED.jdbc);
+      }
+    }
+    LOGGER.info("*** additional params: {}", additionalParameters);
+    return additionalParameters;
+  }
+
+  public String sslConnection(final Map<String, String> sslParams) {
+    return sslParams.entrySet()
+        .stream()
+        .map(entry -> entry.getKey()+ "=" + entry.getValue())
+        .collect(Collectors.joining("&"));
+  }
 }

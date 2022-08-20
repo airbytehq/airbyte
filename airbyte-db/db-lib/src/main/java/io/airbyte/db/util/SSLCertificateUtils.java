@@ -104,7 +104,7 @@ public class SSLCertificateUtils {
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     final KeyStore keyStore = KeyStore.getInstance(PKCS_12);
     keyStore.load(null);
-    keyStore.setKeyEntry(KEYSTORE_ENTRY_PREFIX, key, null, new Certificate[] {cert});
+    keyStore.setKeyEntry(KEYSTORE_ENTRY_PREFIX, key, keyStorePassword.toCharArray(), new Certificate[] {cert});
     return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory);
   }
 
@@ -125,7 +125,8 @@ public class SSLCertificateUtils {
 
     Files.write(pkcs1Key, keyString.getBytes(StandardCharsets.UTF_8));
     runProcess(
-        "openssl pkcs8 -topk8 -inform PEM -outform DER -in " + pkcs1Key.toAbsolutePath() + " -out " + pkcs8Key.toAbsolutePath() + " -nocrypt",
+        "openssl pkcs8 -topk8 -inform PEM -outform DER -in " + pkcs1Key.toAbsolutePath() + " -out " + pkcs8Key.toAbsolutePath()
+            + " -nocrypt -passout pass:" + keyStorePassword,
         Runtime.getRuntime());
 
     final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Files.readAllBytes(pkcs8Key));
