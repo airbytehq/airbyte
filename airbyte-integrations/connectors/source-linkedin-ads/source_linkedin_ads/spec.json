@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/linkedin-ads",
+  "documentationUrl": "https://go.estuary.dev/TQRAbs",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linkedin Ads Spec",
@@ -54,7 +54,7 @@
               "access_token": {
                 "type": "string",
                 "title": "Access token",
-                "description": "The token value generated using the authentication code. See the <a href=\"https://docs.airbyte.com/integrations/sources/linkedin-ads#authentication\">docs</a> to obtain yours.",
+                "description": "The token value generated using the authentication code. See the doc on how to obtain yours: https://go.estuary.dev/sLJLUX",
                 "airbyte_secret": true
               }
             }
@@ -71,7 +71,7 @@
       "account_ids": {
         "title": "Account IDs (Optional)",
         "type": "array",
-        "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.",
+        "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the Linkedin Ads docs for more info: https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en",
         "items": {
           "type": "integer"
         },
