@@ -174,19 +174,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+    GoogleCredentials credentials = null;
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
-      return GoogleCredentials.getApplicationDefault();
+      credentials = GoogleCredentials.getApplicationDefault();
+    } else {
+      // The JSON credential can either be a raw JSON object, or a serialized JSON object.
+      final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
+          ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
+          : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+      credentials = GoogleCredentials.fromStream(
+          new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
     }
 
-    // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    GoogleCredentials credentials = GoogleCredentials.fromStream(
-        new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    
     if (config.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)){
       return ImpersonatedCredentials.create(
         credentials, 
