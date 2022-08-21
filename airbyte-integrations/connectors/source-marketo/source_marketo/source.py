@@ -83,7 +83,7 @@ class IncrementalMarketoStream(MarketoStream):
         during the parsing.
         """
 
-        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
+        if record[self.cursor_field] >= (stream_state or {}).get(self.cursor_field, self.start_date):
             yield record
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -134,6 +134,11 @@ class IncrementalMarketoStream(MarketoStream):
             start_date = end_date_slice
 
         return date_slices
+
+
+class SemiIncrementalMarketoStream(IncrementalMarketoStream):
+    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        return [None]
 
 
 class MarketoExportBase(IncrementalMarketoStream):
@@ -459,14 +464,14 @@ class Programs(IncrementalMarketoStream):
             yield record
 
 
-class Campaigns(IncrementalMarketoStream):
+class Campaigns(SemiIncrementalMarketoStream):
     """
     Return list of all campaigns.
     API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
     """
 
 
-class Lists(IncrementalMarketoStream):
+class Lists(SemiIncrementalMarketoStream):
     """
     Return list of all lists.
     API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
