@@ -6,18 +6,11 @@
     "type": "object",
     "required": [
       "developer_token",
-      "client_id",
-      "refresh_token",
+      "credentials",
       "reports_start_date"
     ],
     "additionalProperties": true,
     "properties": {
-      "x-oauth2-provider": "microsoft",
-      "auth_method": {
-        "type": "string",
-        "const": "oauth2.0",
-        "default": "oauth2.0"
-      },
       "tenant_id": {
         "type": "string",
         "title": "Tenant ID",
@@ -26,27 +19,13 @@
         "default": "common",
         "order": 0
       },
-      "client_id": {
+      "reports_start_date": {
         "type": "string",
-        "title": "Client ID",
-        "description": "The Client ID of your Microsoft Advertising developer application.",
-        "airbyte_secret": true,
-        "order": 1
-      },
-      "client_secret": {
-        "type": "string",
-        "title": "Client Secret",
-        "description": "The Client Secret of your Microsoft Advertising developer application.",
-        "default": "",
-        "airbyte_secret": true,
-        "order": 2
-      },
-      "refresh_token": {
-        "type": "string",
-        "title": "Refresh Token",
-        "description": "Refresh Token to renew the expired Access Token.",
-        "airbyte_secret": true,
-        "order": 3
+        "title": "Reports replication start date",
+        "format": "date",
+        "default": "2020-01-01",
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "order": 5
       },
       "developer_token": {
         "type": "string",
@@ -55,13 +34,46 @@
         "airbyte_secret": true,
         "order": 4
       },
-      "reports_start_date": {
-        "type": "string",
-        "title": "Reports replication start date",
-        "format": "date",
-        "default": "2020-01-01",
-        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
-        "order": 5
+      "credentials": {
+        "type": "object",
+        "description": "",
+        "x-oauth2-provider": "microsoft",
+        "title": "Microsoft Credentials",
+        "required": [
+          "client_id",
+          "client_secret",
+          "refresh_token",
+          "auth-method"
+        ],
+        "properties": {
+          "auth_method": {
+            "type": "string",
+            "const": "oauth2.0",
+            "default": "oauth2.0"
+        },
+          "client_id": {
+            "type": "string",
+            "title": "Client ID",
+            "description": "The Client ID of your Microsoft Advertising developer application.",
+            "airbyte_secret": true,
+            "order": 1
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "The Client Secret of your Microsoft Advertising developer application.",
+            "default": "",
+            "airbyte_secret": true,
+            "order": 2
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token",
+            "description": "Refresh Token to renew the expired Access Token.",
+            "airbyte_secret": true,
+            "order": 3
+          }
+        }
       }
     }
   },
