@@ -71,7 +71,7 @@
                 "type": "string",
                 "airbyte_secret": "true"
               },
-              "refresh_token": 
+              "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
                 "airbyte_secret": "true"
