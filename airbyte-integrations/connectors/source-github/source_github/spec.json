@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GitHub Source Spec",
     "type": "object",
-    "required": ["start_date", "repository"],
+    "required": ["start_date", "repository", "credentials"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
@@ -57,7 +57,6 @@
               "option_title": {
                 "type": "string",
                 "const": "OAuth Credentials",
-                "order": 0,
                 "default": "OAuth Credentials"
               },
               "access_token": {
