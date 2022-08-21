@@ -33,7 +33,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
 5. Add **Okta-Domain**
-6. Add **Start date**
+6. Add **Start date** (defaults to 7 days if no date is included)
 7. Choose the method of authentication
 8. If you select Token authentication - fill the field  **Personal Api Token** 
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
