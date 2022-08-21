@@ -121,7 +121,7 @@ HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 
 ## Tutorials
 
-Now that you have set up the HubSpot source connector, check out the following HubSpot tutorial:
+Now that you have set up the Hubspot source connector, check out the following Hubspot tutorial:
 
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
