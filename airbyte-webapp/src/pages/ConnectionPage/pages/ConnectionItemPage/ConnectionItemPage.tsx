@@ -2,13 +2,13 @@ import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
@@ -26,20 +26,18 @@ const ConnectionItemPage: React.FC = () => {
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useGetConnection(connectionId);
   const [isStatusUpdating, setStatusUpdating] = useState(false);
+  const analyticsService = useAnalyticsService();
 
   const { source, destination } = connection;
 
-  const frequency = getFrequencyConfig(connection.schedule);
-
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
-
   const onAfterSaveSchema = () => {
-    trackSourceAction("Edit schema", TrackActionType.SCHEMA, {
+    analyticsService.track(Namespace.CONNECTION, Action.EDIT_SCHEMA, {
+      actionDescription: "Connection saved with catalog changes",
       connector_source: source.sourceName,
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.type,
+      frequency: getFrequencyType(connection.schedule),
     });
   };
 
@@ -70,9 +68,6 @@ const ConnectionItemPage: React.FC = () => {
           onStatusUpdating={setStatusUpdating}
         />
       }
-      error={
-        isConnectionDeleted ? <AlertBanner alertType="connectionDeleted" id="connection.connectionDeletedView" /> : null
-      }
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
@@ -90,7 +85,7 @@ const ConnectionItemPage: React.FC = () => {
           />
           <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connectionId={connectionId} />}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
           />
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>

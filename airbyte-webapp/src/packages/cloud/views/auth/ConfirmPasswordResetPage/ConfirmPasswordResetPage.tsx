@@ -26,7 +26,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>
+      <FormTitle>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
 

@@ -50,7 +50,8 @@ if [ -n "$CI" ]; then
     describe_nodes;
     describe_pods;
   }
-  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
+# Uncomment for debugging. Warning, this is verbose.
+#  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
@@ -76,4 +77,4 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true CONTAINER_ORCHESTRATOR=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan

@@ -62,8 +62,8 @@
         "type": "object",
         "oneOf": [
           {
-            "type": "object",
             "title": "OAuth2.0",
+            "type": "object",
             "order": 0,
             "required": ["access_token", "refresh_token"],
             "properties": {
@@ -101,10 +101,38 @@
             }
           },
           {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase (Optional)",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
             "title": "Username and Password",
             "type": "object",
             "required": ["password"],
-            "order": 1,
+            "order": 2,
             "properties": {
               "password": {
                 "description": "Enter the password associated with the username.",
@@ -146,7 +174,6 @@
           },
           {
             "title": "[Recommended] Internal Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
@@ -161,7 +188,6 @@
           },
           {
             "title": "AWS S3 Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -281,12 +307,24 @@
                     }
                   }
                 ]
+              },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern (Optional)",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 7
               }
             }
           },
           {
             "title": "Google Cloud Storage Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -329,7 +367,6 @@
           },
           {
             "title": "Azure Blob Storage Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -400,7 +437,6 @@
       },
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "access_token": {
             "type": "string",
@@ -414,7 +450,6 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
@@ -426,7 +461,6 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string",

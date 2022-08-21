@@ -51,4 +51,9 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
+  @Override
+  public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
+    throw new RuntimeException("Snapshot of individual tables currently not supported in MySQL");
+  }
+
 }

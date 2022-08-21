@@ -23,6 +23,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -33,6 +34,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -132,17 +134,18 @@ class PostgresSourceTest {
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
         ctx.fetch(
             "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
         return null;
@@ -156,9 +159,9 @@ class PostgresSourceTest {
         password,
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -168,17 +171,29 @@ class PostgresSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
+        .build());
+  }
+
+  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -186,19 +201,19 @@ class PostgresSourceTest {
         .put("schemas", List.of(SCHEMA_NAME))
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
-        .put("ssl", false)
+        .put("ssl", true)
         .build());
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", user)
-        .put("password", password)
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, user)
+        .put(JdbcUtils.PASSWORD_KEY, password)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -410,9 +425,9 @@ class PostgresSourceTest {
         });
       }
 
-      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      Set<String> expectedVisibleNames = Sets.newHashSet(
+      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
           "table_granted_by_role_with_options",
           "test_table_granted_directly",
@@ -447,13 +462,29 @@ class PostgresSourceTest {
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithoutSsl() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, Collections.emptyMap());
+  };
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithSsl() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, ImmutableMap.of(
+        "ssl", "true",
+        "sslmode", "require"));
+  };
 
   @Test
   void testGetUsername() {
@@ -461,14 +492,14 @@ class PostgresSourceTest {
 
     // normal host
     final JsonNode normalConfig = Jsons.jsonNode(Map.of(
-        "username", username,
-        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
+        JdbcUtils.USERNAME_KEY, username,
+        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(normalConfig));
 
     // azure host
     final JsonNode azureConfig = Jsons.jsonNode(Map.of(
-        "username", username + "@airbyte",
-        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
+        JdbcUtils.USERNAME_KEY, username + "@airbyte",
+        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 

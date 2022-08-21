@@ -7,7 +7,7 @@ import { ThemeProvider } from "styled-components";
 
 import { ConfigContext, defaultConfig } from "config";
 import { ServicesProvider } from "core/servicesProvider";
-import { FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
 interface WrapperProps {
@@ -24,7 +24,7 @@ export async function render<
     return (
       <TestWrapper>
         <ConfigContext.Provider value={{ config: defaultConfig }}>
-          <FeatureService>
+          <FeatureService features={defaultFeatures}>
             <ServicesProvider>
               <QueryClientProvider client={queryClient}>
                 <MemoryRouter>
@@ -47,7 +47,7 @@ export async function render<
 }
 export const TestWrapper: React.FC = ({ children }) => (
   <ThemeProvider theme={{}}>
-    <IntlProvider locale="en" messages={en}>
+    <IntlProvider locale="en" messages={en} onError={() => null}>
       {children}
     </IntlProvider>
   </ThemeProvider>

@@ -141,6 +141,11 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.46  | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730) | Validate input organizations and repositories                                                              |
+| 0.2.45  | 2022-08-11 | [15420](https://github.com/airbytehq/airbyte/pull/15420) | "User" object can be "null"                                                                                |
+| 0.2.44  | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795) | Use GraphQL for `pull_request_comment_reactions` stream                                                    |
+| 0.2.43  | 2022-07-26 | [15049](https://github.com/airbytehq/airbyte/pull/15049) | Bugfix schemas for streams `deployments`, `workflow_runs`, `teams`                                         |
+| 0.2.42  | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613) | Improve schema for stream `pull_request_commits` added "null"                                              |
 | 0.2.41  | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376) | Add Retry for GraphQL API Resource limitations                                                             |
 | 0.2.40  | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338) | Revert: "Rename field `mergeable` to `is_mergeable`"                                                       |
 | 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable`                                                                 |

@@ -4,8 +4,10 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox } from "components";
+import { CheckBox, H5 } from "components";
+import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { TooltipLearnMoreLink } from "components/ToolTip/TooltipLearnMoreLink";
 
 import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -55,21 +57,10 @@ const NextLineText = styled.div`
   margin-top: 10px;
 `;
 
-const LearnMoreLink = styled.a`
-  opacity: 0.6;
-  display: block;
-  margin-top: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-  text-decoration: none;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  isSubmitting: boolean;
   mode?: ConnectionFormMode;
 }
 
@@ -107,9 +98,7 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
         <FormattedMessage id="form.syncMode" />
         <InformationToolTip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
-            <FormattedMessage id="form.entrypoint.docs" />
-          </LearnMoreLink>
+          <TooltipLearnMoreLink url={config.links.syncModeLink} />
         </InformationToolTip>
       </Cell>
       <Cell lighter>
@@ -172,6 +161,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   additionalControl,
   field,
   form,
+  isSubmitting,
   mode,
 }) => {
   const { value: streams, name: fieldName } = field;
@@ -209,28 +199,34 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <HeaderBlock>
-        {mode !== "readonly" ? (
-          <>
-            <FormattedMessage id="form.dataSync" />
-            {additionalControl}
-          </>
-        ) : (
-          <FormattedMessage id="form.dataSync.readonly" />
-        )}
-      </HeaderBlock>
-      {mode !== "readonly" && <Search onSearch={setSearchString} />}
-      <CatalogHeader mode={mode} />
-      <CatalogSubheader mode={mode} />
-      <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
-      <TreeViewContainer mode={mode}>
-        <CatalogTree
-          streams={filteredStreams}
-          onChangeStream={onChangeStream}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-          mode={mode}
-        />
-      </TreeViewContainer>
+      <LoadingBackdrop loading={isSubmitting}>
+        <HeaderBlock>
+          {mode !== "readonly" ? (
+            <>
+              <H5 bold>
+                <FormattedMessage id="form.dataSync" />
+              </H5>
+              {additionalControl}
+            </>
+          ) : (
+            <H5 bold>
+              <FormattedMessage id="form.dataSync.readonly" />
+            </H5>
+          )}
+        </HeaderBlock>
+        {mode !== "readonly" && <Search onSearch={setSearchString} />}
+        <CatalogHeader mode={mode} />
+        <CatalogSubheader mode={mode} />
+        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
+        <TreeViewContainer mode={mode}>
+          <CatalogTree
+            streams={filteredStreams}
+            onChangeStream={onChangeStream}
+            destinationSupportedSyncModes={destinationSupportedSyncModes}
+            mode={mode}
+          />
+        </TreeViewContainer>
+      </LoadingBackdrop>
     </BatchEditProvider>
   );
 };

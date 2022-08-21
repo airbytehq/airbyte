@@ -11,7 +11,8 @@
         "default": {},
         "order": 0,
         "type": "object",
-        "oneOf": [{
+        "oneOf": [
+          {
             "title": "OAuth2.0",
             "type": "object",
             "properties": {
@@ -41,7 +42,8 @@
               }
             },
             "required": ["app_id", "secret", "access_token"]
-          }, {
+          },
+          {
             "title": "Sandbox Access Token",
             "type": "object",
             "properties": {

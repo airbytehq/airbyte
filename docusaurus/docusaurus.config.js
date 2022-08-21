@@ -41,6 +41,7 @@ const config = {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
                         },
+
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
@@ -60,7 +61,7 @@ const config = {
                     sidebarCollapsible: true,
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
-                    path: '../docs'
+                    path: '../docs',
                 },
                 blog: false,
                 theme: {

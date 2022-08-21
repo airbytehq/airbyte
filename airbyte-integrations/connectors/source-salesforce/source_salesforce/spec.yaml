@@ -37,7 +37,7 @@ connectionSpecification:
       title: Refresh Token
       description: >-
         Enter your application's <a
-        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account. 
+        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
       type: string
       airbyte_secret: true
       order: 4
