@@ -44,6 +44,9 @@ for workdir in "${projectDir[@]}"
         ;;
     esac
 
+    echo "Publishing airbyte/$artifactName..."
+    sleep 1
+
     docker buildx create --use --name $artifactName &&      \
     docker buildx build -t "airbyte/$artifactName:$VERSION" \
       --platform linux/amd64,linux/arm64                    \
