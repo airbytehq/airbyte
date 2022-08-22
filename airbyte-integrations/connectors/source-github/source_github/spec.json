@@ -52,7 +52,7 @@
             "type": "object",
             "title": "OAuth",
             "x-oauth2-provider": "github",
-            "required": ["access_token", "option_title", "client_id", "refresh_token"],
+            "required": ["access_token", "option_title", "refresh_token"],
             "properties": {
               "option_title": {
                 "type": "string",
@@ -64,11 +64,6 @@
                 "title": "Access Token",
                 "description": "OAuth access token",
                 "airbyte_secret": true
-              },
-              "client_id": {
-                "title": "Client ID",
-                "type": "string",
-                "airbyte_secret": "true"
               },
               "refresh_token": {
                 "title": "Refresh Token",
@@ -105,6 +100,6 @@
     "accessTokenUrlTemplate": "https://github.com/login/oauth/access_token",
     "accessTokenBody": "{\"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
     "accessTokenHeaders": "{\"Accept\": \"application/json\"}",    
-    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\", \"scope\": \"/scope\", \"token_type\": \"/token_type\"}"
+    "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
   }
 }
