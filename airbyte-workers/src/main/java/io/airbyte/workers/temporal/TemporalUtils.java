@@ -69,7 +69,7 @@ public class TemporalUtils {
       .setInitialInterval(Duration.ofSeconds(configs.getInitialDelayBetweenActivityAttemptsSeconds()))
       .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
-  private static final double REPORT_INTERVAL_SECONDS = 10.0;
+  private static final double REPORT_INTERVAL_SECONDS = 120.0;
 
   public static WorkflowServiceStubs createTemporalService(final WorkflowServiceStubsOptions options, final String namespace) {
     return getTemporalClientWhenConnected(

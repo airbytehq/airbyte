@@ -76,8 +76,23 @@ spec:
               name: {{ .Release.Name }}-airbyte-env
               key: INTERNAL_API_HOST
         {{- end }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: webapp-secrets
+              key: {{ $k }}
+        {{- end }}
+        {{- end }}
+
+        # Values from env
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
         {{- end }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
@@ -114,10 +129,19 @@ spec:
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
+        {{- if .Values.global.extraVolumeMounts }}
+  {{ toYaml .Values.global.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       {{- if .Values.extraContainers }}
-      {{ toyaml .Values.extraInitContainers | indent 8 }}
+      {{ toYaml .Values.extraContainers | indent 8 }}
+      {{- end }}
+      {{- if .Values.global.extraConrainers }}
+      {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.extraVolumes }}
+{{ toYaml .Values.global.extraVolumes | nindent 6 }}
       {{- end }}

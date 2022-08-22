@@ -130,13 +130,13 @@ public class OracleDestinationTest {
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-            "host", "localhost",
-            "port", 1773,
-            "sid", "ORCL",
-            "database", "db",
-            "username", "username",
-            "password", "verysecure",
-            "jdbc_url_params", extraParam));
+        "host", "localhost",
+        "port", 1773,
+        "sid", "ORCL",
+        "database", "db",
+        "username", "username",
+        "password", "verysecure",
+        "jdbc_url_params", extraParam));
   }
 
 }

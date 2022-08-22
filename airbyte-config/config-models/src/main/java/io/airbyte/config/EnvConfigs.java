@@ -89,6 +89,8 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  public static final String DD_AGENT_HOST = "DD_AGENT_HOST";
+  public static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
@@ -97,9 +99,7 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
-  private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
-  private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
-
+  public static final String DD_CONSTANT_TAGS = "DD_CONSTANT_TAGS";
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
   public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
@@ -132,7 +132,7 @@ public class EnvConfigs implements Configs {
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
-  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
 
   // job-type-specific overrides
@@ -152,6 +152,11 @@ public class EnvConfigs implements Configs {
   static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -767,6 +772,26 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getNormalizationJobMainContainerCpuRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerCpuLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
   }
@@ -794,6 +819,15 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDDDogStatsDPort() {
     return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
+  }
+
+  @Override
+  public List<String> getDDConstantTags() {
+    final String tagsString = getEnvOrDefault(DD_CONSTANT_TAGS, "");
+    return Splitter.on(",")
+        .splitToStream(tagsString)
+        .filter(s -> !s.trim().isBlank())
+        .collect(Collectors.toList());
   }
 
   @Override
