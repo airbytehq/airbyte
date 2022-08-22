@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - airbyte-minio.yaml
   - bootloader.yaml
+  - cron.yaml
   - db.yaml
   - pod-sweeper.yaml
   - secret-gcs-log-creds.yaml
