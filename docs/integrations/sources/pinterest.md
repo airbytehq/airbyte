@@ -12,8 +12,8 @@ Please read [How to get your credentials](https://developers.pinterest.com/docs/
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **<Sources/Destinations>**. In the top-right corner, click **+new source/destination**.
-3. On the Set up the source page, enter the name for the Pinterest connector and select **Pinterest** from the <Source/Destination> type dropdown. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Pinterest connector and select **Pinterest** from the Source type dropdown. 
 4. Enter your `client_id`
 5. Enter your `client_secret`
 6. Enter your `refresh_token`
