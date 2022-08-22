@@ -33,6 +33,8 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
         self.file_path = InterpolatedString.create(self.file_path, options=options)
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        # todo: It is worth revisiting if we can replace file_path with just file_name if every schema is in the /schemas directory
+        # this would require that we find a creative solution to store or retrieve source_name in here since the files are mounted there
         json_schema_path = self._get_json_filepath()
         resource, schema_path = self.extract_resource_and_schema_path(json_schema_path)
         raw_json_file = pkgutil.get_data(resource, schema_path)
