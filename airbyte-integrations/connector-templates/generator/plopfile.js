@@ -24,21 +24,22 @@ ${additionalMessage || ""}
 }
 
 module.exports = function (plop) {
-  const docRoot = '../../../docs/integrations';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
-
-  const sourceAcceptanceTestFilesInputRoot = '../source_acceptance_test_files';
-
-  const pythonSourceInputRoot = '../source-python';
-  const singerSourceInputRoot = '../source-singer';
-  const genericSourceInputRoot = '../source-generic';
-  const genericJdbcSourceInputRoot = '../source-java-jdbc';
-  const httpApiInputRoot = '../source-python-http-api';
-  const lowCodeSourceInputRoot = '../source-configuration-based';
-  const javaDestinationInput = '../destination-java';
-  const pythonDestinationInputRoot = '../destination-python';
-
+  const docRoot = '../../../docs/integrations';
   const outputDir = '../../connectors';
+  const templateRoot = '..';
+
+  const sourceAcceptanceTestFilesInputRoot = `${templateRoot}/source_acceptance_test_files`;
+
+  const pythonSourceInputRoot = `${templateRoot}/source-python`;
+  const singerSourceInputRoot = `${templateRoot}/source-singer`;
+  const genericSourceInputRoot = `${templateRoot}/source-generic`;
+  const genericJdbcSourceInputRoot = `${templateRoot}/source-java-jdbc`;
+  const httpApiInputRoot = `${templateRoot}/source-python-http-api`;
+  const lowCodeSourceInputRoot = `${templateRoot}/source-configuration-based`;
+  const javaDestinationInput = `${templateRoot}/destination-java`;
+  const pythonDestinationInputRoot = `${templateRoot}/destination-python`;
+
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
@@ -50,7 +51,6 @@ module.exports = function (plop) {
   const sourceConnectorImageTag = 'dev'
   const defaultSpecPathFolderPrefix = 'source_'
   const specFileName = 'spec.yaml'
-
 
   plop.setHelper('capitalCase', function(name) {
     return capitalCase.capitalCase(name);
