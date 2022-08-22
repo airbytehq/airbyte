@@ -38,9 +38,24 @@ To build using Gradle, from the Airbyte repository root, run:
 ./gradlew :airbyte-integrations:connectors:source-wrike:build
 ```
 
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/wrike)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_wrike/spec.yaml` file.
+### Create credentials
+
+#### Generating access token
+
+First get a Wrike account, you can get a trial here: Register for trial: https://www.wrike.com/free-trial/
+
+To generate a token:
+
+1. Navigate to the ‘API apps’ section.
+2. Select the required application from the list.
+3. Click ‘Configure’.
+4. Click ‘Obtain token’ in the “Permanent access token” section.
+5. You will see a pop-up with a warning about using the permanent token, and after confirming, you will be able to copy and paste it into a secure storage (Wrike will not display it again). If your permanent token gets lost, you should generate a new one.
+
+
+### Configuration files
+
+Then create a file `secrets/config.json` conforming to the `source_wrike/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
