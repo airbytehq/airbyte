@@ -227,5 +227,6 @@ class CatalogDiffChecker(BaseDiffChecker):
 
     def check_if_cursor_field_was_changed(self, diff: DeepDiff):
         """Check if a default cursor field value was changed."""
-        if diff:
+        invalid_changes = {"values_changed", "iterable_item_added", "iterable_item_removed"}
+        if diff and set(diff.keys()).issubset(invalid_changes):
             self._raise_error("The value of 'default_cursor_field' was changed", diff)
