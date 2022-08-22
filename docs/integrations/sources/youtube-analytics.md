@@ -23,18 +23,18 @@ Youtube also generates historical data reports covering the 30-day period prior 
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **<Sources>**. In the top-right corner, click **+new source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
 4. Select `Authenticate your account`.
 5. Log in and Authorize to the Instagram account and click `Set up source`.
 
 ### For Airbyte OSS:
-2. In the left navigation bar, click **<Sources>**. In the top-right corner, click **+new source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
 4. Select `client_id`
 4. Select `client_secret`
 4. Select `refresh_token`
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Click `Set up source`.
 
 ## Supported sync modes
 
