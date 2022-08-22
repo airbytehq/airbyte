@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -14,14 +14,16 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "http://api.exchangeratesapi.io/"
     cursor_field = "date"
     primary_key = "date"
 
-    def __init__(self, base: str, start_date: datetime, **kwargs):
-        super().__init__(**kwargs)
-        self.base = base
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
+        super().__init__()
+        self.base = config["base"]
+        self.access_key = config["access_key"]
         self.start_date = start_date
+        self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -38,8 +40,8 @@ class ExchangeRates(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include the base currency as a query param so we do that in this method
-        return {"base": self.base}
+        # The api requires that we include access_key as a query param so we do that in this method
+        return {"access_key": self.access_key}
 
     def parse_response(
         self,
@@ -104,4 +106,4 @@ class SourcePythonHttpTutorial(AbstractSource):
         auth = NoAuth()
         # Parse the date from a string into a datetime object
         start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
-        return [ExchangeRates(authenticator=auth, base=config["base"], start_date=start_date)]
+        return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]

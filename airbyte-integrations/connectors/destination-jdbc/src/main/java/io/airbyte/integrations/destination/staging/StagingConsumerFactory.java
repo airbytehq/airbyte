@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -12,7 +12,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -59,7 +58,8 @@ public class StagingConsumerFactory {
                                        final NamingConventionTransformer namingResolver,
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog) {
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -68,7 +68,7 @@ public class StagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(database, stagingOperations, writeConfigs, catalog)),
-        onCloseFunction(database, stagingOperations, writeConfigs),
+        onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
         catalog,
         stagingOperations::isValidData);
   }
@@ -124,13 +124,9 @@ public class StagingConsumerFactory {
         LOGGER.info("Preparing staging area in destination started for schema {} stream {}: tmp table: {}, stage: {}",
             schema, stream, tmpTable, stagingPath);
 
-        AirbyteSentry.executeWithTracing("PrepareStreamStage",
-            () -> {
-              stagingOperations.createSchemaIfNotExists(database, schema);
-              stagingOperations.createTableIfNotExists(database, schema, tmpTable);
-              stagingOperations.createStageIfNotExists(database, stageName);
-            },
-            Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stagingPath));
+        stagingOperations.createSchemaIfNotExists(database, schema);
+        stagingOperations.createTableIfNotExists(database, schema, tmpTable);
+        stagingOperations.createStageIfNotExists(database, stageName);
 
         LOGGER.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
@@ -177,7 +173,8 @@ public class StagingConsumerFactory {
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                           final StagingOperations stagingOperations,
-                                          final List<WriteConfig> writeConfigs) {
+                                          final List<WriteConfig> writeConfigs,
+                                          final boolean purgeStagingData) {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
@@ -202,7 +199,6 @@ public class StagingConsumerFactory {
             throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
           }
           writeConfig.clearStagedFiles();
-
           stagingOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
             case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schemaName, dstTableName));
@@ -211,7 +207,7 @@ public class StagingConsumerFactory {
           }
           queryList.add(stagingOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
         }
-
+        stagingOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Executing finalization of tables.");
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
@@ -224,10 +220,12 @@ public class StagingConsumerFactory {
             tmpTableName);
 
         stagingOperations.dropTableIfExists(database, schemaName, tmpTableName);
-        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-        LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-            stageName);
-        stagingOperations.dropStageIfExists(database, stageName);
+        if (purgeStagingData) {
+          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+          LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
+              stageName);
+          stagingOperations.dropStageIfExists(database, stageName);
+        }
       }
       LOGGER.info("Cleaning up destination completed.");
     };

@@ -33,8 +33,6 @@
               "credentials": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "access_token": {
@@ -54,8 +52,6 @@
               "credentials": {
                 "type": "string",
                 "const": "api_token",
-                "enum": ["api_token"],
-                "default": "api_token",
                 "order": 0
               },
               "email": {

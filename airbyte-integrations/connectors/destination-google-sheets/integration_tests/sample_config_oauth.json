@@ -1,0 +1,8 @@
+{
+  "spreadsheet_id": "https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit#gid=0",
+  "credentials": {
+    "client_id": "YOUR_OAUTH_CLIENT_ID",
+    "client_secret": "YOUR_OAUTH_CLIENT_SECRET",
+    "refresh_token": "YOUR_REFRESH_TOKEN"
+  }
+}

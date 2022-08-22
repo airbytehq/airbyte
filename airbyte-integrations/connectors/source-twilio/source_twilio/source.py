@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -61,7 +61,11 @@ class SourceTwilio(AbstractSource):
             ),
         )
         full_refresh_stream_kwargs = {"authenticator": auth}
-        incremental_stream_kwargs = {"authenticator": auth, "start_date": config["start_date"]}
+        incremental_stream_kwargs = {
+            "authenticator": auth,
+            "start_date": config["start_date"],
+            "lookback_window": config["lookback_window"],
+        }
 
         streams = [
             Accounts(**full_refresh_stream_kwargs),

@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { components, SingleValueProps, OptionTypeBase } from "react-select";
+import styled from "styled-components";
 
 import { IDataItem } from "./Option";
 import Text from "./Text";

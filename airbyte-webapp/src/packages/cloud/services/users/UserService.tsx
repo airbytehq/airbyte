@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
 import { UserService } from "packages/cloud/lib/domain/users";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useConfig } from "packages/cloud/services/config";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
 export function useGetUserService(): UserService {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();

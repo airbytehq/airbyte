@@ -1,8 +1,10 @@
 # Local JSON
 
-{% hint style="danger" %}
+:::danger
+
 This destination is meant to be used on a local workstation and won't work on Kubernetes
-{% endhint %}
+
+:::
 
 ## Overview
 
@@ -63,3 +65,8 @@ docker cp airbyte-scheduler:/tmp/airbyte_local/{destination_path}/{filename}.jso
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../../operator-guides/locating-files-local-destination.md) for an alternative approach.
 
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.11 | 2022-02-14 | [14641](https://github.com/airbytehq/airbyte/pull/14641) | Include lifecycle management |

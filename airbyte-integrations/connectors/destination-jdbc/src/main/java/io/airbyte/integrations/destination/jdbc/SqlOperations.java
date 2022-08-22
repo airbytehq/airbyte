@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -8,10 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
 // we can narrow the surface area.
 public interface SqlOperations {
+
+  Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   /**
    * Create a schema with provided name if it does not already exist.
@@ -27,7 +31,6 @@ public interface SqlOperations {
    *
    * @param database Database that the connector is syncing
    * @param schemaName Name of schema.
-   *
    * @return true if the schema exists in destination database, false if it doesn't
    */
   default boolean isSchemaExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -117,18 +120,21 @@ public interface SqlOperations {
    */
   boolean isSchemaRequired();
 
-
   /**
-   * The method is responsible for executing some specific DB Engine logic in onStart method.
-   * We can override this method to execute specific logic e.g. to handle any necessary migrations in the destination, etc.
-   *
-   * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
-   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
+   * The method is responsible for executing some specific DB Engine logic in onClose method. We can
+   * override this method to execute specific logic e.g. to handle any necessary migrations in the
+   * destination, etc.
+   * <p>
+   * In next example you can see how migration from VARCHAR to SUPER column is handled for the
+   * Redshift destination:
    *
    * @param database - Database that the connector is interacting with
-   * @param writeConfigsList - List of write configs
+   * @param writeConfigs - schemas and tables (streams) will be discovered
+   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
    */
-  default void onDestinationStartOperations(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
+  default void onDestinationCloseOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigs) {
     // do nothing
+    LOGGER.info("No onDestinationCloseOperations required for this destination.");
   }
+
 }

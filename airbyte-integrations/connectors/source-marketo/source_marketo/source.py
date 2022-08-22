@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -99,7 +99,7 @@ class IncrementalMarketoStream(MarketoStream):
             )
         }
 
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
@@ -172,7 +172,9 @@ class MarketoExportBase(IncrementalMarketoStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(
+        self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
+    ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
         for date_slice in date_slices:
@@ -263,6 +265,16 @@ class MarketoExportCreate(MarketoStream):
 
     def path(self, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/create.json"
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429 or 500 <= response.status_code < 600:
+            return True
+        record = next(self.parse_response(response, {}))
+        status, export_id = record.get("status", "").lower(), record.get("exportId")
+        if status != "created" or not export_id:
+            self.logger.warning(f"Failed to create export job! Status is {status}!")
+            return True
+        return False
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         params = {"format": "CSV"}
@@ -376,7 +388,7 @@ class Activities(MarketoExportBase):
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "properties": properties,
         }
 

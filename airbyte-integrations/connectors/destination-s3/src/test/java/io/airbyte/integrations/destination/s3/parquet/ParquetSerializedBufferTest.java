@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
 
+import static io.airbyte.integrations.destination.s3.util.JavaProcessRunner.runProcess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,7 +40,8 @@ public class ParquetSerializedBufferTest {
       "field1", 10000,
       "column2", "string value",
       "another field", true,
-      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
+      "nested_column", Map.of("array_column", List.of(1, 2, 3)),
+      "datetime_with_timezone", "2022-05-12T15:35:44.192950Z"));
   private static final String STREAM = "stream1";
   private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
   private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
@@ -50,7 +52,8 @@ public class ParquetSerializedBufferTest {
       Field.of("field1", JsonSchemaType.NUMBER),
       Field.of("column2", JsonSchemaType.STRING),
       Field.of("another field", JsonSchemaType.BOOLEAN),
-      Field.of("nested_column", JsonSchemaType.OBJECT));
+      Field.of("nested_column", JsonSchemaType.OBJECT),
+      Field.of("datetime_with_timezone", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
 
   @Test
@@ -60,7 +63,7 @@ public class ParquetSerializedBufferTest {
             "format_type", "parquet"),
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
-    runTest(195L, 205L, config, getExpectedString());
+    runTest(195L, 215L, config, getExpectedString());
   }
 
   @Test
@@ -72,7 +75,52 @@ public class ParquetSerializedBufferTest {
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
     // TODO: Compressed parquet is the same size as uncompressed??
-    runTest(195L, 205L, config, getExpectedString());
+    runTest(195L, 215L, config, getExpectedString());
+  }
+
+  private static String resolveArchitecture() {
+    return System.getProperty("os.name").replace(' ', '_') + "-" + System.getProperty("os.arch") + "-" + System.getProperty("sun.arch.data.model");
+  }
+
+  @Test
+  public void testLzoCompressedParquet() throws Exception {
+    final String currentDir = System.getProperty("user.dir");
+    Runtime runtime = Runtime.getRuntime();
+    final String architecture = resolveArchitecture();
+    if (architecture.equals("Linux-amd64-64") || architecture.equals("Linux-x86_64-64")) {
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev -y");
+      runLzoParquetTest();
+    } else if (architecture.equals("Linux-aarch64-64") || architecture.equals("Linux-arm64-64")) {
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev " +
+          "wget curl unzip zip build-essential maven git -y");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "wget http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /usr/local/tmp");
+      runProcess("/usr/local/tmp/", runtime, "/bin/sh", "-c", "tar xvfz lzo-2.10.tar.gz");
+      runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "./configure --enable-shared --prefix /usr/local/lzo-2.10");
+      runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "make && make install");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "git clone https://github.com/twitter/hadoop-lzo.git /usr/lib/hadoop/lib/hadoop-lzo/");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "curl -s https://get.sdkman.io | bash");
+      runProcess(currentDir, runtime, "/bin/bash", "-c", "source /root/.sdkman/bin/sdkman-init.sh;" +
+          " sdk install java 8.0.342-librca;" +
+          " sdk use java 8.0.342-librca;" +
+          " cd /usr/lib/hadoop/lib/hadoop-lzo/ " +
+          "&& C_INCLUDE_PATH=/usr/local/lzo-2.10/include " +
+          "LIBRARY_PATH=/usr/local/lzo-2.10/lib mvn clean package");
+      runProcess(currentDir, runtime, "/bin/sh", "-c",
+          "find /usr/lib/hadoop/lib/hadoop-lzo/ -name '*libgplcompression*' -exec cp {} /usr/lib/ \\;");
+      runLzoParquetTest();
+    }
+  }
+
+  private void runLzoParquetTest() throws Exception {
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+        "format", Map.of(
+            "format_type", "parquet",
+            "compression_codec", "LZO"),
+        "s3_bucket_name", "test",
+        "s3_bucket_region", "us-east-2")));
+    runTest(195L, 215L, config, getExpectedString());
   }
 
   private static String getExpectedString() {
@@ -80,6 +128,7 @@ public class ParquetSerializedBufferTest {
         + "\"field1\": 10000.0, \"another_field\": true, "
         + "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, "
         + "\"column2\": \"string value\", "
+        + "\"datetime_with_timezone\": 1652369744192000, "
         + "\"_airbyte_additional_properties\": null}";
   }
 

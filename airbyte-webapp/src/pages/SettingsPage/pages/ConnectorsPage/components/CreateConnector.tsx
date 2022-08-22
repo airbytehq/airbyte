@@ -5,21 +5,21 @@ import { Button } from "components";
 
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import CreateConnectorModal from "./CreateConnectorModal";
 
-type IProps = {
+interface IProps {
   type: string;
-};
+}
 
-type ICreateProps = {
+interface ICreateProps {
   name: string;
   documentationUrl: string;
   dockerImageTag: string;
   dockerRepository: string;
-};
+}
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
@@ -30,7 +30,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setErrorMessage("");
   };
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
 

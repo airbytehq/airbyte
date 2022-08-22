@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -14,7 +14,7 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
-from facebook_business.api import FacebookAdsApiBatch
+from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 
@@ -299,6 +299,18 @@ class TestInsightAsyncJob:
         assert result[0].export_all_data() == {"some_data": 123}
         assert result[1].export_all_data() == {"some_data": 77}
 
+    def test_get_result_retried(self, mocker, job, api):
+        job.start()
+        api.call().json.return_value = {"data": [{"some_data": 123}, {"some_data": 77}]}
+        ads_insights = AdsInsights(api=api)
+        ads_insights._set_data({"items": [{"some_data": 123}, {"some_data": 77}]})
+        with mocker.patch(
+            "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
+            side_effect=[FacebookBadObjectError("Bad data to set object data"), ads_insights],
+        ):
+            # in case this is not retried, an error will be raised
+            job.get_result()
+
     def test_get_result_when_job_is_not_started(self, job):
         with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
             job.get_result()
@@ -336,7 +348,7 @@ class TestInsightAsyncJob:
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(api=api, edge_object=Ad(1), interval=interval, params=params)
 
-        with pytest.raises(RuntimeError, match="The job is already splitted to the smallest size."):
+        with pytest.raises(ValueError, match="The job is already splitted to the smallest size."):
             job.split_job()
 
 
@@ -414,6 +426,20 @@ class TestParentAsyncJob:
                 job.split_job.assert_called_once()
             else:
                 job.split_job.assert_not_called()
+
+    def test_split_job_smallest(self, parent_job, grouped_jobs):
+        grouped_jobs[0].failed = True
+        grouped_jobs[0].split_job.side_effect = ValueError("Mocking smallest size")
+
+        # arbitrarily testing this X times, the max attempts is handled by async_job_manager rather than the job itself.
+        count = 0
+        while count < 10:
+            split_jobs = parent_job.split_job()
+            assert len(split_jobs) == len(
+                grouped_jobs
+            ), "attempted to split job at smallest size so should just restart job meaning same no. of jobs"
+            grouped_jobs[0].attempt_number += 1
+            count += 1
 
     def test_str(self, parent_job, grouped_jobs):
         assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"

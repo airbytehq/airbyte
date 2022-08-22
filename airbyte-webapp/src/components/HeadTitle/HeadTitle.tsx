@@ -5,14 +5,14 @@ import { useIntl } from "react-intl";
 const AIRBYTE = "Airbyte";
 const SEPARATOR = "|";
 
-type FormattedHeadTitle = {
+interface FormattedHeadTitle {
   id: string;
   values?: Record<string, string>;
-};
+}
 
-type StringHeadTitle = {
+interface StringHeadTitle {
   title: string;
-};
+}
 
 type HeadTitleDefinition = FormattedHeadTitle | StringHeadTitle;
 
@@ -20,9 +20,9 @@ const isStringTitle = (v: HeadTitleDefinition): v is StringHeadTitle => {
   return "title" in v;
 };
 
-type IProps = {
+interface IProps {
   titles: HeadTitleDefinition[];
-};
+}
 
 /**
  * Titles defined by {@link HeadTitleDefinition} will be

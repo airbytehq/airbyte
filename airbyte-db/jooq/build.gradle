@@ -4,16 +4,15 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.jooq:jooq-meta:3.13.4'
-    implementation 'org.jooq:jooq:3.13.4'
-    implementation 'org.postgresql:postgresql:42.3.1'
-    implementation "org.flywaydb:flyway-core:7.14.0"
-
-    implementation project(':airbyte-db:lib')
+    implementation libs.jooq.meta
+    implementation libs.jooq
+    implementation libs.postgresql
+    implementation libs.flyway.core
+    implementation project(':airbyte-db:db-lib')
 
     // jOOQ code generation
-    implementation 'org.jooq:jooq-codegen:3.13.4'
-    implementation "org.testcontainers:postgresql:1.15.3"
+    implementation libs.jooq.codegen
+    implementation libs.platform.testcontainers.postgresql
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
     // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
@@ -21,7 +20,8 @@ dependencies {
     implementation 'net.java.dev.jna:jna-platform:5.8.0'
 
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
-    jooqGenerator project(':airbyte-db:lib')
+    jooqGenerator project(':airbyte-db:db-lib')
+    jooqGenerator libs.platform.testcontainers.postgresql
 }
 
 jooq {
@@ -40,7 +40,7 @@ jooq {
                         excludes = 'airbyte_configs_migrations'
                     }
                     target {
-                        packageName = 'io.airbyte.db.instance.configs.jooq'
+                        packageName = 'io.airbyte.db.instance.configs.jooq.generated'
                         directory = 'build/generated/configsDatabase/src/main/java'
                     }
                 }
@@ -58,7 +58,7 @@ jooq {
                         excludes = 'airbyte_jobs_migrations'
                     }
                     target {
-                        packageName = 'io.airbyte.db.instance.jobs.jooq'
+                        packageName = 'io.airbyte.db.instance.jobs.jooq.generated'
                         directory = 'build/generated/jobsDatabase/src/main/java'
                     }
                 }
@@ -89,3 +89,5 @@ tasks.named('generateJobsDatabaseJooq').configure {
     allInputsDeclared = true
     outputs.cacheIf { true }
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

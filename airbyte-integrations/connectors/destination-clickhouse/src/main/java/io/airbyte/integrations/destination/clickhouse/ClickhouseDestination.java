@@ -1,13 +1,17 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -15,9 +19,10 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,19 +30,23 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestination.class);
 
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+  public static final String HTTPS_PROTOCOL = "https";
+  public static final String HTTP_PROTOCOL = "http";
 
   private static final String PASSWORD = "password";
 
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
-      "sslmode", "none");
+  static final List<String> SSL_PARAMETERS = ImmutableList.of(
+      "socket_timeout=3000000",
+      "sslmode=none");
+  static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
+      "socket_timeout=3000000");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public ClickhouseDestination() {
@@ -46,31 +55,38 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:clickhouse://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
+    final boolean isSsl = JdbcUtils.useSsl(config);
+    final StringBuilder jdbcUrl = new StringBuilder(
+        String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+            isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    if (isSsl) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    } else {
+      jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
+    }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
-    if (config.has(PASSWORD)) {
-      configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private boolean useSsl(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
-  }
-
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
+      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -78,17 +94,18 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (useSsl(config)) {
-      return SSL_JDBC_PARAMETERS;
-    } else {
-      // No need for any parameters if the connection doesn't use SSL
-      return new HashMap<>();
-    }
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

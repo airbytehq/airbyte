@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
-import { components } from "react-select";
 import { FormattedMessage, useIntl } from "react-intl";
+import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
+import styled from "styled-components";
 
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";

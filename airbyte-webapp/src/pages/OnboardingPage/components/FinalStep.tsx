@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { H1 } from "components";
 
 import { useConfig } from "config";
-import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
-import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import useWorkspace from "hooks/services/useWorkspace";
+import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 
-import UseCaseBlock from "./UseCaseBlock";
 import HighlightedText from "./HighlightedText";
 import ProgressBlock from "./ProgressBlock";
+import UseCaseBlock from "./UseCaseBlock";
 import VideoItem from "./VideoItem";
 
 const Title = styled(H1)`
@@ -77,7 +77,7 @@ const FinalStep: React.FC = () => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          link={config.ui.demoLink}
+          link={config.links.demoLink}
           img="/videoCover.png"
         />
       </Videos>

@@ -10,9 +10,11 @@ Oracle Siebel CRM can run on the [Oracle, MSSQL, or IBM DB2](https://docs.oracle
 * [MSSQL](mssql.md)
 * [Oracle](oracle.md)
 
-{% hint style="info" %}
+:::info
+
 Reach out to your service representative or system admin to find the parameters required to connect to the underlying database
-{% endhint %}
+
+:::
 
 ### Output schema
 

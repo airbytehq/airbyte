@@ -1,0 +1,27 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SyncStats.yaml
+title: SyncStats
+description: sync stats.
+type: object
+required:
+  - recordsEmitted
+  - bytesEmitted
+additionalProperties: true
+properties:
+  recordsEmitted:
+    type: integer
+  bytesEmitted:
+    type: integer
+  sourceStateMessagesEmitted:
+    description: Number of State messages emitted by the Source Connector
+    type: integer
+  destinationStateMessagesEmitted:
+    description: Number of State messages emitted by the Destination Connector
+    type: integer
+  recordsCommitted:
+    type: integer # if unset, committed records could not be computed
+  meanSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBeforeSourceStateMessageEmitted:
+    type: integer

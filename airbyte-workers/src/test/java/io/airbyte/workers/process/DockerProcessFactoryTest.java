@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -17,8 +17,8 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +35,8 @@ import org.junit.jupiter.api.Test;
 class DockerProcessFactoryTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+  private static final String PROCESS_FACTORY = "process_factory";
+  private static final String BUSYBOX = "busybox";
 
   /**
    * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get
@@ -42,7 +44,7 @@ class DockerProcessFactoryTest {
    * when jq is not installed.
    */
   @Test
-  public void testJqExists() throws IOException {
+  void testJqExists() throws IOException {
     final Process process = new ProcessBuilder("jq", "--version").start();
     final StringBuilder out = new StringBuilder();
     final StringBuilder err = new StringBuilder();
@@ -61,29 +63,29 @@ class DockerProcessFactoryTest {
    * turned on in gradle.
    */
   @Test
-  public void testImageExists() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+  void testImageExists() throws IOException, WorkerException {
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    assertTrue(processFactory.checkImageExists("busybox"));
+    assertTrue(processFactory.checkImageExists(BUSYBOX));
   }
 
   @Test
-  public void testImageDoesNotExist() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+  void testImageDoesNotExist() throws IOException, WorkerException {
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
   @Test
-  public void testFileWriting() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+  void testFileWriting() throws IOException, WorkerException {
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory =
         new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
+    processFactory.create("tester", "job_id", 0, jobRoot, BUSYBOX, false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
         new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of(), Map.of());
 
     assertEquals(
@@ -95,8 +97,8 @@ class DockerProcessFactoryTest {
    * Tests that the env var map passed in is accessible within the process.
    */
   @Test
-  public void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+  void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
@@ -113,10 +115,11 @@ class DockerProcessFactoryTest {
     waitForDockerToInitialize(processFactory, jobRoot, workerConfigs);
 
     final Process process = processFactory.create(
+        "tester",
         "job_id",
         0,
         jobRoot,
-        "busybox",
+        BUSYBOX,
         false,
         Map.of(),
         "/bin/sh",
@@ -144,10 +147,11 @@ class DockerProcessFactoryTest {
 
     while (stopwatch.elapsed().compareTo(Duration.ofSeconds(30)) < 0) {
       final Process p = processFactory.create(
+          "tester",
           "job_id_" + RandomStringUtils.randomAlphabetic(4),
           0,
           jobRoot,
-          "busybox",
+          BUSYBOX,
           false,
           Map.of(),
           "/bin/sh",
@@ -158,7 +162,7 @@ class DockerProcessFactoryTest {
           "-c",
           "echo ENV_VAR_1=$ENV_VAR_1");
       p.waitFor();
-      int exitStatus = p.exitValue();
+      final int exitStatus = p.exitValue();
 
       if (exitStatus == 0) {
         log.info("Successfully ran test docker command.");

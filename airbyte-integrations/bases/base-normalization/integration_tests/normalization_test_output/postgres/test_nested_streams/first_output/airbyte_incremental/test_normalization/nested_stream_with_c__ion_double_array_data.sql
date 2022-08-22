@@ -31,9 +31,7 @@ and double_array_data is not null
 -- depends_on: __dbt__cte__nested_stream_with_c__ion_double_array_data_ab1
 select
     _airbyte_partition_hashid,
-    cast("id" as 
-    varchar
-) as "id",
+    cast("id" as text) as "id",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -46,13 +44,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__nested_stream_with_c__ion_double_array_data_ab2
 select
-    md5(cast(coalesce(cast(_airbyte_partition_hashid as 
-    varchar
-), '') || '-' || coalesce(cast("id" as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_double_array_data_hashid,
+    md5(cast(coalesce(cast(_airbyte_partition_hashid as text), '') || '-' || coalesce(cast("id" as text), '') as text)) as _airbyte_double_array_data_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_c__ion_double_array_data_ab2 tmp
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data

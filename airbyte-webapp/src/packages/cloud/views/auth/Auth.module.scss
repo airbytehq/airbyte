@@ -1,0 +1,39 @@
+@use "../../../../scss/colors";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: colors.$white;
+}
+
+.leftSide {
+  width: 100%;
+  padding: 20px 36px 39px 46px;
+}
+
+.rightSide {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.rightSideFrame {
+  height: 100%;
+  width: 100%;
+  border: none;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) and (min-height: 720px) {
+  .container {
+    flex-direction: row;
+    height: 100%;
+  }
+
+  .leftSide,
+  .rightSide {
+    height: 100%;
+  }
+}

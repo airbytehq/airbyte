@@ -38,7 +38,7 @@ const AdditionMessage = styled.span`
 
 const LabeledRadioButton: React.FC<IProps> = (props) => (
   <ControlContainer className={props.className}>
-    <RadioButton {...props} id={`radiobutton-${props.id || props.name}`} />
+    <RadioButton {...props} id={`radiobutton-${props.id || props.name}`} disabled={props.disabled} />
     <Label disabled={props.disabled} htmlFor={`radiobutton-${props.id || props.name}`}>
       {props.label}
       <AdditionMessage>{props.message}</AdditionMessage>

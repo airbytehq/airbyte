@@ -1,19 +1,21 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.base.Stopwatch;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -21,6 +23,7 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -30,8 +33,10 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 /**
  * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
@@ -54,6 +59,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
+  private final Supplier<ActivityExecutionContext> activityContext;
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
@@ -65,7 +71,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Map<String, String> additionalFileMap,
                         final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                         final ResourceRequirements resourceRequirements,
-                        final Class<OUTPUT> outputClass) {
+                        final Class<OUTPUT> outputClass,
+                        final Supplier<ActivityExecutionContext> activityContext) {
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -74,6 +81,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
+    this.activityContext = activityContext;
   }
 
   @Override
@@ -107,8 +115,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
-
-        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
+        final var mainContainerInfo = new KubeContainerInfo(containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.containerOrchestratorImagePullPolicy());
+        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(),
+            podName,
+            mainContainerInfo);
+        val featureFlag = new EnvVariableFeatureFlags();
 
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
@@ -116,8 +128,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
-            containerOrchestratorConfig.containerOrchestratorImage(),
-            containerOrchestratorConfig.googleApplicationCredentials());
+            containerOrchestratorConfig.googleApplicationCredentials(),
+            featureFlag.useStreamCapableState());
 
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.
@@ -141,7 +153,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 portMap);
           } catch (final KubernetesClientException e) {
             throw new WorkerException(
-                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.", e);
           }
         }
 
@@ -172,7 +184,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           throw new WorkerException("Running the launcher " + application + " failed", e);
         }
       }
-    });
+    }, activityContext);
   }
 
   /**

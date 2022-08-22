@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.automaticMigrationAcceptance;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.invoker.ApiResponse;
-import io.airbyte.api.client.model.ImportRead;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.invoker.generated.ApiResponse;
+import io.airbyte.api.client.model.generated.ImportRead;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,10 +23,10 @@ import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
- * The reason we are using this class instead of {@link io.airbyte.api.client.DeploymentApi is cause
- * there is a bug in the the method
- * {@link io.airbyte.api.client.DeploymentApi#importArchiveRequestBuilder(File)}, The method
- * specifies the content type as `localVarRequestBuilder.header("Content-Type",
+ * The reason we are using this class instead of
+ * {@link io.airbyte.api.client.generated.DeploymentApi is cause there is a bug in the the method
+ * {@link io.airbyte.api.client.generated.DeploymentApi#importArchiveRequestBuilder(File)}, The
+ * method specifies the content type as `localVarRequestBuilder.header("Content-Type",
  * "application/json");` but its supposed to be localVarRequestBuilder.header("Content-Type",
  * "application/x-gzip");
  */

@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
 
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.general.DefaultReplicationWorker;
 import java.nio.file.Path;
 
 public interface Worker<InputType, OutputType> {

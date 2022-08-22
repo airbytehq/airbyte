@@ -9,7 +9,7 @@ inputs:
     required: true
   ec2-image-id:
     # github-self-hosted-runner-ubuntu-20-100g-disk-with-cypress-deps
-    default: "ami-08927c058921b27f4"
+    default: "ami-0f23be2f917510c26"
     required: true
   ec2-instance-type:
     default: "c5.2xlarge"
@@ -41,7 +41,7 @@ runs:
         aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: supertopher/ec2-github-runner@base64v1.0.10
+      uses: airbytehq/ec2-github-runner@base64v1.1.0
       with:
         mode: start
         github-token: ${{ inputs.github-token }}
@@ -49,6 +49,9 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
+        # this adds a label to group any EC2 runners spun up within the same action run
+        # this enables creating a pool of runners to run multiple/matrix jobs on in parallel
+        label: runner-pool-${{ github.run_id }}
         aws-resource-tags: >
           [
             {"Key": "BuildType", "Value": "oss"},

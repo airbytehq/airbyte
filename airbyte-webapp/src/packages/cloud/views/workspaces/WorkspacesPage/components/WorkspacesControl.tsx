@@ -1,7 +1,7 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
+import styled from "styled-components";
 
 import { Button, ContentCard } from "components";
 

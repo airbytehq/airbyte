@@ -1,19 +1,19 @@
 import React from "react";
 
 import { ImplementationTable } from "components/EntityTable";
-import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+import { getEntityTableData } from "components/EntityTable/utils";
 
-import useRouter from "hooks/useRouter";
+import { DestinationRead } from "core/request/AirbyteClient";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { Destination } from "core/domain/connector";
+import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
-type IProps = {
-  destinations: Destination[];
-};
+interface DestinationsTableProps {
+  destinations: DestinationRead[];
+}
 
-const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
+const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
   const { push } = useRouter();
   const { connections } = useConnectionList();
   const { destinationDefinitions } = useDestinationDefinitionList();

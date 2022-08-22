@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -8,15 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected JsonNode getConfig() {
@@ -24,7 +28,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @Override
   protected String getImageName() {
@@ -34,29 +40,29 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
+        .put("replication_type", "Standard")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
-        .put("port", 1433)
-        .put("database", dbName) // set your db name
-        .put("username", "your_username")
-        .put("password", "your_pass")
-        .put("replication_method", replicationMethod)
+        .put(JdbcUtils.HOST_KEY, "your_host")
+        .put(JdbcUtils.PORT_KEY, 1433)
+        .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
+        .put(JdbcUtils.USERNAME_KEY, "your_username")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
+        .put("replication", replicationMethod)
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             dbName),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
 
-    return database;
+    return new Database(dslContext);
   }
 
   /**

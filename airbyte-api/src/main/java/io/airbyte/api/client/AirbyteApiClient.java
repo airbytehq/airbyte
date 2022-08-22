@@ -1,10 +1,22 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
 
-import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.DbMigrationApi;
+import io.airbyte.api.client.generated.DestinationApi;
+import io.airbyte.api.client.generated.DestinationDefinitionApi;
+import io.airbyte.api.client.generated.DestinationDefinitionSpecificationApi;
+import io.airbyte.api.client.generated.HealthApi;
+import io.airbyte.api.client.generated.JobsApi;
+import io.airbyte.api.client.generated.OperationApi;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.SourceDefinitionApi;
+import io.airbyte.api.client.generated.SourceDefinitionSpecificationApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all

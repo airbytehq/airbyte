@@ -68,16 +68,20 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [10-21-2021 - 0.30.22](https://github.com/airbytehq/airbyte/releases/tag/v0.30.22-alpha)
 * We now support experimental deployment of Airbyte on Macbooks with M1 chips!
 
-{% hint style="info" %}
+:::info
+
 This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.16` to `0.30.22`.
-{% endhint %}
+
+:::
 
 ## [10-07-2021 - 0.30.16](https://github.com/airbytehq/airbyte/releases/tag/v0.30.16-alpha)
 * On Kubernetes deployments, you can now configure the Airbyte Worker Pod's image pull policy.
 
-{% hint style="info" %}
+:::info
+
 This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.2` to `0.30.16`.
-{% endhint %}
+
+:::
 
 ## [09-30-2021 - 0.30.2](https://github.com/airbytehq/airbyte/releases/tag/v0.30.2-alpha)
 * Fixed a bug that would fail Airbyte upgrades for deployments with sync notifications.

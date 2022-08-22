@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.container_orchestrator;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
@@ -51,6 +53,7 @@ import sun.misc.Signal;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ContainerOrchestratorApp {
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
@@ -60,28 +63,31 @@ public class ContainerOrchestratorApp {
   private final JobRunConfig jobRunConfig;
   private final KubePodInfo kubePodInfo;
   private final Configs configs;
+  private final FeatureFlags featureFlags;
 
   public ContainerOrchestratorApp(
                                   final String application,
                                   final Map<String, String> envMap,
                                   final JobRunConfig jobRunConfig,
-                                  final KubePodInfo kubePodInfo) {
+                                  final KubePodInfo kubePodInfo,
+                                  final FeatureFlags featureFlags) {
     this.application = application;
     this.envMap = envMap;
     this.jobRunConfig = jobRunConfig;
     this.kubePodInfo = kubePodInfo;
     this.configs = new EnvConfigs(envMap);
+    this.featureFlags = featureFlags;
   }
 
   private void configureLogging() {
-    for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+    for (final String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
       if (envMap.containsKey(envVar)) {
         System.setProperty(envVar, envMap.get(envVar));
       }
     }
 
     // make sure the new configuration is picked up
-    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     ctx.reconfigure();
 
     final var logClient = LogClientSingleton.getInstance();
@@ -102,7 +108,7 @@ public class ContainerOrchestratorApp {
 
       final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags);
 
       if (jobOrchestrator == null) {
         throw new IllegalStateException("Could not find job orchestrator for application: " + application);
@@ -119,7 +125,7 @@ public class ContainerOrchestratorApp {
 
       // required to kill clients with thread pools
       System.exit(0);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }
@@ -174,10 +180,11 @@ public class ContainerOrchestratorApp {
       final var envMap = JobOrchestrator.readEnvMap();
       final var jobRunConfig = JobOrchestrator.readJobRunConfig();
       final var kubePodInfo = JobOrchestrator.readKubePodInfo();
+      final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
+      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo, featureFlags);
       app.run();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       log.error("Orchestrator failed...", t);
       // otherwise the pod hangs on closing
       System.exit(1);
@@ -187,10 +194,10 @@ public class ContainerOrchestratorApp {
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
                                                        final WorkerConfigs workerConfigs,
                                                        final ProcessFactory processFactory,
-                                                       final String application) {
-
+                                                       final String application,
+                                                       final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
@@ -212,7 +219,11 @@ public class ContainerOrchestratorApp {
       // exposed)
       KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs,
+          configs.getJobKubeNamespace(),
+          fabricClient,
+          kubeHeartbeatUrl,
+          false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

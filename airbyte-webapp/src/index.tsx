@@ -1,7 +1,12 @@
-import { lazy, Suspense } from "react";
-import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
+import { lazy, Suspense } from "react";
+import ReactDOM from "react-dom";
+
+import "react-reflex/styles.css";
+import { isCloudApp } from "utils/app";
+
+import "./globals";
 
 // We do not follow default config approach since we want to init sentry asap
 Sentry.init({
@@ -15,8 +20,6 @@ const CloudApp = lazy(() => import(`packages/cloud/App`));
 const App = lazy(() => import(`./App`));
 
 ReactDOM.render(
-  <Suspense fallback={null}>
-    {process.env.REACT_APP_CLOUD || window.CLOUD === "true" ? <CloudApp /> : <App />}
-  </Suspense>,
+  <Suspense fallback={null}>{isCloudApp() ? <CloudApp /> : <App />}</Suspense>,
   document.getElementById("root")
 );

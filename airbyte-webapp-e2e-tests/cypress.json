@@ -1,13 +1,9 @@
 {
   "projectId": "916nvw",
   "baseUrl": "http://localhost:3000",
-  "testFiles": [
-    "base.spec.js",
-    "onboarding.spec.js",
-    "connection.spec.js",
-    "destination.spec.js",
-    "source.spec.js"
-  ],
+  "testFiles": ["**/*.spec.*"],
+  "viewportHeight": 800,
+  "viewportWidth": 1280,
   "retries": {
     "runMode": 2,
     "openMode": 0

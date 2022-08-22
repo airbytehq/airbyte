@@ -1,14 +1,14 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
+import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 
-type IProps = {
+interface CreateControlProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
@@ -18,7 +18,7 @@ type IProps = {
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
-};
+}
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
@@ -31,7 +31,7 @@ const SubmitButton = styled(Button)`
   margin-left: auto;
 `;
 
-const CreateControls: React.FC<IProps> = ({
+const CreateControls: React.FC<CreateControlProps> = ({
   isTestConnectionInProgress,
   isSubmitting,
   formType,

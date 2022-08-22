@@ -17,7 +17,7 @@ area/platform:
   - charts/*
   - charts/**/*
 
-area/frontend:
+team/frontend:
   - airbyte-webapp/*
   - airbyte-webapp/**/*
 

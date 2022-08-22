@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -10,13 +10,16 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +37,7 @@ class MySqlStressTest extends JdbcStressTest {
 
   private JsonNode config;
   private Database database;
+  private DSLContext dslContext;
 
   @BeforeAll
   static void init() throws Exception {
@@ -50,34 +54,34 @@ class MySqlStressTest extends JdbcStressTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD.call())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
 
-    database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
-        MySqlSource.DRIVER_CLASS,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
+    database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       return null;
     });
-    database.close();
 
     super.setup();
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    database.close();
+  void tearDown() {
+    dslContext.close();
   }
 
   @AfterAll
@@ -88,7 +92,7 @@ class MySqlStressTest extends JdbcStressTest {
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
   @Override
   public Optional<String> getDefaultSchemaName() {
-    return Optional.of(config.get("database").asText());
+    return Optional.of(config.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   @Override

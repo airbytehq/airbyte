@@ -10,8 +10,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
 
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
@@ -19,7 +19,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-kafka')
-    integrationTestJavaImplementation "org.testcontainers:kafka:1.15.3"
+    integrationTestJavaImplementation libs.connectors.testcontainers.kafka
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

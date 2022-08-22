@@ -1,0 +1,31 @@
+{
+  "username": "charles",
+  "rotating_key_strings": [
+    {
+      "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_c03ef566-79a7-4e77-b6f3-d23d2528f25a_v1"
+    },
+    {
+      "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_35f08b15-bfd9-44fe-a8c7-5aa9e156c0f5_v1"
+    },
+    {
+      "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_159c0b6f-f9ae-48b4-b7f3-bcac4ba15743_v1"
+    }
+  ],
+  "rotating_key_objects": [
+    {
+      "a": {
+        "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_9eba44d8-51e7-48f1-bde2-619af0e42c22_v1"
+      }
+    },
+    {
+      "a": {
+        "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e_v1"
+      }
+    },
+    {
+      "a": {
+        "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_1206db5b-b968-4df1-9a76-f3fcdae7e307_v1"
+      }
+    }
+  ]
+}

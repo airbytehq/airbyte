@@ -85,7 +85,14 @@
             "type": "string"
           },
           "value": {
-            "type": ["string", "integer"]
+            "oneOf": [
+              {
+                "type": ["null", "number"]
+              },
+              {
+                "type": ["null", "string"]
+              }
+            ]
           }
         }
       }

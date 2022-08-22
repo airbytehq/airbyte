@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -91,7 +91,7 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
         "format": "csv",
         "dataset_name": "output",
         "reader_options": json.dumps({"sep": separator, "nrows": 42}),
-        "provider": {"storage": storage_provider},
+        "provider": {"storage": storage_provider, "user_agent": False},
         "url": url,
     }
 

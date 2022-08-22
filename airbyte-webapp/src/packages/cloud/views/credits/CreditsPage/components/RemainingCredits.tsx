@@ -1,21 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-regular-svg-icons";
-import styled from "styled-components";
 import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
 
+import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
-import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-import { useConfig } from "config";
+
+interface Props {
+  selfServiceCheckoutEnabled: boolean;
+}
 
 const Block = styled.div`
   background: ${({ theme }) => theme.darkBeigeColor};
@@ -26,6 +30,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 10px 0px;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -35,10 +40,6 @@ const Count = styled.div`
   font-weight: bold;
   font-size: 24px;
   line-height: 29px;
-`;
-const StarIcon = styled(FontAwesomeIcon)`
-  margin-right: 6px;
-  font-size: 22px;
 `;
 const Actions = styled.div`
   display: flex;
@@ -55,7 +56,7 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
   return lastIncrement ? Date.now() - lastIncrement < 30000 : false;
 }
 
-const RemainingCredits: React.FC = () => {
+const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
   const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
@@ -63,6 +64,7 @@ const RemainingCredits: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
+  const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
   useEffectOnce(() => {
@@ -103,6 +105,9 @@ const RemainingCredits: React.FC = () => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
+    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+      actionDescription: "Checkout Start",
+    });
     // Forward to stripe as soon as we created a checkout session successfully
     window.location.assign(stripeUrl);
   };
@@ -112,20 +117,19 @@ const RemainingCredits: React.FC = () => {
       <CreditView>
         <FormattedMessage id="credits.remainingCredits" />
         <Count>
-          <StarIcon icon={faStar} />
           <FormattedNumber value={cloudWorkspace.remainingCredits} />
         </Count>
       </CreditView>
       <Actions>
         <LoadingButton
-          size="xl"
+          disabled={!selfServiceCheckoutEnabled}
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
         >
           <FormattedMessage id="credits.buyCredits" />
         </LoadingButton>
-        <Button as="a" target="_blank" href={config.ui.contactSales} size="xl">
+        <Button as="a" target="_blank" href={config.links.contactSales}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

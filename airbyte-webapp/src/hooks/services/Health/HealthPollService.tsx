@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { HealthService } from "core/health/HealthService";
 import { useConfig } from "config";
+import { HealthService } from "core/health/HealthService";
 import { useGetService } from "core/servicesProvider";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const HEALTH_NOTIFICATION_ID = "health.error";
 const HEALTHCHECK_MAX_COUNT = 3;

@@ -1,13 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 
-import ImageBlock from "components/ImageBlock";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
-type IProps = {
+interface IProps {
   value: string;
   enabled?: boolean;
   img?: string;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
@@ -16,14 +16,14 @@ const Content = styled.div<{ enabled?: boolean }>`
   font-weight: 500;
 `;
 
-const Image = styled(ImageBlock)`
+const Image = styled(ConnectorIcon)`
   margin-right: 6px;
 `;
 
 const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small img={img} />
+      <Image icon={img} />
       {value}
     </Content>
   );

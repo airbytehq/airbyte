@@ -1,18 +1,21 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
+import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
+from source_hubspot.constants import API_KEY_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -46,19 +49,32 @@ from source_hubspot.streams import (
 
 
 class SourceHubspot(AbstractSource):
+    logger = AirbyteLogger()
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
+        common_params = self.get_common_params(config=config)
         alive = True
         error_msg = None
-        common_params = self.get_common_params(config=config)
         try:
             contacts = Contacts(**common_params)
             _ = contacts.properties
         except HTTPError as error:
             alive = False
             error_msg = repr(error)
-
         return alive, error_msg
+
+    def get_granted_scopes(self, authenticator):
+        try:
+            access_token = authenticator.get_access_token()
+            url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
+            response = requests.get(url=url)
+            response.raise_for_status()
+            response_json = response.json()
+            granted_scopes = response_json["scopes"]
+            return granted_scopes
+        except Exception as e:
+            return False, repr(e)
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:
@@ -66,14 +82,10 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config.get("start_date")
+        start_date = config["start_date"]
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        common_params = dict(api=api, start_date=start_date, credentials=credentials)
-
-        if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator(credentials)
-        return common_params
+        return dict(api=api, start_date=start_date, credentials=credentials)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -108,10 +120,23 @@ class SourceHubspot(AbstractSource):
         ]
 
         credentials_title = credentials.get("credentials_title")
-        if credentials_title == "API Key Credentials":
+        if credentials_title == API_KEY_CREDENTIALS:
             streams.append(Quotes(**common_params))
 
-        return streams
+        api = API(credentials=credentials)
+        if api.is_oauth2():
+            authenticator = API(credentials=credentials).get_authenticator()
+            granted_scopes = self.get_granted_scopes(authenticator)
+            self.logger.info(f"The following scopes were granted: {granted_scopes}")
+
+            available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
+            unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
+            self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+        else:
+            self.logger.info("No scopes to grant when authenticating with API key.")
+            available_streams = streams
+
+        return available_streams
 
     def read(
         self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
@@ -146,33 +171,13 @@ class SourceHubspot(AbstractSource):
                         internal_config=internal_config,
                     )
                 except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     logger.info(f"Finished syncing {self.name}")
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
-
-    def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to checkpoint the latest actual state,
-        because stream state is refreshed after reading each batch of records (if need_chunk is True),
-        or reading all records in the stream.
-        """
-        yield from super()._read_incremental(
-            logger=logger,
-            stream_instance=stream_instance,
-            configured_stream=configured_stream,
-            connector_state=connector_state,
-            internal_config=internal_config,
-        )
-        stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
-        yield self._checkpoint_state(stream_instance, stream_state, connector_state)

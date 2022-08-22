@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import linecache
@@ -9,6 +9,7 @@ import sys
 import tracemalloc
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from decimal import Decimal
 from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
 
@@ -106,6 +107,8 @@ class AbstractTestParser(ABC):
         elif typ == "time":
             dt = cls._generate_value("timestamp")
             return dt.time() if dt else None
+        elif typ == "decimal":
+            return Decimal((0, tuple([random.randint(1, 9) for _ in range(10)]), -4))
         raise Exception(f"not supported type: {typ}")
 
     @classmethod

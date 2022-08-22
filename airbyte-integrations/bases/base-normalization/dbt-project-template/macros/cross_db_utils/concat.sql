@@ -12,6 +12,11 @@
     concat({{ fields|join(', ') }})
 {%- endmacro %}
 
+{% macro mysql__concat(fields) -%}
+    {#-- MySQL doesn't support the '||' operator as concatenation by default --#}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}
+
 {% macro sqlserver__concat(fields) -%}
     {#-- CONCAT() in SQL SERVER accepts from 2 to 254 arguments, we use batches for the main concat, to overcome the limit. --#}
     {% set concat_chunks = [] %}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,7 +27,7 @@ class S3File(StorageFile):
         Currently grabbing last_modified across multiple files asynchronously and may implement more multi-threading in future.
         See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html (anchor link broken, scroll to bottom)
         """
-        if self.use_aws_account:
+        if self.use_aws_account(self._provider):
             self._boto_session = boto3session.Session(
                 aws_access_key_id=self._provider.get("aws_access_key_id"),
                 aws_secret_access_key=self._provider.get("aws_secret_access_key"),

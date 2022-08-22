@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -50,17 +50,17 @@ public class SerializedBufferFactory {
     switch (formatConfig.getFormat()) {
       case AVRO -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
-            () -> createStorageFunctionWithoutExtension.apply(AvroSerializedBuffer.DEFAULT_SUFFIX);
+            () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
         return AvroSerializedBuffer.createFunction((S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case CSV -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
-            () -> createStorageFunctionWithoutExtension.apply(CsvSerializedBuffer.CSV_GZ_SUFFIX);
+            () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
         return CsvSerializedBuffer.createFunction((S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case JSONL -> {
         final Callable<BufferStorage> createStorageFunctionWithExtension =
-            () -> createStorageFunctionWithoutExtension.apply(JsonLSerializedBuffer.JSONL_GZ_SUFFIX);
+            () -> createStorageFunctionWithoutExtension.apply(formatConfig.getFileExtension());
         return JsonLSerializedBuffer.createFunction((S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case PARQUET -> {

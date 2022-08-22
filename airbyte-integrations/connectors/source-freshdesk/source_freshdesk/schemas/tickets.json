@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "cc_emails": {
-      "type": "array"
+      "type": ["array", "null"]
     },
     "fwd_emails": {
-      "type": "array"
+      "type": ["array", "null"]
     },
     "reply_cc_emails": {
-      "type": "array"
+      "type": ["array", "null"]
     },
     "ticket_cc_emails": {
-      "type": "array"
+      "type": ["array", "null"]
     },
     "fr_escalated": {
       "type": "boolean"
@@ -33,7 +33,7 @@
       "type": "integer"
     },
     "responder_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "source": {
       "type": "integer"

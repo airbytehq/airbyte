@@ -6,27 +6,27 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:debezium-v1-9-2')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation "org.postgresql:postgresql:42.2.18"
+    implementation libs.postgresql
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-2'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
-
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
+    testImplementation libs.connectors.testcontainers.jdbc
+    testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

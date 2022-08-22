@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -7,9 +7,11 @@ package io.airbyte.workers.process;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,11 +20,35 @@ import java.util.Map;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
+  /**
+   * The following variables help, either via names or labels, add metadata to processes actually
+   * running operations. These are more readable forms of
+   * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
+   */
+  public static final String JOB_TYPE = "job_type";
+  public static final String SYNC_JOB = "sync";
+  public static final String SPEC_JOB = "spec";
+  public static final String CHECK_JOB = "check";
+  public static final String DISCOVER_JOB = "discover";
+
+  private static final String CONFIG = "--config";
+
+  /**
+   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
+   * with naming/labels to help operations.
+   */
+  public static final String SYNC_STEP = "sync_step";
+  public static final String READ_STEP = "read";
+  public static final String WRITE_STEP = "write";
+  public static final String NORMALIZE_STEP = "normalize";
+  public static final String CUSTOM_STEP = "custom";
+
   private final String jobId;
   private final int attempt;
   private final String imageName;
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
+  private final FeatureFlags featureFlags;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
@@ -34,11 +60,13 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   @Override
   public Process spec(final Path jobRoot) throws WorkerException {
     return processFactory.create(
+        SPEC_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -47,7 +75,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
+        Map.of(JOB_TYPE, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "spec");
@@ -56,6 +84,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
     return processFactory.create(
+        CHECK_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -64,16 +93,17 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        Map.of(JOB_TYPE, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
   public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
     return processFactory.create(
+        DISCOVER_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -82,11 +112,11 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
+        Map.of(JOB_TYPE, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
@@ -100,7 +130,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       throws WorkerException {
     final List<String> arguments = Lists.newArrayList(
         "read",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
 
     final Map<String, String> files = new HashMap<>();
@@ -116,6 +146,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     }
 
     return processFactory.create(
+        READ_STEP,
         jobId,
         attempt,
         jobRoot,
@@ -124,7 +155,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
@@ -142,6 +173,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         catalogFilename, catalogContents);
 
     return processFactory.create(
+        WRITE_STEP,
         jobId,
         attempt,
         jobRoot,
@@ -150,11 +182,11 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
   }
 
@@ -162,7 +194,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
-        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt));
+        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()));
   }
 
 }

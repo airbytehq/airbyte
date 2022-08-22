@@ -1,4 +1,4 @@
-# Transformations with Airbyte \(Part 3/3\)
+# Transformations with Airbyte (Part 3/3)
 
 ## Overview
 

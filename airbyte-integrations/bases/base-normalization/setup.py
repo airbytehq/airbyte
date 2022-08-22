@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,7 +12,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol", "pyyaml", "jinja2", "types-PyYAML"],
+    install_requires=["airbyte-cdk", "pyyaml", "jinja2", "types-PyYAML"],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
     entry_points={
@@ -22,6 +22,6 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "tests": ["airbyte-protocol", "pytest", "mypy", "types-PyYAML"],
+        "tests": ["airbyte-cdk", "pytest", "mypy", "types-PyYAML"],
     },
 )

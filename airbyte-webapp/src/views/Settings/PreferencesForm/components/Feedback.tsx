@@ -1,12 +1,12 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import Spinner from "components/Spinner";
 
-export type FeedbackProps = {
+export interface FeedbackProps {
   feedback: string;
-};
+}
 
 const Success = styled.div`
   display: inline-block;

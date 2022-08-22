@@ -3,7 +3,7 @@
 # This install scripts currently only works for ZSH and Bash profiles.
 # It creates an octavia alias in your profile bound to a docker run command and your current user.
 
-VERSION=0.35.66-alpha
+VERSION=0.40.0-alpha
 OCTAVIA_ENV_FILE=${HOME}/.octavia
 
 detect_profile() {
@@ -40,11 +40,13 @@ delete_previous_alias() {
 
 
 pull_image() {
+    echo "🐙 - Pulling image for octavia ${VERSION}"
     docker pull airbyte/octavia-cli:${VERSION} > /dev/null 2>&1
+    echo "🐙 - 🎉 octavia ${VERSION} image was pulled"
 }
 
 add_octavia_comment_to_profile() {
-    printf "\n# OCTAVIA CLI\n" >> ${DETECTED_PROFILE}
+    printf "\n# OCTAVIA CLI ${VERSION}\n" >> ${DETECTED_PROFILE}
 }
 
 create_octavia_env_file() {
@@ -53,10 +55,15 @@ create_octavia_env_file() {
     echo "🐙 - 💾 The octavia env file was created at ${OCTAVIA_ENV_FILE}"
 }
 
+enable_telemetry() {
+    echo "export OCTAVIA_ENABLE_TELEMETRY=$1"  >> ${DETECTED_PROFILE}
+    echo "OCTAVIA_ENABLE_TELEMETRY=$1"  >> ${OCTAVIA_ENV_FILE}
+}
 
 add_alias() {
     echo 'alias octavia="docker run -i --rm -v \$(pwd):/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} --user \$(id -u):\$(id -g) airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
-    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE}, please open a new terminal window or run source ${DETECTED_PROFILE}"
+    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE}!"
+    echo "🐙 - Please open a new terminal window or run source ${DETECTED_PROFILE}"
 }
 
 install() {
@@ -64,10 +71,20 @@ install() {
     add_alias
 }
 
+telemetry_consent() {
+    read -p "❓ - Allow Airbyte to collect telemetry to improve the CLI? (Y/n)" -n 1 -r </dev/tty
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        enable_telemetry "True"
+    else
+        enable_telemetry "False"
+    fi
+}
+
 update_or_install() {
     if grep -q "^alias octavia=*" ${DETECTED_PROFILE}; then
         read -p "❓ - You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r </dev/tty
-        echo    # (optional) move to a new line
+        echo
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
             delete_previous_alias
@@ -76,6 +93,7 @@ update_or_install() {
     else
         add_octavia_comment_to_profile
         create_octavia_env_file
+        telemetry_consent
         install
     fi
 }

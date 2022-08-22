@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -21,6 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
@@ -29,29 +31,37 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private OracleContainer container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", container.getSid())
+            .put("connection_type", "service_name").build())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("TEST"))
         .build());
 
-    final Database database = Databases.createOracleDatabase(config.get("username").asText(),
+    dslContext = DSLContextFactory.create(
+        config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()));
+            config.get("port").asInt(),
+            config.get("connection_data").get("service_name").asText()),
+        null);
+    final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
     database.query(ctx -> ctx.fetch("CREATE USER test IDENTIFIED BY test DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
@@ -76,6 +86,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -262,15 +273,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("RAW")
             .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("RAW(200)")
-            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
-            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("LONG")
-            .airbyteType(JsonSchemaType.STRING)
-            .fullSourceDataType("LONG RAW")
             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
             .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());

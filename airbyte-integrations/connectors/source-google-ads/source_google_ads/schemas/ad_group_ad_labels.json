@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "ad_group_ad.ad.resource_name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "ad_group_ad_label.resource_name": {
       "type": ["null", "string"]
     },
     "label.name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "label.resource_name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     }
   }
 }

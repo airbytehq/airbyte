@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -21,6 +21,7 @@ public class WorkerConfigs {
   private final Map<String, String> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
+  private final String sidecarImagePullPolicy;
   private final String jobSocatImage;
   private final String jobBusyboxImage;
   private final String jobCurlImage;
@@ -43,6 +44,7 @@ public class WorkerConfigs {
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
@@ -73,6 +75,7 @@ public class WorkerConfigs {
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
@@ -103,6 +106,7 @@ public class WorkerConfigs {
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
@@ -133,6 +137,7 @@ public class WorkerConfigs {
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
@@ -152,6 +157,7 @@ public class WorkerConfigs {
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
@@ -184,6 +190,10 @@ public class WorkerConfigs {
 
   public String getJobImagePullPolicy() {
     return jobImagePullPolicy;
+  }
+
+  public String getSidecarImagePullPolicy() {
+    return sidecarImagePullPolicy;
   }
 
   public String getJobSocatImage() {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -158,7 +158,9 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
         return params
 
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    def filter_records_newer_than_state(
+        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
+    ) -> Iterable:
         """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
             for record in records_slice:
@@ -322,8 +324,8 @@ class SourceLinkedinAds(AbstractSource):
         Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
         1) direct access token with TTL = 2 months
-        2) refresh token (TTL = 1 year) which can be converted to access tokens
-           Every new refresh revokes all previous access tokens q
+        2) refresh token (TTL = 1 year) which can be converted to access tokens,
+           Every new refresh revokes all previous access tokens
         """
         auth_method = config.get("credentials", {}).get("auth_method")
         if not auth_method or auth_method == "access_token":

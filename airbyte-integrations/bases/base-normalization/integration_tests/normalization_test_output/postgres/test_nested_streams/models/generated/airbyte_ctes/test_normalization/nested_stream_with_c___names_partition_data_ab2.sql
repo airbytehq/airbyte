@@ -14,5 +14,5 @@ select
 from {{ ref('nested_stream_with_c___names_partition_data_ab1') }}
 -- DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

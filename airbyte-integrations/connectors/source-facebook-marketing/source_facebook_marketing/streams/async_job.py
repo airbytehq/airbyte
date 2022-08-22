@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
+import backoff
 import pendulum
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
@@ -15,9 +16,18 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -158,7 +168,13 @@ class ParentAsyncJob(AsyncJob):
         new_jobs = []
         for job in self._jobs:
             if job.failed:
-                new_jobs.extend(job.split_job())
+                try:
+                    new_jobs.extend(job.split_job())
+                except ValueError as split_limit_error:
+                    logger.error(split_limit_error)
+                    logger.info(f'can\'t split "{job}" any smaller, attempting to retry the job.')
+                    job.restart()
+                    new_jobs.append(job)
             else:
                 new_jobs.append(job)
         return new_jobs
@@ -202,7 +218,7 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(AdSet)
         elif isinstance(self._edge_object, AdSet):
             return self._split_by_edge_class(Ad)
-        raise RuntimeError("The job is already splitted to the smallest size.")
+        raise ValueError("The job is already splitted to the smallest size.")
 
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
         """Split insight job by creating insight jobs from lower edge object, i.e.
@@ -332,6 +348,7 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
+    @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:

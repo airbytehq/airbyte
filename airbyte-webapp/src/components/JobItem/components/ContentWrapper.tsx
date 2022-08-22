@@ -1,31 +1,32 @@
+import { motion } from "framer-motion";
 import React from "react";
-import pose from "react-pose";
 
-type IProps = {
+interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
-};
+  onToggled?: () => void;
+}
 
-const itemConfig = {
-  open: {
-    height: "auto",
-    opacity: 1,
-    transition: "tween",
-  },
-  closed: {
-    height: "1px",
-    opacity: 0,
-    transition: "tween",
-  },
-};
-
-const ContentWrapperElement = pose.div(itemConfig);
-
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
+const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
   return (
-    <ContentWrapperElement pose={!isOpen ? "closed" : "open"} withParent={false}>
+    <motion.div
+      animate={!isOpen ? "closed" : "open"}
+      onAnimationComplete={onToggled}
+      variants={{
+        open: {
+          height: "auto",
+          opacity: 1,
+          transition: { type: "tween" },
+        },
+        closed: {
+          height: "1px",
+          opacity: 0,
+          transition: { type: "tween" },
+        },
+      }}
+    >
       {children}
-    </ContentWrapperElement>
+    </motion.div>
   );
 };
 

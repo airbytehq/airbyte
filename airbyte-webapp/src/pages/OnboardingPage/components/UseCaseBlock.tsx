@@ -1,15 +1,15 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 
-type UseCaseBlockProps = {
+interface UseCaseBlockProps {
   count: number;
   id: string;
   href: string;
   onSkip: (id: string) => void;
-};
+}
 
 const Block = styled(ContentCard)`
   margin-bottom: 10px;

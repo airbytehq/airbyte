@@ -3,24 +3,24 @@ import styled from "styled-components";
 
 import MenuItem from "./components/MenuItem";
 
-export type SideMenuItem = {
+export interface SideMenuItem {
   path: string;
   name: string | React.ReactNode;
   indicatorCount?: number;
   component: React.ComponentType;
   id?: string;
-};
+}
 
-export type CategoryItem = {
+export interface CategoryItem {
   category?: string | React.ReactNode;
   routes: SideMenuItem[];
-};
+}
 
-type SideMenuProps = {
+interface SideMenuProps {
   data: CategoryItem[];
   activeItem?: string;
   onSelect: (id: string) => void;
-};
+}
 
 const Content = styled.nav`
   min-width: 147px;

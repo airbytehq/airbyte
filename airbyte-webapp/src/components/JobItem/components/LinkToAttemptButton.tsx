@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useDebounce } from "react-use";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLink } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useDebounce } from "react-use";
 
 import { Button } from "components";
 import ToolTip from "components/ToolTip";

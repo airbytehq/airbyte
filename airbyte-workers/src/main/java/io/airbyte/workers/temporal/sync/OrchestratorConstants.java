@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
 
 import com.uber.m3.util.ImmutableSet;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_KUBE_SOCAT_IMAGE,
           EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY,
           EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET,
+          EnvConfigs.JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY,
           EnvConfigs.JOB_KUBE_NODE_SELECTORS,
           EnvConfigs.DOCKER_NETWORK,
           EnvConfigs.LOCAL_DOCKER_MOUNT,
@@ -40,6 +42,10 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
           EnvConfigs.JOB_DEFAULT_ENV_MAP,
           EnvConfigs.LOCAL_ROOT,
+          EnvConfigs.PUBLISH_METRICS,
+          EnvConfigs.DD_AGENT_HOST,
+          EnvConfigs.DD_DOGSTATSD_PORT,
+          EnvConfigs.METRIC_CLIENT,
           LOG_LEVEL,
           LogClientSingleton.GCS_LOG_BUCKET,
           LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
@@ -58,7 +64,8 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
           EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
-          EnvConfigs.STATE_STORAGE_S3_REGION))
+          EnvConfigs.STATE_STORAGE_S3_REGION,
+          EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

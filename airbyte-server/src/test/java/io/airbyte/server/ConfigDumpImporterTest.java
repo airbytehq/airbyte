@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 
 class ConfigDumpImporterTest {
 
-  public static final AirbyteVersion TEST_VERSION = new AirbyteVersion("0.0.1-test-version");
+  static final AirbyteVersion TEST_VERSION = new AirbyteVersion("0.0.1-test-version");
 
   private ConfigRepository configRepository;
   private SecretsRepositoryReader secretsRepositoryReader;
@@ -61,7 +61,7 @@ class ConfigDumpImporterTest {
   private ConnectorSpecification emptyConnectorSpec;
 
   @BeforeEach
-  public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     configRepository = mock(ConfigRepository.class);
     secretsRepositoryReader = mock(SecretsRepositoryReader.class);
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
@@ -149,7 +149,7 @@ class ConfigDumpImporterTest {
   }
 
   @Test
-  public void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(secretsRepositoryReader.listSourceConnectionWithSecrets())
         .thenReturn(List.of(sourceConnection,
             new SourceConnection()
@@ -185,7 +185,7 @@ class ConfigDumpImporterTest {
   }
 
   @Test
-  public void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(secretsRepositoryReader.listSourceConnectionWithSecrets())
         // First called for export
         .thenReturn(List.of(sourceConnection,
@@ -235,7 +235,7 @@ class ConfigDumpImporterTest {
   }
 
   @Test
-  public void testReplaceDeploymentMetadata() throws Exception {
+  void testReplaceDeploymentMetadata() throws Exception {
     final UUID oldDeploymentUuid = UUID.randomUUID();
     final UUID newDeploymentUuid = UUID.randomUUID();
 

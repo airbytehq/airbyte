@@ -1,17 +1,16 @@
+import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 
-import { JobDebugInfoMeta } from "core/domain/job";
-
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
-type IProps = {
-  jobDebugInfo: JobDebugInfoMeta;
-};
+interface IProps {
+  jobDebugInfo: JobDebugInfoRead;
+}
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
   const { formatMessage } = useIntl();

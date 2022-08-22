@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -135,7 +135,8 @@ def test_internal_config(abstract_source, catalog):
     non_http_stream.read_records.return_value = [{}] * 3
 
     # Test with empty config
-    records = [r for r in abstract_source.read(logger=MagicMock(), config={}, catalog=catalog, state={})]
+    logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
+    records = [r for r in abstract_source.read(logger=logger, config={}, catalog=catalog, state={})]
     # 3 for http stream and 3 for non http stream
     assert len(records) == 3 + 3
     assert http_stream.read_records.called
@@ -145,19 +146,19 @@ def test_internal_config(abstract_source, catalog):
     assert not non_http_stream.page_size
     # Test with records limit set to 1
     internal_config = {"some_config": 100, "_limit": 1}
-    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
     # 1 from http stream + 1 from non http stream
     assert len(records) == 1 + 1
     assert "_limit" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
     # Test with records limit set to number that exceeds expceted records
     internal_config = {"some_config": 100, "_limit": 20}
-    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
     assert len(records) == 3 + 3
 
     # Check if page_size paramter is set to http instance only
     internal_config = {"some_config": 100, "_page_size": 2}
-    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
     assert "_page_size" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
     assert len(records) == 3 + 3
@@ -168,6 +169,7 @@ def test_internal_config(abstract_source, catalog):
 
 def test_internal_config_limit(abstract_source, catalog):
     logger_mock = MagicMock()
+    logger_mock.level = logging.DEBUG
     del catalog.streams[1]
     STREAM_LIMIT = 2
     FULL_RECORDS_NUMBER = 3
@@ -205,6 +207,7 @@ SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 
 def test_source_config_no_transform(abstract_source, catalog):
     logger_mock = MagicMock()
+    logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
@@ -218,6 +221,7 @@ def test_source_config_no_transform(abstract_source, catalog):
 
 def test_source_config_transform(abstract_source, catalog):
     logger_mock = MagicMock()
+    logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -231,6 +235,7 @@ def test_source_config_transform(abstract_source, catalog):
 
 def test_source_config_transform_and_no_transform(abstract_source, catalog):
     logger_mock = MagicMock()
+    logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)

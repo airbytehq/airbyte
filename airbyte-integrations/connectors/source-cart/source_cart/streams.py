@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import urllib.parse
@@ -61,7 +61,7 @@ class CartStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"count": 100}
+        params = {"count": 1000}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -132,6 +132,14 @@ class OrderItems(IncrementalCartStream):
     """
 
     data_field = "items"
+
+
+class OrderStatuses(IncrementalCartStream):
+    """
+    Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses
+    """
+
+    data_field = "order_statuses"
 
 
 class Products(IncrementalCartStream):

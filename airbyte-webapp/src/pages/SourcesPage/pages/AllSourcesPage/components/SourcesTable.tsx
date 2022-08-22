@@ -1,20 +1,20 @@
 import React from "react";
 
 import { ImplementationTable } from "components/EntityTable";
-import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+import { getEntityTableData } from "components/EntityTable/utils";
 
-import useRouter from "hooks/useRouter";
+import { SourceRead } from "core/request/AirbyteClient";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { Source } from "core/domain/connector";
+import useRouter from "hooks/useRouter";
 
 import { useSourceDefinitionList } from "../../../../../services/connector/SourceDefinitionService";
 
-type IProps = {
-  sources: Source[];
-};
+interface SourcesTableProps {
+  sources: SourceRead[];
+}
 
-const SourcesTable: React.FC<IProps> = ({ sources }) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   const { push } = useRouter();
 
   const { connections } = useConnectionList();

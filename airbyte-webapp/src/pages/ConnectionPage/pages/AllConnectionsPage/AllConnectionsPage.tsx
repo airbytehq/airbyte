@@ -2,12 +2,12 @@ import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import Placeholder, { ResourceTypes } from "components/Placeholder";
 
-import useRouter from "hooks/useRouter";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
@@ -16,33 +16,36 @@ const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
   const { connections } = useConnectionList();
-  const { hasFeature } = useFeatureService();
-  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
+  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
-      pageTitle={
-        <PageTitle
-          title={<FormattedMessage id="sidebar.connections" />}
-          endComponent={
-            <Button onClick={onClick} disabled={!allowCreateConnection}>
-              <FormattedMessage id="connection.newConnection" />
-            </Button>
+    <Suspense fallback={<LoadingPage />}>
+      {connections.length ? (
+        <MainPageWithScroll
+          headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+          pageTitle={
+            <PageTitle
+              title={<FormattedMessage id="sidebar.connections" />}
+              endComponent={
+                <Button onClick={onCreateClick} disabled={!allowCreateConnection}>
+                  <FormattedMessage id="connection.newConnection" />
+                </Button>
+              }
+            />
           }
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>
-        {connections.length ? (
+        >
           <ConnectionsTable connections={connections} />
-        ) : (
-          <Placeholder resource={ResourceTypes.Connections} />
-        )}
-      </Suspense>
-    </MainPageWithScroll>
+        </MainPageWithScroll>
+      ) : (
+        <EmptyResourceListView
+          resourceType="connections"
+          onCreateClick={onCreateClick}
+          disableCreateButton={!allowCreateConnection}
+        />
+      )}
+    </Suspense>
   );
 };
 

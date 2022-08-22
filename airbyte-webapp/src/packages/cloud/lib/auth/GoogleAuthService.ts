@@ -1,9 +1,12 @@
+import type { OAuthProviders } from "./AuthProviders";
+
 import {
   Auth,
   User,
   UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   sendPasswordResetEmail,
   confirmPasswordReset,
   updateProfile,
@@ -14,33 +17,16 @@ import {
   updatePassword,
   updateEmail,
   AuthErrorCodes,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
 } from "firebase/auth";
 
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { ErrorCodes } from "packages/cloud/services/auth/types";
 import { Provider } from "config";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
-interface AuthService {
-  login(email: string, password: string): Promise<UserCredential>;
-
-  signOut(): Promise<void>;
-
-  signUp(email: string, password: string): Promise<UserCredential>;
-
-  reauthenticate(email: string, passwordPassword: string): Promise<UserCredential>;
-
-  updatePassword(newPassword: string): Promise<void>;
-
-  resetPassword(email: string): Promise<void>;
-
-  finishResetPassword(code: string, newPassword: string): Promise<void>;
-
-  sendEmailVerifiedLink(): Promise<void>;
-
-  updateEmail(email: string, password: string): Promise<void>;
-}
-
-export class GoogleAuthService implements AuthService {
+export class GoogleAuthService {
   constructor(private firebaseAuthProvider: Provider<Auth>) {}
 
   get auth(): Auth {
@@ -49,6 +35,10 @@ export class GoogleAuthService implements AuthService {
 
   getCurrentUser(): User | null {
     return this.auth.currentUser;
+  }
+
+  async loginWithOAuth(provider: OAuthProviders) {
+    await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
@@ -151,6 +141,25 @@ export class GoogleAuthService implements AuthService {
 
   async confirmEmailVerify(code: string): Promise<void> {
     return applyActionCode(this.auth, code);
+  }
+
+  async signInWithEmailLink(email: string): Promise<UserCredential> {
+    try {
+      return await signInWithEmailLink(this.auth, email);
+    } catch (e) {
+      switch (e?.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
+        case AuthErrorCodes.INVALID_OOB_CODE:
+          // The link was already used
+          throw new Error(EmailLinkErrorCodes.LINK_INVALID);
+        case AuthErrorCodes.EXPIRED_OOB_CODE:
+          // The link expired
+          throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
+      }
+
+      throw e;
+    }
   }
 
   signOut(): Promise<void> {

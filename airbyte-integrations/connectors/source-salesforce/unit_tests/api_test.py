@@ -1,15 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 
 import csv
 import io
+import logging
 import re
 from unittest.mock import Mock
 
 import pytest
 import requests_mock
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import generate_stream
 from requests.exceptions import HTTPError
@@ -21,6 +22,12 @@ from source_salesforce.streams import (
     IncrementalSalesforceStream,
     SalesforceStream,
 )
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -71,7 +78,7 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
     assert isinstance(stream, BulkSalesforceStream)
 
 
-@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
+@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 3000])
 def test_bulk_sync_pagination(item_number, stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     test_ids = [i for i in range(1, item_number)]
@@ -203,17 +210,17 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.download_data(url=job_full_url))
+        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
         assert res == []
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.download_data(url=job_full_url))
-        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": "false"})]
+        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
 
 
 def test_check_connection_rate_limit(stream_config):
     source = SourceSalesforce()
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     url = "https://login.salesforce.com/services/oauth2/token"
@@ -250,7 +257,7 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
     source = SourceSalesforce()
     source.streams = Mock()
     source.streams.return_value = streams
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
@@ -306,7 +313,7 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     next_page_url = "/services/data/v52.0/query/012345"
     response_1 = {
@@ -406,9 +413,9 @@ def test_csv_reader_dialect_unix():
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
-        {"Id": "1", "Name": '"first_name" "last_name"'},
-        {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name"},
+        {"Id": 1, "Name": '"first_name" "last_name"'},
+        {"Id": 2, "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+        {"Id": 3, "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:
@@ -420,7 +427,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [dict(i[1]) for i in stream.download_data(url)]
+        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
         assert result == data
 
 
@@ -428,16 +435,16 @@ def test_csv_reader_dialect_unix():
     "stream_names,catalog_stream_names,",
     (
         (
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
             None,
         ),
         (
             ["stream_1", "stream_2"],
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
         ),
         (
-            ["stream_1", "stream_2", "stream_3"],
-            ["stream_1"],
+            ["stream_1", "stream_2", "stream_3", "Describe"],
+            ["stream_1", "Describe"],
         ),
     ),
 )
@@ -482,6 +489,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "queryable": True,
                     }
                     for stream_name in stream_names
+                    if stream_name != "Describe"
                 ],
             },
         )
@@ -490,7 +498,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
     for stream in streams:
-        assert stream.sobject_options == {"flag1": True, "queryable": True}
+        if stream.name != "Describe":
+            assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
 
 
@@ -516,3 +525,10 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_decoding(stream_config, stream_api):
+    stream_name = "AcceptedEventRelation"
+    stream = generate_stream(stream_name, stream_config, stream_api)
+    assert stream.decode(b"\xe9\x97\xb4\xe5\x8d\x95\xe7\x9a\x84\xe8\xaf\xb4 \xf0\x9f\xaa\x90") == "间单的说 🪐"
+    assert stream.decode(b"0\xe5") == "0å"

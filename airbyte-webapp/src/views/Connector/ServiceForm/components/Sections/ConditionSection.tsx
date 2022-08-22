@@ -1,6 +1,6 @@
+import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { useFormikContext, setIn } from "formik";
 
 import { Label, DropDown } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -9,27 +9,34 @@ import GroupControls from "components/GroupControls";
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
-import { ServiceFormValues } from "../../types";
 import { useServiceForm } from "../../serviceFormContext";
+import { ServiceFormValues } from "../../types";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 
 const GroupLabel = styled(Label)`
   width: auto;
   margin-right: 8px;
+  padding-top: 8px;
   display: inline-block;
+  padding-bottom: 0px;
+  vertical-align: middle;
 `;
 
 const ConditionControls = styled.div`
   padding-top: 25px;
 `;
 
+interface ConditionSectionProps {
+  formField: FormConditionItem;
+  path?: string;
+  disabled?: boolean;
+}
+
 /**
  * ConditionSection is responsible for handling oneOf sections of form
  */
-export const ConditionSection: React.FC<{
-  formField: FormConditionItem;
-  path?: string;
-}> = ({ formField, path }) => {
+export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext<ServiceFormValues>();
 
@@ -72,20 +79,28 @@ export const ConditionSection: React.FC<{
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
       description={formField.description}
+      fullWidthTitle
       title={
-        <>
+        <div className={styles.sectionTitle}>
           {label ? <GroupLabel>{label}:</GroupLabel> : null}
           <DropDown
+            className={styles.sectionTitleDropdown}
             options={options}
             onChange={onOptionChange}
             value={currentlySelectedCondition}
             name={formField.path}
+            isDisabled={disabled}
           />
-        </>
+        </div>
       }
     >
       <ConditionControls>
-        <FormSection blocks={formField.conditions[currentlySelectedCondition]} path={path} skipAppend />
+        <FormSection
+          blocks={formField.conditions[currentlySelectedCondition]}
+          path={path}
+          disabled={disabled}
+          skipAppend
+        />
       </ConditionControls>
     </GroupControls>
   );

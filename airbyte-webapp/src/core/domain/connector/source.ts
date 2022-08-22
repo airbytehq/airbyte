@@ -1,24 +1,18 @@
-import {
-  ConnectorDefinition,
-  ConnectorDefinitionSpecification,
-  ConnectorT,
-  Source,
-  SourceDefinition,
-  SourceDefinitionSpecification,
-} from "./types";
+import { SourceDefinitionRead, SourceDefinitionSpecificationRead, SourceRead } from "../../request/AirbyteClient";
+import { ConnectorDefinition, ConnectorDefinitionSpecification, ConnectorT } from "./types";
 
-export function isSource(connector: ConnectorT): connector is Source {
+export function isSource(connector: ConnectorT): connector is SourceRead {
   return "sourceId" in connector;
 }
 
-export function isSourceDefinition(connector: ConnectorDefinition): connector is SourceDefinition {
-  return (connector as SourceDefinition).sourceDefinitionId !== undefined;
+export function isSourceDefinition(connector: ConnectorDefinition): connector is SourceDefinitionRead {
+  return (connector as SourceDefinitionRead).sourceDefinitionId !== undefined;
 }
 
 export function isSourceDefinitionSpecification(
   connector: ConnectorDefinitionSpecification
-): connector is SourceDefinitionSpecification {
-  return (connector as SourceDefinitionSpecification).sourceDefinitionId !== undefined;
+): connector is SourceDefinitionSpecificationRead {
+  return (connector as SourceDefinitionSpecificationRead).sourceDefinitionId !== undefined;
 }
 
 // eslint-disable-next-line no-template-curly-in-string

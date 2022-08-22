@@ -36,13 +36,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__unnest_alias_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast(children as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_unnest_alias_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(children as text), '') as text)) as _airbyte_unnest_alias_hashid,
     tmp.*
 from __dbt__cte__unnest_alias_ab2 tmp
 -- unnest_alias

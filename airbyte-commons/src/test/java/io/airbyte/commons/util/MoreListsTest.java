@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,8 +27,25 @@ class MoreListsTest {
 
   @Test
   void testReverse() {
-    final ArrayList<Integer> originalList = Lists.newArrayList(1, 2, 3);
+    final List<Integer> originalList = List.of(1, 2, 3);
     assertEquals(List.of(3, 2, 1), MoreLists.reversed(originalList));
+    assertEquals(List.of(1, 2, 3), originalList);
+  }
+
+  @Test
+  void testConcat() {
+    final List<List<Integer>> lists = List.of(List.of(1, 2, 3), List.of(4, 5, 6), List.of(7, 8, 9));
+    final List<Integer> expected = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    final List<Integer> actual = MoreLists.concat(lists.get(0), lists.get(1), lists.get(2));
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testAdd() {
+    final List<Integer> originalList = List.of(1, 2, 3);
+
+    assertEquals(List.of(1, 2, 3, 4), MoreLists.add(originalList, 4));
+    // verify original list was not mutated.
     assertEquals(List.of(1, 2, 3), originalList);
   }
 

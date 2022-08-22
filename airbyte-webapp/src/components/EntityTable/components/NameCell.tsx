@@ -1,19 +1,20 @@
-import React from "react";
-import styled from "styled-components";
+import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
+import styled from "styled-components";
 
+import { ConnectorIcon } from "components/ConnectorIcon";
 import StatusIcon from "components/StatusIcon";
-import ImageBlock from "components/ImageBlock";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
-type IProps = {
+interface Props {
   value: string;
   enabled?: boolean;
   status?: string | null;
   icon?: boolean;
   img?: string;
-};
+}
 
 const Content = styled.div`
   display: flex;
@@ -29,18 +30,25 @@ const Name = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
-const Space = styled.div`
-  width: 30px;
-  height: 20px;
-  opacity: 0;
-`;
-
-const Image = styled(ImageBlock)`
+const Image = styled(ConnectorIcon)`
   margin-right: 6px;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
-  const formatMessage = useIntl().formatMessage;
+const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
+  const { formatMessage } = useIntl();
+  const statusIconStatus = useMemo<StatusIconStatus | undefined>(
+    () =>
+      status === Status.EMPTY
+        ? "sleep"
+        : status === Status.ACTIVE
+        ? "success"
+        : status === Status.INACTIVE
+        ? "inactive"
+        : status === Status.PENDING
+        ? "loading"
+        : undefined,
+    [status]
+  );
   const title =
     status === Status.EMPTY
       ? formatMessage({
@@ -54,23 +62,18 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
       ? formatMessage({
           id: "connection.successSync",
         })
+      : status === Status.PENDING
+      ? formatMessage({
+          id: "connection.pendingSync",
+        })
       : formatMessage({
           id: "connection.failedSync",
         });
 
   return (
     <Content>
-      {status ? (
-        <StatusIcon
-          title={title}
-          empty={status === Status.EMPTY}
-          success={status === Status.ACTIVE}
-          inactive={status === Status.INACTIVE}
-        />
-      ) : (
-        <Space />
-      )}
-      {icon && <Image small img={img} />}
+      {status && <StatusIcon title={title} status={statusIconStatus} />}
+      {icon && <Image icon={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

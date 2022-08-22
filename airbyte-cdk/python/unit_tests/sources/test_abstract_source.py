@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -24,6 +24,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = logging.getLogger("airbyte")
 
@@ -97,9 +98,13 @@ class MockStream(Stream):
 class MockStreamWithState(MockStream):
     cursor_field = "cursor"
 
+    def __init__(self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]], name: str, state=None):
+        super().__init__(inputs_and_mocked_outputs, name)
+        self._state = state
+
     @property
     def state(self):
-        return {}
+        return self._state
 
     @state.setter
     def state(self, value):
@@ -140,6 +145,26 @@ def test_read_nonexistent_stream_raises_exception(mocker):
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     with pytest.raises(KeyError):
         list(src.read(logger, {}, catalog))
+
+
+def test_read_stream_with_error_gets_display_message(mocker):
+    stream = MockStream(name="my_stream")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("oh no!"))
+
+    source = MockSource(streams=[stream])
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
+
+    # without get_error_display_message
+    with pytest.raises(RuntimeError, match="oh no!"):
+        list(source.read(logger, {}, catalog))
+
+    mocker.patch.object(MockStream, "get_error_display_message", return_value="my message")
+
+    with pytest.raises(AirbyteTracedException, match="oh no!") as exc:
+        list(source.read(logger, {}, catalog))
+    assert exc.value.message == "my message"
 
 
 GLOBAL_EMITTED_AT = 1
@@ -429,6 +454,74 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
+        assert expected == messages
+
+    def test_no_slices(self, mocker):
+        """
+        Tests that an incremental read returns at least one state messages even if no records were read:
+            1. outputs a state message after reading the entire stream
+        """
+        slices = []
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+        state = {"cursor": "value"}
+        s1 = MockStreamWithState(
+            [
+                (
+                    {
+                        "sync_mode": SyncMode.incremental,
+                        "stream_slice": s,
+                        "stream_state": mocker.ANY,
+                    },
+                    stream_output,
+                )
+                for s in slices
+            ],
+            name="s1",
+            state=state,
+        )
+        s2 = MockStreamWithState(
+            [
+                (
+                    {
+                        "sync_mode": SyncMode.incremental,
+                        "stream_slice": s,
+                        "stream_state": mocker.ANY,
+                    },
+                    stream_output,
+                )
+                for s in slices
+            ],
+            name="s2",
+            state=state,
+        )
+
+        mocker.patch.object(MockStreamWithState, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
+        mocker.patch.object(MockStreamWithState, "stream_slices", return_value=slices)
+        mocker.patch.object(
+            MockStreamWithState,
+            "state_checkpoint_interval",
+            new_callable=mocker.PropertyMock,
+            return_value=2,
+        )
+
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                _configured_stream(s1, SyncMode.incremental),
+                _configured_stream(s2, SyncMode.incremental),
+            ]
+        )
+
+        expected = [
+            _state({"s1": state}),
+            _state({"s1": state, "s2": state}),
+        ]
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+
+        print(f"expected:\n{expected}")
+        print(f"messages:\n{messages}")
         assert expected == messages
 
     def test_with_slices_and_interval(self, mocker):

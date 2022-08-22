@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 from collections import UserDict
 from pathlib import Path
 from typing import Iterable, List, Union
@@ -67,22 +67,6 @@ class SecretDict(UserDict):
         return str(self)
 
 
-def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref") -> dict:
-    """Checking the incoming schema for the presence of a `$ref` object in it"""
-    if isinstance(schema_item, list):
-        for list_schema_item in schema_item:
-            item = find_key_inside_schema(list_schema_item, key)
-            if item is not None:
-                return item
-    elif isinstance(schema_item, dict):
-        if key in schema_item:
-            return schema_item
-        for schema_object_value in schema_item.values():
-            item = find_key_inside_schema(schema_object_value, key)
-            if item is not None:
-                return item
-
-
 def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     """Find at least one keyword in a schema, skip object properties"""
 
@@ -102,3 +86,28 @@ def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     except StopIteration:
         return True
     return False
+
+
+def load_yaml_or_json_path(path: Path):
+    with open(str(path), "r") as file:
+        file_data = file.read()
+        file_ext = path.suffix
+        if file_ext == ".json":
+            return json.loads(file_data)
+        elif file_ext == ".yaml":
+            return load(file_data, Loader=Loader)
+        else:
+            raise RuntimeError("path must be a '.yaml' or '.json' file")
+
+
+def find_all_values_for_key_in_schema(schema: dict, searched_key: str):
+    """Retrieve all (nested) values in a schema for a specific searched key"""
+    if isinstance(schema, list):
+        for schema_item in schema:
+            yield from find_all_values_for_key_in_schema(schema_item, searched_key)
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if key == searched_key:
+                yield value
+            if isinstance(value, dict) or isinstance(value, list):
+                yield from find_all_values_for_key_in_schema(value, searched_key)

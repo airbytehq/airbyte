@@ -1,12 +1,12 @@
 
-  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."MULTIPLE_COLUMN_NAMES_CONFLICTS_STG" 
+  create or replace  view "INTEGRATION_TEST_NORMALIZATION"._AIRBYTE_TEST_NORMALIZATION."MULTIPLE_COLUMN_NAMES_CONFLICTS_STG" 
   
    as (
     
 with __dbt__cte__MULTIPLE_COLUMN_NAMES_CONFLICTS_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_MULTIPLE_COLUMN_NAMES_CONFLICTS
+-- depends_on: "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_MULTIPLE_COLUMN_NAMES_CONFLICTS
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"User Id"')) as "User Id",
@@ -18,7 +18,7 @@ select
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_MULTIPLE_COLUMN_NAMES_CONFLICTS as table_alias
+from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_MULTIPLE_COLUMN_NAMES_CONFLICTS as table_alias
 -- MULTIPLE_COLUMN_NAMES_CONFLICTS
 where 1 = 1
 

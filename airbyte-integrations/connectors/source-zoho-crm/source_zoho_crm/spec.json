@@ -5,7 +5,12 @@
     "title": "Zoho Crm Configuration",
     "type": "object",
     "required": [
-      "client_id", "client_secret", "refresh_token", "environment", "dc_region", "edition"
+      "client_id",
+      "client_secret",
+      "refresh_token",
+      "environment",
+      "dc_region",
+      "edition"
     ],
     "additionalProperties": false,
     "properties": {
@@ -42,7 +47,13 @@
       "start_datetime": {
         "title": "Start Date",
         "type": ["null", "string"],
-        "examples": ["2000-01-01", "2000-01-01 13:00", "2000-01-01 13:00:00", "2000-01-01T13:00+00:00", "2000-01-01T13:00:00-07:00"],
+        "examples": [
+          "2000-01-01",
+          "2000-01-01 13:00",
+          "2000-01-01 13:00:00",
+          "2000-01-01T13:00+00:00",
+          "2000-01-01T13:00:00-07:00"
+        ],
         "description": "ISO 8601, for instance: `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS+HH:MM`",
         "format": "date-time"
       },

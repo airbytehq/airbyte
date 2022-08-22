@@ -2,84 +2,51 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
-type AllConnectionsStatusCellProps = {
-  connectEntities: {
-    name: string;
-    connector: string;
-    status: string;
-    lastSyncStatus: string;
-  }[];
-};
+const _statusConfig: Array<{ status: Status; statusIconStatus?: StatusIconStatus; titleId: string }> = [
+  { status: Status.ACTIVE, statusIconStatus: "success", titleId: "connection.successSync" },
+  { status: Status.INACTIVE, statusIconStatus: "inactive", titleId: "connection.disabledConnection" },
+  { status: Status.FAILED, titleId: "connection.failedSync" },
+  { status: Status.EMPTY, statusIconStatus: "sleep", titleId: "connection.noSyncData" },
+];
+
+interface AllConnectionStatusConnectEntity {
+  name: string;
+  connector: string;
+  status: string;
+  lastSyncStatus: string;
+}
+
+interface AllConnectionsStatusCellProps {
+  connectEntities: AllConnectionStatusConnectEntity[];
+}
 
 const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ connectEntities }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
-  const active = useMemo(
-    () => connectEntities.filter((entity) => entity.lastSyncStatus === Status.ACTIVE),
-    [connectEntities]
-  );
+  const statusIconProps = useMemo(() => {
+    if (connectEntities.length) {
+      for (const { status, statusIconStatus, titleId } of _statusConfig) {
+        const filteredEntities = connectEntities.filter((entity) => entity.lastSyncStatus === status);
+        if (filteredEntities.length) {
+          return {
+            status: statusIconStatus,
+            value: filteredEntities.length,
+            title: titleId,
+          };
+        }
+      }
+    }
 
-  const inactive = useMemo(
-    () => connectEntities.filter((entity) => entity.lastSyncStatus === Status.INACTIVE),
-    [connectEntities]
-  );
+    return undefined;
+  }, [connectEntities]);
 
-  const failed = useMemo(
-    () => connectEntities.filter((entity) => entity.lastSyncStatus === Status.FAILED),
-    [connectEntities]
-  );
-
-  const empty = useMemo(
-    () => connectEntities.filter((entity) => entity.lastSyncStatus === Status.EMPTY),
-    [connectEntities]
-  );
-
-  if (!connectEntities.length) {
-    return null;
-  }
-
-  return (
-    <>
-      {active.length ? (
-        <StatusIcon
-          success
-          value={active.length}
-          title={formatMessage({
-            id: "connection.successSync",
-          })}
-        />
-      ) : null}
-      {inactive.length ? (
-        <StatusIcon
-          inactive
-          value={inactive.length}
-          title={formatMessage({
-            id: "connection.disabledConnection",
-          })}
-        />
-      ) : null}
-      {failed.length ? (
-        <StatusIcon
-          value={failed.length}
-          title={formatMessage({
-            id: "connection.failedSync",
-          })}
-        />
-      ) : null}
-      {empty.length ? (
-        <StatusIcon
-          empty
-          value={empty.length}
-          title={formatMessage({
-            id: "connection.noSyncData",
-          })}
-        />
-      ) : null}
-    </>
-  );
+  return statusIconProps ? (
+    <StatusIcon {...statusIconProps} title={formatMessage({ id: statusIconProps.title })} />
+  ) : null;
 };
 
 export default AllConnectionsStatusCell;

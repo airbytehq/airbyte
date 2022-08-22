@@ -1,6 +1,6 @@
 # Changelog
 
-## 1/28/2021 Summary
+## 1/28/2022 Summary
 
 * New Source: Chartmogul (contributyed by Titas Skrebė)
 * New Source: Hellobaton (contributed by Daniel Luftspring)
@@ -20,7 +20,7 @@
 * 🐛 Postgres Source: Now supports handling of the Java SQL date type.
 * 🐛 Salesforce Source: No longer fails during schema generation.
 
-## 1/13/2021 Summary
+## 1/13/2022 Summary
 
 ⚠️ WARNING ⚠️
 
@@ -40,7 +40,7 @@ Snowflake Source: Normalization with Snowflake now produces permanent tables. [I
 * 🐛 Recurly Source: Now does not load all accounts when importing account coupon redemptions.
 * 🐛 Salesforce Source: Now properly handles 400 when streams don't support query or queryAll.
 
-## 1/6/2021 Summary
+## 1/6/2022 Summary
 
 * New Source: 3PL Central (contributed by Juozas)
 * New Source: My Hours (contributed by Wisse Jelgersma)
@@ -172,7 +172,7 @@ Hey Airbyte Community! Let's go over all the changes from v.32.1 and prior! But 
 ⚠️ WARNING ⚠️
 Upgrading to v.32.0 is equivalent to a major version bump. If your current version is v.32.0, you must upgrade to v.32.0 first before upgrading to any later version
 
-Keep in mind that this upgrade requires your all of your connector Specs to be retrievable, or Airbyte will fail on startup. You can force delete your connector Specs by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to `true`. Steps to specifically check out v.32.0 and details around this breaking change can be found [here](https://docs.airbyte.io/operator-guides/upgrading-airbyte#mandatory-intermediate-upgrade).
+Keep in mind that this upgrade requires your all of your connector Specs to be retrievable, or Airbyte will fail on startup. You can force delete your connector Specs by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to `true`. Steps to specifically check out v.32.0 and details around this breaking change can be found [here](../../operator-guides/upgrading-airbyte#mandatory-intermediate-upgrade).
 
 *Now back to our regularly scheduled programming.*
 

@@ -39,7 +39,7 @@ To build using Gradle, from the Airbyte repository root, run:
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/stripe)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_stripe/spec.json` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_stripe/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
@@ -66,7 +66,8 @@ Customize `acceptance-test-config.yml` file to configure tests. See [Source Acce
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```
-python -m pytest integration_tests -p integration_tests.acceptance
+docker build . --no-cache -t airbyte/source-stripe:dev \
+&& python -m pytest integration_tests -p integration_tests.acceptance
 ```
 
 ### Using gradle to run tests

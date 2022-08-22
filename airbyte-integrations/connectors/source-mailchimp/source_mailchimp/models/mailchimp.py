@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel
 
 
 class HealthCheckError(BaseModel):

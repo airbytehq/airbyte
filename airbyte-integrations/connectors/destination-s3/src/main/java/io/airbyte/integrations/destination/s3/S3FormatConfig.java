@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -10,7 +10,7 @@ public interface S3FormatConfig {
 
   S3Format getFormat();
 
-  Long getPartSize();
+  String getFileExtension();
 
   static String withDefault(final JsonNode config, final String property, final String defaultValue) {
     final JsonNode value = config.get(property);

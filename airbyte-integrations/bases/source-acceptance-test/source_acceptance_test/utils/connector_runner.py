@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -69,26 +69,26 @@ class ConnectorRunner:
         return output
 
     def call_check(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "check --config tap_config.json"
+        cmd = "check --config /data/tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
     def call_discover(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "discover --config tap_config.json"
+        cmd = "discover --config /data/tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
     def call_read(self, config, catalog, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config tap_config.json --catalog catalog.json"
+        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, **kwargs))
         return output
 
     def call_read_with_state(self, config, catalog, state, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config tap_config.json --catalog catalog.json --state state.json"
+        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json --state /data/state.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
         return output
 
-    def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
+    def run(self, cmd, config=None, state=None, catalog=None, raise_container_error: bool = True, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
@@ -96,14 +96,13 @@ class ConnectorRunner:
         container = self._client.containers.run(
             image=self._image,
             command=cmd,
-            working_dir="/data",
             volumes=volumes,
             network_mode="host",
             detach=True,
             **kwargs,
         )
         with open(self.output_folder / "raw", "wb+") as f:
-            for line in self.read(container, command=cmd):
+            for line in self.read(container, command=cmd, with_ext=raise_container_error):
                 f.write(line.encode())
                 try:
                     yield AirbyteMessage.parse_raw(line)

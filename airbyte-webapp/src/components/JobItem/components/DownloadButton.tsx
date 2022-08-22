@@ -1,28 +1,26 @@
+import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 
-type IProps = {
-  logs: string[];
-  fileName: string;
-};
+import { JobDebugInfoRead } from "core/request/AirbyteClient";
+import { downloadFile } from "utils/file";
 
-const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
-  const formatMessage = useIntl().formatMessage;
+interface DownloadButtonProps {
+  jobDebugInfo: JobDebugInfoRead;
+  fileName: string;
+}
+
+const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName }) => {
+  const { formatMessage } = useIntl();
 
   const downloadFileWithLogs = () => {
-    const element = document.createElement("a");
-    const file = new Blob([logs.join("\n")], {
+    const file = new Blob([jobDebugInfo.attempts.flatMap((info) => info.logs.logLines).join("\n")], {
       type: "text/plain;charset=utf-8",
     });
-    element.href = URL.createObjectURL(file);
-    element.download = `${fileName}.txt`;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
+    downloadFile(file, `${fileName}.txt`);
   };
 
   return (

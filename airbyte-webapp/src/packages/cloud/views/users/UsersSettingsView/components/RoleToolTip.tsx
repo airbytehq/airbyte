@@ -1,10 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
+import { InfoIcon } from "components/icons/InfoIcon";
 import ToolTip from "components/ToolTip";
-
-import InfoIcon from "./InfoIcon";
 
 const Info = styled.div`
   margin-left: 7px;

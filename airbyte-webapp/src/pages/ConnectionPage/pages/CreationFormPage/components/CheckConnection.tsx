@@ -1,20 +1,20 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import StatusIcon from "components/StatusIcon";
 import { Button, H4, Link, Spinner } from "components";
+import StatusIcon from "components/StatusIcon";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
-type IProps = {
+interface IProps {
   isLoading?: boolean;
   success?: boolean;
   type: "source" | "destination";
   error?: number;
   retry?: () => void;
   linkToSettings?: string;
-};
+}
 
 const Content = styled.div`
   min-height: 320px;
@@ -48,7 +48,7 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
 
     return (
       <Content>
-        <StatusIcon success={false} big />
+        <StatusIcon big />
         <Title>
           <FormattedMessage id="connection.testsFailed" />
         </Title>
@@ -79,7 +79,7 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
 
   return (
     <Content>
-      <StatusIcon success big />
+      <StatusIcon status="success" big />
       <Title>
         <FormattedMessage id="connection.testsPassed" />
       </Title>

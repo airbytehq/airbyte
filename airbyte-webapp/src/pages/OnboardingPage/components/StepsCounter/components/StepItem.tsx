@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-type StepItemProps = {
+interface StepItemProps {
   active?: boolean;
   current?: boolean;
   children?: React.ReactNode;
-};
+}
 
 const Content = styled.div<{ active?: boolean }>`
   display: flex;

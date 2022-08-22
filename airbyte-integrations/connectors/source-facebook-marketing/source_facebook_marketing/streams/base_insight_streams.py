@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -46,9 +46,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     # HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
-    # Facebook freezes insight data 28 days after it was generated, which means that all data
-    # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-    INSIGHTS_LOOKBACK_PERIOD = pendulum.duration(days=28)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -64,6 +61,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
         time_increment: Optional[int] = None,
+        insights_lookback_window: int = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -74,6 +72,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.breakdowns = breakdowns or self.breakdowns
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
+        self._insights_lookback_window = insights_lookback_window
 
         # state
         self._cursor_value: Optional[pendulum.Date] = None  # latest period that was read
@@ -90,6 +89,16 @@ class AdsInsights(FBMarketingIncrementalStream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """Build complex PK based on slices and breakdowns"""
         return ["date_start", "account_id", "ad_id"] + self.breakdowns
+
+    @property
+    def insights_lookback_period(self):
+        """
+        Facebook freezes insight data 28 days after it was generated, which means that all data
+        from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+        But in some cases users my have define their own lookback window, thats
+        why the value for `insights_lookback_window` is set throught config.
+        """
+        return pendulum.duration(days=self._insights_lookback_window)
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
@@ -217,13 +226,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         today = pendulum.today().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
-        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
-
+        refresh_date = today - self.insights_lookback_period
         if self._cursor_value:
             start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
             if start_date > refresh_date:
                 logger.info(
-                    f"The cursor value within refresh period ({self.INSIGHTS_LOOKBACK_PERIOD}), start sync from {refresh_date} instead."
+                    f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                 )
             start_date = min(start_date, refresh_date)
 
@@ -234,7 +242,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = self._start_date
         if start_date < oldest_date:
             logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}.")
-
         return max(oldest_date, start_date)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:

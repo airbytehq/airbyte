@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,21 +8,11 @@ import json
 import os
 import pkgutil
 import socket
-from enum import Enum
+import subprocess
 from typing import Any, Dict
 
 import yaml
-
-
-class DestinationType(Enum):
-    bigquery = "bigquery"
-    postgres = "postgres"
-    redshift = "redshift"
-    snowflake = "snowflake"
-    mysql = "mysql"
-    oracle = "oracle"
-    mssql = "mssql"
-    clickhouse = "clickhouse"
+from normalization.destination_type import DestinationType
 
 
 class TransformConfig:
@@ -60,20 +50,27 @@ class TransformConfig:
         base_profile = yaml.load(data, Loader=yaml.FullLoader)
 
         transformed_integration_config = {
-            DestinationType.bigquery.value: self.transform_bigquery,
-            DestinationType.postgres.value: self.transform_postgres,
-            DestinationType.redshift.value: self.transform_redshift,
-            DestinationType.snowflake.value: self.transform_snowflake,
-            DestinationType.mysql.value: self.transform_mysql,
-            DestinationType.oracle.value: self.transform_oracle,
-            DestinationType.mssql.value: self.transform_mssql,
-            DestinationType.clickhouse.value: self.transform_clickhouse,
+            DestinationType.BIGQUERY.value: self.transform_bigquery,
+            DestinationType.POSTGRES.value: self.transform_postgres,
+            DestinationType.REDSHIFT.value: self.transform_redshift,
+            DestinationType.SNOWFLAKE.value: self.transform_snowflake,
+            DestinationType.MYSQL.value: self.transform_mysql,
+            DestinationType.ORACLE.value: self.transform_oracle,
+            DestinationType.MSSQL.value: self.transform_mssql,
+            DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
         base_profile["normalize"]["outputs"]["prod"] = transformed_integration_config
 
         return base_profile
+
+    @staticmethod
+    def create_file(name, content):
+        f = open(name, "x")
+        f.write(content)
+        f.close()
+        return os.path.abspath(f.name)
 
     @staticmethod
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
@@ -178,9 +175,19 @@ class TransformConfig:
             "threads": 8,
         }
 
-        # if unset, we assume true.
-        if config.get("ssl", True):
-            config["sslmode"] = "require"
+        ssl = config.get("ssl")
+        if ssl:
+            ssl_mode = config.get("ssl_mode", {"mode": "allow"})
+            dbt_config["sslmode"] = ssl_mode.get("mode")
+            if ssl_mode["mode"] == "verify-ca":
+                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslrootcert"] = "ca.crt"
+            elif ssl_mode["mode"] == "verify-full":
+                dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
+                client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
+                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
+                dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
 
@@ -230,6 +237,12 @@ class TransformConfig:
             dbt_config["oauth_client_id"] = credentials["client_id"]
             dbt_config["oauth_client_secret"] = credentials["client_secret"]
             dbt_config["token"] = credentials["refresh_token"]
+        elif credentials.get("private_key"):
+            with open("private_key_path.txt", "w") as f:
+                f.write(credentials["private_key"])
+            dbt_config["private_key_path"] = "private_key_path.txt"
+            if credentials.get("private_key_password"):
+                dbt_config["private_key_passphrase"] = credentials["private_key_password"]
         elif credentials.get("password"):
             dbt_config["password"] = credentials["password"]
         else:
@@ -278,6 +291,11 @@ class TransformConfig:
     def transform_mssql(config: Dict[str, Any]):
         print("transform_mssql")
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+            config["host"] = "127.0.0.1"  # localhost is not supported by dbt-sqlserver.
+
         dbt_config = {
             "type": "sqlserver",
             "driver": "ODBC Driver 17 for SQL Server",

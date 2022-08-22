@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 """ This is the example of input record for the test_tranform_data. """
@@ -62,6 +62,7 @@ input_test_data = [
                 }
             }
         },
+        "pivot": "TEST_PIVOT_VALUE",
     }
 ]
 
@@ -130,5 +131,6 @@ output_test_data = [
         "lastModified": "2021-08-22 20:35:44",
         "start_date": "2021-08-13",
         "end_date": "2021-08-13",
+        "_pivot": "TEST_PIVOT_VALUE",
     }
 ]

@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { StatusIcon } from "components";
 
@@ -25,7 +25,7 @@ const Success = styled(StatusIcon)`
 
 const TestingConnectionSuccess: React.FC = () => (
   <LoadingContainer data-id="success-result">
-    <Success success />
+    <Success status="success" />
     <FormattedMessage id="form.successTests" />
   </LoadingContainer>
 );

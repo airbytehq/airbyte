@@ -22,6 +22,9 @@ There may be problems with mapping values in MySQL's datetime field to other rel
 Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
 To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 
+Another error that users have reported when trying to connect to Amazon RDS MySQL is `Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`. Many times this is can be due to the VPC not allowing public traffic, however, we recommend going through [this AWS troubleshooting checklist](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/) to the correct permissions/settings have been granted to allow connection to your database.
+
+
 ## Getting Started \(Airbyte Cloud\)
 
 On Airbyte Cloud, only TLS connections to your MySQL instance are supported. Other than that, you can proceed with the open-source instructions below.
@@ -86,18 +89,18 @@ Your database user should now be ready for use with Airbyte.
 You must enable binary logging for MySQL replication. The binary logs record transaction updates for replication tools to propagate changes. You can configure your MySQL server configuration file with the following properties, which are described in below:
 
 ```text
-server-id         = 223344
-log_bin           = mysql-bin
-binlog_format     = ROW
-binlog_row_image  = FULL
-expire_logs_days  = 10
+server-id                  = 223344
+log_bin                    = mysql-bin
+binlog_format              = ROW
+binlog_row_image           = FULL
+binlog_expire_log_seconds  = 864000
 ```
 
-* server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id) 
+* server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
 * log\_bin :  The value of log\_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
 * binlog\_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
 * binlog\_row\_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
-* expire\_logs\_days : This is the number of days for automatic binlog file removal. We recommend 10 days so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
+* binlog_expire_log_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
 
 **2. Enable GTIDs \(Optional\)**
 
@@ -148,7 +151,7 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint`                                 | number                 |                                                                                                                |
+| `tinyint(>1)`                             | number                 |                                                                                                                |
 | `smallint`                                | number                 |                                                                                                                |
 | `mediumint`                               | number                 |                                                                                                                |
 | `int`                                     | number                 |                                                                                                                |
@@ -183,42 +186,55 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ## Changelog
 
-| Version | Date         | Pull Request                                               | Subject                                                                                                          |
-|:--------|:-------------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| 0.5.6   | 2022-02-21   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats           |
-| 0.5.5   | 2022-02-18   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Updated timestamp transformation with microseconds                                                               |
-| 0.5.4   | 2022-02-11   | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |
-| 0.5.2   | 2021-12-14   | [6425](https://github.com/airbytehq/airbyte/issues/6425)   | MySQL CDC sync fails because starting binlog position not found in DB                                            |
-| 0.5.1   | 2021-12-13   | [8582](https://github.com/airbytehq/airbyte/pull/8582)     | Update connector fields title/description                                                                        |
-| 0.5.0   | 2021-12-11   | [7970](https://github.com/airbytehq/airbyte/pull/7970)     | Support all MySQL types                                                                                          |
-| 0.4.13  | 2021-12-03   | [8335](https://github.com/airbytehq/airbyte/pull/8335)     | Source-MySql: do not check cdc required param binlog_row_image for standard replication                          |
-| 0.4.12  | 2021-12-01   | [8371](https://github.com/airbytehq/airbyte/pull/8371)     | Fixed incorrect handling "\n" in ssh key                                                                         |
-| 0.4.11  | 2021-11-19   | [8047](https://github.com/airbytehq/airbyte/pull/8047)     | Source MySQL: transform binary data base64 format                                                                |
-| 0.4.10  | 2021-11-15   | [7820](https://github.com/airbytehq/airbyte/pull/7820)     | Added basic performance test                                                                                     |
-| 0.4.9   | 2021-11-02   | [7559](https://github.com/airbytehq/airbyte/pull/7559)     | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
-| 0.4.8   | 2021-09-16   | [6093](https://github.com/airbytehq/airbyte/pull/6093)     | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text            |
-| 0.4.7   | 2021-09-30   | [6585](https://github.com/airbytehq/airbyte/pull/6585)     | Improved SSH Tunnel key generation steps                                                                         |
-| 0.4.6   | 2021-09-29   | [6510](https://github.com/airbytehq/airbyte/pull/6510)     | Support SSL connection                                                                                           |
-| 0.4.5   | 2021-09-17   | [6146](https://github.com/airbytehq/airbyte/pull/6146)     | Added option to connect to DB via SSH                                                                            |
-| 0.4.1   | 2021-07-23   | [4956](https://github.com/airbytehq/airbyte/pull/4956)     | Fix log link                                                                                                     |
-| 0.3.7   | 2021-06-09   | [3179](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                                                                   |
-| 0.3.6   | 2021-06-09   | [3966](https://github.com/airbytehq/airbyte/pull/3966)     | Fix excessive logging for CDC method                                                                             |
-| 0.3.5   | 2021-06-07   | [3890](https://github.com/airbytehq/airbyte/pull/3890)     | Fix CDC handle tinyint\(1\) and boolean types                                                                    |
-| 0.3.4   | 2021-06-04   | [3846](https://github.com/airbytehq/airbyte/pull/3846)     | Fix max integer value failure                                                                                    |
-| 0.3.3   | 2021-06-02   | [3789](https://github.com/airbytehq/airbyte/pull/3789)     | MySQL CDC poll wait 5 minutes when not received a single record                                                  |
-| 0.3.2   | 2021-06-01   | [3757](https://github.com/airbytehq/airbyte/pull/3757)     | MySQL CDC poll 5s to 5 min                                                                                       |
-| 0.3.1   | 2021-06-01   | [3505](https://github.com/airbytehq/airbyte/pull/3505)     | Implemented MySQL CDC                                                                                            |
-| 0.3.0   | 2021-04-21   | [2990](https://github.com/airbytehq/airbyte/pull/2990)     | Support namespaces                                                                                               |
-| 0.2.5   | 2021-04-15   | [2899](https://github.com/airbytehq/airbyte/pull/2899)     | Fix bug in tests                                                                                                 |
-| 0.2.4   | 2021-03-28   | [2600](https://github.com/airbytehq/airbyte/pull/2600)     | Add NCHAR and NVCHAR support to DB and cursor type casting                                                       |
-| 0.2.3   | 2021-03-26   | [2611](https://github.com/airbytehq/airbyte/pull/2611)     | Add an optional `jdbc_url_params` in parameters                                                                  |
-| 0.2.2   | 2021-03-26   | [2460](https://github.com/airbytehq/airbyte/pull/2460)     | Destination supports destination sync mode                                                                       |
-| 0.2.1   | 2021-03-18   | [2488](https://github.com/airbytehq/airbyte/pull/2488)     | Sources support primary keys                                                                                     |
-| 0.2.0   | 2021-03-09   | [2238](https://github.com/airbytehq/airbyte/pull/2238)     | Protocol allows future/unknown properties                                                                        |
-| 0.1.10  | 2021-02-02   | [1887](https://github.com/airbytehq/airbyte/pull/1887)     | Migrate AbstractJdbcSource to use iterators                                                                      |
-| 0.1.9   | 2021-01-25   | [1746](https://github.com/airbytehq/airbyte/pull/1746)     | Fix NPE in State Decorator                                                                                       |
-| 0.1.8   | 2021-01-19   | [1724](https://github.com/airbytehq/airbyte/pull/1724)     | Fix JdbcSource handling of tables with same names in different schemas                                           |
-| 0.1.7   | 2021-01-14   | [1655](https://github.com/airbytehq/airbyte/pull/1655)     | Fix JdbcSource OOM                                                                                               |
-| 0.1.6   | 2021-01-08   | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                 |
-| 0.1.5   | 2020-12-11   | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                         |
-| 0.1.4   | 2020-11-30   | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                          |
+| Version | Date       | Pull Request                                               | Subject                                                                                                          |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.6.4  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.6.3   | 2022-08-12 | [15044](https://github.com/airbytehq/airbyte/pull/15044) | Added the ability to connect using different SSL modes and SSL certificates                                        |
+| 0.6.2   | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
+| 0.6.1   | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                        |
+| 0.6.0   | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                             |
+| 0.5.17  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                      |
+| 0.5.16  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                   |
+| 0.5.15  | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management                                                                                     |
+| 0.5.13  | 2022-06-21 | [13945](https://github.com/airbytehq/airbyte/pull/13945)    | Aligned datatype test                                                                                            |
+| 0.5.12  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)    | Updated stacktrace format for any trace message errors                                                           |
+| 0.5.11  | 2022-05-03 | [12544](https://github.com/airbytehq/airbyte/pull/12544)   | Prevent source from hanging under certain circumstances by adding a watcher for orphaned threads.                |
+| 0.5.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480)   | Query tables with adaptive fetch size to optimize JDBC memory consumption                                        |
+| 0.5.9   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729)   | Bump mina-sshd from 2.7.0 to 2.8.0                                                                               |
+| 0.5.6   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats           |
+| 0.5.5   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Updated timestamp transformation with microseconds                                                               |
+| 0.5.4   | 2022-02-11 | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |
+| 0.5.2   | 2021-12-14 | [6425](https://github.com/airbytehq/airbyte/issues/6425)   | MySQL CDC sync fails because starting binlog position not found in DB                                            |
+| 0.5.1   | 2021-12-13 | [8582](https://github.com/airbytehq/airbyte/pull/8582)     | Update connector fields title/description                                                                        |
+| 0.5.0   | 2021-12-11 | [7970](https://github.com/airbytehq/airbyte/pull/7970)     | Support all MySQL types                                                                                          |
+| 0.4.13  | 2021-12-03 | [8335](https://github.com/airbytehq/airbyte/pull/8335)     | Source-MySql: do not check cdc required param binlog_row_image for standard replication                          |
+| 0.4.12  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371)     | Fixed incorrect handling "\n" in ssh key                                                                         |
+| 0.4.11  | 2021-11-19 | [8047](https://github.com/airbytehq/airbyte/pull/8047)     | Source MySQL: transform binary data base64 format                                                                |
+| 0.4.10  | 2021-11-15 | [7820](https://github.com/airbytehq/airbyte/pull/7820)     | Added basic performance test                                                                                     |
+| 0.4.9   | 2021-11-02 | [7559](https://github.com/airbytehq/airbyte/pull/7559)     | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
+| 0.4.8   | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093)     | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text            |
+| 0.4.7   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585)     | Improved SSH Tunnel key generation steps                                                                         |
+| 0.4.6   | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510)     | Support SSL connection                                                                                           |
+| 0.4.5   | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146)     | Added option to connect to DB via SSH                                                                            |
+| 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956)     | Fix log link                                                                                                     |
+| 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                                                                   |
+| 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966)     | Fix excessive logging for CDC method                                                                             |
+| 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890)     | Fix CDC handle tinyint\(1\) and boolean types                                                                    |
+| 0.3.4   | 2021-06-04 | [3846](https://github.com/airbytehq/airbyte/pull/3846)     | Fix max integer value failure                                                                                    |
+| 0.3.3   | 2021-06-02 | [3789](https://github.com/airbytehq/airbyte/pull/3789)     | MySQL CDC poll wait 5 minutes when not received a single record                                                  |
+| 0.3.2   | 2021-06-01 | [3757](https://github.com/airbytehq/airbyte/pull/3757)     | MySQL CDC poll 5s to 5 min                                                                                       |
+| 0.3.1   | 2021-06-01 | [3505](https://github.com/airbytehq/airbyte/pull/3505)     | Implemented MySQL CDC                                                                                            |
+| 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990)     | Support namespaces                                                                                               |
+| 0.2.5   | 2021-04-15 | [2899](https://github.com/airbytehq/airbyte/pull/2899)     | Fix bug in tests                                                                                                 |
+| 0.2.4   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600)     | Add NCHAR and NVCHAR support to DB and cursor type casting                                                       |
+| 0.2.3   | 2021-03-26 | [2611](https://github.com/airbytehq/airbyte/pull/2611)     | Add an optional `jdbc_url_params` in parameters                                                                  |
+| 0.2.2   | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460)     | Destination supports destination sync mode                                                                       |
+| 0.2.1   | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488)     | Sources support primary keys                                                                                     |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)     | Protocol allows future/unknown properties                                                                        |
+| 0.1.10  | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887)     | Migrate AbstractJdbcSource to use iterators                                                                      |
+| 0.1.9   | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746)     | Fix NPE in State Decorator                                                                                       |
+| 0.1.8   | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724)     | Fix JdbcSource handling of tables with same names in different schemas                                           |
+| 0.1.7   | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655)     | Fix JdbcSource OOM                                                                                               |
+| 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                 |
+| 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                         |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                          |

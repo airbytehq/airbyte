@@ -16,6 +16,9 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      uuid:
+        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+        required: false
 
 jobs:
   find_valid_pat:
@@ -25,6 +28,8 @@ jobs:
     outputs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
+      - name: UUID ${{ github.event.inputs.uuid }}
+        run: true
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Check PAT rate limits
@@ -64,6 +69,13 @@ jobs:
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
     steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
@@ -74,13 +86,6 @@ jobs:
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -110,10 +115,16 @@ jobs:
         run: |
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }}
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
-      - name: test ${{ github.event.inputs.connector }}
+      - name: Test ${{ github.event.inputs.connector }}
         run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         id: test
@@ -159,7 +170,7 @@ jobs:
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
             ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
-            > ${{env.PYTHON_SHORT_TEST_SUMMARY_INFO}}
+            > ${{env.TEST_SUMMARY_INFO}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
@@ -168,7 +179,7 @@ jobs:
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
             > :bug: ${{env.GRADLE_SCAN_LINK}}
-            > ${{env.PYTHON_SHORT_TEST_SUMMARY_INFO}}
+            > ${{env.TEST_SUMMARY_INFO}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner

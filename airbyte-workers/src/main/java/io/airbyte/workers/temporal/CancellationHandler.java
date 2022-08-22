@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
 
-import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;
 import org.slf4j.Logger;
@@ -18,10 +17,10 @@ public interface CancellationHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TemporalCancellationHandler.class);
 
-    final ActivityExecutionContext context;
+    private final ActivityExecutionContext activityContext;
 
-    public TemporalCancellationHandler() {
-      context = Activity.getExecutionContext();
+    public TemporalCancellationHandler(ActivityExecutionContext activityContext) {
+      this.activityContext = activityContext;
     }
 
     /**
@@ -48,7 +47,7 @@ public interface CancellationHandler {
          * {@link TemporalUtils#withBackgroundHeartbeat} for where we actually send heartbeats to ensure
          * that we don't time out the activity.
          */
-        context.heartbeat(null);
+        activityContext.heartbeat(null);
       } catch (final ActivityCompletionException e) {
         onCancellationCallback.run();
         LOGGER.warn("Job either timed out or was cancelled.");

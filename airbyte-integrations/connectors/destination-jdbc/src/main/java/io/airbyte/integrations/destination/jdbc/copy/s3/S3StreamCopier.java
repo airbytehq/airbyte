@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -93,12 +94,11 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public String prepareStagingFile() {
     if (partsAddedToCurrentFile == 0) {
-      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
         // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
         // pass in null.
-        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, (long) s3Config.getPartSize());
+        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION);
         final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
             writerS3Config,

@@ -32,7 +32,7 @@
           "type": ["null", "string"]
         },
         "mobile_app_id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "promotion_type": {
           "type": ["null", "string"]
@@ -124,6 +124,10 @@
       "type": ["null", "object"],
       "properties": {
         "stat_time_day": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "stat_time_hour": {
           "type": ["null", "string"],
           "format": "date-time"
         },

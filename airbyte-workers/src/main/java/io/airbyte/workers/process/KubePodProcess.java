@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -9,8 +9,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
-import io.airbyte.metrics.lib.MetricsRegistry;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -30,8 +30,8 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -94,6 +95,9 @@ import org.slf4j.MDC;
  * See the constructor for more information.
  */
 
+// Suppressing AvoidPrintStackTrace PMD warnings because
+// it is required for the connectors
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
 public class KubePodProcess extends Process implements KubePod {
 
@@ -147,7 +151,7 @@ public class KubePodProcess extends Process implements KubePod {
   private final int stderrLocalPort;
   private final ExecutorService executorService;
   private final CompletableFuture<Integer> exitCodeFuture;
-  private final Watch podWatch;
+  private final SharedIndexInformer<Pod> podInformer;
 
   public static String getPodIP(final KubernetesClient client, final String podName, final String podNamespace) {
     final var pod = client.pods().inNamespace(podNamespace).withName(podName).get();
@@ -189,7 +193,7 @@ public class KubePodProcess extends Process implements KubePod {
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
                                    final Map<String, String> envMap,
-                                   final String[] args)
+                                   final String... args)
       throws IOException {
     final var argsStr = String.join(" ", args);
     final var optionalStdin = usesStdin ? String.format("< %s", STDIN_PIPE_FILE) : "";
@@ -269,7 +273,7 @@ public class KubePodProcess extends Process implements KubePod {
           // Copying the success indicator file to the init container causes the container to immediately
           // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
           // not thrown in this case if the init container exits successfully.
-          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
+          if (SUCCESS_FILE_NAME.equals(file.getKey()) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
             LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
           } else {
             throw new IOException("kubectl cp failed with exit code " + exitCode);
@@ -305,16 +309,7 @@ public class KubePodProcess extends Process implements KubePod {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     final PodResource<Pod> pod =
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
-    try {
-      pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
-    } catch (final InterruptedException e) {
-      LOGGER.error("Init pod not found after 5 minutes");
-      LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
-          podDefinition.getMetadata().getNamespace(),
-          podDefinition.getMetadata().getName(),
-          pod.get().toString());
-      throw e;
-    }
+    pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
@@ -358,6 +353,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String namespace,
                         final String image,
                         final String imagePullPolicy,
+                        final String sidecarImagePullPolicy,
                         final int stdoutLocalPort,
                         final int stderrLocalPort,
                         final String kubeHeartbeatUrl,
@@ -446,29 +442,35 @@ public class KubePodProcess extends Process implements KubePod {
         envMap,
         args);
 
+    // Printing socat notice logs with socat -d -d
+    // To print info logs as well use socat -d -d -d
+    // more info: https://linux.die.net/man/1/socat
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
-        .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
+        .withCommand("sh", "-c", "socat -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -485,6 +487,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
@@ -523,15 +526,21 @@ public class KubePodProcess extends Process implements KubePod {
     // This is safe only because we are blocking the init pod until we copy files onto it.
     // See the ExitCodeWatcher comments for more info.
     exitCodeFuture = new CompletableFuture<>();
-    podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
+    podInformer = fabricClient.pods()
+        .inNamespace(namespace)
+        .withName(pod.getMetadata().getName())
+        .inform();
+    podInformer.addEventHandler(new ExitCodeWatcher(
+        pod.getMetadata().getName(),
+        namespace,
         exitCodeFuture::complete,
-        exception -> {
+        () -> {
           LOGGER.info(prependPodInfo(
               String.format(
-                  "Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled. Error: %s",
-                  KILLED_EXIT_CODE,
-                  exception.getMessage()),
-              namespace, podName));
+                  "Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled.",
+                  KILLED_EXIT_CODE),
+              namespace,
+              podName));
 
           exitCodeFuture.complete(KILLED_EXIT_CODE);
         }));
@@ -553,7 +562,8 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || KubePodResourceHelper.isTerminal(p);
     }, 20, TimeUnit.MINUTES);
-    DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
+    MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS,
+        System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -626,7 +636,7 @@ public class KubePodProcess extends Process implements KubePod {
   public int waitFor() throws InterruptedException {
     try {
       exitCodeFuture.get();
-    } catch (ExecutionException e) {
+    } catch (final ExecutionException e) {
       throw new RuntimeException(e);
     }
 
@@ -665,9 +675,27 @@ public class KubePodProcess extends Process implements KubePod {
     return new KubePodProcessInfo(podDefinition.getMetadata().getName());
   }
 
+  private Container getMainContainerFromPodDefinition() {
+    final Optional<Container> containerOptional = podDefinition.getSpec()
+        .getContainers()
+        .stream()
+        .filter(c -> c.getName().contentEquals(MAIN_CONTAINER_NAME))
+        .findFirst();
+    if (containerOptional.isEmpty()) {
+      LOGGER.warn(String.format("Could not find main container definition for pod: %s", podDefinition.getMetadata().getName()));
+      return null;
+    } else {
+      return containerOptional.get();
+    }
+  }
+
   @Override
   public KubePodInfo getInfo() {
-    return new KubePodInfo(podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName());
+    final Container mainContainer = getMainContainerFromPodDefinition();
+    final KubeContainerInfo mainContainerInfo = new KubeContainerInfo(mainContainer.getImage(), mainContainer.getImagePullPolicy());
+    return new KubePodInfo(podDefinition.getMetadata().getNamespace(),
+        podDefinition.getMetadata().getName(),
+        mainContainerInfo);
   }
 
   /**
@@ -699,7 +727,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
-    Exceptions.swallow(this.podWatch::close);
+    Exceptions.swallow(this.podInformer::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
@@ -712,11 +740,12 @@ public class KubePodProcess extends Process implements KubePod {
     if (exitCodeFuture.isDone()) {
       try {
         return exitCodeFuture.get();
-      } catch (InterruptedException | ExecutionException e) {
+      } catch (final InterruptedException | ExecutionException e) {
         throw new RuntimeException(
             prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
                 podDefinition.getMetadata().getNamespace(),
-                podDefinition.getMetadata().getName()));
+                podDefinition.getMetadata().getName()),
+            e);
       }
     } else {
       throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.",

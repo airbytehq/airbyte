@@ -2,12 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
-import PageTitle from "components/PageTitle";
+import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import Placeholder, { ResourceTypes } from "components/Placeholder";
+import PageTitle from "components/PageTitle";
 
-import useRouter from "hooks/useRouter";
 import { useSourceList } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import SourcesTable from "./components/SourcesTable";
@@ -17,7 +17,7 @@ const AllSourcesPage: React.FC = () => {
   const { sources } = useSourceList();
 
   const onCreateSource = () => push(`${RoutePaths.SourceNew}`);
-  return (
+  return sources.length ? (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
@@ -31,8 +31,10 @@ const AllSourcesPage: React.FC = () => {
         />
       }
     >
-      {sources.length ? <SourcesTable sources={sources} /> : <Placeholder resource={ResourceTypes.Sources} />}
+      <SourcesTable sources={sources} />
     </MainPageWithScroll>
+  ) : (
+    <EmptyResourceListView resourceType="sources" onCreateClick={onCreateSource} />
   );
 };
 

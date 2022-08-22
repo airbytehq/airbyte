@@ -10,10 +10,10 @@ This source can sync data for the [Lemlist API](https://developer.lemlist.com/#i
 
 This Source is capable of syncing the following core Streams:
 
-* [Team](`api.lemlist.com/api/team`)
-* [Campaigns](`api.lemlist.com/api/campaigns`)
-* [Activities](`api.lemlist.com/api/activities`)
-* [Unsubscribes](`api.lemlist.com/api/unsubscribes`)
+* Team `api.lemlist.com/api/team`
+* Campaigns `api.lemlist.com/api/campaigns`
+* Activities `api.lemlist.com/api/activities`
+* Unsubscribes `api.lemlist.com/api/unsubscribes`
 
 ### Features
 

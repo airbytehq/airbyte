@@ -10,8 +10,7 @@ COPY setup.py ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENV SENTRY_DSN "https://d4b03de0c4574c78999b8d58e55243dc@o1009025.ingest.sentry.io/6102835"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.11
+LABEL io.airbyte.version=0.1.13
 LABEL io.airbyte.name=airbyte/source-google-search-console

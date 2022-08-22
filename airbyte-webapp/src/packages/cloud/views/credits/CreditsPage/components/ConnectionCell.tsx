@@ -1,18 +1,18 @@
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
-import ImageBlock from "components/ImageBlock";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
-type ConnectionCellProps = {
+interface ConnectionCellProps {
   sourceDefinitionName: string;
   destinationDefinitionName: string;
   sourceIcon?: string;
   destinationIcon?: string;
-};
+}
 
-const Icon = styled(ImageBlock)`
+const Icon = styled(ConnectorIcon)`
   margin-right: 12px;
   display: inline-block;
   vertical-align: middle;
@@ -40,12 +40,12 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   return (
     <>
       <Connector>
-        <Icon small img={sourceIcon} />
+        <Icon icon={sourceIcon} />
         {sourceDefinitionName}
       </Connector>
       <Connector>
         <Arrow icon={faArrowRight} />
-        <Icon small img={destinationIcon} />
+        <Icon icon={destinationIcon} />
         {destinationDefinitionName}
       </Connector>
     </>

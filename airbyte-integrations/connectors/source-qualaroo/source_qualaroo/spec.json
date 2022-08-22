@@ -30,7 +30,7 @@
         "type": "array",
         "items": {
           "type": "string",
-          "pattern": "^[0-9a-fA-F]{24}$"
+          "pattern": "^[0-9]{1,8}$"
         },
         "title": "Qualaroo survey IDs",
         "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all surveys to which you have access will be replicated."
