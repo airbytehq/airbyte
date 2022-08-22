@@ -23,10 +23,13 @@ class RoomStatisticsStream(HttpStream):
     def request_params(self, next_page_token: Mapping[str, Any] = None, **_) -> MutableMapping[str, Any]:
         return None
 
-    def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **_) -> Iterable[Mapping]:
+        print("\n\n\n", stream_slice, "\n\n\n")
         if response.status_code != 200:
             return []
-        yield from [response.json()]
+        j_response = response.json()
+        j_response["waitingRoomId"] = stream_slice["waitingRoomId"]
+        yield from [j_response]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
