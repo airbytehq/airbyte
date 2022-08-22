@@ -1,9 +1,10 @@
+@use "sass:math";
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
 $line-height: 17px;
 $icon-size: 14px;
-$icon-top: ($line-height - $icon-size) / 2;
+$icon-top: math.div($line-height - $icon-size, 2);
 
 .container {
   display: inline-block;
