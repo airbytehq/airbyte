@@ -65,6 +65,7 @@
                 "description": "OAuth access token",
                 "airbyte_secret": true
             }
+          }
           },
           {
             "type": "object",
