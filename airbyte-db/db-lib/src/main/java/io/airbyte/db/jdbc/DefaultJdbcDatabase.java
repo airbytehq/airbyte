@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -78,7 +79,12 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
     } catch (SQLException e) {
-      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e : e.getCause());
+      if (Objects.isNull(e.getCause())) {
+        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
+      } else {
+        var cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getLocalizedMessage(), cause);
+      }
     }
   }
 

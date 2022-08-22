@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCO
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -143,7 +144,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     var destination = new PostgresDestination();
     var actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+    assertTrue(actual.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
@@ -152,7 +153,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+    assertTrue(actual.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
@@ -161,7 +162,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -170,7 +171,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -179,7 +180,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
+    assertTrue(actual.getMessage().contains("State code: 3D000;"));
   }
 
   @Test

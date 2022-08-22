@@ -61,7 +61,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(e.getErrorCode(), e);
+          .getErrorMessage(e.getErrorCode(), 0, e.getErrorMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

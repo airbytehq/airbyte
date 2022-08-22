@@ -4,10 +4,8 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -275,7 +273,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
@@ -284,7 +282,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
@@ -293,7 +291,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
@@ -302,7 +300,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
@@ -311,7 +309,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1049;"));
   }
 
   @Test
@@ -322,7 +320,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1044;"));
   }
 
 }

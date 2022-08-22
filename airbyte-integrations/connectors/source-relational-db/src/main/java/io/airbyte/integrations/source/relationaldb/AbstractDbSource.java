@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -85,7 +86,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(ex.getErrorCode(), ex);
+          .getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

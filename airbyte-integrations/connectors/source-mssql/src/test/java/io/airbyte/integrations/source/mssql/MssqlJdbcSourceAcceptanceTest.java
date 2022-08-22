@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -106,7 +107,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: S0001; Error code: 18456;"));
   }
 
   @Test
@@ -114,7 +115,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: S0001; Error code: 18456;"));
   }
 
   @Test
@@ -122,7 +123,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
@@ -130,7 +131,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
@@ -138,7 +139,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: S0001; Error code: 4060;"));
   }
 
   @Test
@@ -149,7 +150,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: S0001; Error code: 4060;"));
   }
 
 }

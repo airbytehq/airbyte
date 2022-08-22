@@ -398,7 +398,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_ACCOUNT_IS_LOCKED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 99999; Error code: 28000;"));
   }
 
   @Test
@@ -406,7 +406,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 72000; Error code: 1017;"));
   }
 
   @Test
@@ -414,7 +414,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08006; Error code: 17002;"));
   }
 
   @Test
@@ -422,7 +422,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08006; Error code: 17002;"));
   }
 
   @Test
@@ -432,7 +432,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 72000; Error code: 1045;"));
   }
 
 }

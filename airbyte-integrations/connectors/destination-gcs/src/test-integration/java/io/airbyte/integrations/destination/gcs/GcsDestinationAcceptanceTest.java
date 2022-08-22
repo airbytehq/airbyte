@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.gcs;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_BUCKET_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CREDENTIALS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -237,7 +238,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     var destination = new GcsDestination();
     final AirbyteConnectionStatus actual = destination.check(baseJson);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_CREDENTIALS.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: SignatureDoesNotMatch;"));
   }
 
   @Test
@@ -255,7 +256,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     var destination = new GcsDestination();
     final AirbyteConnectionStatus actual = destination.check(baseJson);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_CREDENTIALS.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: SignatureDoesNotMatch;"));
   }
 
   @Test
@@ -267,7 +268,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     var destination = new GcsDestination();
     final AirbyteConnectionStatus actual = destination.check(baseJson);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_BUCKET_NAME.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: NoSuchKey;"));
   }
 
 }

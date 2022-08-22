@@ -4,9 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_HOST;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -100,14 +99,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-  }
-
-  @Test
-  void testCheckIncorrectPasswordFailure() throws Exception {
-    ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
@@ -115,7 +107,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
@@ -123,7 +115,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 200011;"));
   }
 
   @Test
@@ -131,7 +123,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 200028;"));
   }
 
   @Override

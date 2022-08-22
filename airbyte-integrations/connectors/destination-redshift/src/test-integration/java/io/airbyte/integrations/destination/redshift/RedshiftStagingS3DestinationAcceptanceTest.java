@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +78,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 500310;"));
   }
 
   @Test
@@ -91,7 +88,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 500310;"));
   }
 
   @Test
@@ -101,7 +98,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: HY000; Error code: 500150;"));
   }
 
   @Test
@@ -111,17 +108,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
-  }
-
-  @Test
-  public void testCheckIncorrectPermissions() throws Exception {
-    final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("username", USER_WITHOUT_CREDS);
-    var destination = new RedshiftDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 3D000; Error code: 500310;"));
   }
 
   @Override
