@@ -12,12 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class SentryExceptionHelperTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelperTest.class);
 
   private static final String ERROR_PATH = "/airbyte/connector-errors/error.py";
   private static final String ABS_PATH = "abspath";

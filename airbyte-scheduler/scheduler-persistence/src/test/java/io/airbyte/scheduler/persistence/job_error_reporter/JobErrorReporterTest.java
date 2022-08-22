@@ -55,6 +55,7 @@ class JobErrorReporterTest {
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
   private static final String FAILURE_ORIGIN_KEY = "failure_origin";
   private static final String SOURCE = "source";
+  private static final String PREFIX_FORMAT_STRING = "%s_%s";
   private static final String FAILURE_TYPE_KEY = "failure_type";
   private static final String SYSTEM_ERROR = "system_error";
   private static final String CONNECTOR_DEFINITION_ID_KEY = "connector_definition_id";
@@ -169,10 +170,10 @@ class JobErrorReporterTest {
         Map.entry(FAILURE_ORIGIN_KEY, "normalization"),
         Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
         Map.entry(NORMALIZATION_REPOSITORY_KEY, NORMALIZATION_IMAGE),
-        Map.entry(String.format("%s_%s", "source", CONNECTOR_DEFINITION_ID_KEY), SOURCE_DEFINITION_ID.toString()),
-        Map.entry(String.format("%s_%s", "source", CONNECTOR_REPOSITORY_KEY), SOURCE_DOCKER_REPOSITORY),
-        Map.entry(String.format("%s_%s", "source", CONNECTOR_NAME_KEY), SOURCE_DEFINITION_NAME),
-        Map.entry(String.format("%s_%s", "source", CONNECTOR_RELEASE_STAGE_KEY), SOURCE_RELEASE_STAGE.toString()),
+        Map.entry(String.format(PREFIX_FORMAT_STRING, SOURCE, CONNECTOR_DEFINITION_ID_KEY), SOURCE_DEFINITION_ID.toString()),
+        Map.entry(String.format(PREFIX_FORMAT_STRING, SOURCE, CONNECTOR_REPOSITORY_KEY), SOURCE_DOCKER_REPOSITORY),
+        Map.entry(String.format(PREFIX_FORMAT_STRING, SOURCE, CONNECTOR_NAME_KEY), SOURCE_DEFINITION_NAME),
+        Map.entry(String.format(PREFIX_FORMAT_STRING, SOURCE, CONNECTOR_RELEASE_STAGE_KEY), SOURCE_RELEASE_STAGE.toString()),
         Map.entry(CONNECTOR_DEFINITION_ID_KEY, DESTINATION_DEFINITION_ID.toString()),
         Map.entry(CONNECTOR_REPOSITORY_KEY, DESTINATION_DOCKER_REPOSITORY),
         Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
