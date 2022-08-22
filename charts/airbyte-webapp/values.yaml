@@ -173,8 +173,5 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
-<<<<<<< HEAD
 
 secrets: {}
-=======
->>>>>>> 8a2d0ce928 (remove demo mode from UI)
