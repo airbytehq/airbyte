@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.time.LocalDateTime;
@@ -27,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -163,8 +163,8 @@ public class AirbyteMessageTracker implements MessageTracker {
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
-    } catch (final StateMetricsTracker.StateMetricsTrackerException e) {
-      log.warn("The StateMetricsTracker encountered an issue that prevents new state metrics from being recorded");
+    } catch (final StateMetricsTracker.StateMetricsTrackerOomException e) {
+      log.warn("The StateMetricsTracker encountered an out of memory error that prevents new state metrics from being recorded");
       log.warn("This only affects metrics and does not indicate a problem with actual sync data.");
       unreliableStateTimingMetrics = true;
     }
@@ -194,6 +194,11 @@ public class AirbyteMessageTracker implements MessageTracker {
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
+    } catch (final StateMetricsTrackerNoStateMatchException e) {
+      log.warn("The state message tracker was unable to match the destination state message to a corresponding source state message.");
+      log.warn("This only impacts metrics and does not indicate a problem with actual sync data.");
+      log.warn(e.getMessage(), e);
+      unreliableStateTimingMetrics = true;
     }
   }
 

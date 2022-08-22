@@ -53,12 +53,12 @@ public class StateMetricsTracker {
   }
 
   public synchronized void addState(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeEmitted)
-      throws StateMetricsTrackerException {
+      throws StateMetricsTrackerOomException {
     final long epochTime = timeEmitted.toEpochSecond(ZoneOffset.UTC);
 
     if (capacityExceeded || remainingCapacity < 1) {
       capacityExceeded = true;
-      throw new StateMetricsTrackerException("Memory capacity is exceeded for StateMetricsTracker.");
+      throw new StateMetricsTrackerOomException("Memory capacity is exceeded for StateMetricsTracker.");
     }
 
     if (AirbyteStateType.STREAM == stateMessage.getType()) {
@@ -71,7 +71,8 @@ public class StateMetricsTracker {
     }
   }
 
-  public synchronized void updateStates(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeCommitted) {
+  public synchronized void updateStates(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeCommitted)
+      throws StateMetricsTrackerNoStateMatchException {
     final LocalDateTime startingTime;
     if (AirbyteStateType.STREAM == stateMessage.getType()) {
       final String streamDescriptorKey = getStreamDescriptorKey(stateMessage.getStream().getStreamDescriptor());
@@ -115,11 +116,13 @@ public class StateMetricsTracker {
     }
   }
 
-  private LocalDateTime findStartingTimeStampAndRemoveOlderEntries(final List<byte[]> stateList, final int stateHash) {
+  private LocalDateTime findStartingTimeStampAndRemoveOlderEntries(final List<byte[]> stateList, final int stateHash)
+      throws StateMetricsTrackerNoStateMatchException {
     // iterate through each [state_hash, timestamp] in the list
     // update the first timestamp to equal min_timestamp
     // and remove all items from the list as we iterate through
     // break once we reach the state hash equal to the input(destination) state hash
+    Boolean foundStateHash = false;
     Long minTime = null;
     final Iterator<byte[]> iterator = stateList.iterator();
     while (iterator.hasNext()) {
@@ -134,8 +137,13 @@ public class StateMetricsTracker {
       iterator.remove();
 
       if (stateHash == currentStateHash) {
+        foundStateHash = true;
         break;
       }
+    }
+
+    if (!foundStateHash || minTime == null) {
+      throw new StateMetricsTrackerNoStateMatchException("Destination state message cannot be matched to corresponding Source state message.");
     }
     return LocalDateTime.ofEpochSecond(minTime, 0, ZoneOffset.UTC);
   }
@@ -232,9 +240,20 @@ public class StateMetricsTracker {
   /**
    * Thrown when the StateMetricsTracker exceeds its allotted memory
    */
-  public static class StateMetricsTrackerException extends Exception {
+  public static class StateMetricsTrackerOomException extends Exception {
 
-    public StateMetricsTrackerException(final String message) {
+    public StateMetricsTrackerOomException(final String message) {
+      super(message);
+    }
+
+  }
+
+  /**
+   * Thrown when the destination state message is not able to be matched to a source state message
+   */
+  public static class StateMetricsTrackerNoStateMatchException extends Exception {
+
+    public StateMetricsTrackerNoStateMatchException(final String message) {
       super(message);
     }
 

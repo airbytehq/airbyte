@@ -9,7 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerException;
+import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
+import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerOomException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,8 @@ class StateMetricsTrackerTest {
   }
 
   @Test
-  void testStreamMaxandMeanSecondsBetweenStateMessageEmittedandCommitted() throws StateMetricsTrackerException {
+  void testStreamMaxandMeanSecondsBetweenStateMessageEmittedandCommitted()
+      throws StateMetricsTrackerOomException, StateMetricsTrackerNoStateMatchException {
     final AirbyteStateMessage s1s1 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 1);
     final AirbyteStateMessage s1s2 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 2);
     final AirbyteStateMessage s1s3 = AirbyteMessageUtils.createStreamStateMessage(STREAM_1, 3);
@@ -70,7 +72,8 @@ class StateMetricsTrackerTest {
   }
 
   @Test
-  void testGlobalMaxandMeanSecondsBetweenStateMessageEmittedandCommitted() throws StateMetricsTrackerException {
+  void testGlobalMaxandMeanSecondsBetweenStateMessageEmittedandCommitted()
+      throws StateMetricsTrackerOomException, StateMetricsTrackerNoStateMatchException {
     final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
     final AirbyteMessage s2 = AirbyteMessageUtils.createGlobalStateMessage(2, STREAM_1);
     final AirbyteMessage s3 = AirbyteMessageUtils.createGlobalStateMessage(3, STREAM_1);
@@ -94,7 +97,7 @@ class StateMetricsTrackerTest {
   }
 
   @Test
-  void testStateMetricsTrackerExceptionThrown() throws StateMetricsTrackerException {
+  void testStateMetricsTrackerExceptionThrown() throws StateMetricsTrackerOomException {
     final StateMetricsTracker stateMetricsTrackerOom = new StateMetricsTracker(2L);
 
     final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
@@ -106,8 +109,9 @@ class StateMetricsTrackerTest {
     stateMetricsTrackerOom.addState(s1.getState(), 0, LocalDateTime.parse("2022-01-01 12:00:00", formatter));
     stateMetricsTrackerOom.addState(s2.getState(), 1, LocalDateTime.parse("2022-01-01 12:00:01", formatter));
 
-    assertThrows(StateMetricsTrackerException.class, () ->
-        stateMetricsTrackerOom.addState(s3.getState(), 2, LocalDateTime.parse("2022-01-01 12:00:02", formatter)));
+    assertThrows(StateMetricsTrackerOomException.class,
+        () -> stateMetricsTrackerOom.addState(s3.getState(), 2, LocalDateTime.parse("2022-01-01 12:00:02", formatter)));
 
   }
+
 }
