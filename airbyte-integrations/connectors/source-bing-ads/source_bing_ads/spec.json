@@ -83,7 +83,7 @@
     "accessTokenUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
     "accessTokenBody": "client_id={{ urlencode client_id }}&scope=https://ads.microsoft.com/msads.manage%20offline_access&code={{ urlencode code }}&grant_type=authorization_code&redirect_uri={{ urlencode redirect_uri }}",
     "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-    "accessTokenResponseMap": "{\"access_token\": \"/access_token\", \"expires_in\": \"/expires_in\", \"refresh_token\": \"/refresh_token\"}"
+    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
       
   }
 }
