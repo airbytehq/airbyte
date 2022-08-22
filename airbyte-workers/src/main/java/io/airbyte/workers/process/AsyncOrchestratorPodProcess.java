@@ -59,7 +59,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubernetesClient kubernetesClient;
   private final String secretName;
   private final String secretMountPath;
-  private final String containerOrchestratorImage;
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final boolean useStreamCapableState;
@@ -70,7 +69,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
-                                     final String containerOrchestratorImage,
                                      final String googleApplicationCredentials,
                                      final boolean useStreamCapableState) {
     this.kubePodInfo = kubePodInfo;
@@ -78,7 +76,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
-    this.containerOrchestratorImage = containerOrchestratorImage;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.useStreamCapableState = useStreamCapableState;
@@ -294,7 +291,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
-        .withImage(containerOrchestratorImage)
+        .withImage(kubePodInfo.mainContainerInfo().image())
+        .withImagePullPolicy(kubePodInfo.mainContainerInfo().pullPolicy())
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withEnv(envVars)
         .withPorts(containerPorts)
