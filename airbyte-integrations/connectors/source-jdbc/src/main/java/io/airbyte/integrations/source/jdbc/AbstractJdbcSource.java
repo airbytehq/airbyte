@@ -17,7 +17,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.SSL_MODE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -386,11 +385,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     dataSources.clear();
   }
 
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "useSSL=true",
-      "requireSSL=true");
-  public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
-  public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
+  public static final String SSL_MODE = "sslMode";
+
   public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
   public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
   public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
@@ -403,29 +399,23 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   Pair<URI, String> clientCertKeyStorePair;
 
   protected enum SslMode {
-    DISABLED("disable", "DISABLED"),
-    PREFERRED("preferred", "PREFERRED"),
-    REQUIRED("required", "REQUIRED"),
-    VERIFY_CA("verify_ca", "VERIFY_CA"),
-    VERIFY_IDENTITY("verify_identity", "VERIFY_IDENTITY");
 
-    public final String spec;
-    public final String jdbc;
+    DISABLED("disable"),
+    ALLOWED("allow"),
+    PREFERRED("preferred", "prefer"),
+    REQUIRED("required", "require"),
+    VERIFY_CA("verify_ca", "verify-ca"),
+    VERIFY_IDENTITY("verify_identity", "verify-full");
 
-    SslMode(final String spec, final String jdbc) {
-      this.spec = spec;
-      this.jdbc = jdbc;
+    public final List<String> spec;
+
+    SslMode(final String... spec) {
+      this.spec = Arrays.asList(spec);
     }
 
     public static Optional<SslMode> bySpec(final String spec) {
       return Arrays.stream(SslMode.values())
-          .filter(sslMode -> sslMode.spec.equals(spec))
-          .findFirst();
-    }
-
-    public static Optional<SslMode> byJdbc(final String jdbc) {
-      return Arrays.stream(SslMode.values())
-          .filter(sslMode -> sslMode.jdbc.equals(jdbc))
+          .filter(sslMode -> sslMode.spec.contains(spec))
           .findFirst();
     }
 
@@ -433,6 +423,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   /**
    * Parses SSL related configuration and generates keystores to be used by connector
+   *
    * @param config configuration
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
@@ -442,9 +433,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        final String mode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
+        final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
         additionalParameters.put(SSL_MODE,
-            SslMode.bySpec(mode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).jdbc);
+            SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
 
         if (Objects.isNull(caCertKeyStorePair)) {
           caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
@@ -472,14 +463,14 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
           try {
             additionalParameters.putAll(Map.of(
                 CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
-                CLIENT_KEY_STORE_PASS,clientCertKeyStorePair.getRight(),
+                CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
                 CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
           } catch (final MalformedURLException e) {
             throw new RuntimeException("Unable to get a URL for client key store");
           }
         }
       } else {
-        additionalParameters.put(SSL_MODE, SslMode.DISABLED.jdbc);
+        additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
       }
     }
     LOGGER.info("*** additional params: {}", additionalParameters);
@@ -488,14 +479,27 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   /**
    * Generates SSL related query parameters from map of parsed values.
+   *
    * @apiNote Different connector may need an override for specific implementation
    * @param sslParams
    * @return SSL portion of JDBC question params or and empty string
    */
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? "" : sslParams.entrySet()
-        .stream()
-        .map(entry -> entry.getKey()+ "=" + entry.getValue())
-        .collect(Collectors.joining("&"));
+    return Objects.isNull(sslParams) ? ""
+        : sslParams.entrySet()
+            .stream()
+            .map((entry) -> {
+              if (entry.getKey().equals(SSL_MODE)) {
+                return entry.getKey() + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
+              } else {
+                return entry.getKey() + "=" + entry.getValue();
+              }
+            })
+            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
   }
+
+  protected String toSslJdbcParam(final SslMode sslMode) {
+    return null; //TEMP
+  }
+
 }

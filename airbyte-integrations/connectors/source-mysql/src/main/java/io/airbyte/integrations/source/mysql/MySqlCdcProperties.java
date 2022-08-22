@@ -4,28 +4,22 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyStore;
-import java.util.Collections;
+import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_URL;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
-
 public class MySqlCdcProperties {
+
   final static private Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
 
   static Properties getDebeziumProperties(final JdbcDatabase database) {
@@ -47,7 +41,8 @@ public class MySqlCdcProperties {
 
     // snapshot config
     if (sourceConfig.has("snapshot_mode")) {
-      //The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip initial snapshot
+      // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip
+      // initial snapshot
       props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
       // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-mode
@@ -74,8 +69,10 @@ public class MySqlCdcProperties {
 
         if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
           props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.producer.ssl.truststore.location", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.consumer.ssl.truststore.location", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
           props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
           props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
 
@@ -90,8 +87,10 @@ public class MySqlCdcProperties {
         }
         if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
           props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.producer.ssl.keystore.location", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.consumer.ssl.keystore.location", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
           props.setProperty("database.history.producer.ssl.keystore.type", "PKCS12");
           props.setProperty("database.history.consumer.ssl.keystore.type", "PKCS12");
 
