@@ -17,8 +17,6 @@ describe("Connection main actions", () => {
   });
 
   it("Update connection", () => {
-    cy.intercept("/api/v1/web_backend/connections/updateNew").as("updateConnection");
-
     createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
 
     cy.visit("/source");
