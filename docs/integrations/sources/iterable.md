@@ -32,7 +32,7 @@ Please read [How to find your API key](https://support.iterable.com/hc/en-us/art
 
 ## Supported sync modes
 
-The Iterable <source/destination> connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -60,11 +60,6 @@ The Iterable <source/destination> connector supports the following [sync modes](
 * [Metadata](https://api.iterable.com/api/docs#metadata_list_tables)
 * [Templates](https://api.iterable.com/api/docs#templates_getTemplates)
 * [Users](https://api.iterable.com/api/docs#export_exportDataJson)
-
-## Performance considerations
-
-The Iterable connector should not run into Iterable API limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
