@@ -150,16 +150,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public boolean isValidCursorType(final MysqlType cursorType) {
-    return switch (cursorType) {
-      case BIT, BOOLEAN, TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP, TIME, YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> true;
-      // since cursor are expected to be comparable, handle cursor typing strictly and error on
-      // unrecognized types
-      default -> false;
-    };
-  }
-
-  @Override
   public void setStatementField(final PreparedStatement preparedStatement,
                                 final int parameterIndex,
                                 final MysqlType cursorFieldType,

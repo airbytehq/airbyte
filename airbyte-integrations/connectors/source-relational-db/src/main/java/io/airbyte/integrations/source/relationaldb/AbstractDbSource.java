@@ -161,9 +161,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       final TableInfo<CommonField<DataType>> table = tableNameToTable
           .get(fullyQualifiedTableName);
-      final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
+      final Optional<String> cursorField = IncrementalUtils.getCursorFieldOptional(airbyteStream);
+      if (cursorField.isEmpty()) {
+        continue;
+      }
       final DataType cursorType = table.getFields().stream()
-          .filter(info -> info.getName().equals(cursorField))
+          .filter(info -> info.getName().equals(cursorField.get()))
           .map(CommonField::getType)
           .findFirst()
           .orElseThrow();
@@ -172,7 +175,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         continue;
       }
 
-      tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField, cursorType.toString()));
+      tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {

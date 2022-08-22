@@ -62,14 +62,6 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public boolean isValidCursorType(final JDBCType cursorType) {
-    return switch (cursorType) {
-      case TIMESTAMP, TIME, DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB -> true;
-      default -> false;
-    };
-  }
-
-  @Override
   public void setStatementField(final PreparedStatement preparedStatement,
                                 final int parameterIndex,
                                 final JDBCType cursorFieldType,

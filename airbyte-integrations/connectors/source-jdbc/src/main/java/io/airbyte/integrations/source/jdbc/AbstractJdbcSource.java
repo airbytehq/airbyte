@@ -330,7 +330,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   protected boolean isValidCursorType(final Datatype cursorType) {
-    return sourceOperations.isValidCursorType(cursorType);
+    return sourceOperations.isCursorType(cursorType);
   }
 
   @Override
