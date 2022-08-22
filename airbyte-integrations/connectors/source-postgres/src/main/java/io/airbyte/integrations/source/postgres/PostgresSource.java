@@ -163,6 +163,32 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  public static final String PARAM_SSLMODE = "sslmode";
+  public static final String PARAM_SSL = "ssl";
+  public static final String PARAM_SSL_TRUE = "true";
+  public static final String PARAM_SSL_FALSE = "FALSE";
+
+  @Override
+  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams) ? ""
+        : sslParams.entrySet()
+            .stream()
+            .map((entry) -> {
+              final String result = switch (entry.getKey()) {
+                case SSL_MODE -> PARAM_SSLMODE + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
+                    + JdbcUtils.AMPERSAND + PARAM_SSL + "=" + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
+                case "ca_certificate_path" -> "sslrootcert" + "=" + entry.getValue();
+                case CLIENT_KEY_STORE_URL -> "sslkey" + "=" + entry.getValue();
+                case CLIENT_KEY_STORE_PASS -> "sslpassword" + "=" + entry.getValue();
+                default -> "";
+              };
+              return result;
+
+            })
+            .filter(s -> Objects.nonNull(s) && !s.isEmpty())
+            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+  }
+
   @Override
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""

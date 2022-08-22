@@ -20,13 +20,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_URL;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
-
 public class MySqlCdcProperties {
+
   final static private Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
 
   static Properties getDebeziumProperties(final JdbcDatabase database) {

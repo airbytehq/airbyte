@@ -20,7 +20,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.SSL_MODE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -522,4 +521,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     // Default implementation
     return sslMode.name();
   }
+
+  protected String toSslJdbcParam(final SslMode sslMode) {
+    return null; //TEMP
+  }
+
 }
