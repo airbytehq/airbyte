@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+main() {
+  cd /airbyte/airbyte-integrations/connector-templates/generator
+
+  npm install
+  npm run generate "$@"
+}
+
+main "$@"
