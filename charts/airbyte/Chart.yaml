@@ -22,7 +22,7 @@ version: 0.39.36
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.39.42-alpha"
+appVersion: "0.40.0-alpha"
 
 dependencies:
   - name: common
@@ -34,7 +34,7 @@ dependencies:
     name: postgresql
     version: 10.x.x
     repository: https://charts.bitnami.com/bitnami
-  - condition: logs.minio.enabled
+  - condition: global.logs.minio.enabled
     name: minio
     version: 11.x.x
     repository: https://charts.bitnami.com/bitnami

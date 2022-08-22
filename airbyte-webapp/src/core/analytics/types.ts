@@ -14,6 +14,7 @@ export const enum Namespace {
   CONNECTOR = "Connector",
   ONBOARDING = "Onboarding",
   USER = "User",
+  CREDITS = "Credits",
 }
 
 export const enum Action {
@@ -34,6 +35,7 @@ export const enum Action {
   PREFERENCES = "Preferences",
   NO_MATCHING_CONNECTOR = "NoMatchingConnector",
   SELECTION_OPENED = "SelectionOpened",
+  CHECKOUT_START = "CheckoutStart",
 }
 
 export type EventParams = Record<string, unknown>;

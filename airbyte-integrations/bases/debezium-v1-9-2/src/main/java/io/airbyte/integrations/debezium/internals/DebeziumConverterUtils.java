@@ -23,6 +23,9 @@ public final class DebeziumConverterUtils {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * TODO : Replace usage of this method with {@link io.airbyte.db.jdbc.DateTimeConverter}
+   */
   public static String convertDate(final Object input) {
     /**
      * While building this custom converter we were not sure what type debezium could return cause there

@@ -23,6 +23,6 @@
       "description": "Whether the context apply to all issue types."
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "The details of a custom field context."
 }

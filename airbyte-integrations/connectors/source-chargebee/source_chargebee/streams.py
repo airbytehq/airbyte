@@ -139,7 +139,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         """
         Override airbyte_cdk Stream's `get_updated_state` method to get the latest Chargebee stream state.
         """
-        item_id = latest_record["parent_item_id"]
+        item_id = latest_record.get("parent_item_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
         current_stream_state = current_stream_state.copy()
         current_state = current_stream_state.get(item_id)
@@ -147,9 +147,10 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
             current_state = current_state.get(self.cursor_field)
 
         current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        current_stream_state[item_id] = {self.cursor_field: max_value}
-        return current_stream_state
+        if current_state_value:
+            max_value = max(current_state_value, latest_cursor_value)
+            current_stream_state[item_id] = {self.cursor_field: max_value}
+        return current_stream_state or {}
 
 
 class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
