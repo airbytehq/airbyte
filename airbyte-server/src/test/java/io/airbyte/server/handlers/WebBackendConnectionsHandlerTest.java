@@ -440,7 +440,6 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, actual);
   }
 
-  // TODO: remove withRefreshedCatalog param from this test when param is removed from code
   @Test
   void testToConnectionUpdate() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -569,48 +568,6 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testUpdateConnectionWithOperations() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendOperationCreateOrUpdate operationCreateOrUpdate = new WebBackendOperationCreateOrUpdate()
-        .name("Test Operation")
-        .operationId(connectionRead.getOperationIds().get(0));
-    final OperationUpdate operationUpdate = WebBackendConnectionsHandler.toOperationUpdate(operationCreateOrUpdate);
-    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .connectionId(expected.getConnectionId())
-        .schedule(expected.getSchedule())
-        .status(expected.getStatus())
-        .syncCatalog(expected.getSyncCatalog())
-        .operations(List.of(operationCreateOrUpdate));
-
-    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead()
-            .connectionId(expected.getConnectionId())
-            .operationIds(connectionRead.getOperationIds()));
-    when(connectionsHandler.updateConnection(any())).thenReturn(
-        new ConnectionRead()
-            .connectionId(expected.getConnectionId())
-            .sourceId(expected.getSourceId())
-            .destinationId(expected.getDestinationId())
-            .operationIds(connectionRead.getOperationIds())
-            .name(expected.getName())
-            .namespaceDefinition(expected.getNamespaceDefinition())
-            .namespaceFormat(expected.getNamespaceFormat())
-            .prefix(expected.getPrefix())
-            .syncCatalog(expected.getSyncCatalog())
-            .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
-    when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
-    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-
-    final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
-
-    assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
-    verify(operationsHandler, times(1)).updateOperation(operationUpdate);
-  }
-
-  @Test
   void testUpdateConnectionWithOperationsNew() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendOperationCreateOrUpdate operationCreateOrUpdate = new WebBackendOperationCreateOrUpdate()
         .name("Test Operation")
@@ -654,60 +611,10 @@ class WebBackendConnectionsHandlerTest {
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
-    final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnectionNew(updateBody);
+    final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
     verify(operationsHandler, times(1)).updateOperation(operationUpdate);
-  }
-
-  // TODO: remove in favor of test below when update endpoint is switched to new endpoint
-  @Test
-  void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .connectionId(expected.getConnectionId())
-        .schedule(expected.getSchedule())
-        .status(expected.getStatus())
-        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-        .withRefreshedCatalog(true);
-
-    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead().connectionId(expected.getConnectionId()));
-    final ConnectionRead connectionRead = new ConnectionRead()
-        .connectionId(expected.getConnectionId())
-        .sourceId(expected.getSourceId())
-        .destinationId(expected.getDestinationId())
-        .name(expected.getName())
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-        .status(expected.getStatus())
-        .schedule(expected.getSchedule());
-    when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
-    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
-
-    final List<io.airbyte.protocol.models.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
-    when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
-
-    final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
-    when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
-    when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
-
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
-
-    assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
-
-    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
-    verify(schedulerHandler, times(0)).resetConnection(connectionId);
-    verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    verify(connectionsHandler, times(1)).updateConnection(any());
-    final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(), connectionStreams);
-    orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test
@@ -758,7 +665,7 @@ class WebBackendConnectionsHandlerTest {
     when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
@@ -824,7 +731,7 @@ class WebBackendConnectionsHandlerTest {
     when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
@@ -878,7 +785,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
@@ -923,7 +830,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule());
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 

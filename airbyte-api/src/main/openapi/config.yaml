@@ -3334,8 +3334,6 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
-        withRefreshedCatalog:
-          type: boolean
         skipReset:
           type: boolean
         operations:

@@ -1029,8 +1029,7 @@ class BasicAcceptanceTests {
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
-        .resourceRequirements(connection.getResourceRequirements())
-        .withRefreshedCatalog(true);
+        .resourceRequirements(connection.getResourceRequirements());
     webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
@@ -1236,7 +1235,7 @@ class BasicAcceptanceTests {
     // Update with refreshed catalog
     AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
     WebBackendConnectionUpdate update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     // Wait until the sync from the UpdateConnection is finished
     JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
@@ -1265,7 +1264,7 @@ class BasicAcceptanceTests {
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
@@ -1296,7 +1295,7 @@ class BasicAcceptanceTests {
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
