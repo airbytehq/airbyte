@@ -15,7 +15,7 @@
                 "type": "object",
                 "title": "OAuth2.0",
                 "x-oauth2-provider": "mailchimp",
-                "required": ["auth_method", "client_id", "client_secret", "refresh_token"],
+                "required": ["auth_method", "client_id", "client_secret", "access_token"],
                 "properties": {
                   "auth_method": {
                     "type": "string",
@@ -34,9 +34,9 @@
                     "description": "The client secret the LinkedIn Ads developer application.",
                     "airbyte_secret": true
                   },
-                  "refresh_token": {
+                  "access_token": {
                     "type": "string",
-                    "title": "Refresh token",
+                    "title": "Access token",
                     "description": "The key to refresh the expired access token.",
                     "airbyte_secret": true
                   }
