@@ -24,6 +24,10 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import com.trilead.ssh2.crypto.PEMDecoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +175,7 @@ public class SshTunnel implements AutoCloseable {
 
     // final int localPort = findFreePort();
 
-    return new SshTunnel(
+    SshTunnel result = new SshTunnel(
         config,
         hostKey,
         portKey,
@@ -183,6 +187,8 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
         Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
         Jsons.getIntOrZero(config, portKey));
+    result.tunnelSession = result.openTunnel(result.sshclient);
+    return result;
   }
 
   public static void sshWrap(final JsonNode config,
@@ -229,13 +235,28 @@ public class SshTunnel implements AutoCloseable {
    * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
    * the keys from the key info, and return the key pair for use in authentication.
    */
-  private KeyPair getPrivateKeyPair() throws IOException {
-    final PEMParser pemParser = new PEMParser(new StringReader(validateKey()));
-    final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
-    final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-    return new KeyPair(
-        converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
-        converter.getPrivateKey(keypair.getPrivateKeyInfo()));
+  KeyPair getPrivateKeyPair() throws IOException {
+    String validatedKey = validateKey();
+    PemReader pemReader = new PemReader(new StringReader(validatedKey));
+    PemObject pemObject = pemReader.readPemObject();
+
+    if (pemObject == null) {
+      throw new IOException("Could not load private key");
+    }
+
+    String type = pemObject.getType();
+
+    if ("OPENSSH PRIVATE KEY".equals(type)) {
+      return PEMDecoder.decode(validatedKey.toCharArray(), null);// we do not support encrypted keys for now, otherwise keystore password should be aded to UI
+    } else {
+      final PEMParser pemParser = new PEMParser(new StringReader(validatedKey));
+      final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
+      final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+
+      return new KeyPair(
+          converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
+          converter.getPrivateKey(keypair.getPrivateKeyInfo()));
+    }
   }
 
   private String validateKey() {
