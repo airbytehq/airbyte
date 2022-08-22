@@ -184,8 +184,10 @@ public class AirbyteMessageTracker implements MessageTracker {
 
     try {
       if (!unreliableCommittedCounts) {
-        stateMetricsTracker.updateStates(stateMessage, stateHash, timeCommitted);
         stateDeltaTracker.commitStateHash(stateHash);
+      }
+      if (!unreliableStateTimingMetrics) {
+        stateMetricsTracker.updateStates(stateMessage, stateHash, timeCommitted);
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
