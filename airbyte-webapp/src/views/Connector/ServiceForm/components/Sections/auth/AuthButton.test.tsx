@@ -28,9 +28,18 @@ jest.mock("formik", () => {
 
 jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOAuthFlowAdapter");
 const mockUseFormikOauthAdapter = useFormikOauthAdapter as unknown as jest.Mock<Partial<typeof useFormikOauthAdapter>>;
+const baseUseFormikOauthAdapterValues = {
+  run: jest.fn(),
+  loading: false,
+};
 
 jest.mock("views/Connector/ServiceForm/serviceFormContext");
 const mockUseServiceForm = useServiceForm as unknown as jest.Mock<Partial<typeof useServiceForm>>;
+const baseUseServiceFormValues = {
+  selectedConnector: "abcde",
+  allowOAuthConnector: true,
+  selectedService: undefined,
+};
 
 describe("auth button", () => {
   beforeEach(() => {
@@ -41,9 +50,7 @@ describe("auth button", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = {};
-      const selectedConnector = "abcde";
-      const allowOAuthConnector = true;
-      const selectedService = undefined;
+      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
 
       return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
@@ -51,8 +58,7 @@ describe("auth button", () => {
     // not done
     mockUseFormikOauthAdapter.mockImplementationOnce(() => {
       const done = false;
-      const run = jest.fn();
-      const loading = false;
+      const { run, loading } = baseUseFormikOauthAdapterValues;
 
       return { done, run, loading };
     });
@@ -80,9 +86,7 @@ describe("auth button", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = {};
-      const selectedConnector = "abcde";
-      const allowOAuthConnector = true;
-      const selectedService = undefined;
+      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
 
       return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
@@ -90,8 +94,7 @@ describe("auth button", () => {
     // done
     mockUseFormikOauthAdapter.mockImplementationOnce(() => {
       const done = true;
-      const run = jest.fn();
-      const loading = false;
+      const { run, loading } = baseUseFormikOauthAdapterValues;
 
       return { done, run, loading };
     });
@@ -115,9 +118,7 @@ describe("auth button", () => {
     // auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = { field: "form.empty.error" };
-      const selectedConnector = "abcde";
-      const allowOAuthConnector = true;
-      const selectedService = undefined;
+      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
 
       return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
@@ -125,8 +126,7 @@ describe("auth button", () => {
     // not done
     mockUseFormikOauthAdapter.mockImplementationOnce(() => {
       const done = false;
-      const run = jest.fn();
-      const loading = false;
+      const { run, loading } = baseUseFormikOauthAdapterValues;
 
       return { done, run, loading };
     });
