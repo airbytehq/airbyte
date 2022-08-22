@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -159,7 +158,6 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
 }

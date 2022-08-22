@@ -4,10 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -202,7 +198,6 @@ public class PostgresDestinationTest {
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the

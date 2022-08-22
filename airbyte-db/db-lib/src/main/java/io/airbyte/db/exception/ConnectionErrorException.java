@@ -45,4 +45,5 @@ public class ConnectionErrorException extends RuntimeException {
   public String getExceptionMessage() {
     return exceptionMessage;
   }
+
 }

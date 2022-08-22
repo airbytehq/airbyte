@@ -3,6 +3,7 @@
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -14,6 +15,7 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
 // Run as part of integration tests, instead of unit tests, because there is no test container for
 // Redshift.
 class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
@@ -55,4 +57,4 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     super.tearDown();
   }
 
- }
+}
