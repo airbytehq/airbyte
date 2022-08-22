@@ -78,6 +78,10 @@ class MarketoStream(HttpStream, ABC):
 class IncrementalMarketoStream(MarketoStream):
     cursor_field = "createdAt"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = {}
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
@@ -94,12 +98,21 @@ class IncrementalMarketoStream(MarketoStream):
         for record in json_response:
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
+        self._state = {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, self.start_date), current_stream_state.get(self.cursor_field, self.start_date)
             )
         }
+        return self._state
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         """
@@ -116,16 +129,16 @@ class IncrementalMarketoStream(MarketoStream):
         """
 
         start_date = pendulum.parse(self.start_date)
-        end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
             start_date = pendulum.parse(stream_state.get(self.cursor_field))
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
-        start_date = min(start_date, end_date)
+        start_date = min(start_date, pendulum.now())
         date_slices = []
 
+        end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
         while start_date <= end_date:
             # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
