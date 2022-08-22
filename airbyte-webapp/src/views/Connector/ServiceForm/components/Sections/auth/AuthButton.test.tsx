@@ -1,10 +1,10 @@
 import { screen, render } from "@testing-library/react";
 
 import { TestWrapper } from "utils/testutils";
+import { useFormikOauthAdapter } from "views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter";
 import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
 
 import { AuthButton } from "./AuthButton";
-import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 jest.setTimeout(10000);
 
 jest.mock("formik", () => {
@@ -26,7 +26,7 @@ jest.mock("formik", () => {
  * Then, can implement in tests using useWhateverServiceYouMocked.mockImplementationOnce or useWhateverServiceYouMocked.mockImplementation
  */
 
-jest.mock("./useOAuthFlowAdapter");
+jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter");
 const mockUseFormikOauthAdapter = useFormikOauthAdapter as unknown as jest.Mock<Partial<typeof useFormikOauthAdapter>>;
 const baseUseFormikOauthAdapterValues = {
   run: jest.fn(),
