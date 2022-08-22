@@ -1,4 +1,5 @@
 @use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
 
 .authSectionRow {
   display: flex;
@@ -10,7 +11,7 @@
   font-weight: normal;
   font-size: 14px;
   line-height: 17px;
-  margin-left: 14px;
+  margin-left: variables.$spacing-lg;
 }
 
 .error {
