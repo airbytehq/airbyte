@@ -1,0 +1,36 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':airbyte-workers')
+
+    runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
+
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+}
+
+mainClassName = 'io.airbyte.cron.MicronautCronRunner'
+
+application {
+    mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-cron-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("cron", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)
