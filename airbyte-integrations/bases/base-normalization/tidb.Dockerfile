@@ -19,7 +19,7 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-RUN pip install git+https://github.com/pingcap/dbt-tidb.git
+RUN pip install dbt-tidb==1.0.1
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
