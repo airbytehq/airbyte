@@ -74,9 +74,8 @@ public class StateMetricsTracker {
   public synchronized void updateStates(final AirbyteStateMessage stateMessage, final int stateHash, final LocalDateTime timeCommitted) {
     final LocalDateTime startingTime;
     if (AirbyteStateType.STREAM == stateMessage.getType()) {
-      final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-      final String streamNameAndNamespace = streamDescriptor.getName() + streamDescriptor.getNamespace();
-      final List<byte[]> stateMessagesForStream = streamStateHashesAndTimestamps.get(streamNameAndNamespace);
+      final String streamDescriptorKey = getStreamDescriptorKey(stateMessage.getStream().getStreamDescriptor());
+      final List<byte[]> stateMessagesForStream = streamStateHashesAndTimestamps.get(streamDescriptorKey);
       startingTime = findStartingTimeStampAndRemoveOlderEntries(stateMessagesForStream, stateHash);
     } else {
       startingTime = findStartingTimeStampAndRemoveOlderEntries(stateHashesAndTimestamps, stateHash);
@@ -87,17 +86,15 @@ public class StateMetricsTracker {
   void addStateMessageToStreamToStateHashTimestampTracker(final AirbyteStateMessage stateMessage,
                                                           final int stateHash,
                                                           final Long epochTimeEmitted) {
-
-    final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-    final String streamNameAndNamespace = streamDescriptor.getName() + streamDescriptor.getNamespace();
+    final String streamDescriptorKey = getStreamDescriptorKey(stateMessage.getStream().getStreamDescriptor());
     final byte[] stateHashAndTimestamp = populateStateTimestampByteArray(stateHash, epochTimeEmitted);
 
-    if (streamStateHashesAndTimestamps.get(streamNameAndNamespace) == null) {
+    if (streamStateHashesAndTimestamps.get(streamDescriptorKey) == null) {
       final List stateHashesAndTimestamps = new ArrayList<>();
       stateHashesAndTimestamps.add(stateHashAndTimestamp);
-      streamStateHashesAndTimestamps.put(streamNameAndNamespace, stateHashesAndTimestamps);
+      streamStateHashesAndTimestamps.put(streamDescriptorKey, stateHashesAndTimestamps);
     } else {
-      final List<byte[]> streamDescriptorValue = streamStateHashesAndTimestamps.get(streamNameAndNamespace);
+      final List<byte[]> streamDescriptorValue = streamStateHashesAndTimestamps.get(streamDescriptorKey);
       streamDescriptorValue.add(stateHashAndTimestamp);
     }
     remainingCapacity -= 1;
@@ -226,6 +223,10 @@ public class StateMetricsTracker {
     delta.putInt(stateHash);
     delta.putLong(epochTime);
     return delta.array();
+  }
+
+  private String getStreamDescriptorKey(final StreamDescriptor streamDescriptor) {
+    return streamDescriptor.getName() + "-" + streamDescriptor.getNamespace();
   }
 
   /**
