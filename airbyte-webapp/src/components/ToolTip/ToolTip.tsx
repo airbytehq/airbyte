@@ -1,51 +1,80 @@
-import React from "react";
-import styled from "styled-components";
+import { flip, offset, shift, useFloating } from "@floating-ui/react-dom";
+import classNames from "classnames";
+import React, { useState, useEffect } from "react";
 
-interface ToolTipProps {
-  control: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  cursor?: "pointer" | "help" | "not-allowed";
-}
+import { tooltipContext } from "./context";
+import styles from "./ToolTip.module.scss";
+import { ToolTipProps } from "./types";
 
-const Control = styled.div<{ $cursor?: "pointer" | "help" | "not-allowed"; $showCursor?: boolean }>`
-  display: inline;
-  position: relative;
-  ${({ $cursor, $showCursor = true }) => ($showCursor && $cursor ? `cursor: ${$cursor}` : "")};
-`;
+const MOUSE_OUT_TIMEOUT_MS = 50;
 
-const ToolTipView = styled.div<{ $disabled?: boolean }>`
-  display: none;
-  font-size: 14px;
-  line-height: initial;
-  position: absolute;
-  padding: 9px 8px 8px;
-  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14), 0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
-  border-radius: 4px;
-  background: rgba(26, 26, 33, 0.9);
-  color: ${({ theme }) => theme.whiteColor};
-  top: calc(100% + 10px);
-  left: -50px;
-  min-width: 100px;
-  width: max-content;
-  max-width: 380px;
-  z-index: 10;
+export const ToolTip: React.FC<ToolTipProps> = (props) => {
+  const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
 
-  div:hover > &&,
-  &&:hover {
-    display: ${({ $disabled }) => ($disabled ? "none" : "block")};
-  }
-`;
+  const [isMouseOver, setIsMouseOver] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, cursor }) => {
+  const { x, y, reference, floating, strategy } = useFloating({
+    placement,
+    middleware: [
+      offset(5), // $spacing-sm
+      flip(),
+      shift(),
+    ],
+  });
+
+  useEffect(() => {
+    if (isMouseOver) {
+      setIsVisible(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsVisible(false);
+    }, MOUSE_OUT_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [isMouseOver]);
+
+  const canShowTooltip = isVisible && !disabled;
+
+  const onMouseOver = () => {
+    setIsMouseOver(true);
+  };
+
+  const onMouseOut = () => {
+    setIsMouseOver(false);
+  };
+
   return (
-    <Control $cursor={cursor} $showCursor={!disabled}>
-      {control}
-      <ToolTipView className={className} $disabled={disabled}>
-        {children}
-      </ToolTipView>
-    </Control>
+    <>
+      <div
+        ref={reference}
+        className={styles.container}
+        style={disabled ? undefined : { cursor }}
+        onMouseOver={onMouseOver}
+        onMouseOut={onMouseOut}
+      >
+        {control}
+      </div>
+      {canShowTooltip && (
+        <div
+          role="tooltip"
+          ref={floating}
+          className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
+          style={{
+            position: strategy,
+            top: y ?? 0,
+            left: x ?? 0,
+          }}
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
+        >
+          <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
+        </div>
+      )}
+    </>
   );
 };
-
-export default ToolTip;

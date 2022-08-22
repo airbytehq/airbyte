@@ -656,6 +656,9 @@ worker:
   ##
   extraVolumes: []
 
+  hpa:
+    enabled: false
+
 ## @section Bootloader Parameters
 
 airbyte-bootloader:
@@ -903,6 +906,7 @@ externalDatabase:
 ## @param minio.accessKey.password Minio Access Key
 ## @param minio.secretKey.password Minio Secret Key
 minio:
+  enabled: true
   auth:
     rootUser: minio
     rootPassword: minio123

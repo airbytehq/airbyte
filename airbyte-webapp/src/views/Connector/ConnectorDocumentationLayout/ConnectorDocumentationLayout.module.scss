@@ -31,8 +31,12 @@
   }
 }
 
-.lightOverlay {
+.rightPanelContainer {
+  background-color: colors.$white;
   height: 100%;
+}
+
+.lightOverlay {
   width: 100%;
   background-color: colors.$white;
   text-align: center;
