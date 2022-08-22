@@ -40,12 +40,12 @@ describe("auth button", () => {
   test("it initially renders with correct message and no status message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
-      const hasAuthError = false;
+      const authErrors = {};
       const selectedConnector = "abcde";
       const allowOAuthConnector = true;
       const selectedService = undefined;
 
-      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
 
     // not done
@@ -79,12 +79,12 @@ describe("auth button", () => {
   test("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
-      const hasAuthError = false;
+      const authErrors = {};
       const selectedConnector = "abcde";
       const allowOAuthConnector = true;
       const selectedService = undefined;
 
-      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
 
     // done
@@ -114,12 +114,12 @@ describe("auth button", () => {
   test("if authError is true, it renders the correct message", () => {
     // auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
-      const hasAuthError = true;
+      const authErrors = { field: "form.empty.error" };
       const selectedConnector = "abcde";
       const allowOAuthConnector = true;
       const selectedService = undefined;
 
-      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
     });
 
     // not done

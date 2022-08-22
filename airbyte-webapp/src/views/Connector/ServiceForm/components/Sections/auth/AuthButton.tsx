@@ -38,7 +38,9 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, hasAuthError, selectedConnector } = useServiceForm();
+  const { selectedService, authErrors, selectedConnector } = useServiceForm();
+  const hasAuthError = Object.values(authErrors).indexOf("form.empty.error") >= 0;
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
 
