@@ -12,8 +12,7 @@ def commonConfigs = [
     'package.json',
     'package-lock.json',
     'tsconfig.json',
-    '.prettierrc.js',
-    '.stylelintrc'
+    '.prettierrc.js'
 ]
 
 node {
@@ -24,6 +23,7 @@ node {
 npm_run_build {
     inputs.files commonConfigs
     inputs.file '.eslintrc'
+    inputs.file '.stylelintrc'
     inputs.dir 'public'
     inputs.dir 'src'
 
@@ -105,15 +105,15 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-task lint(type: NpmTask) {
+task stylelint(type: NpmTask) {
     dependsOn npmInstall
-    args = ['run', 'lint']
+    args = ['run', 'stylelint']
     inputs.files commonConfigs
     inputs.dir 'src'
 }
 
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test, lint
+check.dependsOn validateLinks, licenseCheck, test, stylelint
 
 build.dependsOn buildStorybook
 

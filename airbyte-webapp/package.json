@@ -16,11 +16,12 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 --quiet",
     "build:storybook": "build-storybook -o 'build/storybook'",
-    "lint": "eslint --ext js,ts,tsx src && stylelint \"**/*.{css,scss}\"",
+    "lint": "eslint --ext js,ts,tsx src",
+    "stylelint": "stylelint \"**/*.{css,scss}\"",
+    "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
-    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts",
-    "stylelint-check": "stylelint-config-prettier-scss-check"
+    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^1.0.0",
