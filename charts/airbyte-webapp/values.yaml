@@ -1,13 +1,14 @@
 
 global:
-  serviceAccountName: placeholderServiceAccounr
+  serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
-  configMapName: something
-  secretName: something
+  configMapName: ""
+  secretName: ""
+  extraContainers: []
   database:
-    # secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "something"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
 
 
@@ -150,7 +151,7 @@ fullstory:
 ## extraEnv:
 ## - name: SAMPLE_ENV_VAR
 ##   value: "key=sample-value"
-extraEnv: []
+extraEnv: {}
 
 ## @param webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
 ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -175,3 +176,7 @@ extraVolumeMounts: []
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+extraContainers: []
+
+secrets: {}

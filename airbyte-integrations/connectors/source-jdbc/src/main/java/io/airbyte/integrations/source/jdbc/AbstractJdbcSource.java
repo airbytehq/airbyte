@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,6 +18,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -147,11 +149,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields(extractCursorFields(fields))
             .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractCursorFields(final List<JsonNode> fields) {
+    return fields.stream()
+        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
+        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
 
@@ -190,6 +202,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
         .build());
   }
 
@@ -260,27 +273,37 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
+  public boolean isCursorType(Datatype type) {
+    return sourceOperations.isCursorType(type);
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
                                                                final String cursorField,
                                                                final Datatype cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ?",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations
-                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
+                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  quotedCursorField));
+              // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+              // field
+              if (getStateEmissionFrequency() > 0) {
+                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+              }
 
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
@@ -299,7 +322,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+        getConnectionProperties(config));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
@@ -339,8 +362,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param defaultParameters connection properties map as specified by each Jdbc source
    * @throws IllegalArgumentException
    */
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-                                                                    final Map<String, String> defaultParameters) {
+  protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+                                                                             final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);

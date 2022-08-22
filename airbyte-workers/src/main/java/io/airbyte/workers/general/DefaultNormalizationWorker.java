@@ -5,14 +5,19 @@
 package io.airbyte.workers.general;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationWorker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -27,6 +32,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   private final int attempt;
   private final NormalizationRunner normalizationRunner;
   private final WorkerEnvironment workerEnvironment;
+  private final List<FailureReason> traceFailureReasons = new ArrayList<>();
+  private boolean failed = false;
 
   private final AtomicBoolean cancelled;
 
@@ -58,10 +65,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
       if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
           input.getResourceRequirements())) {
-        throw new WorkerException("Normalization Failed.");
+        buildFailureReasonsAndSetFailure();
       }
     } catch (final Exception e) {
-      throw new WorkerException("Normalization Failed.", e);
+      buildFailureReasonsAndSetFailure();
     }
 
     if (cancelled.get()) {
@@ -77,9 +84,23 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
         .withStartTime(startTime)
         .withEndTime(endTime);
 
+    if (!traceFailureReasons.isEmpty()) {
+      summary.setFailures(traceFailureReasons);
+      LOGGER.error("Normalization Failed.");
+    } else if (failed) {
+      throw new WorkerException("Normalization Failed.");
+    }
+
     LOGGER.info("Normalization summary: {}", summary);
 
     return summary;
+  }
+
+  private void buildFailureReasonsAndSetFailure() {
+    normalizationRunner.getTraceMessages()
+        .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
+        .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
+    failed = true;
   }
 
   @Override

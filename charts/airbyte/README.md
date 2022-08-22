@@ -1,6 +1,6 @@
 # airbyte
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.38-alpha](https://img.shields.io/badge/AppVersion-0.39.37--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.0-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 
@@ -8,12 +8,12 @@ Helm chart to deploy airbyte
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://airbytehq.github.io/helm-charts/ | airbyte-bootloader | 0.43.3 |
-| https://airbytehq.github.io/helm-charts/ | pod-sweeper | 0.43.3 |
-| https://airbytehq.github.io/helm-charts/ | server | 0.43.3 |
-| https://airbytehq.github.io/helm-charts/ | temporal | 0.43.3 |
-| https://airbytehq.github.io/helm-charts/ | webapp | 0.43.3 |
-| https://airbytehq.github.io/helm-charts/ | worker | 0.43.3 |
+| https://airbytehq.github.io/helm-charts/ | airbyte-bootloader | placeholder |
+| https://airbytehq.github.io/helm-charts/ | pod-sweeper | placeholder |
+| https://airbytehq.github.io/helm-charts/ | server | placeholder |
+| https://airbytehq.github.io/helm-charts/ | temporal | placeholder |
+| https://airbytehq.github.io/helm-charts/ | webapp | placeholder |
+| https://airbytehq.github.io/helm-charts/ | worker | placeholder |
 | https://charts.bitnami.com/bitnami | common | 1.x.x |
 | https://charts.bitnami.com/bitnami | minio | 11.x.x |
 | https://charts.bitnami.com/bitnami | postgresql | 10.x.x |
@@ -26,7 +26,7 @@ Helm chart to deploy airbyte
 | airbyte-bootloader.enabled | bool | `true` |  |
 | airbyte-bootloader.image.pullPolicy | string | `"IfNotPresent"` |  |
 | airbyte-bootloader.image.repository | string | `"airbyte/bootloader"` |  |
-| airbyte-bootloader.image.tag | string | `"0.39.36-alpha"` |  |
+| airbyte-bootloader.image.tag | string | `"0.40.0-alpha"` |  |
 | airbyte-bootloader.nodeSelector | object | `{}` |  |
 | airbyte-bootloader.podAnnotations | object | `{}` |  |
 | airbyte-bootloader.resources.limits | object | `{}` |  |
@@ -42,8 +42,8 @@ Helm chart to deploy airbyte
 | fullnameOverride | string | `""` |  |
 | global.database.host | string | `"test"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretValue | string | `""` |  |
+| global.deploymentMode | string | `"oss"` |  |
 | global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |
 | global.jobs.kube.main_container_image_pull_secret | string | `""` |  |
@@ -113,7 +113,7 @@ Helm chart to deploy airbyte
 | server.extraVolumes | list | `[]` |  |
 | server.image.pullPolicy | string | `"IfNotPresent"` |  |
 | server.image.repository | string | `"airbyte/server"` |  |
-| server.image.tag | string | `"0.39.36-alpha"` |  |
+| server.image.tag | string | `"0.40.0-alpha"` |  |
 | server.livenessProbe.enabled | bool | `true` |  |
 | server.livenessProbe.failureThreshold | int | `3` |  |
 | server.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -147,7 +147,7 @@ Helm chart to deploy airbyte
 | temporal.extraVolumes | list | `[]` |  |
 | temporal.image.pullPolicy | string | `"IfNotPresent"` |  |
 | temporal.image.repository | string | `"temporalio/auto-setup"` |  |
-| temporal.image.tag | string | `"1.7.0"` |  |
+| temporal.image.tag | string | `"1.13.0"` |  |
 | temporal.livenessProbe.enabled | bool | `true` |  |
 | temporal.livenessProbe.failureThreshold | int | `3` |  |
 | temporal.livenessProbe.initialDelaySeconds | int | `5` |  |
@@ -179,7 +179,7 @@ Helm chart to deploy airbyte
 | webapp.fullstory.enabled | bool | `false` |  |
 | webapp.image.pullPolicy | string | `"IfNotPresent"` |  |
 | webapp.image.repository | string | `"airbyte/webapp"` |  |
-| webapp.image.tag | string | `"0.39.36-alpha"` |  |
+| webapp.image.tag | string | `"0.40.0-alpha"` |  |
 | webapp.ingress.annotations | object | `{}` |  |
 | webapp.ingress.className | string | `""` |  |
 | webapp.ingress.enabled | bool | `false` |  |
@@ -215,7 +215,7 @@ Helm chart to deploy airbyte
 | worker.extraVolumes | list | `[]` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.39.36-alpha"` |  |
+| worker.image.tag | string | `"0.40.0-alpha"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |

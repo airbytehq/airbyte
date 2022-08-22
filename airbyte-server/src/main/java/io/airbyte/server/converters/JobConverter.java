@@ -158,7 +158,7 @@ public class JobConverter {
     return new AttemptStats()
         .bytesEmitted(totalStats.getBytesEmitted())
         .recordsEmitted(totalStats.getRecordsEmitted())
-        .stateMessagesEmitted(totalStats.getStateMessagesEmitted())
+        .stateMessagesEmitted(totalStats.getSourceStateMessagesEmitted())
         .recordsCommitted(totalStats.getRecordsCommitted());
   }
 
@@ -175,7 +175,7 @@ public class JobConverter {
             .stats(new AttemptStats()
                 .bytesEmitted(streamStat.getStats().getBytesEmitted())
                 .recordsEmitted(streamStat.getStats().getRecordsEmitted())
-                .stateMessagesEmitted(streamStat.getStats().getStateMessagesEmitted())
+                .stateMessagesEmitted(streamStat.getStats().getSourceStateMessagesEmitted())
                 .recordsCommitted(streamStat.getStats().getRecordsCommitted())))
         .collect(Collectors.toList());
   }

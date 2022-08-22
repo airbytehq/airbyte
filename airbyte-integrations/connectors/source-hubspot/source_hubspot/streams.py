@@ -15,7 +15,6 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -246,13 +245,19 @@ class Stream(HttpStream, ABC):
             return APIv1Property(properties)
         return APIv3Property(properties)
 
-    def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
+    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._api: API = api
-        self._start_date = pendulum.parse(start_date)
+        self._credentials = credentials
 
-        if credentials["credentials_title"] == API_KEY_CREDENTIALS:
+        self._start_date = start_date
+        if isinstance(self._start_date, str):
+            self._start_date = pendulum.parse(self._start_date)
+        creds_title = self._credentials["credentials_title"]
+        if creds_title == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
+        elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
+            self._authenticator = api.get_authenticator()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -643,7 +648,52 @@ class Stream(HttpStream, ABC):
             yield record
 
 
-class IncrementalStream(Stream, IncrementalMixin):
+class AssociationsStream(Stream):
+    """
+    Designed to read associations of CRM objects during incremental syncs, since Search API does not support
+    retrieving associations.
+    """
+
+    http_method = "POST"
+    filter_old_records = False
+
+    def __init__(self, parent_stream: Stream, identifiers: Iterable[Union[int, str]], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent_stream = parent_stream
+        self.identifiers = identifiers
+
+    @property
+    def url(self):
+        """
+        although it is not used, it needs to be implemented because it is an abstract property
+        """
+        return ""
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return f"/crm/v4/associations/{self.parent_stream.entity}/{stream_slice}/batch/read"
+
+    def scopes(self) -> Set[str]:
+        return self.parent_stream.scopes
+
+    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[str]:
+        return self.parent_stream.associations
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        return {"inputs": [{"id": str(id_)} for id_ in self.identifiers]}
+
+
+class IncrementalStream(Stream, ABC):
     """Stream that supports state and incremental read"""
 
     state_pk = "timestamp"
@@ -658,10 +708,6 @@ class IncrementalStream(Stream, IncrementalMixin):
         return self.updated_at_field
 
     @property
-    def is_incremental_sync(self):
-        return self._sync_mode == SyncMode.incremental
-
-    @property
     @abstractmethod
     def updated_at_field(self):
         """Name of the field associated with the state"""
@@ -674,10 +720,12 @@ class IncrementalStream(Stream, IncrementalMixin):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        latest_cursor = None
         for record in records:
             cursor = self._field_to_datetime(record[self.updated_at_field])
-            self._update_state(latest_cursor=cursor)
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
+        self._update_state(latest_cursor=latest_cursor)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return self.state
@@ -715,6 +763,7 @@ class IncrementalStream(Stream, IncrementalMixin):
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
+                self._start_date = self._state
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -760,7 +809,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        return f"/crm/v3/objects/{self.entity}/search" if self.is_incremental_sync else f"/crm/v3/objects/{self.entity}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -784,7 +833,6 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def _process_search(
         self,
-        since: int,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -793,12 +841,12 @@ class CRMSearchStream(IncrementalStream, ABC):
         properties_list = list(self.properties.keys())
         payload = (
             {
-                "filters": [{"value": since, "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
                 "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
-            if self.is_incremental_sync
+            if self.state
             else {}
         )
         if next_page_token:
@@ -809,6 +857,24 @@ class CRMSearchStream(IncrementalStream, ABC):
             stream_records[record["id"]] = record
 
         return list(stream_records.values()), raw_response
+
+    def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
+        records_by_pk = {record[self.primary_key]: record for record in records}
+        identifiers = list(map(lambda x: x[self.primary_key], records))
+        associations_stream = AssociationsStream(
+            api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
+        )
+        slices = associations_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for _slice in slices:
+            logger.info(f"Reading {_slice} associations of {self.entity}")
+            associations = associations_stream.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+            for group in associations:
+                current_record = records_by_pk[group["from"]["id"]]
+                associations_list = current_record.get(_slice, [])
+                associations_list.extend(association["toObjectId"] for association in group["to"])
+                current_record[_slice] = associations_list
+        return records_by_pk.values()
 
     def read_records(
         self,
@@ -821,41 +887,41 @@ class CRMSearchStream(IncrementalStream, ABC):
         pagination_complete = False
         next_page_token = None
 
-        # state is updated frequently, we need it frozen
-        since_ts = int(self._state.timestamp() * 1000) if self._state else None
+        latest_cursor = None
         while not pagination_complete:
-            if self.is_incremental_sync:
+            if self.state:
                 records, raw_response = self._process_search(
-                    since=since_ts,
                     next_page_token=next_page_token,
                     stream_state=stream_state,
                     stream_slice=stream_slice,
                 )
-
+                records = self._read_associations(records)
             else:
                 records, raw_response = self._read_stream_records(
                     stream_slice=stream_slice,
                     stream_state=stream_state,
                     next_page_token=next_page_token,
                 )
+                records = self._flat_associations(records)
             records = self._filter_old_records(records)
-            records = self._flat_associations(records)
 
             for record in records:
                 cursor = self._field_to_datetime(record[self.updated_at_field])
-                self._update_state(latest_cursor=cursor)
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                 yield record
 
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
-            elif self.is_incremental_sync and next_page_token["payload"]["after"] >= 10000:
+            elif self.state and next_page_token["payload"]["after"] >= 10000:
                 # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                 # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                 # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
                 # start a new search query with the latest state that has been collected.
+                self._update_state(latest_cursor=latest_cursor)
                 next_page_token = None
 
+        self._update_state(latest_cursor=latest_cursor)
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
@@ -884,8 +950,17 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.set_sync(sync_mode)
+        self.set_sync(sync_mode, stream_state)
         return [None]
+
+    def set_sync(self, sync_mode: SyncMode, stream_state):
+        self._sync_mode = sync_mode
+        if self._sync_mode == SyncMode.incremental:
+            if stream_state:
+                if not self._state:
+                    self._state = self._start_date
+                else:
+                    self._state = self._start_date = max(self._state, self._start_date)
 
 
 class CRMObjectStream(Stream):
@@ -1124,7 +1199,7 @@ class Engagements(IncrementalStream):
 
     @property
     def url(self):
-        if self.is_incremental_sync:
+        if self.state:
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
 
@@ -1140,15 +1215,15 @@ class Engagements(IncrementalStream):
         params = {"count": 250}
         if next_page_token:
             params["offset"] = next_page_token["offset"]
-        if self.is_incremental_sync:
-            params.update({"since": stream_slice, "count": 100})
+        if self.state:
+            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[int]:
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
-        return [int((self._state or self._start_date).timestamp() * 1000)]
+        return [None]
 
     def read_records(
         self,
@@ -1161,6 +1236,7 @@ class Engagements(IncrementalStream):
         pagination_complete = False
 
         next_page_token = None
+        latest_cursor = None
 
         while not pagination_complete:
             response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
@@ -1171,11 +1247,11 @@ class Engagements(IncrementalStream):
 
             for record in records:
                 cursor = self._field_to_datetime(record[self.updated_at_field])
-                self._update_state(latest_cursor=cursor)
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                 yield record
 
             next_page_token = self.next_page_token(response)
-            if self.is_incremental_sync and next_page_token and next_page_token["offset"] >= 10000:
+            if self.state and next_page_token and next_page_token["offset"] >= 10000:
                 # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
                 # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
                 # descending order, we stop getting records if we have already reached 10,000. Attempting
@@ -1188,6 +1264,8 @@ class Engagements(IncrementalStream):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+        self._update_state(latest_cursor=latest_cursor)
 
 
 class Forms(Stream):
@@ -1298,13 +1376,13 @@ class PropertyHistory(Stream):
     """
 
     more_key = "has-more"
-    url = "/contacts/v1/lists/recently_updated/contacts/recent"
+    url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
     entity = "contacts"
     data_field = "contacts"
-    page_field = "time-offset"
-    page_filter = "timeOffset"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
     denormalize_records = True
     limit_field = "count"
     limit = 100

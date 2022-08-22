@@ -1,7 +1,7 @@
 # Recharge
 
-his page guides you through the process of setting up the Recharge source connector.
 This source can sync data for the [Recharge API](https://developer.rechargepayments.com/).
+This page guides you through the process of setting up the Recharge source connector.
 
 ## Prerequisites (Airbyte Cloud & Airbyte Open Source)
 * A Recharge account with permission to access data from accounts you want to sync.

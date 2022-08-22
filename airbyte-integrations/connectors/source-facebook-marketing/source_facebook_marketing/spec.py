@@ -10,9 +10,7 @@ from typing import List, Optional
 import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
-from pydantic import BaseModel, Field, PositiveInt, validator
-
-from .utils import validate_date_field
+from pydantic import BaseModel, Field, PositiveInt
 
 logger = logging.getLogger("airbyte")
 
@@ -86,14 +84,6 @@ class InsightConfig(BaseModel):
         mininum=1,
         default=28,
     )
-
-    @validator("start_date")
-    def set_start_date(cls, start_date):
-        return validate_date_field("Start date", start_date)
-
-    @validator("end_date")
-    def set_end_date(cls, end_date):
-        return validate_date_field("End date", end_date)
 
 
 class ConnectorConfig(BaseConfig):
@@ -189,11 +179,3 @@ class ConnectorConfig(BaseConfig):
         description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         default=50,
     )
-
-    @validator("start_date")
-    def set_start_date(cls, start_date):
-        return validate_date_field("Start date", start_date)
-
-    @validator("end_date")
-    def set_end_date(cls, end_date):
-        return validate_date_field("End date", end_date)

@@ -13,6 +13,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -49,6 +50,9 @@ public class SnowflakeDatabase {
       .version(HttpClient.Version.HTTP_2)
       .connectTimeout(Duration.ofSeconds(10))
       .build();
+  public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
+  public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
+  public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
 
   public static HikariDataSource createDataSource(final JsonNode config) {
     final HikariDataSource dataSource = new HikariDataSource();
@@ -93,6 +97,15 @@ public class SnowflakeDatabase {
       dataSource.setUsername(username);
       dataSource.setPassword(credentials.get(JdbcUtils.PASSWORD_KEY).asText());
 
+    } else if (credentials != null && credentials.has(PRIVATE_KEY_FIELD_NAME)) {
+      LOGGER.debug("Login mode with key pair is used");
+      dataSource.setUsername(username);
+      final String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
+      createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
+      properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
+      if (credentials.has(PRIVATE_KEY_PASSWORD)) {
+        properties.put("private_key_file_pwd", credentials.get(PRIVATE_KEY_PASSWORD).asText());
+      }
     } else {
       LOGGER.warn(
           "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
@@ -127,6 +140,14 @@ public class SnowflakeDatabase {
     dataSource.setJdbcUrl(jdbcUrl.toString());
     dataSource.setDataSourceProperties(properties);
     return dataSource;
+  }
+
+  private static void createPrivateKeyFile(final String fileName, final String fileValue) {
+    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+      out.print(fileValue);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create file for private key");
+    }
   }
 
   private static String getAccessTokenUsingRefreshToken(final String hostName,

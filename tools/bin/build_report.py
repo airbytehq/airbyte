@@ -92,7 +92,7 @@ def check_module(connector):
         elif connector.startswith("destination"):
             SUCCESS_DESTINATION.append(connector)
     else:
-        failed_today = [connector, short_status, last_build["link"]]
+        failed_today = [connector, short_status, last_build["link"], last_build["date"]]
 
         if len(history) > 1 and history[1]["status"] != "success":
             FAILED_2_LAST.append(failed_today)

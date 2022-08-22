@@ -35,7 +35,7 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final List<Field> FIELDS = List.of(
-      Field.of("c_custkey", JsonSchemaType.NUMBER),
+      Field.of("c_custkey", JsonSchemaType.INTEGER),
       Field.of("c_name", JsonSchemaType.STRING),
       Field.of("c_nation", JsonSchemaType.STRING));
 

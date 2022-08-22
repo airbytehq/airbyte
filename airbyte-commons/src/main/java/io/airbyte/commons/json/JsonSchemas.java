@@ -189,8 +189,7 @@ public class JsonSchemas {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
+            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
@@ -206,8 +205,7 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
+            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
       }

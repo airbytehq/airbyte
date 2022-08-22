@@ -8,6 +8,7 @@ import json
 import os
 import pkgutil
 import socket
+import subprocess
 from typing import Any, Dict
 
 import yaml
@@ -63,6 +64,13 @@ class TransformConfig:
         base_profile["normalize"]["outputs"]["prod"] = transformed_integration_config
 
         return base_profile
+
+    @staticmethod
+    def create_file(name, content):
+        f = open(name, "x")
+        f.write(content)
+        f.close()
+        return os.path.abspath(f.name)
 
     @staticmethod
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
@@ -167,9 +175,19 @@ class TransformConfig:
             "threads": 8,
         }
 
-        # if unset, we assume true.
-        if config.get("ssl", True):
-            config["sslmode"] = "require"
+        ssl = config.get("ssl")
+        if ssl:
+            ssl_mode = config.get("ssl_mode", {"mode": "allow"})
+            dbt_config["sslmode"] = ssl_mode.get("mode")
+            if ssl_mode["mode"] == "verify-ca":
+                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslrootcert"] = "ca.crt"
+            elif ssl_mode["mode"] == "verify-full":
+                dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
+                client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
+                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
+                dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
 

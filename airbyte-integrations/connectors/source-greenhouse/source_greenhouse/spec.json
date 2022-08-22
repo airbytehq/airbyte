@@ -5,12 +5,14 @@
     "title": "Greenhouse Spec",
     "type": "object",
     "required": ["api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_key": {
+        "title": "API Key",
         "type": "string",
         "description": "Greenhouse API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/greenhouse\">docs</a> for more information on how to generate this key.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 0
       }
     }
   }

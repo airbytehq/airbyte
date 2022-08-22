@@ -14,10 +14,6 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import java.sql.JDBCType;
-import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -25,7 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.GenericContainer;
 
-public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceAcceptanceTest {
 
   private static GenericContainer container;
   private static JdbcDatabase jdbcDatabase;
@@ -33,35 +29,12 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   private JsonNode config;
   private String dbName;
 
-  @Override
-  public boolean supportsSchemas() {
-    return false;
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
-  }
-
-  @Override
-  public String getDriverClass() {
-    return ClickHouseSource.DRIVER_CLASS;
-  }
-
-  @Override
-  public String createTableQuery(final String tableName,
-                                 final String columnClause,
-                                 final String primaryKeyClause) {
-    // ClickHouse requires Engine to be mentioned as part of create table query.
-    // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        dbName + "." + tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
-            : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
-                + primaryKeyClause);
-  }
-
   @BeforeAll
   static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
     container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
     container.start();
   }
@@ -69,8 +42,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.PORT_KEY, container.getMappedPort(8443))
         .put(JdbcUtils.USERNAME_KEY, "default")
         .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
@@ -81,7 +54,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
-        String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
+        String.format("jdbc:clickhouse:https://%s:%d?sslmode=NONE",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
@@ -96,7 +69,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   }
 
   @AfterEach
-  public void tearDownMySql() throws Exception {
+  public void tearDownClickHouse() throws Exception {
     jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
     super.tearDown();
   }
@@ -105,29 +78,6 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   public static void cleanUp() throws Exception {
     DataSourceFactory.close(dataSource);
     container.close();
-  }
-
-  @Override
-  public String primaryKeyClause(final List<String> columns) {
-    if (columns.isEmpty()) {
-      return "";
-    }
-
-    final StringBuilder clause = new StringBuilder();
-    clause.append("(");
-    for (int i = 0; i < columns.size(); i++) {
-      clause.append(columns.get(i));
-      if (i != (columns.size() - 1)) {
-        clause.append(",");
-      }
-    }
-    clause.append(")");
-    return clause.toString();
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new ClickHouseSource();
   }
 
 }
