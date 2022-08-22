@@ -4,6 +4,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .stream_waitingRooms import WaitingRooms
+from .stream_roomStatistics import RoomStatistics
 
 class SourceQueueIt(AbstractSource):
 
@@ -18,5 +19,6 @@ class SourceQueueIt(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            WaitingRooms(config)
+            WaitingRooms(config),
+            RoomStatistics(config)
         ]
