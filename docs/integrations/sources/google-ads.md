@@ -7,6 +7,8 @@ This page contains the setup guide and reference information for the Google Ads 
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
 - (For Airbyte OSS) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
 
+**Note**: The Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday 5pm, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday e.g: 12:01am on Thursday, and so on. The connector does this to avoid syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday 5pm would get ads performance data for Wednesday between 12:01am-5pm on Wednesday, then it would need to run again once the day is done to get all of Wednesday's data once more. This is due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day. 
+
 ## Setup guide
 
 ### Step 1: (For Airbyte OSS) Apply for a developer token
