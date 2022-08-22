@@ -16,4 +16,4 @@ def test_create_export_job(send_email_stream, caplog):
         {"endAt": ANY, "id": "cd465f55", "startAt": ANY},
         {"endAt": ANY, "id": "232aafb4", "startAt": ANY},
     ]
-    assert "Failed to create export job for data slice " in caplog.records[-1].message
+    assert "Failed to create export job! Status is failed!" in caplog.records[-1].message
