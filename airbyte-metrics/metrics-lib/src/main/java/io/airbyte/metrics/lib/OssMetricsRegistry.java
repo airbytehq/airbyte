@@ -112,9 +112,9 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
       "record_schema_validation_error",
       "number of record schema validation errors"),
-  STATE_TIMESTAMP_METRIC_ERROR(MetricEmittingApps.WORKER,
+  STATE_METRIC_TRACKER_ERROR(MetricEmittingApps.WORKER,
       "state_timestamp_metric_tracker_error",
-      "number of syncs where the state timestamp metric tracker ran out of memory while tracking state messages");
+      "number of syncs where the state timestamp metric tracker ran out of memory or was unable to match destination state message to source state message");
 
   private final MetricEmittingApp application;
   private final String metricName;

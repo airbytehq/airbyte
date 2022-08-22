@@ -97,7 +97,7 @@ class StateMetricsTrackerTest {
   }
 
   @Test
-  void testStateMetricsTrackerExceptionThrown() throws StateMetricsTrackerOomException {
+  void testStateMetricsTrackerOomExceptionThrown() throws StateMetricsTrackerOomException {
     final StateMetricsTracker stateMetricsTrackerOom = new StateMetricsTracker(2L);
 
     final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
@@ -112,6 +112,19 @@ class StateMetricsTrackerTest {
     assertThrows(StateMetricsTrackerOomException.class,
         () -> stateMetricsTrackerOom.addState(s3.getState(), 2, LocalDateTime.parse("2022-01-01 12:00:02", formatter)));
 
+  }
+
+  @Test
+  void testStateMetricsTrackerNoStateMatchExceptionThrown() throws StateMetricsTrackerNoStateMatchException {
+    final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
+    final AirbyteMessage s2 = AirbyteMessageUtils.createGlobalStateMessage(2, STREAM_1);
+    final AirbyteMessage s3 = AirbyteMessageUtils.createGlobalStateMessage(3, STREAM_1);
+
+    // destination emits state message hash that cannot be found in the list of source state messages
+    stateMetricsTracker.incrementTotalDestinationEmittedStateMessages();
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    assertThrows(StateMetricsTrackerNoStateMatchException.class,
+        () -> stateMetricsTracker.updateStates(s2.getState(), 4, LocalDateTime.parse("2022-01-01 12:00:05", formatter)));
   }
 
 }

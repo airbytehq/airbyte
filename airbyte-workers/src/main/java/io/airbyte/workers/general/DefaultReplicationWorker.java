@@ -290,7 +290,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       if (messageTracker.getUnreliableStateTimingMetrics()) {
-        metricReporter.trackStateTimestampMetricError();
+        metricReporter.trackStateMetricTrackerError();
       }
 
       return output;
