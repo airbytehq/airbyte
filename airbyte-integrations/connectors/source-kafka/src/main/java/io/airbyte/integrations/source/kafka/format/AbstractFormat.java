@@ -4,18 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.kafka.KafkaProtocol;
-import io.airbyte.integrations.source.kafka.KafkaStrategy;
-import io.airbyte.integrations.source.kafka.MessageFormat;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.connect.json.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,26 +56,6 @@ public abstract class AbstractFormat implements KafkaFormat {
                 config.has("receive_buffer_bytes") ? config.get("receive_buffer_bytes").intValue() : null);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
                 config.has("auto_offset_reset") ? config.get("auto_offset_reset").asText() : null);
-
-        MessageFormat messageFormat = config.has("MessageFormat")? MessageFormat.valueOf(config.get("MessageFormat").get("deserialization_type").asText().toUpperCase())
-                :MessageFormat.JSON;
-        switch (messageFormat) {
-            case JSON -> {
-                props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-                props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-
-            }
-            case AVRO -> {
-                final JsonNode avro_config=config.get("MessageFormat");
-                props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-                props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
-                props.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO");
-                props.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,String.format("%s:%s",avro_config.get("schema_registry_username").asText()
-                        ,avro_config.get("schema_registry_password").asText()));
-                props.put( KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, avro_config.get("schema_registry_url").asText());
-                props.put(KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY, KafkaStrategy.getStrategyName(avro_config.get("deserialization_strategy").asText()));
-            }
-        }
 
         final Map<String, Object> filteredProps = props.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().toString().isBlank())
