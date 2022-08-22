@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import sys
@@ -39,11 +39,12 @@ class Client:
         tenant_id: str,
         reports_start_date: str,
         developer_token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        refresh_token: str = None,
+        credentials: dict = {},
         **kwargs: Mapping[str, Any],
     ) -> None:
+        client_id = (credentials["client_id"],)
+        client_secret = credentials["client_secret"]
+        refresh_token = credentials["refresh_token"]
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.refresh_token = refresh_token
         self.developer_token = developer_token

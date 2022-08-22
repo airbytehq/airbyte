@@ -50,7 +50,7 @@
             "type": "string",
             "const": "oauth2.0",
             "default": "oauth2.0"
-        },
+          },
           "client_id": {
             "type": "string",
             "title": "Client ID",

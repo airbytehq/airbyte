@@ -1,23 +1,28 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from unittest.mock import patch
 
 import pytest
 import source_bing_ads
-from airbyte_cdk.models import SyncMode
-from source_bing_ads.client import Client
 from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
 
 
 @pytest.fixture(name="config")
 def config_fixture():
     """Generates streams settings from a config file"""
-    CONFIG_FILE = "secrets/config.json"
-    with open(CONFIG_FILE, "r") as f:
-        return json.loads(f.read())
+    return {
+        "tenant_id": "common",
+        "developer_token": "test_token",
+        "credentials": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+            "auth-method": "oauth2.0",
+        },
+        "reports_start_date": "2020-01-01",
+    }
 
 
 @pytest.fixture(name="logger_mock")
@@ -135,8 +140,8 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
     }
 
 
-def test_accounts_live(config):
-    client = Client(**config)
-    accounts = Accounts(client, config)
-    records = accounts.read_records(SyncMode.full_refresh)
-    assert len(list(records)) == 4
+# def test_accounts_live(config):
+#    client = Client(**config)
+#    accounts = Accounts(client, config)
+#    records = accounts.read_records(SyncMode.full_refresh)
+#    assert len(list(records)) == 4
