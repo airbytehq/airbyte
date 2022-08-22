@@ -30,6 +30,8 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
+        # this is done for test purposes, the field is not exposed to spec.json!
+        self.end_date = config.get("end_date")
         self.window_in_days = config.get("window_in_days", 30)
         self._url_base = config["domain_url"].rstrip("/") + "/"
         self.stream_name = stream_name
@@ -114,7 +116,7 @@ class IncrementalMarketoStream(MarketoStream):
         """
 
         start_date = pendulum.parse(self.start_date)
-        end_date = pendulum.now()
+        end_date = pendulum.parse(self.start_date) if self.start_date else pendulum.now()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
