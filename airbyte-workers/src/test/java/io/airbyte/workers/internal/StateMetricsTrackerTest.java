@@ -5,6 +5,7 @@
 package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -22,7 +23,7 @@ class StateMetricsTrackerTest {
 
   @BeforeEach
   void setup() {
-    this.stateMetricsTracker = new StateMetricsTracker(10L * 1024L * 1024L);
+    this.stateMetricsTracker = new StateMetricsTracker(873813L);
   }
 
   @Test
@@ -92,4 +93,21 @@ class StateMetricsTrackerTest {
     assertEquals(6L, stateMetricsTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted());
   }
 
+  @Test
+  void testStateMetricsTrackerExceptionThrown() throws StateMetricsTrackerException {
+    final StateMetricsTracker stateMetricsTrackerOom = new StateMetricsTracker(2L);
+
+    final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
+    final AirbyteMessage s2 = AirbyteMessageUtils.createGlobalStateMessage(2, STREAM_1);
+    final AirbyteMessage s3 = AirbyteMessageUtils.createGlobalStateMessage(3, STREAM_1);
+
+    // 3 global state messages emitted
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    stateMetricsTrackerOom.addState(s1.getState(), 0, LocalDateTime.parse("2022-01-01 12:00:00", formatter));
+    stateMetricsTrackerOom.addState(s2.getState(), 1, LocalDateTime.parse("2022-01-01 12:00:01", formatter));
+
+    assertThrows(StateMetricsTrackerException.class, () ->
+        stateMetricsTrackerOom.addState(s3.getState(), 2, LocalDateTime.parse("2022-01-01 12:00:02", formatter)));
+
+  }
 }
