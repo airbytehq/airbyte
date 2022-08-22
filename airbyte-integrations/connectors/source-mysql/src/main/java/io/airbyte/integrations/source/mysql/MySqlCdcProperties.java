@@ -20,8 +20,13 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlCdcProperties {
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_PASS;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.TRUST_KEY_STORE_URL;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
 
+public class MySqlCdcProperties {
   final static private Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
 
   static Properties getDebeziumProperties(final JdbcDatabase database) {
@@ -64,7 +69,6 @@ public class MySqlCdcProperties {
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
-//      if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
         props.setProperty("database.sslmode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
         props.setProperty("database.history.producer.security.protocol", "SSL");

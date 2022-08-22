@@ -23,11 +23,8 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.integrations.util.MySqlSslConnectionUtils.SSL_MODE;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.jimfs.Configuration;
-import com.google.common.jimfs.Jimfs;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -460,7 +457,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
         additionalParameters.put(SSL_MODE,
             SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
-
         if (Objects.isNull(caCertKeyStorePair)) {
           caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
         }
