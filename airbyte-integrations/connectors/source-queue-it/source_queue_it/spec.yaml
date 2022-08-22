@@ -1,0 +1,13 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Queue It Spec
+  type: object
+  required:
+    - token
+    - url_base
+  properties:
+    token:
+      type: string
+    url_base:
+      type: string
