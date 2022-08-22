@@ -37,7 +37,7 @@ public class StateMetricsTracker {
   private long remainingCapacity;
   private Boolean capacityExceeded;
 
-  public StateMetricsTracker(final Long memoryLimitBytes) {
+  public StateMetricsTracker(final Long messageLimit) {
     this.stateHashesAndTimestamps = new ArrayList<>();
     this.streamStateHashesAndTimestamps = new HashMap<>();
     this.firstRecordReceivedAt = null;
@@ -48,7 +48,7 @@ public class StateMetricsTracker {
     this.meanSecondsBetweenStateMessageEmittedandCommitted = 0L;
     this.totalSourceEmittedStateMessages = new AtomicLong(0L);
     this.totalDestinationEmittedStateMessages = new AtomicLong(0L);
-    this.remainingCapacity = memoryLimitBytes;
+    this.remainingCapacity = messageLimit;
     this.capacityExceeded = false;
   }
 
@@ -56,7 +56,7 @@ public class StateMetricsTracker {
       throws StateMetricsTrackerException {
     final long epochTime = timeEmitted.toEpochSecond(ZoneOffset.UTC);
 
-    if (capacityExceeded || remainingCapacity < BYTE_ARRAY_SIZE) {
+    if (capacityExceeded || remainingCapacity < 1) {
       capacityExceeded = true;
       throw new StateMetricsTrackerException("Memory capacity is exceeded for StateMetricsTracker.");
     }
@@ -67,7 +67,7 @@ public class StateMetricsTracker {
       // do not track state message timestamps per stream for GLOBAL or LEGACY state
       final byte[] stateTimestampByteArray = populateStateTimestampByteArray(stateHash, epochTime);
       stateHashesAndTimestamps.add(stateTimestampByteArray);
-      remainingCapacity -= stateTimestampByteArray.length;
+      remainingCapacity -= 1;
     }
   }
 
@@ -100,6 +100,7 @@ public class StateMetricsTracker {
       final List<byte[]> streamDescriptorValue = streamStateHashesAndTimestamps.get(streamNameAndNamespace);
       streamDescriptorValue.add(stateHashAndTimestamp);
     }
+    remainingCapacity -= 1;
   }
 
   void updateMaxAndMeanSeconds(final LocalDateTime startingTime, final LocalDateTime timeCommitted) {
@@ -127,7 +128,7 @@ public class StateMetricsTracker {
     while (iterator.hasNext()) {
       final byte[] stateMessageTime = iterator.next();
       final ByteBuffer current = ByteBuffer.wrap(stateMessageTime);
-      remainingCapacity += current.capacity();
+      remainingCapacity += 1;
       final int currentStateHash = current.getInt();
       final Long epochTime = current.getLong();
       if (minTime == null) {

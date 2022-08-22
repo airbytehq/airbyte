@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AirbyteMessageTracker implements MessageTracker {
 
   private static final long STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES = 10L * 1024L * 1024L; // 10 MiB, ~5% of default cloud worker memory
-  private static final long STATE_METRICS_TRACKER_MEMORY_LIMIT_BYTES = 10L * 1024L * 1024L; // 10 MiB, ~5% of default cloud worker memory
+  private static final long STATE_METRICS_TRACKER_MESSAGE_LIMIT = 873813L; // 12 bytes per message tracked, maximum of 10MiB of memory
 
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
@@ -73,7 +73,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   public AirbyteMessageTracker() {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
         new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()),
-        new StateMetricsTracker(STATE_METRICS_TRACKER_MEMORY_LIMIT_BYTES));
+        new StateMetricsTracker(STATE_METRICS_TRACKER_MESSAGE_LIMIT));
   }
 
   @VisibleForTesting
