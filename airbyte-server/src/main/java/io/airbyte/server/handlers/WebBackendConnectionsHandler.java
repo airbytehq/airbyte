@@ -177,6 +177,8 @@ public class WebBackendConnectionsHandler {
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
+        .scheduleType(connectionRead.getScheduleType())
+        .scheduleData(connectionRead.getScheduleData())
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
@@ -495,6 +497,8 @@ public class WebBackendConnectionsHandler {
     connectionCreate.operationIds(operationIds);
     connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
+    connectionCreate.scheduleType(webBackendConnectionCreate.getScheduleType());
+    connectionCreate.scheduleData(webBackendConnectionCreate.getScheduleData());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
@@ -514,6 +518,8 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
+    connectionUpdate.scheduleType(webBackendConnectionUpdate.getScheduleType());
+    connectionUpdate.scheduleData(webBackendConnectionUpdate.getScheduleData());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
     connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
@@ -534,6 +540,8 @@ public class WebBackendConnectionsHandler {
         .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
+        .scheduleType(webBackendConnectionSearch.getScheduleType())
+        .scheduleData(webBackendConnectionSearch.getScheduleData())
         .status(webBackendConnectionSearch.getStatus());
   }
 

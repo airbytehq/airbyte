@@ -10,6 +10,7 @@ import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -559,7 +560,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
 
-      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.getInstance().buildStartWorkflowInput(connectionId);
 
       Workflow.continueAsNew(newWorkflowInput);
 
@@ -755,6 +756,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
       workflowInternalState.getFailures().addAll(standardSyncOutput.getFailures());
       workflowInternalState.setPartialSuccess(standardSyncSummary.getTotalStats().getRecordsCommitted() > 0);
+      return true;
+    }
+
+    // catch normalization failure reasons
+    final NormalizationSummary normalizationSummary = standardSyncOutput.getNormalizationSummary();
+    if (normalizationSummary != null && normalizationSummary.getFailures() != null &&
+        !normalizationSummary.getFailures().isEmpty()) {
+      workflowInternalState.getFailures().addAll(normalizationSummary.getFailures());
       return true;
     }
 

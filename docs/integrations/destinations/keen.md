@@ -9,6 +9,10 @@ description: >-
 
 The Airbyte Keen destination allows you to stream data from any Airbyte Source into [Keen](https://keen.io?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for storage, analysis, and visualization. Keen is a flexible, fully managed event streaming and analytics platform that empowers anyone to ship custom, embeddable dashboards in minutes, not months.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Keen connector to version `0.2.4` or newer
+
+
 ### Sync overview
 
 #### Output schema
