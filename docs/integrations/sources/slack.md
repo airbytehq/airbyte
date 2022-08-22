@@ -110,8 +110,6 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 * [Files](https://api.slack.com/methods/files.list)
 * [Remote Files](https://api.slack.com/methods/files.remote.list)
 
-## <Connector-specific features & highlights, if any>
-
 ## Performance considerations
 
 The connector is restricted by normal Slack [requests limitation](https://api.slack.com/docs/rate-limits).
