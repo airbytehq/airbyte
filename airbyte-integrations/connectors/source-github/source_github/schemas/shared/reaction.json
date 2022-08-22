@@ -1,8 +1,9 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["id"],
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "node_id": {
       "type": ["null", "string"]

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["id"],
   "properties": {
     "repository": {
       "type": ["string"]
@@ -24,7 +25,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "node_id": {
       "type": ["null", "string"]
