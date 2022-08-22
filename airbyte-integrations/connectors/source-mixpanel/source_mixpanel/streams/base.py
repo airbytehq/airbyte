@@ -95,6 +95,22 @@ class MixpanelStream(HttpStream, ABC):
         """
         return {"authenticator": self.authenticator, "region": self.region}
 
+class Projects(MixpanelStream):
+    primary_key: str = "id"
+    reqs_per_hour_limit = 0
+
+    def path(self, **kwargs) -> str:
+        return ''
+
+    @property
+    def url_base(self):
+        return "https://mixpanel.com/api/app/me"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        projects = response.json().get('results', {}).get('projects', {})
+        for project_id, project_info in projects.items():
+            project_info["id"] = project_id
+            yield project_info
 
 class DateSlicesMixin:
     def stream_slices(

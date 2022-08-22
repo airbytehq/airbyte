@@ -12,7 +12,9 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.models import SyncMode
 
+from .streams.base import Projects
 from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
 from .testing import adapt_streams_if_testing
 
@@ -24,6 +26,16 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
+    def get_auth_token(self, config):
+        cred = config.get('credentials')
+        if cred:
+            if cred["auth_type"] == "service_account":
+                return f"{cred['username']}:{cred['secret']}"
+            else:
+                return cred["api_secret"]
+        else:
+            return config["api_secret"]
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
@@ -34,7 +46,10 @@ class SourceMixpanel(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            auth = TokenAuthenticatorBase64(token=config["api_secret"])
+            auth = TokenAuthenticatorBase64(token=self.get_auth_token(config))
+            projects = Projects(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh)
+            print(list(projects))
+
             funnels = FunnelsList(authenticator=auth, **config)
             response = requests.request(
                 "GET",
@@ -76,7 +91,7 @@ class SourceMixpanel(AbstractSource):
 
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
-        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        auth = TokenAuthenticatorBase64(token=self.get_auth_token(config))
         return [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
@@ -85,4 +100,5 @@ class SourceMixpanel(AbstractSource):
             Export(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
+            Projects(authenticator=auth, **config),
         ]

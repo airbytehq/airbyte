@@ -4,15 +4,67 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Mixpanel Spec",
     "type": "object",
-    "required": ["api_secret"],
+    "additionalProperties": true,
     "properties": {
-      "api_secret": {
+      "credentials": {
+        "type": "object",
+        "title": "Authentication *",
         "order": 0,
-        "title": "Project Secret",
-        "type": "string",
-        "description": "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\">docs</a> for more information on how to obtain this.",
-        "airbyte_secret": true
+        "oneOf": [
+          {
+            "title": "Service Account",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "username",
+              "secret"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "service_account",
+                "default": "service_account",
+                "order": 3
+              },
+              "username": {
+                "title": "Username",
+                "type": "string",
+                "description": "Service account username. See the <a href=\"https://developer.mixpanel.com/reference/service-accounts\">docs</a> for more information on how to obtain this.",
+                "airbyte_secret": false,
+                "order": 0
+              },
+              "secret": {
+                "title": "Secret",
+                "type": "string",
+                "description": "Service account secret",
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "Project Secret (Deprecating)",
+            "type": "object",
+            "required": ["auth_type", "api_secret"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "project_secret",
+                "default": "project_secret",
+                "order": 1
+              },
+              "api_secret": {
+                "order": 0,
+                "title": "Project Secret",
+                "type": "string",
+                "description": "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\">docs</a> for more information on how to obtain this.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
+
       "attribution_window": {
         "order": 1,
         "title": "Attribution Window",
