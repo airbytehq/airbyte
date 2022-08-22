@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["id"],
   "properties": {
     "login": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "id": {
       "type": ["null", "integer"]

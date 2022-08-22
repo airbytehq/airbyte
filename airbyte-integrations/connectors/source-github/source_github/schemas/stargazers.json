@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["id"],
   "properties": {
     "repository": {
       "type": ["string"]
     },
     "user_id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "starred_at": {
       "type": ["null", "string"],
