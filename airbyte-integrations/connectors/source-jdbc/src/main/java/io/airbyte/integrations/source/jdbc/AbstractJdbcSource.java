@@ -18,14 +18,10 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.integrations.util.MySqlSslConnectionUtils.SSL_MODE;
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.jimfs.Configuration;
-import com.google.common.jimfs.Jimfs;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -44,8 +40,8 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.nio.file.FileSystem;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -396,13 +392,14 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
   public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
   public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
+  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
   public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
   public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
   public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
+  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
   public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
   public static final String PARAM_MODE = "mode";
-  FileSystem inMemFS;
-  URI caCertKeyStoreUri;
+  Pair<URI, String> caCertKeyStorePair;
   Pair<URI, String> clientCertKeyStorePair;
 
   protected enum SslMode {
@@ -434,6 +431,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   }
 
+  /**
+   * Parses SSL related configuration and generates keystores to be used by connector
+   * @param config configuration
+   * @return map containing relevant parsed values including location of keystore or an empty map
+   */
   public Map<String, String> parseSSLConfig(final JsonNode config) {
     LOGGER.info("*** config: {}", config);
     final Map<String, String> additionalParameters = new HashMap<>();
@@ -442,31 +444,39 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
         final String mode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
         additionalParameters.put(SSL_MODE,
-            SslMode.bySpec(mode).orElseThrow(IllegalArgumentException::new).jdbc); //TODO: add text to exception
+            SslMode.bySpec(mode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).jdbc);
 
-        if (Objects.isNull(inMemFS)) {
-          inMemFS = Jimfs.newFileSystem(Configuration.unix());
+        if (Objects.isNull(caCertKeyStorePair)) {
+          caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
         }
 
-        if (Objects.isNull(caCertKeyStoreUri)) {
-          caCertKeyStoreUri = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config, inMemFS);
-        }
+        if (Objects.nonNull(caCertKeyStorePair)) {
+          LOGGER.info("*** uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
+          try {
+            additionalParameters.putAll(Map.of(
+                TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
+                TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
+                TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+          } catch (final MalformedURLException e) {
+            throw new RuntimeException("Unable to get a URL for trust key store");
+          }
 
-        if (Objects.nonNull(caCertKeyStoreUri)) {
-          LOGGER.info("*** uri for ca cert keystore: {}", caCertKeyStoreUri.toString());
-          additionalParameters.put(TRUST_KEY_STORE_URL, caCertKeyStoreUri.toString());
         }
 
         if (Objects.isNull(clientCertKeyStorePair)) {
-          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config, inMemFS);
+          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config);
         }
 
         if (Objects.nonNull(clientCertKeyStorePair)) {
           LOGGER.info("*** uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
-          additionalParameters.putAll(Map.of(
-              CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toString(),
-              CLIENT_KEY_STORE_PASS,clientCertKeyStorePair.getRight(),
-              CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+          try {
+            additionalParameters.putAll(Map.of(
+                CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
+                CLIENT_KEY_STORE_PASS,clientCertKeyStorePair.getRight(),
+                CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+          } catch (final MalformedURLException e) {
+            throw new RuntimeException("Unable to get a URL for client key store");
+          }
         }
       } else {
         additionalParameters.put(SSL_MODE, SslMode.DISABLED.jdbc);
@@ -476,8 +486,14 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     return additionalParameters;
   }
 
-  public String sslConnection(final Map<String, String> sslParams) {
-    return sslParams.entrySet()
+  /**
+   * Generates SSL related query parameters from map of parsed values.
+   * @apiNote Different connector may need an override for specific implementation
+   * @param sslParams
+   * @return SSL portion of JDBC question params or and empty string
+   */
+  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams) ? "" : sslParams.entrySet()
         .stream()
         .map(entry -> entry.getKey()+ "=" + entry.getValue())
         .collect(Collectors.joining("&"));

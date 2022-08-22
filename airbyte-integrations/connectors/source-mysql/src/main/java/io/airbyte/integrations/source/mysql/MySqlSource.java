@@ -153,31 +153,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     final Map<String, String> sslParameters = parseSSLConfig(config);
-    jdbcUrl.append(JdbcUtils.AMPERSAND).append(sslConnection(sslParameters));
-
-//    final Map<String, String> additionalParameters = new HashMap<>();
-//    // assume ssl if not explicitly mentioned.
-//    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-//      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-//        additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
-//        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-//            .append(JdbcUtils.AMPERSAND);
-//        if (additionalParameters.isEmpty()) {
-//          jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
-//        } else {
-//          jdbcUrl.append(SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION);
-//        }
-//      } else {
-//        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-//            .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
-//      }
-//    }
+    jdbcUrl.append(JdbcUtils.AMPERSAND).append(toJDBCQueryParams(sslParameters));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
-//    configBuilder.putAll(additionalParameters);
     configBuilder.putAll(sslParameters);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
@@ -202,8 +183,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, /*Duration.ofMinutes(5)*/
-          Duration.ofSeconds(1));
+          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, Duration.ofSeconds(15));
 
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
       final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
@@ -211,7 +191,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           fetcher,
           new MySqlCdcStateHandler(stateManager),
           new MySqlCdcConnectorMetadataInjector(),
-          MySqlCdcProperties.getDebeziumProperties(sourceConfig),
+          MySqlCdcProperties.getDebeziumProperties(database),
           emittedAt));
     } else {
       LOGGER.info("using CDC: {}", false);

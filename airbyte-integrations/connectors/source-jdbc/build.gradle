@@ -50,7 +50,4 @@ dependencies {
     testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-
-    // JimFS
-    implementation 'com.google.jimfs:jimfs:1.2'
 }

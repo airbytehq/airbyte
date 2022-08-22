@@ -104,7 +104,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     container.start();
     certs = MySqlUtils.getCertificate(container, true);
 
-    var sslMode = ImmutableMap.builder()
+    final var sslMode = ImmutableMap.builder()
             .put(JdbcUtils.MODE_KEY, "verify_ca")
             .put("ca_certificate", certs.getCaCertificate())
             .put("client_certificate", certs.getClientCertificate())
