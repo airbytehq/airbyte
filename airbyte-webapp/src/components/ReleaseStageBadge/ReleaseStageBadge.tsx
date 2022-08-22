@@ -41,7 +41,7 @@ export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, sma
     );
 
   return tooltip ? (
-    <ToolTip control={badge} cursor="help">
+    <ToolTip control={badge}>
       <FormattedMessage id={`connector.releaseStage.${stage}.description`} />
     </ToolTip>
   ) : (

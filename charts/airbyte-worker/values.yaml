@@ -204,7 +204,9 @@ log:
 ## extraEnv:
 ## - name: JOB_KUBE_TOLERATIONS
 ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
-extraEnv: []
+extraEnv: {}
+
+secrets: {}
 
 ## @param worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
 ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -223,3 +225,5 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
+
+

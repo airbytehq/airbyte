@@ -44,7 +44,7 @@ import org.testcontainers.utility.MountableFile;
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -56,6 +56,8 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
     setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');";
   }
 
   @BeforeEach
