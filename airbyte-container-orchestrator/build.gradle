@@ -18,6 +18,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
     implementation project(':airbyte-workers')
+    implementation project(':airbyte-metrics:metrics-lib')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation libs.postgresql

@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,6 +18,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -147,11 +149,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields(extractCursorFields(fields))
             .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractCursorFields(final List<JsonNode> fields) {
+    return fields.stream()
+        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
+        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
 
@@ -190,6 +202,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
         .build());
   }
 
@@ -257,6 +270,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   @Override
   protected String getQuoteString() {
     return quoteString;
+  }
+
+  @Override
+  public boolean isCursorType(Datatype type) {
+    return sourceOperations.isCursorType(type);
   }
 
   @Override

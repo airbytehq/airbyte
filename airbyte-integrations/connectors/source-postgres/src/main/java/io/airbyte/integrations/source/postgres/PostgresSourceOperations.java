@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -20,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
@@ -214,26 +213,17 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    LocalDate date = getObject(resultSet, index, LocalDate.class);
-    if (isBce(date)) {
-      // java.time uses a year 0, but the standard AD/BC system does not. So we just subtract one to hack
-      // around this difference.
-      date = date.minusYears(1);
-    }
-    node.put(columnName, resolveEra(date, date.toString()));
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
   }
 
   @Override
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalTime time = getObject(resultSet, index, LocalTime.class);
-    node.put(columnName, time.format(TIME_FORMATTER));
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalDateTime timestamp = getObject(resultSet, index, LocalDateTime.class);
-    final LocalDate date = timestamp.toLocalDate();
-    node.put(columnName, resolveEra(date, timestamp.format(TIMESTAMP_FORMATTER)));
+    node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
 
   @Override
@@ -336,6 +326,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @VisibleForTesting
   static String parseMoneyValue(final String moneyString) {
     return moneyString.replaceAll("[^\\d.-]", "");
+  }
+
+  @Override
+  public boolean isCursorType(JDBCType type) {
+    return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 
 }

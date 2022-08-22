@@ -119,7 +119,9 @@
         }
       }
     },
-    "priority": {
+    "custom_attributes": {
+      "type": ["null", "object"]
+    },"priority": {
       "type": ["null", "string"]
     },
     "conversation_message": {

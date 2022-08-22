@@ -10,6 +10,7 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 from requests.auth import AuthBase
 
 
@@ -22,7 +23,7 @@ class HttpMethod(Enum):
     POST = "POST"
 
 
-class Requester(RequestOptionsProvider):
+class Requester(RequestOptionsProvider, JsonSchemaMixin):
     @abstractmethod
     def get_authenticator(self) -> AuthBase:
         """
@@ -55,7 +56,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_params(
+    def get_request_params(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -81,7 +82,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_headers(
+    def get_request_headers(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -93,7 +94,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_body_data(
+    def get_request_body_data(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -111,7 +112,7 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_body_json(
+    def get_request_body_json(
         self,
         *,
         stream_state: Optional[StreamState] = None,
