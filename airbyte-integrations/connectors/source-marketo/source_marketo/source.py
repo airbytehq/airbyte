@@ -116,7 +116,7 @@ class IncrementalMarketoStream(MarketoStream):
         """
 
         start_date = pendulum.parse(self.start_date)
-        end_date = pendulum.parse(self.start_date) if self.start_date else pendulum.now()
+        end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
