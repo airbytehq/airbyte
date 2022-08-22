@@ -133,12 +133,12 @@ public class EnvConfigs implements Configs {
   private static final String WORKER_PLANE = "WORKER_PLANE";
 
   // Worker - Control plane configs
-  private static final String DEFAULT_DATA_PLANE_TASK_QUEUE = "DEFAULT_DATA_PLANE_TASK_QUEUE";
+  private static final String DEFAULT_DATA_PLANE_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
   private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
 
   // Worker - Data Plane configs
   private static final String DATA_PLANE_TASK_QUEUES = "DATA_PLANE_TASK_QUEUES";
-  private static final String CONTROL_PLANE_GOOGLE_ENDPOINT = "CONTROL_PLANE_GOOGLE_ENDPOINT";
+  private static final String CONTROL_PLANE_AUTH_ENDPOINT = "CONTROL_PLANE_AUTH_ENDPOINT";
   private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
   private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
 
@@ -193,7 +193,6 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
-  private static final String DEFAULT_FOR_DEFAULT_DATA_PLANE_TASK_QUEUE = "SYNC";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -932,17 +931,12 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Set<String> connectionIdsForAwsDataPlane() {
+  public Set<String> connectionIdsForDataPlane() {
     final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_AWS_DATA_PLANE, "");
     if (connectionIds.isEmpty()) {
       return new HashSet<>();
     }
     return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
-  }
-
-  @Override
-  public String getDefaultDataPlaneTaskQueue() {
-    return getEnvOrDefault(DEFAULT_DATA_PLANE_TASK_QUEUE, DEFAULT_FOR_DEFAULT_DATA_PLANE_TASK_QUEUE);
   }
 
   // Worker - Data plane
@@ -954,7 +948,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<String> getDataPlaneTaskQueues() {
-    final var taskQueues = getEnvOrDefault(DATA_PLANE_TASK_QUEUES, getDefaultDataPlaneTaskQueue());
+    final var taskQueues = getEnvOrDefault(DATA_PLANE_TASK_QUEUES, DEFAULT_DATA_PLANE_TASK_QUEUES);
     if (taskQueues.isEmpty()) {
       return new HashSet<>();
     }
@@ -962,8 +956,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getControlPlaneGoogleEndpoint() {
-    return getEnvOrDefault(CONTROL_PLANE_GOOGLE_ENDPOINT, "");
+  public String getControlPlaneAuthEndpoint() {
+    return getEnvOrDefault(CONTROL_PLANE_AUTH_ENDPOINT, "");
   }
 
   @Override

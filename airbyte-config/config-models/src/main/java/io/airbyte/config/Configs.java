@@ -571,7 +571,8 @@ public interface Configs {
   // Worker - Control Plane configs
 
   /**
-   * Return true if the WorkerPlane is CONTROL_PLANE or COMBINED. Internal-use only.
+   * Return true if the WorkerPlane is CONTROL_PLANE or COMBINED. Derived from the result of
+   * {@link Configs#getWorkerPlane()}. Internal-use only.
    */
   boolean isControlPlaneWorker();
 
@@ -581,18 +582,13 @@ public interface Configs {
    * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
    * future. Internal-use only.
    */
-  Set<String> connectionIdsForAwsDataPlane();
-
-  /**
-   * Define the task queue where the Control Plane worker will route Data Plane tasks to by default.
-   * Internal-use only.
-   */
-  String getDefaultDataPlaneTaskQueue();
+  Set<String> connectionIdsForDataPlane();
 
   // Worker - Data Plane configs
 
   /**
-   * Return true if the WorkerPlane is DATA_PLANE or COMBINED. Internal-use only.
+   * Return true if the WorkerPlane is DATA_PLANE or COMBINED. Derived from the result of
+   * {@link Configs#getWorkerPlane()}. Internal-use only.
    */
   boolean isDataPlaneWorker();
 
@@ -604,10 +600,10 @@ public interface Configs {
   Set<String> getDataPlaneTaskQueues();
 
   /**
-   * Return the control plane endpoint a data plane will hit. This is used for authentication and
-   * separate from the actual endpoint being hit. Internal-use only.
+   * Return the control plane endpoint a data plane will hit for authentication. This is separate from
+   * the actual endpoint being hit for application logic. Internal-use only.
    */
-  String getControlPlaneGoogleEndpoint();
+  String getControlPlaneAuthEndpoint();
 
   /**
    * Return the service account a data plane uses to authenticate with a control plane. Internal-use

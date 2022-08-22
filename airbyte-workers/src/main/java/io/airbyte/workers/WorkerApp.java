@@ -79,10 +79,10 @@ import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivityImpl
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.RouteToTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -224,7 +224,7 @@ public class WorkerApp {
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-      final DecideDataPlaneTaskQueueActivityImpl decideTaskQueueActivity = getDecideTaskQueueActivityImpl();
+      final RouteToTaskQueueActivityImpl decideTaskQueueActivity = getDecideTaskQueueActivityImpl();
       syncWorker.registerActivitiesImplementations(decideTaskQueueActivity);
     }
   }
@@ -309,8 +309,8 @@ public class WorkerApp {
         configs.getAirbyteVersionOrWarning());
   }
 
-  private static DecideDataPlaneTaskQueueActivityImpl getDecideTaskQueueActivityImpl() {
-    return new DecideDataPlaneTaskQueueActivityImpl(configs);
+  private static RouteToTaskQueueActivityImpl getDecideTaskQueueActivityImpl() {
+    return new RouteToTaskQueueActivityImpl(configs);
   }
 
   /**
@@ -430,15 +430,9 @@ public class WorkerApp {
         // Build the JWT payload
         final JWTCreator.Builder token = JWT.create()
             .withIssuedAt(now)
-            // Expires after 'expiryLength' seconds
             .withExpiresAt(expTime)
-            // Must match 'issuer' in the security configuration in your
-            // swagger spec (e.g. service account email)
             .withIssuer(saEmail)
-            // Must be either your Endpoints service name, or match the value
-            // specified as the 'x-google-audience' in the OpenAPI document
-            .withAudience(configs.getControlPlaneGoogleEndpoint())
-            // Subject and email should match the service account's email
+            .withAudience(configs.getControlPlaneAuthEndpoint())
             .withSubject(saEmail)
             .withClaim("email", saEmail);
 
@@ -497,7 +491,7 @@ public class WorkerApp {
   }
 
   private static void initializeCommonDependencies() {
-    LOGGER.debug("Initializing common worker dependencies.");
+    LOGGER.info("Initializing common worker dependencies.");
     configs = new EnvConfigs();
     LOGGER.info("workspaceRoot = " + configs.getWorkspaceRoot());
 
@@ -522,10 +516,10 @@ public class WorkerApp {
 
   private static void initializeControlPlaneDependencies() throws IOException, DatabaseCheckException {
     if (!configs.isControlPlaneWorker()) {
-      LOGGER.debug("Skipping Control Plane dependency initialization.");
+      LOGGER.info("Skipping Control Plane dependency initialization.");
       return;
     }
-    LOGGER.debug("Initializing control plane worker dependencies.");
+    LOGGER.info("Initializing control plane worker dependencies.");
 
     final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
         DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl());
@@ -636,10 +630,10 @@ public class WorkerApp {
 
   private static void initializeDataPlaneDependencies() throws IOException {
     if (!configs.isDataPlaneWorker()) {
-      LOGGER.debug("Skipping Data Plane dependency initialization.");
+      LOGGER.info("Skipping Data Plane dependency initialization.");
       return;
     }
-    LOGGER.debug("Initializing data plane worker dependencies.");
+    LOGGER.info("Initializing data plane worker dependencies.");
 
     replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
 
@@ -660,7 +654,7 @@ public class WorkerApp {
    */
   private static void initializeSecretsHydrator(final @Nullable DSLContext configsDslContext) {
     if (secretsHydrator != null) {
-      LOGGER.debug("secretsHydrator was already initialized!");
+      LOGGER.info("secretsHydrator was already initialized!");
       return;
     }
 

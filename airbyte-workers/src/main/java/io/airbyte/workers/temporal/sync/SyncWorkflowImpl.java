@@ -51,10 +51,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
      * inherit the workflow's Task Queue.
      */
     if (version > PREV_VERSION) {
-      final DecideDataPlaneTaskQueueActivity decideTaskQueueActivity =
-          Workflow.newActivityStub(DecideDataPlaneTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+      final RouteToTaskQueueActivity decideTaskQueueActivity =
+          Workflow.newActivityStub(RouteToTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
-      final String dataPlaneTaskQueue = decideTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
+      final String dataPlaneTaskQueue = decideTaskQueueActivity.routeToTaskQueue(connectionId);
 
       replicationActivity =
           Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));

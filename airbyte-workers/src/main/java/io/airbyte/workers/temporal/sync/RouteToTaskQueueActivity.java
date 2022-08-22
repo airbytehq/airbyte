@@ -9,9 +9,9 @@ import io.temporal.activity.ActivityMethod;
 import java.util.UUID;
 
 @ActivityInterface
-public interface DecideDataPlaneTaskQueueActivity {
+public interface RouteToTaskQueueActivity {
 
   @ActivityMethod
-  String decideDataPlaneTaskQueue(final UUID connectionId);
+  String routeToTaskQueue(final UUID connectionId);
 
 }
