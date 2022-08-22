@@ -15,7 +15,7 @@ buildscript {
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '6.0.0'
+    id 'com.diffplug.spotless' version '6.7.1'
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.6'
     id 'version-catalog'
@@ -146,6 +146,7 @@ check.dependsOn 'spotlessApply'
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+        // This is currently only used for connectors.
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
         def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
@@ -153,8 +154,8 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
-        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
+        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
+        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:19-slim-bullseye" : "amd64/openjdk:19-slim-bullseye"
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -237,6 +238,9 @@ subprojects {
         }
         maven {
             url 'https://jitpack.io'
+        }
+        maven {
+            url 'https://maven.twttr.com'
         }
     }
 

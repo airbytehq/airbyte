@@ -37,13 +37,12 @@ connectionSpecification:
     region:
       title: Region *
       description:
-        Region to pull data from (EU/NA/FE/SANDBOX). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a>
+        Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a>
         for more details.
       enum:
         - NA
         - EU
         - FE
-        - SANDBOX
       type: string
       default: NA
       order: 4
@@ -100,7 +99,7 @@ advanced_auth:
   oauth_config_specification:
     complete_oauth_output_specification:
       type: object
-      additionalProperties: false
+      additionalProperties: true
       properties:
         refresh_token:
           type: string
@@ -108,7 +107,7 @@ advanced_auth:
             - refresh_token
     complete_oauth_server_input_specification:
       type: object
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: string
@@ -116,7 +115,7 @@ advanced_auth:
           type: string
     complete_oauth_server_output_specification:
       type: object
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: string

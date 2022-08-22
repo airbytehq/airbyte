@@ -12,7 +12,7 @@ If you'd like to build new connectors, or update existing ones, **for your own u
 
 ## Developing your own connector
 
-It's easy to code your own connectors on Airbyte. Here is a link to instruct on how to code new sources and destinations: [building new connectors](../contributing-to-airbyte/)
+It's easy to code your own connectors on Airbyte. Here is a link to instruct on how to code new sources and destinations: [building new connectors](../connector-development/README.md)
 
 While the guides in the link above are specific to the languages used most frequently to write integrations, **Airbyte connectors can be written in any language**. Please reach out to us if you'd like help developing connectors in other languages.
 

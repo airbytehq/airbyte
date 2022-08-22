@@ -18,8 +18,7 @@ const LogHeader = styled.div`
 `;
 
 const AttemptDetailsSection = styled.div`
-  padding-left: 10px;
-  padding-top: 10px;
+  padding: 10px 0 10px 10px;
 `;
 
 const LogPath = styled.span`

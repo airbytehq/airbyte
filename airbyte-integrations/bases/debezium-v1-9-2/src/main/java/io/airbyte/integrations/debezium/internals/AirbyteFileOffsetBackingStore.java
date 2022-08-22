@@ -141,4 +141,16 @@ public class AirbyteFileOffsetBackingStore {
     return offsetManager;
   }
 
+  public static AirbyteFileOffsetBackingStore initializeDummyStateForSnapshotPurpose() {
+    final Path cdcWorkingDir;
+    try {
+      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-dummy-state-offset");
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
+
+    return new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
+  }
+
 }

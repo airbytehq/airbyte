@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -14,6 +14,7 @@ import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -105,10 +106,10 @@ const useDeleteSource = () => {
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
-        analyticsService.track("Source - Action", {
-          action: "Delete source",
+        analyticsService.track(Namespace.SOURCE, Action.DELETE, {
+          actionDescription: "Source deleted",
           connector_source: ctx.source.sourceName,
-          connector_source_id: ctx.source.sourceDefinitionId,
+          connector_source_definition_id: ctx.source.sourceDefinitionId,
         });
 
         queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));

@@ -103,10 +103,27 @@ public interface Configs {
 
   /**
    * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google
-   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support.
-   * Undefined behavior will result if this is turned on and then off.
+   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use
+   * Hashicorp Vault. Alpha support. Undefined behavior will result if this is turned on and then off.
    */
   SecretPersistenceType getSecretPersistenceType();
+
+  /**
+   * Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+   */
+  String getVaultAddress();
+
+  /**
+   * Define the vault path prefix to read/write Airbyte Configuration to Hashicorp Vault. Empty by
+   * default. Alpha Support.
+   */
+  String getVaultPrefix();
+
+  /**
+   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default.
+   * Alpha Support.
+   */
+  String getVaultToken();
 
   // Database
   /**
@@ -315,16 +332,40 @@ public interface Configs {
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Defaults to
+   * Define the check job container's minimum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Defaults to
+   * Define the check job container's maximum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
+
+  /**
+   * Define the normalization job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuRequest();
+
+  /**
+   * Define the normalization job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuLimit();
+
+  /**
+   * Define the normalization job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryRequest();
+
+  /**
+   * Define the normalization job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryLimit();
 
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
@@ -445,9 +486,26 @@ public interface Configs {
   String getDDDogStatsDPort();
 
   /**
+   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
+   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
+   */
+  List<String> getDDConstantTags();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();
+
+  /**
+   * Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
+   */
+  JobErrorReportingStrategy getJobErrorReportingStrategy();
+
+  /**
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
+   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   */
+  String getJobErrorReportingSentryDSN();
 
   // APPLICATIONS
   // Worker
@@ -561,6 +619,11 @@ public interface Configs {
     LOGGING
   }
 
+  enum JobErrorReportingStrategy {
+    SENTRY,
+    LOGGING
+  }
+
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
@@ -574,7 +637,8 @@ public interface Configs {
   enum SecretPersistenceType {
     NONE,
     TESTING_CONFIG_DB_TABLE,
-    GOOGLE_SECRET_MANAGER
+    GOOGLE_SECRET_MANAGER,
+    VAULT
   }
 
 }

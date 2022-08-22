@@ -320,6 +320,14 @@
         "mininum": 1,
         "exclusiveMinimum": 0,
         "type": "integer"
+      },
+      "max_batch_size": {
+        "title": "Maximum size of Batched Requests",
+        "description": "Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        "default": 50,
+        "order": 9,
+        "exclusiveMinimum": 0,
+        "type": "integer"
       }
     },
     "required": ["account_id", "start_date", "access_token"]

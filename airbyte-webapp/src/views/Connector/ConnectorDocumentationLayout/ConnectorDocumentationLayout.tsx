@@ -1,15 +1,19 @@
 import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
 
-import { DocumentationPanel } from "components/DocumentationPanel";
+import { LoadingPage } from "components/LoadingPage";
 
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
+
+const LazyDocumentationPanel = lazy(() =>
+  import("components/DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
+);
 
 interface PanelContainerProps {
   dimensions?: {
@@ -23,23 +27,16 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
   const screenWidth = useWindowSize().width;
 
   return (
-    <>
-      {screenWidth > 500 && width < 450 && (
+    <div className={classNames(styles.container)}>
+      {screenWidth > 500 && width < 550 && (
         <div className={styles.darkOverlay}>
           <h3>
             <FormattedMessage id="connectorForm.expandForm" />
           </h3>
         </div>
       )}
-      <div
-        className={classNames(styles.container, {
-          [styles.noScroll]: width < 550,
-          [styles.fullHeight]: width > 550,
-        })}
-      >
-        {children}
-      </div>
-    </>
+      <div>{children}</div>
+    </div>
   );
 };
 
@@ -49,11 +46,11 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
   return (
     <>
       {width < 350 ? (
-        <div className={styles.lightOverlay}>
+        <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
           <h2 className={styles.rotatedHeader}>Setup Guide</h2>
         </div>
       ) : (
-        <div>{children}</div>
+        <div className={styles.rightPanelContainer}>{children}</div>
       )}
     </>
   );
@@ -65,7 +62,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const screenWidth = useWindowSize().width;
 
   return (
-    <ReflexContainer orientation="vertical" windowResizeAware>
+    <ReflexContainer orientation="vertical">
       <ReflexElement className={classNames("left-pane", styles.leftPanelStyle)} propagateDimensions minSize={150}>
         <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
@@ -79,7 +76,9 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
       {screenWidth > 500 && documentationPanelOpen && (
         <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
-            <DocumentationPanel />
+            <Suspense fallback={<LoadingPage />}>
+              <LazyDocumentationPanel />
+            </Suspense>
           </RightPanelContainer>
         </ReflexElement>
       )}

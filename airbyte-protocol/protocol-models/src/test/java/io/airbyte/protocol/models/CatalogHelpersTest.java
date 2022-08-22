@@ -12,7 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.transform_models.FieldTransform;
 import io.airbyte.protocol.models.transform_models.StreamTransform;
-import io.airbyte.protocol.models.transform_models.UpdateFieldTransform;
+import io.airbyte.protocol.models.transform_models.UpdateFieldSchemaTransform;
 import io.airbyte.protocol.models.transform_models.UpdateStreamTransform;
 import java.io.IOException;
 import java.util.Comparator;
@@ -26,6 +26,10 @@ class CatalogHelpersTest {
   // handy for debugging test only.
   private static final Comparator<StreamTransform> STREAM_TRANSFORM_COMPARATOR =
       Comparator.comparing(StreamTransform::getTransformType);
+  private static final String CAD = "CAD";
+  private static final String ITEMS = "items";
+  private static final String SOME_ARRAY = "someArray";
+  private static final String PROPERTIES = "properties";
 
   @Test
   void testFieldToJsonSchema() {
@@ -82,7 +86,8 @@ class CatalogHelpersTest {
     final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     final List<String> expectedFieldNames =
-        List.of("CAD", "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文");
+        List.of(CAD, "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文", SOME_ARRAY, ITEMS,
+            "oldName");
 
     // sort so that the diff is easier to read.
     assertEquals(expectedFieldNames.stream().sorted().toList(), actualFieldNames.stream().sorted().toList());
@@ -103,17 +108,47 @@ class CatalogHelpersTest {
     final List<StreamTransform> expectedDiff = Stream.of(
         StreamTransform.createAddStreamTransform(new StreamDescriptor().withName("sales")),
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
-        StreamTransform.createUpdateStreamTransform(new UpdateStreamTransform(new StreamDescriptor().withName("users"), Set.of(
-            FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get("properties").get("COD")),
-            FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get("properties").get("something2")),
-            FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get("properties").get("HKD")),
-            FieldTransform.createUpdateFieldTransform(new UpdateFieldTransform(
-                List.of("CAD"),
-                schema1.get("properties").get("CAD"),
-                schema2.get("properties").get("CAD")))))))
+        StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName("users"), new UpdateStreamTransform(Set.of(
+            FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get(PROPERTIES).get("COD")),
+            FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get(PROPERTIES).get("something2")),
+            FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get(PROPERTIES).get("HKD")),
+            FieldTransform.createUpdateFieldTransform(List.of(CAD), new UpdateFieldSchemaTransform(
+                schema1.get(PROPERTIES).get(CAD),
+                schema2.get(PROPERTIES).get(CAD))),
+            FieldTransform.createUpdateFieldTransform(List.of(SOME_ARRAY), new UpdateFieldSchemaTransform(
+                schema1.get(PROPERTIES).get(SOME_ARRAY),
+                schema2.get(PROPERTIES).get(SOME_ARRAY))),
+            FieldTransform.createUpdateFieldTransform(List.of(SOME_ARRAY, ITEMS), new UpdateFieldSchemaTransform(
+                schema1.get(PROPERTIES).get(SOME_ARRAY).get(ITEMS),
+                schema2.get(PROPERTIES).get(SOME_ARRAY).get(ITEMS))),
+            FieldTransform.createRemoveFieldTransform(List.of(SOME_ARRAY, ITEMS, "oldName"),
+                schema1.get(PROPERTIES).get(SOME_ARRAY).get(ITEMS).get(PROPERTIES).get("oldName")),
+            FieldTransform.createAddFieldTransform(List.of(SOME_ARRAY, ITEMS, "newName"),
+                schema2.get(PROPERTIES).get(SOME_ARRAY).get(ITEMS).get(PROPERTIES).get("newName"))))))
         .sorted(STREAM_TRANSFORM_COMPARATOR)
         .toList();
     assertEquals(expectedDiff, actualDiff.stream().sorted(STREAM_TRANSFORM_COMPARATOR).toList());
+  }
+
+  @Test
+  void testExtractIncrementalStreamDescriptors() {
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one")),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.FULL_REFRESH)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one"))));
+
+    final List<StreamDescriptor> streamDescriptors = CatalogHelpers.extractIncrementalStreamDescriptors(configuredCatalog);
+
+    assertEquals(1, streamDescriptors.size());
+    assertEquals("one", streamDescriptors.get(0).getName());
   }
 
 }

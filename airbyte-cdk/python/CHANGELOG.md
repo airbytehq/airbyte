@@ -1,5 +1,58 @@
 # Changelog
 
+## 0.1.78
+- Fix yaml config parsing when running from docker container
+
+## 0.1.77
+- Add schema validation for declarative YAML connector configs
+
+## 0.1.76
+- Bugfix: Correctly set parent slice stream for sub-resource streams
+
+## 0.1.75
+- Improve `filter_secrets` skip empty secret
+
+## 0.1.74
+- Replace JelloRecordExtractor with DpathRecordExtractor
+
+## 0.1.73
+- Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
+
+## 0.1.72
+- Bugfix: Fix bug in DatetimeStreamSlicer's format method
+
+## 0.1.71
+- Refactor declarative package to dataclasses
+- Bugfix: Requester header always converted to string
+- Bugfix: Reset paginator state between stream slices
+- Bugfix: Record selector handles single records
+
+## 0.1.70
+- Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
+- Bugfix: Set stream slicer's request options in SimpleRetriever
+
+## 0.1.69
+- AbstractSource emits a state message when reading incremental even if there were no stream slices to process.
+
+## 0.1.68
+- Replace parse-time string interpolation with run-time interpolation in YAML-based sources
+
+## 0.1.67
+- Add support declarative token authenticator.
+
+## 0.1.66
+- Call init_uncaught_exception_handler from AirbyteEntrypoint.__init__ and Destination.run_cmd
+- Add the ability to remove & add records in YAML-based sources
+
+## 0.1.65
+- Allow for detailed debug messages to be enabled using the --debug command.
+
+## 0.1.64
+- Add support for configurable oauth request payload and declarative oauth authenticator.
+
+## 0.1.63
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
 ## 0.1.62
 Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
  

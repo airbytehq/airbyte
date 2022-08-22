@@ -19,5 +19,17 @@
   },
   "segments": {
     "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "adaccounts_stats_daily": {
+    "start_time": "2221-07-05"
+  },
+  "ads_stats_daily": {
+    "start_time": "2221-07-05"
+  },
+  "adsquads_stats_daily": {
+    "start_time": "2221-07-05"
+  },
+  "campaigns_stats_daily": {
+    "start_time": "2221-07-05"
   }
 }

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.config.Configs.JobErrorReportingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ class EnvConfigsTest {
 
   private Map<String, String> envMap;
   private EnvConfigs config;
+  private final static String ABC = "abc";
   private final static String DEV = "dev";
   private final static String ABCDEF = "abc/def";
   private final static String ROOT = "root";
@@ -156,8 +158,8 @@ class EnvConfigsTest {
     envMap.put(EnvConfigs.DOCKER_NETWORK, null);
     assertEquals("host", config.getDockerNetwork());
 
-    envMap.put(EnvConfigs.DOCKER_NETWORK, "abc");
-    assertEquals("abc", config.getDockerNetwork());
+    envMap.put(EnvConfigs.DOCKER_NETWORK, ABC);
+    assertEquals(ABC, config.getDockerNetwork());
   }
 
   @Test
@@ -165,7 +167,7 @@ class EnvConfigsTest {
     envMap.put(EnvConfigs.TRACKING_STRATEGY, null);
     assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
 
-    envMap.put(EnvConfigs.TRACKING_STRATEGY, "abc");
+    envMap.put(EnvConfigs.TRACKING_STRATEGY, ABC);
     assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
 
     envMap.put(EnvConfigs.TRACKING_STRATEGY, "logging");
@@ -176,6 +178,27 @@ class EnvConfigsTest {
 
     envMap.put(EnvConfigs.TRACKING_STRATEGY, "LOGGING");
     assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+  }
+
+  @Test
+  void testErrorReportingStrategy() {
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, null);
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, ABC);
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "logging");
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "sentry");
+    assertEquals(JobErrorReportingStrategy.SENTRY, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "LOGGING");
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "SENTRY");
+    assertEquals(JobErrorReportingStrategy.SENTRY, config.getJobErrorReportingStrategy());
   }
 
   @Test
@@ -332,6 +355,20 @@ class EnvConfigsTest {
 
     envMap.put(EnvConfigs.PUBLISH_METRICS, "");
     assertFalse(config.getPublishMetrics());
+  }
+
+  @Test
+  @DisplayName("Should parse constant tags")
+  void testDDConstantTags() {
+    assertEquals(List.of(), config.getDDConstantTags());
+
+    envMap.put(EnvConfigs.DD_CONSTANT_TAGS, " ");
+    assertEquals(List.of(), config.getDDConstantTags());
+
+    envMap.put(EnvConfigs.DD_CONSTANT_TAGS, "airbyte_instance:dev,k8s-cluster:eks-dev");
+    List<String> expected = List.of("airbyte_instance:dev", "k8s-cluster:eks-dev");
+    assertEquals(expected, config.getDDConstantTags());
+    assertEquals(2, config.getDDConstantTags().size());
   }
 
   @Nested

@@ -109,6 +109,14 @@ public class Job {
     return getSuccessfulAttempt().flatMap(Attempt::getOutput);
   }
 
+  public Optional<Attempt> getLastFailedAttempt() {
+    return getAttempts()
+        .stream()
+        .sorted(Comparator.comparing(Attempt::getCreatedAtInSecond).reversed())
+        .filter(a -> a.getStatus() == AttemptStatus.FAILED)
+        .findFirst();
+  }
+
   public Optional<Attempt> getLastAttemptWithOutput() {
     return getAttempts()
         .stream()

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -29,7 +30,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
 
-  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
+  const analyticsService = useAnalyticsService();
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -74,7 +75,9 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
-    trackNewSourceAction("Select a connector", {
+
+    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
+      actionDescription: "Source connector type selected",
       connector_source: sourceDefinition?.name,
       connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });

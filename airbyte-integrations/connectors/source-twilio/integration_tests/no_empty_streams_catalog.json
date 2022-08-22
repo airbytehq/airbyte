@@ -188,6 +188,18 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "alerts",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date_updated"],
+      "destination_sync_mode": "append"
     }
   ]
 }

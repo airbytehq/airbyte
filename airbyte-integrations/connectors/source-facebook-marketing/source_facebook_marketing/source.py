@@ -30,6 +30,8 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
+from .utils import validate_end_date, validate_start_date
+
 logger = logging.getLogger("airbyte")
 
 
@@ -58,6 +60,10 @@ class SourceFacebookMarketing(AbstractSource):
         :return: list of the stream instances
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)
+
+        config.start_date = validate_start_date(config.start_date)
+        config.end_date = validate_end_date(config.start_date, config.end_date)
+
         api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(
@@ -71,6 +77,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
             Ads(
                 api=api,
@@ -78,21 +85,28 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
-            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images, page_size=config.page_size),
-            AdsInsights(page_size=config.page_size, **insights_args),
-            AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
-            AdsInsightsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsRegion(page_size=config.page_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, **insights_args),
-            AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
-            AdsInsightsActionType(page_size=config.page_size, **insights_args),
+            AdCreatives(
+                api=api,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
+            AdsInsights(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsAgeAndGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsRegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDma(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsPlatformAndDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             Campaigns(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
             Images(
                 api=api,
@@ -100,6 +114,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
             Videos(
                 api=api,
@@ -107,6 +122,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
             Activities(
                 api=api,
@@ -114,6 +130,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
             ),
         ]
 

@@ -28,6 +28,16 @@ and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
 {% endif %}
 {%- endmacro -%}
 
+{# -- see https://cloud.google.com/bigquery/docs/querying-partitioned-tables#best_practices_for_partition_pruning #}
+{%- macro bigquery__incremental_clause(col_emitted_at, tablename) -%}
+{% if is_incremental() %}
+    {% if get_max_normalized_cursor(col_emitted_at, tablename) %}
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
+    cast('{{ get_max_normalized_cursor(col_emitted_at, tablename) }}' as {{ type_timestamp_with_timezone() }})
+    {% endif %}
+{% endif %}
+{%- endmacro -%}
+
 {%- macro sqlserver__incremental_clause(col_emitted_at, tablename) -%}
 {% if is_incremental() %}
 and ((select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ tablename }}) is null

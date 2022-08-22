@@ -60,6 +60,8 @@ dependencies {
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-tests')
+    automaticMigrationAcceptanceTestImplementation project(':airbyte-test-utils')
+
 
     automaticMigrationAcceptanceTestImplementation libs.platform.testcontainers
 }

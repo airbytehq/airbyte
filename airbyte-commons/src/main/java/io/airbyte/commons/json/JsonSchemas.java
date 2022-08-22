@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 // todo (cgardens) - we need the ability to identify jsonschemas that Airbyte considers invalid for
 // a connector (e.g. "not" keyword).
 @Slf4j
+@SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
 public class JsonSchemas {
 
   private static final String JSON_SCHEMA_ENUM_KEY = "enum";
@@ -43,14 +44,9 @@ public class JsonSchemas {
   private static final String ARRAY_TYPE = "array";
   private static final String OBJECT_TYPE = "object";
   private static final String STRING_TYPE = "string";
-  private static final String NUMBER_TYPE = "number";
-  private static final String BOOLEAN_TYPE = "boolean";
-  private static final String NULL_TYPE = "null";
   private static final String ONE_OF_TYPE = "oneOf";
   private static final String ALL_OF_TYPE = "allOf";
   private static final String ANY_OF_TYPE = "anyOf";
-
-  private static final String ARRAY_JSON_PATH = "[]";
 
   private static final Set<String> COMPOSITE_KEYWORDS = Set.of(ONE_OF_TYPE, ALL_OF_TYPE, ANY_OF_TYPE);
 
@@ -133,9 +129,8 @@ public class JsonSchemas {
    *        optional, nothing will be collected, otherwise, whatever is returned will be collected and
    *        returned by the final collection.
    * @param <T> - type of objects being collected
-   * @return - collection of all items that were collected during the traversal. Returns a { @link
-   *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
-   *         make sense.
+   * @return - collection of all items that were collected during the traversal. Returns values in
+   *         preoorder traversal order.
    */
   public static <T> List<T> traverseJsonSchemaWithFilteredCollector(final JsonNode jsonSchema,
                                                                     final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
@@ -173,13 +168,13 @@ public class JsonSchemas {
    *        the node from the root of the object passed at the root level invocation
    *
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
                                                  final List<FieldNameOrList> path,
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     if (!jsonSchemaNode.isObject()) {
       throw new IllegalArgumentException(String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
     }
-
     consumer.accept(jsonSchemaNode, path);
     // if type is missing assume object. not official JsonSchema, but it seems to be a common
     // compromise.
@@ -190,8 +185,12 @@ public class JsonSchemas {
         // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
         case ARRAY_TYPE -> {
           final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
-          // hit every node.
-          traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
+          if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
+            // hit every node.
+            traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
+          } else {
+            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
+          }
         }
         case OBJECT_TYPE -> {
           final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
@@ -206,8 +205,7 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
+            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
       }

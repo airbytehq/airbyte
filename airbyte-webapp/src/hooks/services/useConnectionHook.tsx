@@ -1,10 +1,10 @@
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
@@ -21,6 +21,7 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
@@ -63,7 +64,7 @@ function useWebConnectionService() {
   );
 }
 
-function useConnectionService() {
+export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
@@ -91,15 +92,13 @@ export const useSyncConnection = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation((connection: WebBackendConnectionRead) => {
-    const frequency = getFrequencyConfig(connection.schedule);
-
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
+    analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
+      actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.type,
+      frequency: getFrequencyType(connection.schedule),
     });
 
     return service.sync(connection.connectionId);
@@ -142,11 +141,9 @@ const useCreateConnection = () => {
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
-      const frequencyData = getFrequencyConfig(values.schedule);
-
-      analyticsService.track("New Connection - Action", {
-        action: "Set up connection",
-        frequency: frequencyData?.type,
+      analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
+        actionDescription: "New connection created",
+        frequency: getFrequencyType(values.schedule),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -170,15 +167,24 @@ const useCreateConnection = () => {
 const useDeleteConnection = () => {
   const service = useConnectionService();
   const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
 
-  return useMutation((connectionId: string) => service.delete(connectionId), {
-    onSuccess: (_data, connectionId) => {
-      queryClient.removeQueries(connectionsKeys.detail(connectionId));
+  return useMutation((connection: WebBackendConnectionRead) => service.delete(connection.connectionId), {
+    onSuccess: (_data, connection) => {
+      analyticsService.track(Namespace.CONNECTION, Action.DELETE, {
+        actionDescription: "Connection deleted",
+        connector_source: connection.source?.sourceName,
+        connector_source_definition_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.destinationName,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      });
+
+      queryClient.removeQueries(connectionsKeys.detail(connection.connectionId));
       queryClient.setQueryData(
         connectionsKeys.lists(),
         (lst: ListConnection | undefined) =>
           ({
-            connections: lst?.connections.filter((conn) => conn.connectionId !== connectionId) ?? [],
+            connections: lst?.connections.filter((conn) => conn.connectionId !== connection.connectionId) ?? [],
           } as ListConnection)
       );
     },
@@ -189,20 +195,11 @@ const useUpdateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (connectionUpdate: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = connectionUpdate.withRefreshedCatalog
-        ? { withRefreshedCatalog: connectionUpdate.withRefreshedCatalog }
-        : null;
-
-      return service.update({ ...connectionUpdate, ...withRefreshedCatalogCleaned });
+  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
+    onSuccess: (connection) => {
+      queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },
-    {
-      onSuccess: (connection) => {
-        queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
-      },
-    }
-  );
+  });
 };
 
 const useConnectionList = (): ListConnection => {

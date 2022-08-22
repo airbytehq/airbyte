@@ -13,9 +13,11 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -27,9 +29,11 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +53,8 @@ public class GlobalStateManagerTest {
         new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     assertNotNull(stateManager.getCdcStateManager());
     assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
+    assertEquals(1, stateManager.getCdcStateManager().getInitialStreamsSynced().size());
+    assertTrue(stateManager.getCdcStateManager().getInitialStreamsSynced().contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
   }
 
   @Test
@@ -200,6 +206,33 @@ public class GlobalStateManagerTest {
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expected, actualFirstEmission);
+  }
+
+  @Test
+  void testToStateWithNoState() {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
+    final StateManager stateManager =
+        new GlobalStateManager(new AirbyteStateMessage(), catalog);
+
+    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
+    assertNotNull(airbyteStateMessage);
+    assertEquals(AirbyteStateType.GLOBAL, airbyteStateMessage.getType());
+    assertEquals(0, airbyteStateMessage.getGlobal().getStreamStates().size());
+  }
+
+  @Test
+  void testCdcStateManagerLegacyState() {
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final DbState dbState = new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(cdcState)))
+        .withStreams(List
+            .of(new DbStreamState().withStreamName("name").withStreamNamespace("namespace").withCursor("").withCursorField(Collections.emptyList())))
+        .withCdc(true);
+    final StateManager stateManager =
+        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState)), catalog);
+    assertNotNull(stateManager.getCdcStateManager());
+    assertEquals(1, stateManager.getCdcStateManager().getInitialStreamsSynced().size());
+    assertTrue(stateManager.getCdcStateManager().getInitialStreamsSynced().contains(new AirbyteStreamNameNamespacePair("name", "namespace")));
   }
 
 }

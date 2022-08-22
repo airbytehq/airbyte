@@ -1,7 +1,7 @@
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useToggle } from "react-use";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useDeepCompareEffect, useToggle } from "react-use";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
@@ -13,7 +13,6 @@ import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/For
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { ConnectionConfiguration } from "../../../core/domain/connection";
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
@@ -41,35 +40,47 @@ const FormikPatch: React.FC = () => {
  */
 const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
-}> = ({ schema }) => {
+  initialValues: ServiceFormValues;
+}> = ({ schema, initialValues }) => {
   const { widgetsInfo } = useServiceForm();
-  const { values, resetForm } = useFormikContext<ServiceFormValues>();
+  const { setFieldValue } = useFormikContext<ServiceFormValues>();
 
-  const valueRef = useRef<ConnectionConfiguration>();
-  valueRef.current = values.connectionConfiguration;
+  useDeepCompareEffect(() => {
+    const widgetsInfoEntries = Object.entries(widgetsInfo);
 
-  useEffect(() => {
     // set all const fields to form field values, so we could send form
-    const constPatchedValues = Object.entries(widgetsInfo)
-      .filter(([_, v]) => isDefined(v.const))
-      .reduce((acc, [k, v]) => setIn(acc, k, v.const), valueRef.current);
+    const patchedConstValues = widgetsInfoEntries
+      .filter(([_, value]) => isDefined(value.const))
+      .reduce((acc, [key, value]) => setIn(acc, key, value.const), initialValues);
 
     // set default fields as current values, so values could be populated correctly
     // fix for https://github.com/airbytehq/airbyte/issues/6791
-    const defaultPatchedValues = Object.entries(widgetsInfo)
-      .filter(([k, v]) => isDefined(v.default) && !isDefined(getIn(constPatchedValues, k)))
-      .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
+    const patchedDefaultValues = widgetsInfoEntries
+      .filter(([key, value]) => isDefined(value.default) && !isDefined(getIn(patchedConstValues, key)))
+      .reduce((acc, [key, value]) => setIn(acc, key, value.default), patchedConstValues);
 
-    resetForm({
-      values: {
-        ...values,
-        connectionConfiguration: defaultPatchedValues,
-      },
-    });
+    if (patchedDefaultValues?.connectionConfiguration) {
+      setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
 
+  return null;
+};
+
+/**
+ * Formik does not revalidate the form in case the validationSchema it's using changes.
+ * This component just forces a revalidation of the form whenever the validation schema changes.
+ */
+const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }> = ({ validationSchema }) => {
+  // The validationSchema is passed into this component instead of pulled from the FormikContext, since
+  // due to https://github.com/jaredpalmer/formik/issues/2092 the validationSchema from the formik context will
+  // always be undefined.
+  const { validateForm } = useFormikContext();
+  useEffect(() => {
+    validateForm();
+  }, [validateForm, validationSchema]);
   return null;
 };
 
@@ -208,7 +219,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );
 
-  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
+  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
+    formFields,
+    initialValues,
+    uiOverrides
+  );
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
@@ -237,22 +252,26 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
+      enableReinitialize
     >
       {({ dirty }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
+          resetUiWidgetsInfo={resetUiWidgetsInfo}
           formType={formType}
           selectedConnector={selectedConnectorDefinitionSpecification}
           availableServices={props.availableServices}
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
+          validationSchema={validationSchema}
         >
           {!props.isEditMode && <SetDefaultName />}
+          <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
-          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
+          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
             errorMessage={props.errorMessage}

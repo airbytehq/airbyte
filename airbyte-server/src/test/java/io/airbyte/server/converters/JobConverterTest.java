@@ -5,6 +5,7 @@
 package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -98,14 +99,14 @@ class JobConverterTest {
               .withTotalStats(new SyncStats()
                   .withRecordsEmitted(RECORDS_EMITTED)
                   .withBytesEmitted(BYTES_EMITTED)
-                  .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                  .withSourceStateMessagesEmitted(STATE_MESSAGES_EMITTED)
                   .withRecordsCommitted(RECORDS_COMMITTED))
               .withStreamStats(Lists.newArrayList(new StreamSyncStats()
                   .withStreamName(STREAM_NAME)
                   .withStats(new SyncStats()
                       .withRecordsEmitted(RECORDS_EMITTED)
                       .withBytesEmitted(BYTES_EMITTED)
-                      .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                      .withSourceStateMessagesEmitted(STATE_MESSAGES_EMITTED)
                       .withRecordsCommitted(RECORDS_COMMITTED))))));
 
   private JobConverter jobConverter;
@@ -238,8 +239,8 @@ class JobConverterTest {
     final JobConfig resetConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(
-            new io.airbyte.config.StreamDescriptor().withName("users"),
-            new io.airbyte.config.StreamDescriptor().withName("accounts")))));
+            new io.airbyte.protocol.models.StreamDescriptor().withName("users"),
+            new io.airbyte.protocol.models.StreamDescriptor().withName("accounts")))));
     final Job resetJob = new Job(
         JOB_ID,
         ConfigType.RESET_CONNECTION,
@@ -255,6 +256,25 @@ class JobConverterTest {
         new StreamDescriptor().name("users"),
         new StreamDescriptor().name("accounts")));
     assertEquals(expectedResetConfig, jobConverter.getJobInfoRead(resetJob).getJob().getResetConfig());
+  }
+
+  @Test
+  void testResetJobExcludesConfigIfNull() {
+    final JobConfig resetConfig = new JobConfig()
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(null));
+    final Job resetJob = new Job(
+        JOB_ID,
+        ConfigType.RESET_CONNECTION,
+        JOB_CONFIG_ID,
+        resetConfig,
+        Collections.emptyList(),
+        JobStatus.SUCCEEDED,
+        CREATED_AT,
+        CREATED_AT,
+        CREATED_AT);
+
+    assertNull(jobConverter.getJobInfoRead(resetJob).getJob().getResetConfig());
   }
 
 }

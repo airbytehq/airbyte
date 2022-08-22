@@ -13,6 +13,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -34,6 +35,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static SecretsRepositoryWriter secretsRepositoryWriter;
   private static SynchronousSchedulerClient synchronousSchedulerClient;
   private static FileTtlManager archiveTtlManager;
+  private static StatePersistence statePersistence;
   private static Map<String, String> mdc;
   private static Database configsDatabase;
   private static Database jobsDatabase;
@@ -55,6 +57,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final ConfigPersistence seed,
                                final SynchronousSchedulerClient synchronousSchedulerClient,
                                final FileTtlManager archiveTtlManager,
+                               final StatePersistence statePersistence,
                                final Map<String, String> mdc,
                                final Database configsDatabase,
                                final Database jobsDatabase,
@@ -86,6 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.configsFlyway = configsFlyway;
     ConfigurationApiFactory.jobsFlyway = jobsFlyway;
+    ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
   @Override
@@ -102,6 +106,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.configsDatabase,
         ConfigurationApiFactory.jobsDatabase,
+        ConfigurationApiFactory.statePersistence,
         ConfigurationApiFactory.trackingClient,
         ConfigurationApiFactory.workerEnvironment,
         ConfigurationApiFactory.logConfigs,

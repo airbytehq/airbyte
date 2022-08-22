@@ -5,7 +5,6 @@
     "title": "JDBC Source Spec",
     "type": "object",
     "required": ["username", "jdbc_url"],
-    "additionalProperties": false,
     "properties": {
       "username": {
         "title": "Username",

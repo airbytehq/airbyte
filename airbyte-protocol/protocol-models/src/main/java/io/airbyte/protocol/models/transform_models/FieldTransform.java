@@ -19,32 +19,37 @@ import lombok.ToString;
 public final class FieldTransform {
 
   private final FieldTransformType transformType;
+  private final List<String> fieldName;
   private final AddFieldTransform addFieldTransform;
   private final RemoveFieldTransform removeFieldTransform;
-  private final UpdateFieldTransform updateFieldTransform;
+  private final UpdateFieldSchemaTransform updateFieldTransform;
 
   public static FieldTransform createAddFieldTransform(final List<String> fieldName, final JsonNode schema) {
-    return createAddFieldTransform(new AddFieldTransform(fieldName, schema));
+    return createAddFieldTransform(fieldName, new AddFieldTransform(schema));
   }
 
-  public static FieldTransform createAddFieldTransform(final AddFieldTransform addFieldTransform) {
-    return new FieldTransform(FieldTransformType.ADD_FIELD, addFieldTransform, null, null);
+  public static FieldTransform createAddFieldTransform(final List<String> fieldName, final AddFieldTransform addFieldTransform) {
+    return new FieldTransform(FieldTransformType.ADD_FIELD, fieldName, addFieldTransform, null, null);
   }
 
   public static FieldTransform createRemoveFieldTransform(final List<String> fieldName, final JsonNode schema) {
-    return createRemoveFieldTransform(new RemoveFieldTransform(fieldName, schema));
+    return createRemoveFieldTransform(fieldName, new RemoveFieldTransform(fieldName, schema));
   }
 
-  public static FieldTransform createRemoveFieldTransform(final RemoveFieldTransform removeFieldTransform) {
-    return new FieldTransform(FieldTransformType.REMOVE_FIELD, null, removeFieldTransform, null);
+  public static FieldTransform createRemoveFieldTransform(final List<String> fieldName, final RemoveFieldTransform removeFieldTransform) {
+    return new FieldTransform(FieldTransformType.REMOVE_FIELD, fieldName, null, removeFieldTransform, null);
   }
 
-  public static FieldTransform createUpdateFieldTransform(final UpdateFieldTransform updateFieldTransform) {
-    return new FieldTransform(FieldTransformType.UPDATE_FIELD, null, null, updateFieldTransform);
+  public static FieldTransform createUpdateFieldTransform(final List<String> fieldName, final UpdateFieldSchemaTransform updateFieldTransform) {
+    return new FieldTransform(FieldTransformType.UPDATE_FIELD_SCHEMA, fieldName, null, null, updateFieldTransform);
   }
 
   public FieldTransformType getTransformType() {
     return transformType;
+  }
+
+  public List<String> getFieldName() {
+    return fieldName;
   }
 
   public AddFieldTransform getAddFieldTransform() {
@@ -55,7 +60,7 @@ public final class FieldTransform {
     return removeFieldTransform;
   }
 
-  public UpdateFieldTransform getUpdateFieldTransform() {
+  public UpdateFieldSchemaTransform getUpdateFieldTransform() {
     return updateFieldTransform;
   }
 

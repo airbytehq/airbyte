@@ -13,10 +13,6 @@ on:
       connector:
         description: "Airbyte Connector"
         required: true
-      run-tests:
-        description: "Should run tests when publishing"
-        required: true
-        default: "true"
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
@@ -28,6 +24,10 @@ on:
         description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
         required: true
         default: "false"
+      run-tests:
+        description: "Should run tests when publishing"
+        required: true
+        default: "true"
 
 jobs:
   find_valid_pat:
@@ -188,7 +188,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Create table header
         uses: peter-evans/create-or-update-comment@v1
         with:
@@ -270,6 +270,12 @@ jobs:
         run: |
           source venv/bin/activate
           ci_credentials ${{ matrix.connector }}
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Set Name and Version Environment Vars
@@ -283,14 +289,6 @@ jobs:
         if: startsWith(matrix.connector, 'connectors')
         run: |
           curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
-      - name: Create Sentry Release
-        if: startsWith(matrix.connector, 'connectors')
-        run: |
-          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
-          SENTRY_PROJECT: airbyte-connectors
       - name: Publish ${{ matrix.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
@@ -301,14 +299,16 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-      - name: Finalize Sentry release
-        if: startsWith(matrix.connector, 'connectors')
+      - name: Create Sentry Release
+        if: startsWith(matrix.connector, 'connectors') && success()
         run: |
-          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+          SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+          sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
+          sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
-          SENTRY_PROJECT: airbyte-connectors
+          SENTRY_ORG: airbytehq
+          SENTRY_PROJECT: connector-incident-management
       - name: Check if connector in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
@@ -343,7 +343,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git add -u
-          git commit -m "auto-bump connector version"
+          git commit -m "auto-bump connector version [ci skip]"
           git pull origin ${{ github.event.inputs.gitref }}
           git push origin ${{ github.event.inputs.gitref }}
         id: auto-bump
