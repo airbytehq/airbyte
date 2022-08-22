@@ -9,7 +9,7 @@ When a stream is read incrementally, a state message will be output by the conne
 At the beginning of a `read` operation, the `StreamSlicer` will compute the slices to sync given the connection config and the stream's current state,
 As the `Retriever` reads data from the `Source`, the `StreamSlicer` keeps track of the `Stream`'s state, which will be emitted after reading each stream slice.
 
-More information of stream slicing can be found in the [stream-slices section](../cdk-python/stream-slices.md)
+More information of stream slicing can be found in the [stream-slices section](../cdk-python/stream-slices.md).
 
 ## Implementations
 
@@ -56,10 +56,9 @@ If the `cursor_field` is `created`, and the record is `{"id": 1234, "created": "
 
 When reading data from the source, the cursor value will be updated to the max datetime between
 
-- the last record's cursor field
-- the start of the stream slice
-- the current cursor value
-  This ensures that the cursor will be updated even if a stream slice does not contain any data.
+- The last record's cursor field
+- The start of the stream slice
+- The current cursor value. This ensures that the cursor will be updated even if a stream slice does not contain any data
 
 #### Stream slicer on dates
 
@@ -164,7 +163,7 @@ retriever:
         stream_slice_field: "repository"
 ```
 
-[^1] This is a slight oversimplification. See update cursor section for more details on how the cursor is updated
+[^1] This is a slight oversimplification. See [update cursor section](#cursor-update) for more details on how the cursor is updated.
 
 ## More readings
 

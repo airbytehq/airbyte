@@ -36,7 +36,7 @@ requester:
 ### From error message
 
 Errors can also be defined by parsing the error message.
-For instance, this error handler will ignores responses if the error message contains the string "ignorethisresponse"
+For instance, this error handler will ignore responses if the error message contains the string "ignorethisresponse"
 
 ```yaml
 requester:
@@ -72,8 +72,8 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-          - http_codes: [ 429 ]
-            action: RETRY
+            - http_codes: [ 429 ]
+              action: RETRY
 ```
 
 ## Backoff Strategies
@@ -148,8 +148,8 @@ requester:
     backoff_strategies:
         - type: "WaitTimeFromHeaderBackoffStrategy"
           header: "wait_time"
-          - type: "ConstantBackoffStrategy"
-            backoff_time_in_seconds: 5
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 5
 
 ```
 
