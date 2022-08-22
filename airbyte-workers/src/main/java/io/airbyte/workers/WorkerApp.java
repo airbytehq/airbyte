@@ -352,14 +352,17 @@ public class WorkerApp {
         .build();
   }
 
-  public record ContainerOrchestratorConfig(
-                                            String namespace,
-                                            DocumentStoreClient documentStoreClient,
-                                            KubernetesClient kubernetesClient,
-                                            String secretName,
-                                            String secretMountPath,
-                                            String containerOrchestratorImage,
-                                            String googleApplicationCredentials) {}
+  public static record ContainerOrchestratorConfig(
+                                                   String namespace,
+                                                   DocumentStoreClient documentStoreClient,
+                                                   KubernetesClient kubernetesClient,
+                                                   String secretName,
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage,
+                                                   String containerOrchestratorImagePullPolicy,
+                                                   String googleApplicationCredentials) {
+
+  }
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -376,6 +379,7 @@ public class WorkerApp {
           configs.getContainerOrchestratorSecretName(),
           configs.getContainerOrchestratorSecretMountPath(),
           configs.getContainerOrchestratorImage(),
+          configs.getJobKubeMainContainerImagePullPolicy(),
           configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
