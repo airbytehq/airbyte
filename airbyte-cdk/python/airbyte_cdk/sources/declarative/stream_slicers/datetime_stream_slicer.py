@@ -5,7 +5,7 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -40,10 +40,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
-        start_datetime (MinMaxDatetime): the datetime that determines the earliest record that should be synced
-        end_datetime (MinMaxDatetime): the datetime that determines the last record that should be synced
+        start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
+        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
         step (str): size of the timewindow
-        cursor_field (InterpolatedString): record's cursor field
+        cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
@@ -53,10 +53,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for
     """
 
-    start_datetime: MinMaxDatetime
-    end_datetime: MinMaxDatetime
+    start_datetime: Union[MinMaxDatetime, str]
+    end_datetime: Union[MinMaxDatetime, str]
     step: str
-    cursor_field: InterpolatedString
+    cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     config: Config
     options: InitVar[Mapping[str, Any]]
@@ -66,11 +66,16 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     end_time_option: Optional[RequestOption] = None
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
-    lookback_window: Optional[InterpolatedString] = None
+    lookback_window: Optional[Union[InterpolatedString, str]] = None
 
     timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
     def __post_init__(self, options: Mapping[str, Any]):
+        if not isinstance(self.start_datetime, MinMaxDatetime):
+            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+        if not isinstance(self.end_datetime, MinMaxDatetime):
+            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
+
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
