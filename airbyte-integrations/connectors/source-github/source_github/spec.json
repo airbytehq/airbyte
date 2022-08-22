@@ -70,7 +70,13 @@
                 "title": "client_id",
                 "description": "client_id",
                 "airbyte_secret": true
-            }
+            },
+            "client_secret": {
+              "type": "string",
+              "title": "client_secret",
+              "description": "client_secret",
+              "airbyte_secret": true
+          }
           }
           },
           {
