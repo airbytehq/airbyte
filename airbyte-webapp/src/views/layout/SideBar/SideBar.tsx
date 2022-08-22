@@ -129,7 +129,7 @@ const SideBar: React.FC = () => {
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
             {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
+              <div className={getPopoutStyles(isOpen)} onFocus={onOpen} role="menu" tabIndex={0}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />
