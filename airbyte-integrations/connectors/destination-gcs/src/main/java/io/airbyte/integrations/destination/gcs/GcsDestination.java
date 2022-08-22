@@ -58,8 +58,6 @@ public class GcsDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
-      LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
-
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
           .getErrorMessage(e.getErrorCode(), 0, e.getErrorMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);

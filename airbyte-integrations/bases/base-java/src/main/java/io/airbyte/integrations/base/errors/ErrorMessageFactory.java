@@ -15,15 +15,15 @@ import java.util.Map;
 
 public class ErrorMessageFactory {
 
-  private final static Map<ConnectorName, ErrorMessage> MAP = Map.of(
+  private final static Map<ConnectorName, ErrorMessage> CONNECTOR_ERROR_MESSAGE_MAP = Map.of(
       MONGO, new MongoDbErrorMessage(),
       DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorName name) {
-    if (MAP.containsKey(name)) {
-      return MAP.get(name);
+    if (CONNECTOR_ERROR_MESSAGE_MAP.containsKey(name)) {
+      return CONNECTOR_ERROR_MESSAGE_MAP.get(name);
     }
-    return MAP.get(DEFAULT);
+    return CONNECTOR_ERROR_MESSAGE_MAP.get(DEFAULT);
   }
 
 }

@@ -13,7 +13,7 @@ import java.util.Objects;
 public abstract class ErrorMessage {
 
   private static final String DEFAULT_ERROR_MESSAGE = "State code: %s. \n Error Message: %s.";
-  protected final Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
+  protected final Map<String, ConnectionErrorType> ERROR_CODES_TYPES = new HashMap<>();
 
   public abstract ConnectorName getConnectorName();
 
@@ -23,8 +23,8 @@ public abstract class ErrorMessage {
 
   public String getErrorMessage(String stateCode, int errorCode, String message, Exception exception) {
     if (Objects.isNull(message)) {
-      if (CONSTANTS.containsKey(stateCode)) {
-        return CONSTANTS.get(stateCode).getValue();
+      if (ERROR_CODES_TYPES.containsKey(stateCode)) {
+        return ERROR_CODES_TYPES.get(stateCode).getValue();
       }
       return getDefaultErrorMessage(stateCode, exception);
     } else {

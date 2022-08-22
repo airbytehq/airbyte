@@ -79,6 +79,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
     } catch (SQLException e) {
+      // For almost all connectors cause != null but, for some connectors, for example redshift cause == null and
+      // in this case we will take the necessary parameters from the exception itself
       if (Objects.isNull(e.getCause())) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
       } else {
