@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_zenloop.source import SurveyGroups, Surveys, ZenloopStream
+from source_zenloop.source import SurveyGroups, Surveys, ZenloopStream, Properties
 
 
 @pytest.fixture
@@ -70,6 +70,10 @@ def test_survey_groups_path(config):
     expected = "survey_groups"
     assert stream.path() == expected
 
+def test_properties_path(config):
+    stream = Properties(**config)
+    expected = "surveys/<survey_id>/properties"
+    assert stream.path() == expected
 
 def test_request_headers(patch_base_class, config):
     stream = ZenloopStream(**config)
