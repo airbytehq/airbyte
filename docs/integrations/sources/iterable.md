@@ -1,6 +1,6 @@
 # Iterable
 
-This page contains the setup guide and reference information for the <connector name> <source/destination> connector.
+This page contains the setup guide and reference information for the Iterable source connector.
 
 ## Prerequisites
 
