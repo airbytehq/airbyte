@@ -225,13 +225,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
-    if (AirbyteStateType.LEGACY == stateMessage.getType()) {
-      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
+    if (AirbyteStateType.GLOBAL == stateMessage.getType()) {
+      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getGlobal()).getBytes(Charsets.UTF_8)).hashCode();
     } else if (AirbyteStateType.STREAM == stateMessage.getType()) {
       return hashFunction.hashBytes(Jsons.serialize(stateMessage.getStream().getStreamState()).getBytes(Charsets.UTF_8)).hashCode();
     } else {
-      // state type is GLOBAL
-      return Objects.hashCode(stateMessage.getGlobal());
+      // state type is LEGACY
+      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
     }
   }
 
