@@ -1,6 +1,6 @@
 # Iterable
 
-This page contains the setup guide and reference information for the <connector name> <source/destination> connector.
+This page contains the setup guide and reference information for the Iterable source connector.
 
 ## Prerequisites
 
@@ -32,7 +32,7 @@ Please read [How to find your API key](https://support.iterable.com/hc/en-us/art
 
 ## Supported sync modes
 
-The Iterable <source/destination> connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
