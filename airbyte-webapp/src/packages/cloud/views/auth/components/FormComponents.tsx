@@ -2,7 +2,7 @@ import { Form as FormikForm } from "formik";
 import styled from "styled-components";
 
 export const Form = styled(FormikForm)`
-  margin-top: 42px;
+  margin-top: 40px;
 `;
 
 export const FieldItem = styled.div`
@@ -28,7 +28,7 @@ export const BottomBlock = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-top: 38px;
+  margin-top: 40px;
   font-size: 11px;
 `;
 
