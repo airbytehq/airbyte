@@ -94,13 +94,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   );
 
   const authErrors = useMemo(() => {
-    //todo: we may want to return the entire error message, then in the component check if it is `form.empty.error`
-    //key of field name, value of error code
-
-    // we calculate by this rather than traversing the error object to look for auth errors
-    // because doing so would be difficult to match the correct error to the correct field due to differences in
-    // spec structure
-
+    //key of field path, value of error code
     const authErrors: Record<string, string> = {};
     authFieldsToHide.map((fieldString) => {
       const meta = getFieldMeta(fieldString);
