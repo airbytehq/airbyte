@@ -68,7 +68,7 @@
     "authSpecification": {
       "provider": "mailchimp",
       "authUrlTemplate": "https://login.mailchimp.com/oauth2/authorize?response_type=code&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&state={{ state }}",
-      "accessTokenUrlTemplate": "https://login.mailchimp.com/oauth2/authorize?",
+      "accessTokenUrlTemplate": "https://login.mailchimp.com/oauth2/token",
       "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
       "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
     }
