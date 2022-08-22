@@ -6,11 +6,17 @@ export const createTestConnection = (sourceName: string, destinationName: string
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
-  if (sourceName.includes("PokeAPI")){
-    createPokeTestSource(sourceName)
-  } else {
-    createTestSource(sourceName);
+  switch (true) {
+    case sourceName.includes('PokeAPI'):
+      createPokeTestSource(sourceName)
+      break;
+    case sourceName.includes('Postgres'):
+      createTestSource(sourceName);
+      break;
+    default:
+      createTestSource(sourceName);
   }
+
   createTestDestination(destinationName);
   cy.wait(5000);
 

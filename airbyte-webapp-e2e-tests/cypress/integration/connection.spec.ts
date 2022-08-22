@@ -3,6 +3,8 @@ import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
 import { initialSetupCompleted } from "commands/workspaces";
+import { confirmStreamConfigurationChangedPopup, clickSaveChanges, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectFullAppendSyncMode, checkSuccessResult} from "pages/replicationPage";
+import { openSourceDestinationFromGrid, goToSourcePage} from "pages/sourcePage";
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -38,47 +40,59 @@ describe("Connection main actions", () => {
 
 
     })
-});
+  });
 
-it("Update connection (pokeAPI)", () => {
-  cy.intercept({
-    method: "POST",
-    url: "/api/v1/web_backend/connections/updateNew"}).as("updateConnection");
+  it("Update connection (pokeAPI)", () => {
+    cy.intercept({
+      method: "POST",
+      url: "/api/v1/web_backend/connections/updateNew"}).as("updateConnection");
 
-  //createTestConnection("Test update connection PokeAPI source cypress", "Test update connection destination cypress");
+    createTestConnection("Test update connection PokeAPI source cypress", "Test update connection Local JSON destination cypress");
 
-  cy.visit("/source");
-  cy.get("div").contains("Test update connection PokeAPI source cypress").click();
-  cy.get("div").contains("Test update connection destination cypress").click();
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection PokeAPI source cypress");
+    openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
 
-  cy.get("div[data-id='replication-step']").click();
+    goToReplicationTab();
 
-  cy.get("div[data-testid='schedule']").click();
-  cy.get("div[data-testid='Every 5 minutes']").click();
-  cy.get("input[data-testid='prefixInput']").clear().type('auto_test');
-  cy.get("div.sc-jgbSNz.sc-gSAPjG.dmcQNW.kFkHkC.SyncCatalogField_catalogHeader__vtJPc input.sc-jSMfEi.dZkanq").check({force: true});
-  //cy.get("div.sc-iBkjds.eXsTY").first().select('Full refresh | Append');
-  cy.get("button[type=submit]").first().click();
+    selectSchedule('Every 5 minutes');
+    fillOutDestinationPrefix('auto_test');
+    setupDestinationNamespaceCustomFormat('_test');
+    selectFullAppendSyncMode();
 
-  cy.wait("@updateConnection").then((interception) => {
-    assert.isNotNull(interception.response?.statusCode, '200');
-    expect(interception.request.method).to.eq('POST');
-    cy.log(interception.request.body);
-    expect(interception.request).property('body').to.contain({
-      name: 'Test update connection PokeAPI source cypress <> Test update connection destination cypress',
-      prefix: 'auto_test',
-      namespaceDefinition: 'source',
-      namespaceFormat: '${SOURCE_NAMESPACE}',
-      /*schedule: {
+    clickSaveChanges();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, '200');
+      expect(interception.request.method).to.eq('POST');
+      expect(interception.request).property('body').to.contain({
+        name: 'Test update connection PokeAPI source cypress <> Test update connection Local JSON destination cypressConnection name',
+        prefix: 'auto_test',
+        namespaceDefinition: 'customformat',
+        namespaceFormat: '${SOURCE_NAMESPACE}_test',
+        status: 'active',
+      });
+      expect(interception.request.body.schedule).to.contain({
         units: 5,
         timeUnit: 'minutes'
-      },*/
-      status: 'active',
+      });
+
+      expect(interception.request.body.syncCatalog.streams[0].config).to.contain({
+        aliasName: 'pokemon',
+        destinationSyncMode: 'append',
+        selected: true,
+      });
+
+      expect(interception.request.body.syncCatalog.streams[0].stream).to.contain({
+        name: "pokemon",
+      });
+      expect(interception.request.body.syncCatalog.streams[0].stream.supportedSyncModes).to.contain(
+        'full_refresh'
+      );
     })
-    
-  })
-  cy.get("span[data-id='success-result']").should("exist");
-});
+    checkSuccessResult();
+  });
 
   it("Delete connection", () => {
     createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
