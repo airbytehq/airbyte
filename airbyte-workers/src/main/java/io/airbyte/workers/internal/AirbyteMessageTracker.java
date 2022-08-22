@@ -186,14 +186,17 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.commitStateHash(stateHash);
       }
-      if (!unreliableStateTimingMetrics) {
-        stateMetricsTracker.updateStates(stateMessage, stateHash, timeCommitted);
-      }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
+    }
+
+    try {
+      if (!unreliableStateTimingMetrics) {
+        stateMetricsTracker.updateStates(stateMessage, stateHash, timeCommitted);
+      }
     } catch (final StateMetricsTrackerNoStateMatchException e) {
       log.warn("The state message tracker was unable to match the destination state message to a corresponding source state message.");
       log.warn("This only impacts metrics and does not indicate a problem with actual sync data.");
