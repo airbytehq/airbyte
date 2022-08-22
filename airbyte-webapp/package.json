@@ -23,6 +23,7 @@
     "stylelint-check": "stylelint-config-prettier-scss-check"
   },
   "dependencies": {
+    "@floating-ui/react-dom": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
