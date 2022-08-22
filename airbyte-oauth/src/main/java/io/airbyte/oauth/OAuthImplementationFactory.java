@@ -27,7 +27,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-github", new GithubOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsViewIdOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-analytics-data-api", new GoogleAnalyticsPropertyIdOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-harvest", new HarvestOAuthFlow(configRepository, httpClient))
@@ -63,6 +64,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-paypal-transaction", new PayPalTransactionOAuthFlow(configRepository, httpClient))
         .build();
   }
 

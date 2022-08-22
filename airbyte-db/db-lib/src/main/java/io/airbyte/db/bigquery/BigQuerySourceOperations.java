@@ -119,7 +119,8 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
   public JsonSchemaType getJsonType(final StandardSQLTypeName bigQueryType) {
     return switch (bigQueryType) {
       case BOOL -> JsonSchemaType.BOOLEAN;
-      case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaType.NUMBER;
+      case INT64 -> JsonSchemaType.INTEGER;
+      case FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaType.NUMBER;
       case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaType.STRING;
       case ARRAY -> JsonSchemaType.ARRAY;
       case STRUCT -> JsonSchemaType.OBJECT;
@@ -138,7 +139,7 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
         default -> paramValue;
       };
     } catch (final ParseException e) {
-      throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name());
+      throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name(), e);
     }
   }
 

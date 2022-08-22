@@ -25,42 +25,45 @@ import org.mockito.Mockito;
 
 class IOsTest {
 
+  private static final String ABC = "abc";
+  private static final String FILE = "file";
+
   @Test
   void testReadWrite() throws IOException {
     final Path path = Files.createTempDirectory("tmp");
 
-    final Path filePath = IOs.writeFile(path, "file", "abc");
+    final Path filePath = IOs.writeFile(path, FILE, ABC);
 
-    assertEquals(path.resolve("file"), filePath);
-    assertEquals("abc", IOs.readFile(path, "file"));
-    assertEquals("abc", IOs.readFile(path.resolve("file")));
+    assertEquals(path.resolve(FILE), filePath);
+    assertEquals(ABC, IOs.readFile(path, FILE));
+    assertEquals(ABC, IOs.readFile(path.resolve(FILE)));
   }
 
   @Test
   void testWriteBytes() throws IOException {
     final Path path = Files.createTempDirectory("tmp");
 
-    final Path filePath = IOs.writeFile(path.resolve("file"), "abc".getBytes(StandardCharsets.UTF_8));
+    final Path filePath = IOs.writeFile(path.resolve(FILE), ABC.getBytes(StandardCharsets.UTF_8));
 
-    assertEquals(path.resolve("file"), filePath);
-    assertEquals("abc", IOs.readFile(path, "file"));
+    assertEquals(path.resolve(FILE), filePath);
+    assertEquals(ABC, IOs.readFile(path, FILE));
   }
 
   @Test
-  public void testWriteFileToRandomDir() throws IOException {
+  void testWriteFileToRandomDir() throws IOException {
     final String contents = "something to remember";
     final String tmpFilePath = IOs.writeFileToRandomTmpDir("file.txt", contents);
     assertEquals(contents, Files.readString(Path.of(tmpFilePath)));
   }
 
   @Test
-  public void testGetTailDoesNotExist() throws IOException {
+  void testGetTailDoesNotExist() throws IOException {
     final List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.randomAlphanumeric(100)));
     assertEquals(Collections.emptyList(), tail);
   }
 
   @Test
-  public void testGetTailExists() throws IOException {
+  void testGetTailExists() throws IOException {
     final Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
 
     final List<String> head = List.of(

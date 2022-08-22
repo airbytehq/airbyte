@@ -7,14 +7,16 @@ package io.airbyte.integrations.destination.s3.tamplate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mockStatic;
 
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -39,7 +41,12 @@ class S3FilenameTemplateManagerTest {
             .fileExtension(fileExtension)
             .partId(partId).build());
 
-    final String expected = "test-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd"));
+    final DateFormat defaultDateFormat = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    defaultDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+    long currentTimeInMillis = Instant.now().toEpochMilli();
+
+    final String expected = "test-" + defaultDateFormat.format(currentTimeInMillis);
     assertEquals(expected, actual);
   }
 

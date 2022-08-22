@@ -136,12 +136,12 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
 
   public static String determineOutputFilename(final S3FilenameTemplateParameterObject parameterObject)
       throws IOException {
-    return isNotBlank(parameterObject.getFileNamePattern()) ?
-        getOutputFilename(parameterObject) : getDefaultOutputFilename(parameterObject);
+    return isNotBlank(parameterObject.getFileNamePattern()) ? getOutputFilename(parameterObject) : getDefaultOutputFilename(parameterObject);
   }
 
   /**
-   * @param parameterObject - an object which holds all necessary parameters required for default filename creation.
+   * @param parameterObject - an object which holds all necessary parameters required for default
+   *        filename creation.
    * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
    *         example, "2021_12_09_1639077474000_customSuffix.csv"
    */

@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +20,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -59,13 +61,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
   private static final String HIERARCHYID = "hierarchyid";
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
+    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   MssqlSource() {
@@ -97,7 +96,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName,
                                                                final String cursorField,
                                                                final JDBCType cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -115,7 +114,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
@@ -180,9 +179,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            mssqlConfig.get("host").asText(),
-            mssqlConfig.get("port").asText(),
-            mssqlConfig.get("database").asText()));
+            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
+            mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
+            mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
@@ -193,12 +192,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", mssqlConfig.get("username").asText())
-        .put("password", mssqlConfig.get("password").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(JdbcUtils.USERNAME_KEY, mssqlConfig.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, mssqlConfig.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
-    if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+    if (mssqlConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -224,6 +223,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(MssqlSource::overrideSyncModes)
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::addCdcMetadataColumns)
@@ -256,21 +256,21 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get("database").asText());
+      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
       LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
+          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
       return ps;
     }, sourceOperations::rowToJson);
 
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
           "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get("database").asText()));
+          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
     if (!(queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
       throw new RuntimeException(String.format(
           "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
-          config.get("database").asText()));
+          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
   }
 
@@ -279,18 +279,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       boolean isAzureSQL = false;
 
-      try (Statement stmt = connection.createStatement();
-          ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
+      try (final Statement stmt = connection.createStatement();
+          final ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
         isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
       }
 
       // Azure SQL does not support USE clause
       final String sql =
-          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+          isAzureSQL ? "SELECT * FROM cdc.change_tables"
+              : "USE [" + config.get(JdbcUtils.DATABASE_KEY).asText() + "]; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
-          config.get("username").asText(), sql));
+          config.get(JdbcUtils.USERNAME_KEY).asText(), sql));
       return ps;
     }, sourceOperations::rowToJson);
 
@@ -337,23 +338,23 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get("database").asText());
+      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
       LOGGER.info(String.format(
           "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
+          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
       return ps;
     }, sourceOperations::rowToJson);
 
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
           "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get("database").asText()));
+          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
     if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
       throw new RuntimeException(String.format(
           "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
               + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get("database").asText()));
+          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
   }
 
@@ -369,7 +370,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", true);
       final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
+          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
           props, catalog, true);
       return handler.getIncrementalIterators(
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
@@ -379,6 +380,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   // Note: in place mutation.

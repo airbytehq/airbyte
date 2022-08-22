@@ -1,9 +1,110 @@
 ## @section Global Parameters
+
+## @param global.imageRegistry Global Docker image registry
 ##
 global:
-  ## @param global.imageRegistry Global Docker image registry
-  ##
   imageRegistry: ""
+  serviceAccountName: &service-account-name "airbyte-admin"
+  deploymentMode: "oss"
+
+  secretName: "airbyte-secrets"
+  database:
+    secretValue: ""
+    host: "test"
+    port: "5432"
+  logs:
+    ## @param logs.accessKey.password Logs Access Key
+    ## @param logs.accessKey.existingSecret
+    ## @param logs.accessKey.existingSecretKey
+    accessKey:
+      password: ""
+      existingSecret: ""
+      existingSecretKey: ""
+    ## @param logs.secretKey.password Logs Secret Key
+    ## @param logs.secretKey.existingSecret
+    ## @param logs.secretKey.existingSecretKey
+    secretKey:
+      password: ""
+      existingSecret: ""
+      existingSecretKey: ""
+
+    ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+    minio:
+      enabled: true
+
+    ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ## @param logs.externalMinio.host External Minio Host
+    ## @param logs.externalMinio.port External Minio Port
+    externalMinio:
+      enabled: false
+      host: localhost
+      port: 9000
+
+    ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ## @param logs.s3.bucket Bucket name where logs should be stored
+    ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    s3:
+      enabled: false
+      bucket: airbyte-dev-logs
+      bucketRegion: ""
+
+    ## Google Cloud Storage (GCS) Log Location Configuration
+    ## @param logs.gcs.bucket GCS bucket name
+    ## @param logs.gcs.credentials The path the GCS creds are written to
+    ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    gcs:
+      bucket: ""
+      # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+      # deployments, then set credentials to the path of the mounted JSON file
+      credentials: ""
+      # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+      credentialsJson: ""
+  jobs:
+    ## Jobs resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    ## We usually recommend not to specify default resources and to leave this as a conscious
+    ## choice for the user. This also increases chances charts run on environments with little
+    ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+    ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    ## @param jobs.resources.limits [object] The resources limits for jobs
+    ## @param jobs.resources.requests [object] The requested resources for jobs
+    resources:
+      ## Example:
+      ## requests:
+      ##    memory: 256Mi
+      ##    cpu: 250m
+      requests: {}
+      ## Example:
+      ## limits:
+      ##    cpu: 200m
+      ##    memory: 1Gi
+      limits: {}
+
+    kube:
+      ## JOB_KUBE_ANNOTATIONS
+      ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+      ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
+      annotations: {}
+
+      ## JOB_KUBE_NODE_SELECTORS
+      ## pod node selector of the sync job and the default pod node selector fallback for others jobs
+      ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
+      nodeSelector: {}
+
+      ## JOB_KUBE_TOLERATIONS
+      ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
+      ## - key: airbyte-server
+      ##   operator: Equal
+      ##   value: "true"
+      ##   effect: NoSchedule
+      tolerations: []
+
+      ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+      ## image pull secret to use for job pod
+      ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+      main_container_image_pull_secret: ""
 
 ## @section Common Parameters
 
@@ -23,14 +124,7 @@ fullnameOverride: ""
 serviceAccount:
   create: true
   annotations: {}
-  name: airbyte-admin
-
-## @param imagePullSecrets Array of image pull secrets.
-##
-## Example:
-## imagePullSecrets:
-##   - docker-secret
-imagePullSecrets: []
+  name: *service-account-name
 
 ## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
 ## If changing the image tags below, you should probably also update this.
@@ -39,6 +133,7 @@ version: ""
 ## @section Webapp Parameters
 
 webapp:
+  enabled: true
   ## @param webapp.replicaCount Number of webapp replicas
   replicaCount: 1
 
@@ -48,7 +143,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.40.0-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -206,7 +301,8 @@ webapp:
 
 ## @section Pod Sweeper parameters
 
-podSweeper:
+pod-sweeper:
+  enabled: true
   ## @param podSweeper.image.repository The image repository to use for the pod sweeper
   ## @param podSweeper.image.pullPolicy The pull policy for the pod sweeper image
   ## @param podSweeper.image.tag The pod sweeper image tag to use
@@ -313,6 +409,7 @@ podSweeper:
 ## @section Server parameters
 
 server:
+  enabled: true
   ## @param server.replicaCount Number of server replicas
   replicaCount: 1
 
@@ -322,7 +419,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.40.0-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -440,6 +537,7 @@ server:
 ## @section Worker Parameters
 
 worker:
+  enabled: true
   ## @param worker.replicaCount Number of worker replicas
   replicaCount: 1
 
@@ -449,7 +547,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.40.0-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -558,16 +656,20 @@ worker:
   ##
   extraVolumes: []
 
+  hpa:
+    enabled: false
+
 ## @section Bootloader Parameters
 
-bootloader:
+airbyte-bootloader:
+  enabled: true
   ## @param bootloader.image.repository The repository to use for the airbyte bootloader image.
   ## @param bootloader.image.pullPolicy the pull policy to use for the airbyte bootloader image
   ## @param bootloader.image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.37-alpha
+    tag: 0.40.0-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -622,7 +724,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ## @param temporal.service.type The Kubernetes Service Type
   ## @param temporal.service.port The temporal port and exposed kubernetes port
@@ -752,14 +854,6 @@ temporal:
     ##    memory: 1Gi
     limits: {}
 
-## External Temporal configuration
-## All of these values are only used when temporal.enabled is set to false
-## @param externalTemporal.host temporal API host
-## @param externalDatabase.port temporal API port
-externalTemporal:
-  host: ""
-  port: ""
-
 ## @section Airbyte Database parameters
 
 ## PostgreSQL chart configuration
@@ -778,6 +872,7 @@ postgresql:
   postgresqlUsername: airbyte
   postgresqlPassword: airbyte
   postgresqlDatabase: db-airbyte
+  # fullnameOverride: *db-hostname
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
@@ -805,103 +900,13 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
-## @section Minio chart overwrites
-## @param minio.rootUser Minio User
-## @param minio.rootPassword Minio Password
-minio:
-  fullnameOverride: &airbyte-minio-name airbyte-minio
-  auth:
-    rootUser: airbyte-user
-    rootPassword: airbyte-password-123
-
 ## @section Logs parameters
-logs:
-  ## @param logs.accessKey.existingSecret
-  ## @param logs.accessKey.existingSecretKey
-  accessKey:
-    existingSecret: *airbyte-minio-name
-    existingSecretKey: "root-user"
-  ## @param logs.secretKey.existingSecret
-  ## @param logs.secretKey.existingSecretKey
-  secretKey:
-    existingSecret: *airbyte-minio-name
-    existingSecretKey: "root-password"
 
-  ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
-  minio:
-    enabled: true
-
-  ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
-  ## @param logs.externalMinio.host External Minio Host
-  ## @param logs.externalMinio.port External Minio Port
-  externalMinio:
-    enabled: false
-    host: localhost
-    port: 9000
-
-  ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
-  ## @param logs.s3.bucket Bucket name where logs should be stored
-  ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
-  s3:
-    enabled: false
-    bucket: airbyte-dev-logs
-    bucketRegion: ""
-
-  ## Google Cloud Storage (GCS) Log Location Configuration
-  ## @param logs.gcs.bucket GCS bucket name
-  ## @param logs.gcs.credentials The path the GCS creds are written to
-  ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
-  gcs:
-    bucket: ""
-    # If you are mounting an existing secret to extraVolumes on server and worker
-    # deployments, then set credentials to the path of the mounted JSON file
-    credentials: ""
-    # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
-    credentialsJson: ""
-
-jobs:
-  ## Jobs resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ## We usually recommend not to specify default resources and to leave this as a conscious
-  ## choice for the user. This also increases chances charts run on environments with little
-  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
-  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ## @param jobs.resources.limits [object] The resources limits for jobs
-  ## @param jobs.resources.requests [object] The requested resources for jobs
-  resources:
-    ## Example:
-    ## requests:
-    ##    memory: 256Mi
-    ##    cpu: 250m
-    requests: {}
-    ## Example:
-    ## limits:
-    ##    cpu: 200m
-    ##    memory: 1Gi
-    limits: {}
-
-  kube:
-    ## JOB_KUBE_ANNOTATIONS
-    ## pod annotations of the sync job and the default pod annotations fallback for others jobs
-    ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
-    annotations: {}
-
-    ## JOB_KUBE_NODE_SELECTORS
-    ## pod node selector of the sync job and the default pod node selector fallback for others jobs
-    ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
-    nodeSelector: {}
-
-    ## JOB_KUBE_TOLERATIONS
-    ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
-    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
-    ## - key: airbyte-server
-    ##   operator: Equal
-    ##   value: "true"
-    ##   effect: NoSchedule
-    tolerations: []
-
-    ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
-    ## image pull secret to use for job pod
-    ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
-    main_container_image_pull_secret: ""
+## @section Minio chart overwrites
+## @param minio.accessKey.password Minio Access Key
+## @param minio.secretKey.password Minio Secret Key
+minio:
+  enabled: true
+  auth:
+    rootUser: minio
+    rootPassword: minio123

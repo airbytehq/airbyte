@@ -2,6 +2,12 @@
 
 This page guides you through the process of setting up the Amazon Seller Partner source connector.
 
+:::caution
+
+Authenticating this Alpha connector is currently blocked. This is a known issue being tracked here: https://github.com/airbytehq/airbyte/issues/14734
+
+:::
+
 ## Prerequisites
 
 - app_id

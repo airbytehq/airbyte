@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class StreamResetActivityTest {
+class StreamResetActivityTest {
 
   @Mock
   private StreamResetPersistence streamResetPersistence;
@@ -38,7 +38,7 @@ public class StreamResetActivityTest {
   private final DeleteStreamResetRecordsForJobInput noJobIdInput = new DeleteStreamResetRecordsForJobInput(UUID.randomUUID(), null);
 
   @Test
-  public void testDeleteStreamResetRecordsForJob() throws IOException {
+  void testDeleteStreamResetRecordsForJob() throws IOException {
     final Job jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
     when(jobPersistence.getJob(input.getJobId())).thenReturn(jobMock);
 
@@ -50,7 +50,7 @@ public class StreamResetActivityTest {
   }
 
   @Test
-  public void testIncorrectConfigType() throws IOException {
+  void testIncorrectConfigType() throws IOException {
     final Job jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
     when(jobPersistence.getJob(input.getJobId())).thenReturn(jobMock);
 
@@ -60,7 +60,7 @@ public class StreamResetActivityTest {
   }
 
   @Test
-  public void testNoJobId() throws IOException {
+  void testNoJobId() throws IOException {
     streamResetActivity.deleteStreamResetRecordsForJob(noJobIdInput);
     Mockito.verify(jobPersistence, never()).getJob(Mockito.anyLong());
     Mockito.verify(streamResetPersistence, never()).deleteStreamResets(Mockito.any(UUID.class), Mockito.anyList());

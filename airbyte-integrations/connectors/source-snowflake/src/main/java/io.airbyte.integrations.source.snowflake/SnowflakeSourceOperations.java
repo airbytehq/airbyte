@@ -6,7 +6,9 @@ package io.airbyte.integrations.source.snowflake;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +38,26 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setString(parameterIndex, value);
+  }
+
+  @Override
+  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
+      // types to String
+      default -> JsonSchemaType.STRING;
+    };
   }
 
 }

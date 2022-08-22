@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {
@@ -40,7 +40,10 @@
             "title": "HTTPS: Public Web",
             "required": ["storage"],
             "properties": {
-              "storage": { "type": "string", "const": "HTTPS" },
+              "storage": {
+                "type": "string",
+                "const": "HTTPS"
+              },
               "user_agent": {
                 "type": "boolean",
                 "title": "User-Agent",
@@ -124,14 +127,22 @@
                 "title": "Storage",
                 "const": "SSH"
               },
-              "user": { "type": "string", "title": "User", "description": "" },
+              "user": {
+                "type": "string",
+                "title": "User",
+                "description": ""
+              },
               "password": {
                 "type": "string",
                 "title": "Password",
                 "description": "",
                 "airbyte_secret": true
               },
-              "host": { "type": "string", "title": "Host", "description": "" },
+              "host": {
+                "type": "string",
+                "title": "Host",
+                "description": ""
+              },
               "port": {
                 "type": "string",
                 "title": "Port",
@@ -149,14 +160,22 @@
                 "title": "Storage",
                 "const": "SCP"
               },
-              "user": { "type": "string", "title": "User", "description": "" },
+              "user": {
+                "type": "string",
+                "title": "User",
+                "description": ""
+              },
               "password": {
                 "type": "string",
                 "title": "Password",
                 "description": "",
                 "airbyte_secret": true
               },
-              "host": { "type": "string", "title": "Host", "description": "" },
+              "host": {
+                "type": "string",
+                "title": "Host",
+                "description": ""
+              },
               "port": {
                 "type": "string",
                 "title": "Port",
@@ -174,14 +193,22 @@
                 "title": "Storage",
                 "const": "SFTP"
               },
-              "user": { "type": "string", "title": "User", "description": "" },
+              "user": {
+                "type": "string",
+                "title": "User",
+                "description": ""
+              },
               "password": {
                 "type": "string",
                 "title": "Password",
                 "description": "",
                 "airbyte_secret": true
               },
-              "host": { "type": "string", "title": "Host", "description": "" },
+              "host": {
+                "type": "string",
+                "title": "Host",
+                "description": ""
+              },
               "port": {
                 "type": "string",
                 "title": "Port",

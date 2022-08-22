@@ -14,7 +14,7 @@
     },
     "external": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "url": {
           "type": "string"

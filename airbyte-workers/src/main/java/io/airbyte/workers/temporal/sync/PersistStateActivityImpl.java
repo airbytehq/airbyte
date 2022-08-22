@@ -55,7 +55,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
     final List<StreamDescriptor> stateStreamDescriptors =
         state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
-    final List<StreamDescriptor> catalogStreamDescriptors = CatalogHelpers.extractStreamDescriptors(configuredCatalog);
+    final List<StreamDescriptor> catalogStreamDescriptors = CatalogHelpers.extractIncrementalStreamDescriptors(configuredCatalog);
     catalogStreamDescriptors.forEach(streamDescriptor -> {
       if (!stateStreamDescriptors.contains(streamDescriptor)) {
         throw new IllegalStateException(

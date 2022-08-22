@@ -41,6 +41,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
+      outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
       processRecord(message);
     } else {
@@ -48,7 +49,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private void processRecord(AirbyteMessage message) {
+  private void processRecord(final AirbyteMessage message) {
     final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(pair).upload(message);
   }
@@ -60,7 +61,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.values().forEach(uploader -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }

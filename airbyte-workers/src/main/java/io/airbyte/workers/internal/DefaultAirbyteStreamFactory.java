@@ -94,9 +94,9 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(logMessage.getMessage());
       case WARN -> logger.warn(logMessage.getMessage());
-      case INFO -> logger.info(logMessage.getMessage());
       case DEBUG -> logger.debug(logMessage.getMessage());
       case TRACE -> logger.trace(logMessage.getMessage());
+      default -> logger.info(logMessage.getMessage());
     }
   }
 
