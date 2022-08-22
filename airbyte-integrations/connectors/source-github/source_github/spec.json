@@ -52,7 +52,7 @@
             "type": "object",
             "title": "OAuth",
             "x-oauth2-provider": "github",
-            "required": ["access_token", "option_title", "refresh_token"],
+            "required": ["access_token", "option_title"],
             "properties": {
               "option_title": {
                 "type": "string",
@@ -64,12 +64,6 @@
                 "title": "Access Token",
                 "description": "OAuth access token",
                 "airbyte_secret": true
-              },
-              "refresh_token": {
-                "title": "Refresh Token",
-                "type": "string",
-                "airbyte_secret": "true"
-              }
             }
           },
           {
