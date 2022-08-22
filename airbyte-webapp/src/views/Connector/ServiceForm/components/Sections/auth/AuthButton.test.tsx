@@ -1,8 +1,10 @@
 import { screen, render } from "@testing-library/react";
 
 import { TestWrapper } from "utils/testutils";
+import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
 
 import { AuthButton } from "./AuthButton";
+import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 jest.setTimeout(10000);
 
 jest.mock("formik", () => {
@@ -15,56 +17,132 @@ jest.mock("formik", () => {
   return { useFormikContext };
 });
 
-jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOAuthFlowAdapter", () => {
-  const useFormikOauthAdapter = () => {
-    const done = false;
-    const run = jest.fn();
-    const loading = false;
+/**
+ * Mock services to reuse multiple times with different values:
+ * 1. mock the service
+ * 2. cast the type as shown below.  `as unknown` is required to get the typing to play nice as there isn't crossover
+ *    Partial is optional, but required if you do not want to mock the entire object
+ *
+ * Then, can implement in tests using useWhateverServiceYouMocked.mockImplementationOnce or useWhateverServiceYouMocked.mockImplementation
+ */
 
-    return { done, run, loading };
-  };
-  return { useFormikOauthAdapter };
-});
+jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOAuthFlowAdapter");
+const mockUseFormikOauthAdapter = useFormikOauthAdapter as unknown as jest.Mock<Partial<typeof useFormikOauthAdapter>>;
 
-//todo: typescript is making it weird to do a mockImplementation or mockReturnValueOnce...
-jest.mock("views/Connector/ServiceForm/serviceFormContext", () => {
-  const useServiceForm = () => {
-    const hasAuthError = false;
-    const selectedConnector = "abcde";
-    const allowOAuthConnector = true;
+jest.mock("views/Connector/ServiceForm/serviceFormContext");
+const mockUseServiceForm = useServiceForm as unknown as jest.Mock<Partial<typeof useServiceForm>>;
 
-    return { hasAuthError, selectedConnector, allowOAuthConnector };
-  };
-  return { useServiceForm };
-});
+describe("auth button", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-test("it initially renders with correct message and no status message", () => {
-  render(
-    <TestWrapper>
-      <AuthButton />
-    </TestWrapper>
-  );
-  const button = screen.getByRole("button", { name: "Authenticate your account" });
-  expect(button).toBeInTheDocument();
+  test("it initially renders with correct message and no status message", () => {
+    // no auth errors
+    mockUseServiceForm.mockImplementationOnce(() => {
+      const hasAuthError = false;
+      const selectedConnector = "abcde";
+      const allowOAuthConnector = true;
+      const selectedService = undefined;
 
-  const errorMessage = screen.queryByText(/Authentication required/i);
-  expect(errorMessage).not.toBeInTheDocument();
-});
+      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+    });
 
-test.todo("after successful authentication, it renders with correct message and success message", () => {
-  //todo: typescript is making this hard to do
-  mockedUseServiceForm.mockImplementation(() => {
-    const useServiceForm = () => {
+    // not done
+    mockUseFormikOauthAdapter.mockImplementationOnce(() => {
+      const done = false;
+      const run = jest.fn();
+      const loading = false;
+
+      return { done, run, loading };
+    });
+
+    render(
+      <TestWrapper>
+        <AuthButton />
+      </TestWrapper>
+    );
+
+    // correct button text
+    const button = screen.getByRole("button", { name: "Authenticate your account" });
+    expect(button).toBeInTheDocument();
+
+    //no error message
+    const errorMessage = screen.queryByText(/Authentication required/i);
+    expect(errorMessage).not.toBeInTheDocument();
+
+    //no success message
+    const successMessage = screen.queryByText(/Authentication succeeded/i);
+    expect(successMessage).not.toBeInTheDocument();
+  });
+
+  test("after successful authentication, it renders with correct message and success message", () => {
+    // no auth errors
+    mockUseServiceForm.mockImplementationOnce(() => {
+      const hasAuthError = false;
+      const selectedConnector = "abcde";
+      const allowOAuthConnector = true;
+      const selectedService = undefined;
+
+      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+    });
+
+    // done
+    mockUseFormikOauthAdapter.mockImplementationOnce(() => {
+      const done = true;
+      const run = jest.fn();
+      const loading = false;
+
+      return { done, run, loading };
+    });
+
+    render(
+      <TestWrapper>
+        <AuthButton />
+      </TestWrapper>
+    );
+
+    // correct button text
+    const button = screen.getByRole("button", { name: "Re-authenticate" });
+    expect(button).toBeInTheDocument();
+
+    // success message
+    const successMessage = screen.getByText(/Authentication succeeded/i);
+    expect(successMessage).toBeInTheDocument();
+  });
+
+  test("if authError is true, it renders the correct message", () => {
+    // auth errors
+    mockUseServiceForm.mockImplementationOnce(() => {
       const hasAuthError = true;
       const selectedConnector = "abcde";
       const allowOAuthConnector = true;
+      const selectedService = undefined;
 
-      return { hasAuthError, selectedConnector, allowOAuthConnector };
-    };
-    return { useServiceForm };
+      return { hasAuthError, selectedConnector, allowOAuthConnector, selectedService };
+    });
+
+    // not done
+    mockUseFormikOauthAdapter.mockImplementationOnce(() => {
+      const done = false;
+      const run = jest.fn();
+      const loading = false;
+
+      return { done, run, loading };
+    });
+
+    render(
+      <TestWrapper>
+        <AuthButton />
+      </TestWrapper>
+    );
+
+    // correct button
+    const button = screen.getByRole("button", { name: "Authenticate your account" });
+    expect(button).toBeInTheDocument();
+
+    // error message
+    const errorMessage = screen.getByText(/Authentication required/i);
+    expect(errorMessage).toBeInTheDocument();
   });
-
-  // expect();
 });
-
-test.todo("attempting to submit form with missing authentication shows error");
