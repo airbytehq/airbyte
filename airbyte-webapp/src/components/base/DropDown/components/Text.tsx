@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import { Theme } from "theme";
 
-type IProps = {
+interface IProps {
   primary?: boolean;
   secondary?: boolean;
   fullText?: boolean;
-};
+}
 
 const setColor = (props: IProps & { theme: Theme }) => {
   if (props.primary) {

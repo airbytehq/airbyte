@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,7 @@ import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Optional
+from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
@@ -33,27 +33,27 @@ class AirbyteSpec(object):
         self.spec_string = spec_string
 
 
-class Connector(ABC):
+TConfig = TypeVar("TConfig", bound=Mapping[str, Any])
+
+
+class BaseConnector(ABC, Generic[TConfig]):
     # configure whether the `check_config_against_spec_or_exit()` needs to be called
     check_config_against_spec: bool = True
 
-    # can be overridden to change an input config
-    def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+    @abstractmethod
+    def configure(self, config: Mapping[str, Any], temp_dir: str) -> TConfig:
         """
         Persist config in temporary directory to run the Source job
         """
-        config_path = os.path.join(temp_dir, "config.json")
-        self.write_config(config, config_path)
-        return config
 
     @staticmethod
-    def read_config(config_path: str) -> Mapping[str, Any]:
+    def read_config(config_path: str) -> TConfig:
         with open(config_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
     @staticmethod
-    def write_config(config: Mapping[str, Any], config_path: str):
+    def write_config(config: TConfig, config_path: str):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
@@ -81,8 +81,26 @@ class Connector(ABC):
         return ConnectorSpecification.parse_obj(spec_obj)
 
     @abstractmethod
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: TConfig) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.
         """
+
+
+class _WriteConfigProtocol(Protocol):
+    @staticmethod
+    def write_config(config: Mapping[str, Any], config_path: str):
+        ...
+
+
+class DefaultConnectorMixin:
+    # can be overridden to change an input config
+    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+        config_path = os.path.join(temp_dir, "config.json")
+        self.write_config(config, config_path)
+        return config
+
+
+class Connector(DefaultConnectorMixin, BaseConnector[Mapping[str, Any]], ABC):
+    ...

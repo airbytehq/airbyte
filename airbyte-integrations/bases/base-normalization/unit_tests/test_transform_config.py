@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -339,6 +339,44 @@ class TestTransformConfig:
             "oauth_client_id": "AIRBYTE_CLIENT_ID",
             "oauth_client_secret": "AIRBYTE_CLIENT_SECRET",
             "token": "AIRBYTE_REFRESH_TOKEN",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
+    def test_transform_snowflake_key_pair(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "private_key": "AIRBYTE_PRIVATE_KEY",
+                "private_key_password": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "private_key_path": "private_key_path.txt",
+            "private_key_passphrase": "AIRBYTE_PRIVATE_KEY_PASSWORD",
         }
 
         assert expected == actual

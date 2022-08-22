@@ -30,7 +30,8 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
     "eff3616a-f9c3-11eb-9a03-0242ac130003", // google analytics
     "d19ae824-e289-4b14-995a-0632eb46d246", // google directory
     "eb4c9e00-db83-4d63-a386-39cfa91012a8", // google search console
-    "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets
+    "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets source
+    "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a", // google sheets destination
     "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734", // google workspace admin reports
   ].includes(connectorDefinitionId);
 }
@@ -38,17 +39,15 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
 function getButtonComponent(connectorDefinitionId: string) {
   if (isGoogleConnector(connectorDefinitionId)) {
     return GoogleAuthButton;
-  } else {
-    return Button;
   }
+  return Button;
 }
 
 function getAuthenticateMessageId(connectorDefinitionId: string): string {
   if (isGoogleConnector(connectorDefinitionId)) {
     return "connectorForm.signInWithGoogle";
-  } else {
-    return "connectorForm.authenticate";
   }
+  return "connectorForm.authenticate";
 }
 
 export const AuthButton: React.FC = () => {

@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
-import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
+import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
+interface ConnectionCreateDestinationFormProps {
   afterSubmit: () => void;
-};
+}
 
-const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
@@ -44,6 +45,14 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   return (
     <DestinationForm
       onSubmit={onSubmitDestinationForm}
@@ -52,5 +61,3 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     />
   );
 };
-
-export default CreateDestinationPage;

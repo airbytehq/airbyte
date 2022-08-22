@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."exchange_rate__dbt_tmp"
+    "integrationtests".test_normalization_bhhpj."exchange_rate__dbt_tmp"
     
     
       compound sortkey(_airbyte_emitted_at)
@@ -11,21 +11,21 @@
 with __dbt__cte__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization._airbyte_raw_exchange_rate
+-- depends_on: "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate
 select
-    case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
-    case when json_extract_path_text(_airbyte_data, 'currency', true) != '' then json_extract_path_text(_airbyte_data, 'currency', true) end as currency,
-    case when json_extract_path_text(_airbyte_data, 'new_column', true) != '' then json_extract_path_text(_airbyte_data, 'new_column', true) end as new_column,
-    case when json_extract_path_text(_airbyte_data, 'date', true) != '' then json_extract_path_text(_airbyte_data, 'date', true) end as date,
-    case when json_extract_path_text(_airbyte_data, 'timestamp_col', true) != '' then json_extract_path_text(_airbyte_data, 'timestamp_col', true) end as timestamp_col,
-    case when json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) != '' then json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) end as "hkd@spéçiäl & characters",
-    case when json_extract_path_text(_airbyte_data, 'NZD', true) != '' then json_extract_path_text(_airbyte_data, 'NZD', true) end as nzd,
-    case when json_extract_path_text(_airbyte_data, 'USD', true) != '' then json_extract_path_text(_airbyte_data, 'USD', true) end as usd,
-    case when json_extract_path_text(_airbyte_data, 'column`_''with"_quotes', true) != '' then json_extract_path_text(_airbyte_data, 'column`_''with"_quotes', true) end as "column`_'with""_quotes",
+    case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
+    case when _airbyte_data."currency" != '' then _airbyte_data."currency" end as currency,
+    case when _airbyte_data."new_column" != '' then _airbyte_data."new_column" end as new_column,
+    case when _airbyte_data."date" != '' then _airbyte_data."date" end as date,
+    case when _airbyte_data."timestamp_col" != '' then _airbyte_data."timestamp_col" end as timestamp_col,
+    case when _airbyte_data."HKD@spéçiäl & characters" != '' then _airbyte_data."HKD@spéçiäl & characters" end as "hkd@spéçiäl & characters",
+    case when _airbyte_data."NZD" != '' then _airbyte_data."NZD" end as nzd,
+    case when _airbyte_data."USD" != '' then _airbyte_data."USD" end as usd,
+    case when _airbyte_data."column`_'with""_quotes" != '' then _airbyte_data."column`_'with""_quotes" end as "column`_'with""_quotes",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization._airbyte_raw_exchange_rate as table_alias
+from "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate as table_alias
 -- exchange_rate
 where 1 = 1
 ),  __dbt__cte__exchange_rate_ab2 as (
@@ -36,14 +36,14 @@ select
     cast(id as 
     float
 ) as id,
-    cast(currency as varchar) as currency,
+    cast(currency as text) as currency,
     cast(new_column as 
     float
 ) as new_column,
-    cast(nullif(date, '') as 
+    cast(nullif(date::varchar, '') as 
     date
 ) as date,
-    cast(nullif(timestamp_col, '') as 
+    cast(nullif(timestamp_col::varchar, '') as 
     timestamp with time zone
 ) as timestamp_col,
     cast("hkd@spéçiäl & characters" as 
@@ -55,7 +55,7 @@ select
     cast(usd as 
     float
 ) as usd,
-    cast("column`_'with""_quotes" as varchar) as "column`_'with""_quotes",
+    cast("column`_'with""_quotes" as text) as "column`_'with""_quotes",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
@@ -67,7 +67,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__exchange_rate_ab2
 select
-    md5(cast(coalesce(cast(id as varchar), '') || '-' || coalesce(cast(currency as varchar), '') || '-' || coalesce(cast(new_column as varchar), '') || '-' || coalesce(cast(date as varchar), '') || '-' || coalesce(cast(timestamp_col as varchar), '') || '-' || coalesce(cast("hkd@spéçiäl & characters" as varchar), '') || '-' || coalesce(cast(nzd as varchar), '') || '-' || coalesce(cast(usd as varchar), '') || '-' || coalesce(cast("column`_'with""_quotes" as varchar), '') as varchar)) as _airbyte_exchange_rate_hashid,
+    md5(cast(coalesce(cast(id as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast(new_column as text), '') || '-' || coalesce(cast(date as text), '') || '-' || coalesce(cast(timestamp_col as text), '') || '-' || coalesce(cast("hkd@spéçiäl & characters" as text), '') || '-' || coalesce(cast(nzd as text), '') || '-' || coalesce(cast(usd as text), '') || '-' || coalesce(cast("column`_'with""_quotes" as text), '') as text)) as _airbyte_exchange_rate_hashid,
     tmp.*
 from __dbt__cte__exchange_rate_ab2 tmp
 -- exchange_rate
@@ -89,6 +89,6 @@ select
     getdate() as _airbyte_normalized_at,
     _airbyte_exchange_rate_hashid
 from __dbt__cte__exchange_rate_ab3
--- exchange_rate from "integrationtests".test_normalization._airbyte_raw_exchange_rate
+-- exchange_rate from "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate
 where 1 = 1
   );

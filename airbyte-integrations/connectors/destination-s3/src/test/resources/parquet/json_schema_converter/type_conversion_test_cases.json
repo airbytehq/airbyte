@@ -9,16 +9,26 @@
   {
     "fieldName": "integer_field",
     "jsonFieldSchema": {
-      "type": "integer"
+      "type": "number",
+      "airbyte_type": "integer"
     },
     "avroFieldType": ["null", "int"]
   },
   {
-    "fieldName": "number_field",
+    "fieldName": "big_integer_field",
     "jsonFieldSchema": {
-      "type": "number"
+      "type": "string",
+      "airbyte_type": "big_integer"
     },
-    "avroFieldType": ["null", "double"]
+    "avroFieldType": ["null", "string"]
+  },
+  {
+    "fieldName": "float_field",
+    "jsonFieldSchema": {
+      "type": "number",
+      "airbyte_type": "float"
+    },
+    "avroFieldType": ["null", "float"]
   },
   {
     "fieldName": "null_field",
@@ -60,6 +70,10 @@
         },
         {
           "type": "number"
+        },
+        {
+          "type": "string",
+          "airbyte_type": "big_integer"
         }
       ]
     },
@@ -79,6 +93,10 @@
         "id": {
           "type": "integer"
         },
+        "big_integer_id": {
+          "type": "string",
+          "airbyte_type": "big_integer"
+        },
         "node_id": {
           "type": ["null", "string"]
         }
@@ -93,6 +111,11 @@
           {
             "name": "id",
             "type": ["null", "int"],
+            "default": null
+          },
+          {
+            "name": "big_integer_id",
+            "type": ["null", "string"],
             "default": null
           },
           {
@@ -146,21 +169,33 @@
   {
     "fieldName": "any_of_field",
     "jsonFieldSchema": {
-      "anyOf": [{ "type": "string" }, { "type": "integer" }]
+      "anyOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "number" }
+      ]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "int", "double"]
   },
   {
     "fieldName": "all_of_field",
     "jsonFieldSchema": {
-      "allOf": [{ "type": "string" }, { "type": "integer" }]
+      "allOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "number", "airbyte_type": "float" }
+      ]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "int", "float"]
   },
   {
     "fieldName": "one_of_field",
     "jsonFieldSchema": {
-      "oneOf": [{ "type": "string" }, { "type": "integer" }]
+      "oneOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "string", "airbyte_type": "big_integer" }
+      ]
     },
     "avroFieldType": ["null", "string", "int"]
   },

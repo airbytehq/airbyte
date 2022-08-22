@@ -16,6 +16,14 @@ Important note: any objects referenced via `$ref` should be placed in the `share
 
 If you are implementing a connector to pull data from an API which publishes an [OpenAPI/Swagger spec](https://swagger.io/specification/), you can use a tool we've provided for generating JSON schemas from the OpenAPI definition file. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/openapi2jsonschema/).
 
+### Generating schemas using the output of your connector's read command 
+
+We also provide a tool for generating schemas using a connector's `read` command output. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/schema_generator/).
+
+### Backwards Compatibility
+
+Because statically defined schemas explicitly define how data is represented in a destination, updates to a schema must be backwards compatible with prior versions. More information about breaking changes can be found [here](../best-practices.md#schema-breaking-changes)
+
 ## Dynamic schemas
 
 If you'd rather define your schema in code, override `Stream.get_json_schema` in your stream class to return a `dict` describing the schema using [JSONSchema](https://json-schema.org).

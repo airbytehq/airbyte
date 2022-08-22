@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -55,14 +55,17 @@ public class WorkerHeartbeatServer {
 
   public static class WorkerHeartbeatServlet extends HttpServlet {
 
+    @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
+    @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
+    @Override
     public void doOptions(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.addCorsHeaders(response);
     }

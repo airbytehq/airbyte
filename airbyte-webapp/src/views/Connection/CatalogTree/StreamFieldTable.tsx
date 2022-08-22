@@ -1,9 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-import { AirbyteStreamConfiguration, SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
+import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { equal } from "utils/objects";
 
+import { AirbyteStreamConfiguration } from "../../../core/request/AirbyteClient";
 import { pathDisplayName } from "./components/PathPopout";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";
@@ -15,21 +16,21 @@ const RowsContainer = styled.div`
   margin: 0 10px 5px 10px;
 `;
 
-type StreamFieldTableProps = {
+interface StreamFieldTableProps {
   syncSchemaFields: SyncSchemaField[];
-  config: AirbyteStreamConfiguration;
+  config: AirbyteStreamConfiguration | undefined;
   shouldDefinePk: boolean;
   shouldDefineCursor: boolean;
   onCursorSelect: (cursorPath: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
-};
+}
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
   const { config } = props;
 
-  const isCursor = (field: SyncSchemaField): boolean => equal(config.cursorField, field.path);
+  const isCursor = (field: SyncSchemaField): boolean => equal(config?.cursorField, field.path);
 
-  const isPrimaryKey = (field: SyncSchemaField): boolean => config.primaryKey.some((p) => equal(p, field.path));
+  const isPrimaryKey = (field: SyncSchemaField): boolean => !!config?.primaryKey?.some((p) => equal(p, field.path));
 
   return (
     <>

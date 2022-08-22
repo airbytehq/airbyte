@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
@@ -12,7 +13,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
 import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -30,7 +31,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @Disabled
@@ -94,12 +96,14 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         Path.of("/"));
   }
 
-  @Test
-  public void test() throws InterruptedException {
-    final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+  @ValueSource(strings = {"IfNotPresent", " Always"})
+  @ParameterizedTest
+  public void testAsyncOrchestratorPodProcess(final String pullPolicy) throws InterruptedException {
 
+    final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final var mainContainerInfo = new KubeContainerInfo("airbyte/container-orchestrator:dev", pullPolicy);
     // make kubepodinfo
-    final var kubePodInfo = new KubePodInfo("default", podName);
+    final var kubePodInfo = new KubePodInfo("default", podName, mainContainerInfo);
 
     // another activity issues the request to create the pod process -> here we'll just create it
     final var asyncProcess = new AsyncOrchestratorPodProcess(
@@ -108,8 +112,8 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         kubernetesClient,
         null,
         null,
-        "airbyte/container-orchestrator:dev",
-        null);
+        null,
+        true);
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
@@ -135,19 +139,20 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     assertEquals(0, exitValue);
     assertTrue(output.isPresent());
     assertEquals("expected output", output.get());
+
   }
 
   @AfterAll
   public static void teardown() {
     try {
       portForwardProcess.destroyForcibly();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
 
     try {
       kubernetesClient.pods().delete();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -7,27 +7,26 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
-  private static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
-  private static final String SCHEMA = "schema";
-  private static final String JDBC_URL = "jdbc_url";
-
+  public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
+      JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
-  public RedshiftInsertDestination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
+  public RedshiftInsertDestination() {
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
@@ -36,8 +35,19 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(final JsonNode config) {
-    return getJdbcDatabase(config);
+  public DataSource getDataSource(final JsonNode config) {
+    final var jdbcConfig = getJdbcConfig(config);
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        SSL_JDBC_PARAMETERS);
+  }
+
+  @Override
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
+    return new DefaultJdbcDatabase(dataSource);
   }
 
   @Override
@@ -45,26 +55,16 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     return SSL_JDBC_PARAMETERS;
   }
 
-  public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
-    final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    return Databases.createJdbcDatabase(
-        jdbcConfig.get(USERNAME).asText(),
-        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-        jdbcConfig.get(JDBC_URL).asText(),
-        RedshiftInsertDestination.DRIVER_CLASS,
-        SSL_JDBC_PARAMETERS);
-  }
-
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(USERNAME, redshiftConfig.get(USERNAME).asText())
-        .put(PASSWORD, redshiftConfig.get(PASSWORD).asText())
-        .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
-            redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asText(),
-            redshiftConfig.get("database").asText()))
-        .put(SCHEMA, schema)
+        .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
+            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+            redshiftConfig.get(JdbcUtils.PORT_KEY).asText(),
+            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))
+        .put(JdbcUtils.SCHEMA_KEY, schema)
         .build());
   }
 

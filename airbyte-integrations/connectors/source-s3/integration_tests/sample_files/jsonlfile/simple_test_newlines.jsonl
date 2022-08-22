@@ -1,0 +1,15 @@
+{
+    "id":1,
+    "name":"PVdhmjb1",
+    "valid":false, 
+    "value": 1.2,
+    "event_date": "2022-01-01T00:00:00Z"
+}
+{
+    "id":2,
+    "name":"ABCDEF",
+    "valid":true, 
+    "value": 1, 
+    "event_date": 
+    "2023-01-01T00:00:00Z"
+}

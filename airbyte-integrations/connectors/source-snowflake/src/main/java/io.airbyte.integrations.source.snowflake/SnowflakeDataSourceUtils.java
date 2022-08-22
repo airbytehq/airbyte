@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -51,11 +52,11 @@ public class SnowflakeDataSourceUtils {
    * @return datasource
    */
   public static HikariDataSource createDataSource(final JsonNode config) {
-    HikariDataSource dataSource = new HikariDataSource();
+    final HikariDataSource dataSource = new HikariDataSource();
     dataSource.setJdbcUrl(buildJDBCUrl(config));
 
     if (config.has("credentials")) {
-      JsonNode credentials = config.get("credentials");
+      final JsonNode credentials = config.get("credentials");
       final String authType = credentials.has("auth_type") ? credentials.get("auth_type").asText() : UNRECOGNIZED;
       switch (authType) {
         case OAUTH_METHOD -> {
@@ -127,16 +128,16 @@ public class SnowflakeDataSourceUtils {
     }
   }
 
-  public static String buildJDBCUrl(JsonNode config) {
+  public static String buildJDBCUrl(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText()));
 
     // Add required properties
     jdbcUrl.append(String.format(
         "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
         config.get("warehouse").asText(),
-        config.get("database").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText(),
         config.get("schema").asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
@@ -144,8 +145,8 @@ public class SnowflakeDataSourceUtils {
         true));
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      jdbcUrl.append("&").append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     return jdbcUrl.toString();
   }
@@ -153,45 +154,45 @@ public class SnowflakeDataSourceUtils {
   private static Runnable getAccessTokenTask(final HikariDataSource dataSource) {
     return () -> {
       LOGGER.info("Refresh token process started");
-      var props = dataSource.getDataSourceProperties();
+      final var props = dataSource.getDataSourceProperties();
       try {
-        var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
         dataSource.setDataSourceProperties(props);
         LOGGER.info("New access token has been obtained");
-      } catch (IOException e) {
+      } catch (final IOException e) {
         LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }
     };
   }
 
-  public static Properties buildAuthProperties(JsonNode config) {
-    Properties properties = new Properties();
+  public static Properties buildAuthProperties(final JsonNode config) {
+    final Properties properties = new Properties();
     try {
-      var credentials = config.get("credentials");
+      final var credentials = config.get("credentials");
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
-      properties.setProperty("host", config.get("host").asText());
+      properties.setProperty(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       properties.put("authenticator", "oauth");
-      properties.put("account", config.get("host").asText());
+      properties.put("account", config.get(JdbcUtils.HOST_KEY).asText());
 
-      String accessToken = getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+      final String accessToken = getAccessTokenUsingRefreshToken(
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
 
       properties.put("token", accessToken);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.error("Request access token was failed with error" + e.getMessage());
     }
     return properties;
   }
 
-  private static void populateUsernamePasswordConfig(HikariConfig hikariConfig, JsonNode config) {
-    hikariConfig.setUsername(config.get("username").asText());
-    hikariConfig.setPassword(config.get("password").asText());
+  private static void populateUsernamePasswordConfig(final HikariConfig hikariConfig, final JsonNode config) {
+    hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
+    hikariConfig.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
   }
 
 }

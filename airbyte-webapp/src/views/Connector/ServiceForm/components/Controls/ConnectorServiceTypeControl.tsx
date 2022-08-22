@@ -1,5 +1,5 @@
 import { useField } from "formik";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
@@ -8,21 +8,25 @@ import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow } from "components";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
-  IProps as SingleValueProps,
   Icon as SingleValueIcon,
+  IProps as SingleValueProps,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
-import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
+import { Action, Namespace } from "core/analytics";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
+import { ReleaseStage } from "core/request/AirbyteClient";
+import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import { WarningMessage } from "../WarningMessage";
-import Instruction from "./Instruction";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -78,13 +82,6 @@ const SingleValueContent = styled(components.SingleValue)`
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 /**
- * Can be used to overwrite the alphabetical order of connectors in the select.
- * A higher positive number will put the given connector to the top of the list
- * a low negative number to the end of it.
- */
-const ORDER_OVERWRITE: Record<string, number> = {};
-
-/**
  * Returns the order for a specific release stage label. This will define
  * in what order the different release stages are shown inside the select.
  * They will be shown in an increasing order (i.e. 0 on top), unless not overwritten
@@ -92,9 +89,9 @@ const ORDER_OVERWRITE: Record<string, number> = {};
  */
 function getOrderForReleaseStage(stage?: ReleaseStage): number {
   switch (stage) {
-    case ReleaseStage.BETA:
+    case ReleaseStage.beta:
       return 1;
-    case ReleaseStage.ALPHA:
+    case ReleaseStage.alpha:
       return 2;
     default:
       return 0;
@@ -117,7 +114,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
     return null;
   }
 
-  if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
+  if (releaseStage === ReleaseStage.generally_available) {
     return <GAIcon />;
   }
 
@@ -156,7 +153,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
   );
 };
 
-const ConnectorServiceTypeControl: React.FC<{
+interface ConnectorServiceTypeControlProps {
   property: FormBaseItem;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
@@ -164,7 +161,10 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl?: string;
   onChangeServiceType?: (id: string) => void;
   onOpenRequestConnectorModal: (initialName: string) => void;
-}> = ({
+  disabled?: boolean;
+}
+
+const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
   property,
   formType,
   isEditMode,
@@ -172,35 +172,17 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices,
   documentationUrl,
   onOpenRequestConnectorModal,
+  disabled,
 }) => {
   const { formatMessage } = useIntl();
+  const orderOverwrite = useExperiment("connector.orderOverwrite", {});
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
-
-  // TODO Begin hack
-  // During the Cloud private beta, we let users pick any connector in our catalog.
-  // Later on, we realized we shouldn't have allowed using connectors whose platforms required oauth
-  // But by that point, some users were already leveraging them, so removing them would crash the app for users
-  // instead we'll filter out those connectors from this drop down menu, and retain them in the backend
-  // This way, they will not be available for usage in new connections, but they will be available for users
-  // already leveraging them.
-  // TODO End hack
   const workspace = useCurrentWorkspace();
-  const disallowedOauthConnectors =
-    // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD === "true"
-      ? [
-          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
-          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          ...(workspace.workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
-            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
-            : []),
-        ]
-      : [];
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
   const sortedDropDownData = useMemo(
     () =>
-      availableServices
-        .filter((item) => !disallowedOauthConnectors.includes(Connector.id(item)))
+      availableConnectorDefinitions
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),
@@ -208,31 +190,30 @@ const ConnectorServiceTypeControl: React.FC<{
           releaseStage: item.releaseStage,
         }))
         .sort((a, b) => {
-          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
-          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          const priorityA = orderOverwrite[a.value] ?? 0;
+          const priorityB = orderOverwrite[b.value] ?? 0;
           // If they have different priority use the higher priority first, otherwise use the label
           if (priorityA !== priorityB) {
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
             return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          } else {
-            return naturalComparator(a.label, b.label);
           }
+          return naturalComparator(a.label, b.label);
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices]
+    [availableServices, orderOverwrite]
   );
+
+  const { setDocumentationUrl } = useDocumentationPanelContext();
+
+  useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
-      analytics.track(
-        formType === "source"
-          ? "Airbyte.UI.NewSource.NoMatchingConnector"
-          : "Airbyte.UI.NewDestination.NoMatchingConnector",
-        {
-          query: inputValue,
-        }
-      );
+      analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.NO_MATCHING_CONNECTOR, {
+        actionDescription: "Connector query without results",
+        query: inputValue,
+      });
       return formatMessage({ id: "form.noConnectorFound" });
     },
     [analytics, formType, formatMessage]
@@ -256,9 +237,9 @@ const ConnectorServiceTypeControl: React.FC<{
   );
 
   const onMenuOpen = () => {
-    const eventName =
-      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
-    analytics.track(eventName, {});
+    analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.SELECTION_OPENED, {
+      actionDescription: "Opened connector type selection",
+    });
   };
 
   return (
@@ -277,7 +258,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode}
+          isDisabled={isEditMode || disabled}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",
@@ -288,11 +269,8 @@ const ConnectorServiceTypeControl: React.FC<{
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && documentationUrl && (
-        <Instruction selectedService={selectedService} documentationUrl={documentationUrl} />
-      )}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>

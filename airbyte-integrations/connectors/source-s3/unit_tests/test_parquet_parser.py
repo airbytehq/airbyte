@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import bz2
@@ -13,6 +13,7 @@ from typing import Any, List, Mapping
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 from source_s3.source_files_abstract.formats.parquet_parser import PARQUET_TYPES, ParquetParser
 
 from .abstract_test_parser import AbstractTestParser
@@ -75,6 +76,7 @@ class TestParquetParser(AbstractTestParser):
             "degrees": "number",
             "birthday": "string",
             "last_seen": "string",
+            "salary": "decimal",
             "created_at": "timestamp",
             "created_date_at": "date",
             "created_time_at": "time",
@@ -199,12 +201,14 @@ class TestParquetParser(AbstractTestParser):
             "degrees": -9.2,
             "birthday": cls._generate_value("string"),
             "last_seen": cls._generate_value("string"),
+            "salary": cls._generate_value("decimal"),
             "created_at": cls._generate_value("timestamp"),
             "created_date_at": cls._generate_value("date"),
             "created_time_at": cls._generate_value("time"),
         }
 
         expected_record = copy.deepcopy(test_record)
+        expected_record["salary"] = ParquetParser.convert_field_data("decimal", expected_record["salary"])
         expected_record["created_date_at"] = ParquetParser.convert_field_data("date", expected_record["created_date_at"])
         expected_record["created_time_at"] = ParquetParser.convert_field_data("time", expected_record["created_time_at"])
         expected_record["created_at"] = ParquetParser.convert_field_data("timestamp", expected_record["created_at"])
@@ -239,3 +243,11 @@ class TestParquetParser(AbstractTestParser):
                 "fails": [],
             }
         return cases
+
+    def test_parse_field_type(self):
+        with pytest.raises(TypeError):
+            assert ParquetParser.parse_field_type(needed_logical_type="", need_physical_type="")
+
+    def test_convert_field_data(self):
+        with pytest.raises(TypeError):
+            ParquetParser.convert_field_data(logical_type="", field_value="")

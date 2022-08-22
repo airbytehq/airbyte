@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2;
@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +36,7 @@ import org.slf4j.LoggerFactory;
 public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
-  public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
-  public static final String USERNAME = "username";
-  public static final String PASSWORD = "password";
+  public static final String DRIVER_CLASS = DatabaseDriver.DB2.getDriverClassName();
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
@@ -53,27 +54,27 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:db2://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl.toString())
-        .put(USERNAME, config.get(USERNAME).asText())
-        .put(PASSWORD, config.get(PASSWORD).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
         .build());
 
     // assume ssl if not explicitly mentioned.
-    final var additionalParams = obtainConnectionOptions(config.get("encryption"));
+    final var additionalParams = obtainConnectionOptions(config.get(JdbcUtils.ENCRYPTION_KEY));
     if (!additionalParams.isEmpty()) {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
-          .put("jdbc_url", jdbcUrl.toString())
-          .put(USERNAME, config.get(USERNAME).asText())
-          .put(PASSWORD, config.get(PASSWORD).asText())
-          .put("connection_properties", additionalParams)
+          .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
+          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+          .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+          .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParams)
           .build());
     }
 
@@ -89,10 +90,9 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database
-        .unsafeQuery(getPrivileges(), sourceOperations::rowToJson)
-        .map(this::getPrivilegeDto)
-        .collect(Collectors.toSet());
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    }
   }
 
   @Override

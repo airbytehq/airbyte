@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-type IProps = {
+interface IProps {
   text: React.ReactNode;
   description?: React.ReactNode;
-};
+}
 
 const Content = styled.div`
   padding: 74px 0 111px;
@@ -35,7 +35,7 @@ const Description = styled.div`
 const EmptyResourceBlock: React.FC<IProps> = ({ text, description }) => (
   <Content>
     <ImgBlock>
-      <img src="/cactus.png" height={40} alt={"cactus"} />
+      <img src="/cactus.png" height={40} alt="cactus" />
     </ImgBlock>
     {text}
     <Description>{description}</Description>

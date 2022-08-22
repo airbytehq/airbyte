@@ -5,7 +5,6 @@
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -56,7 +55,6 @@
         "oneOf": [
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "properties": {
@@ -70,7 +68,6 @@
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
@@ -90,13 +87,58 @@
           }
         ]
       },
-      "replication_method": {
-        "type": "string",
+      "replication": {
+        "type": "object",
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"],
-        "order": 8
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["replication_type"],
+            "properties": {
+              "replication_type": {
+                "type": "string",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "required": ["replication_type"],
+            "properties": {
+              "replication_type": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              },
+              "data_to_sync": {
+                "title": "Data to Sync",
+                "type": "string",
+                "default": "Existing and New",
+                "enum": ["Existing and New", "New Changes Only"],
+                "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC.",
+                "order": 1
+              },
+              "snapshot_isolation": {
+                "title": "Initial Snapshot Isolation Level",
+                "type": "string",
+                "default": "Snapshot",
+                "enum": ["Snapshot", "Read Committed"],
+                "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
+                "order": 2
+              }
+            }
+          }
+        ]
       }
     }
   }

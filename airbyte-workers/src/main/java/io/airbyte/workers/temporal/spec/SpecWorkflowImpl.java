@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.spec;
 
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -21,7 +21,7 @@ public class SpecWorkflowImpl implements SpecWorkflow {
   private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
   @Override
-  public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
+  public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
     return activity.run(jobRunConfig, launcherConfig);
   }
 

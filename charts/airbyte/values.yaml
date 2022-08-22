@@ -1,11 +1,110 @@
 ## @section Global Parameters
 
 ## @param global.imageRegistry Global Docker image registry
-## @param global.storageClass Global StorageClass for Persistent Volume(s)
 ##
 global:
   imageRegistry: ""
-  storageClass: ""
+  serviceAccountName: &service-account-name "airbyte-admin"
+  deploymentMode: "oss"
+
+  secretName: "airbyte-secrets"
+  database:
+    secretValue: ""
+    host: "test"
+    port: "5432"
+  logs:
+    ## @param logs.accessKey.password Logs Access Key
+    ## @param logs.accessKey.existingSecret
+    ## @param logs.accessKey.existingSecretKey
+    accessKey:
+      password: ""
+      existingSecret: ""
+      existingSecretKey: ""
+    ## @param logs.secretKey.password Logs Secret Key
+    ## @param logs.secretKey.existingSecret
+    ## @param logs.secretKey.existingSecretKey
+    secretKey:
+      password: ""
+      existingSecret: ""
+      existingSecretKey: ""
+
+    ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+    minio:
+      enabled: true
+
+    ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ## @param logs.externalMinio.host External Minio Host
+    ## @param logs.externalMinio.port External Minio Port
+    externalMinio:
+      enabled: false
+      host: localhost
+      port: 9000
+
+    ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ## @param logs.s3.bucket Bucket name where logs should be stored
+    ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    s3:
+      enabled: false
+      bucket: airbyte-dev-logs
+      bucketRegion: ""
+
+    ## Google Cloud Storage (GCS) Log Location Configuration
+    ## @param logs.gcs.bucket GCS bucket name
+    ## @param logs.gcs.credentials The path the GCS creds are written to
+    ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    gcs:
+      bucket: ""
+      # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+      # deployments, then set credentials to the path of the mounted JSON file
+      credentials: ""
+      # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+      credentialsJson: ""
+  jobs:
+    ## Jobs resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    ## We usually recommend not to specify default resources and to leave this as a conscious
+    ## choice for the user. This also increases chances charts run on environments with little
+    ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+    ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    ## @param jobs.resources.limits [object] The resources limits for jobs
+    ## @param jobs.resources.requests [object] The requested resources for jobs
+    resources:
+      ## Example:
+      ## requests:
+      ##    memory: 256Mi
+      ##    cpu: 250m
+      requests: {}
+      ## Example:
+      ## limits:
+      ##    cpu: 200m
+      ##    memory: 1Gi
+      limits: {}
+
+    kube:
+      ## JOB_KUBE_ANNOTATIONS
+      ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+      ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
+      annotations: {}
+
+      ## JOB_KUBE_NODE_SELECTORS
+      ## pod node selector of the sync job and the default pod node selector fallback for others jobs
+      ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
+      nodeSelector: {}
+
+      ## JOB_KUBE_TOLERATIONS
+      ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
+      ## - key: airbyte-server
+      ##   operator: Equal
+      ##   value: "true"
+      ##   effect: NoSchedule
+      tolerations: []
+
+      ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+      ## image pull secret to use for job pod
+      ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+      main_container_image_pull_secret: ""
 
 ## @section Common Parameters
 
@@ -25,7 +124,7 @@ fullnameOverride: ""
 serviceAccount:
   create: true
   annotations: {}
-  name: airbyte-admin
+  name: *service-account-name
 
 ## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
 ## If changing the image tags below, you should probably also update this.
@@ -34,6 +133,7 @@ version: ""
 ## @section Webapp Parameters
 
 webapp:
+  enabled: true
   ## @param webapp.replicaCount Number of webapp replicas
   replicaCount: 1
 
@@ -43,7 +143,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.40.0-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -91,9 +191,11 @@ webapp:
 
   ## @param webapp.service.type The service type to use for the webapp service
   ## @param webapp.service.port The service port to expose the webapp on
+  ## @param webapp.service.annotations Annotations for the webapp service resource
   service:
     type: ClusterIP
     port: 80
+    annotations: {}
 
   ## Web app resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -197,134 +299,10 @@ webapp:
   ##
   extraVolumes: []
 
-## @section Scheduler Parameters
-
-scheduler:
-  ## @param scheduler.replicaCount Number of scheduler replicas
-  replicaCount: 1
-
-  ## @param scheduler.image.repository The repository to use for the airbyte scheduler image.
-  ## @param scheduler.image.pullPolicy the pull policy to use for the airbyte scheduler image
-  ## @param scheduler.image.tag The airbyte scheduler image tag. Defaults to the chart's AppVersion
-  image:
-    repository: airbyte/scheduler
-    pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
-
-  ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
-  ##
-  podAnnotations: {}
-
-  ## @param scheduler.containerSecurityContext Security context for the container
-  ## Examples:
-  ## containerSecurityContext:
-  ##    runAsNonRoot: true
-  ##    runAsUser: 1000
-  ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
-
-  ## Configure extra options for the scheduler containers' liveness and readiness probes
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-  ## @param scheduler.livenessProbe.enabled Enable livenessProbe on the scheduler
-  ## @param scheduler.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-  ## @param scheduler.livenessProbe.periodSeconds Period seconds for livenessProbe
-  ## @param scheduler.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-  ## @param scheduler.livenessProbe.failureThreshold Failure threshold for livenessProbe
-  ## @param scheduler.livenessProbe.successThreshold Success threshold for livenessProbe
-  ##
-  livenessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  ## @param scheduler.readinessProbe.enabled Enable readinessProbe on the scheduler
-  ## @param scheduler.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-  ## @param scheduler.readinessProbe.periodSeconds Period seconds for readinessProbe
-  ## @param scheduler.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-  ## @param scheduler.readinessProbe.failureThreshold Failure threshold for readinessProbe
-  ## @param scheduler.readinessProbe.successThreshold Success threshold for readinessProbe
-  ##
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  ## Scheduler resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ## We usually recommend not to specify default resources and to leave this as a conscious
-  ## choice for the user. This also increases chances charts run on environments with little
-  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
-  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ## @param scheduler.resources.limits [object] The resources limits for the scheduler container
-  ## @param scheduler.resources.requests [object] The requested resources for the scheduler container
-  resources:
-    ## Example:
-    ## limits:
-    ##    cpu: 200m
-    ##    memory: 1Gi
-    limits: {}
-    ## Examples:
-    ## requests:
-    ##    memory: 256Mi
-    ##    cpu: 250m
-    requests: {}
-
-  ## @param scheduler.nodeSelector [object] Node labels for pod assignment
-  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
-  ##
-  nodeSelector: {}
-
-  ## @param scheduler.tolerations [array] Tolerations for scheduler pod assignment.
-  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  ##
-  tolerations: []
-
-  ## @param scheduler.affinity [object] Affinity and anti-affinity for scheduler pod assignment.
-  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-  ##
-  affinity: {}
-
-  ## @param scheduler.log.level The log level to log at.
-  log:
-    level: "INFO"
-
-  ## @param scheduler.extraEnv [array] Additional env vars for scheduler pod(s).
-  ## Example:
-  ##
-  ## extraEnv:
-  ## - name: SAMPLE_ENV_VAR
-  ##   value: "key=sample-value"
-  extraEnv: []
-
-  ## @param scheduler.extraVolumeMounts [array] Additional volumeMounts for scheduler container(s).
-  ## Examples:
-  ## extraVolumeMounts:
-  ##   - name: tmpdir
-  ##     mountPath: /tmp
-  ##   - mountPath: /workspace
-  ##     name: workspace
-  ##
-  extraVolumeMounts: []
-
-  ## @param scheduler.extraVolumes [array] Additional volumes for scheduler pod(s).
-  ## Examples:
-  ## extraVolumes:
-  ##   - name: tmpdir
-  ##     emptyDir: {}
-  ##   - name: workspace
-  ##     emptyDir: {}
-  ##
-  extraVolumes: []
-
 ## @section Pod Sweeper parameters
 
-podSweeper:
+pod-sweeper:
+  enabled: true
   ## @param podSweeper.image.repository The image repository to use for the pod sweeper
   ## @param podSweeper.image.pullPolicy The pull policy for the pod sweeper image
   ## @param podSweeper.image.tag The pod sweeper image tag to use
@@ -431,6 +409,7 @@ podSweeper:
 ## @section Server parameters
 
 server:
+  enabled: true
   ## @param server.replicaCount Number of server replicas
   replicaCount: 1
 
@@ -440,7 +419,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.40.0-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -512,20 +491,6 @@ server:
     type: ClusterIP
     port: 8001
 
-  ## @param server.persistence.accessMode The access mode for the airbyte server pvc
-  ## @param server.persistence.size The size of the pvc to use for the airbyte server pvc
-  persistence:
-    size: 1Gi
-    accessMode: ReadWriteOnce
-    ## @param server.persistence.storageClass The storage class to use for the airbyte server pvc
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    storageClass: ""
-
   ## @param server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
@@ -572,6 +537,7 @@ server:
 ## @section Worker Parameters
 
 worker:
+  enabled: true
   ## @param worker.replicaCount Number of worker replicas
   replicaCount: 1
 
@@ -581,7 +547,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.40.0-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -690,16 +656,20 @@ worker:
   ##
   extraVolumes: []
 
+  hpa:
+    enabled: false
+
 ## @section Bootloader Parameters
 
-bootloader:
+airbyte-bootloader:
+  enabled: true
   ## @param bootloader.image.repository The repository to use for the airbyte bootloader image.
   ## @param bootloader.image.pullPolicy the pull policy to use for the airbyte bootloader image
   ## @param bootloader.image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.40.0-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -715,10 +685,36 @@ bootloader:
   ##
   tolerations: []
 
+  ## Bootloader resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+  ## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+
+  ## @param bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
 
 temporal:
+  enabled: true
   ## @param temporal.replicaCount The number of temporal replicas to deploy
   replicaCount: 1
 
@@ -728,7 +724,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ## @param temporal.service.type The Kubernetes Service Type
   ## @param temporal.service.port The temporal port and exposed kubernetes port
@@ -838,6 +834,26 @@ temporal:
   ##
   extraVolumes: []
 
+  ## Temporal resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param temporal.resources.limits [object] The resources limits for temporal pod(s)
+  ## @param temporal.resources.requests [object] The requested resources for temporal pod(s)
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+
 ## @section Airbyte Database parameters
 
 ## PostgreSQL chart configuration
@@ -856,6 +872,7 @@ postgresql:
   postgresqlUsername: airbyte
   postgresqlPassword: airbyte
   postgresqlDatabase: db-airbyte
+  # fullnameOverride: *db-hostname
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
@@ -884,101 +901,12 @@ externalDatabase:
   port: 5432
 
 ## @section Logs parameters
-logs:
-  ## @param logs.accessKey.password Logs Access Key
-  ## @param logs.accessKey.existingSecret
-  ## @param logs.accessKey.existingSecretKey
-  accessKey:
-    password: minio
-    existingSecret: ""
-    existingSecretKey: ""
-  ## @param logs.secretKey.password Logs Secret Key
-  ## @param logs.secretKey.existingSecret
-  ## @param logs.secretKey.existingSecretKey
-  secretKey:
-    password: minio123
-    existingSecret: ""
-    existingSecretKey: ""
-
-  ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
-  minio:
-    enabled: true
-
-  ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
-  ## @param logs.externalMinio.host External Minio Host
-  ## @param logs.externalMinio.port External Minio Port
-  externalMinio:
-    enabled: false
-    host: localhost
-    port: 9000
-
-  ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
-  ## @param logs.s3.bucket Bucket name where logs should be stored
-  ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
-  s3:
-    enabled: false
-    bucket: airbyte-dev-logs
-    bucketRegion: ""
-
-  ## Google Cloud Storage (GCS) Log Location Configuration
-  ## @param logs.gcs.bucket GCS bucket name
-  ## @param logs.gcs.credentials The path the GCS creds file is located
-  ## @param logs.gcs.credentialsJson Base64 encoded JSON credentials
-  gcs:
-    bucket: ""
-    # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
-    # deployments, then set credentials to the path of the mounted JSON file
-    credentials: ""
-    # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
-    credentialsJson: ""
 
 ## @section Minio chart overwrites
 ## @param minio.accessKey.password Minio Access Key
 ## @param minio.secretKey.password Minio Secret Key
 minio:
-  accessKey:
-    password: minio
-  secretKey:
-    password: minio123
-
-jobs:
-  ## Jobs resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ## We usually recommend not to specify default resources and to leave this as a conscious
-  ## choice for the user. This also increases chances charts run on environments with little
-  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
-  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ## @param jobs.resources.limits [object] The resources limits for jobs
-  ## @param jobs.resources.requests [object] The requested resources for jobs
-  resources:
-    ## Example:
-    ## requests:
-    ##    memory: 256Mi
-    ##    cpu: 250m
-    requests: {}
-    ## Example:
-    ## limits:
-    ##    cpu: 200m
-    ##    memory: 1Gi
-    limits: {}
-
-  kube:
-    ## JOB_KUBE_ANNOTATIONS
-    ## pod annotations of the sync job and the default pod annotations fallback for others jobs
-    ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
-    annotations: {}
-
-    ## JOB_KUBE_NODE_SELECTORS
-    ## pod node selector of the sync job and the default pod node selector fallback for others jobs
-    ## @params jobs.kubeSelector [object] key/value node selector applied to kube jobs
-    nodeSelector: {}
-
-    ## JOB_KUBE_TOLERATIONS
-    ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
-    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
-    ## - key: airbyte-server
-    ##   operator: Equal
-    ##   value: "true"
-    ##   effect: NoSchedule
-    tolerations: []
+  enabled: true
+  auth:
+    rootUser: minio
+    rootPassword: minio123

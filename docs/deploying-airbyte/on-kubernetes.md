@@ -81,12 +81,15 @@ To write to a custom S3 log location, replace the following variables in the `.e
 ```text
 S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
 S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
-AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
-AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 # Set this to empty.
 S3_MINIO_ENDPOINT=
 # Set this to empty.
 S3_PATH_STYLE_ACCESS=
+```
+Additionally, replace the following variables in the `.secrets` file in the `kube/overlays/stable` directory:
+```text
+AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 ```
 
 See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket and [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on creating AWS credentials.
@@ -102,7 +105,7 @@ Create the GCP service account with read/write permission to the GCS log bucket.
 $ cat gcp.json | base64
 ```
 
-2\) Populate the gcs-log-creds secrets with the Base64-encoded credential. This is as simple as taking the encoded credential from the previous step and adding it to the `secret-gcs-log-creds,yaml` file.
+2\) Populate the gcs-log-creds secrets with the Base64-encoded credential. This is as simple as taking the encoded credential from the previous step and adding it to the `secret-gcs-log-creds.yaml` file.
 
 ```text
 apiVersion: v1
@@ -159,7 +162,7 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 
 ### Increasing job parallelism
 
-The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, the `SUBMITTER_NUM_THREADS` \(set in the `.env` file for your Kustimization overlay\) provides a global limit on the number of simultaneous jobs that can run across all worker pods.
+The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, jobs are picked up and executed by airbyte-worker pods, so increasing the number of workers will allow more jobs to be processed in parallel.
 
 The number of worker pods can be changed by increasing the number of replicas for the `airbyte-worker` deployment. An example of a Kustomization patch that increases this number can be seen in `airbyte/kube/overlays/dev-integration-test/kustomization.yaml` and `airbyte/kube/overlays/dev-integration-test/parallelize-worker.yaml`. The number of simultaneous jobs on a specific worker pod is also limited by the number of ports exposed by the worker deployment and set by `TEMPORAL_WORKER_PORTS` in your `.env` file. Without additional ports used to communicate to connector pods, jobs will start to run but will hang until ports become available.
 
@@ -218,10 +221,6 @@ Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/mast
 ### View API Server Logs
 
 `kubectl logs deployments/airbyte-server` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
-
-### View Scheduler or Job Logs
-
-`kubectl logs deployments/airbyte-scheduler` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
 
 ### Connector Container Logs
 

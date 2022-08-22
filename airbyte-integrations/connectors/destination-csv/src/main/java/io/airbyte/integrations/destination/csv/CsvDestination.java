@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -93,7 +94,7 @@ public class CsvDestination extends BaseConnector implements Destination {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
         csvFormat = csvFormat.withSkipHeaderRecord();
       }
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isAppendMode);
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }

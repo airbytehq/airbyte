@@ -15,14 +15,15 @@ const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
-type ConfirmationControlProps = {
+interface ConfirmationControlProps {
   component: React.ReactElement;
   showButtons?: boolean;
   isEditInProgress?: boolean;
   onStart: () => void;
   onCancel: () => void;
   onDone: () => void;
-};
+  disabled?: boolean;
+}
 
 const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   isEditInProgress,
@@ -31,6 +32,7 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   onCancel,
   onDone,
   component,
+  disabled,
 }) => {
   const controlRef = useRef<HTMLElement>(null);
 
@@ -51,19 +53,19 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
       {React.cloneElement(component, {
         ref: controlRef,
         autoFocus: isEditInProgress,
-        disabled: !isEditInProgress,
+        disabled: !isEditInProgress || disabled,
       })}
       {isEditInProgress ? (
         <>
-          <SmallButton onClick={onDone} type="button">
+          <SmallButton onClick={onDone} type="button" disabled={disabled}>
             <FormattedMessage id="form.done" />
           </SmallButton>
-          <SmallButton onClick={onCancel} type="button" secondary>
+          <SmallButton onClick={onCancel} type="button" secondary disabled={disabled}>
             <FormattedMessage id="form.cancel" />
           </SmallButton>
         </>
       ) : (
-        <SmallButton onClick={handleStartEdit} type="button">
+        <SmallButton onClick={handleStartEdit} type="button" disabled={disabled}>
           <FormattedMessage id="form.edit" />
         </SmallButton>
       )}

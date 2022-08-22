@@ -3,14 +3,14 @@
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 * HTTP APIs \(REST APIs, GraphQL, etc..\)
-* Singer Taps
 * Generic Python sources \(anything not covered by the above\)
+* Singer Taps (Note: The CDK supports building Singer taps but Airbyte no longer access contributions of this type)
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Discourse forum](https://discuss.airbyte.io/c/connector-development/16) to inquire further!
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ cd airbyte-integrations/connector-templates/generator
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
 
-Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+Additionally, you can follow [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
 
@@ -45,7 +45,7 @@ Airbyte recommends using the CDK template generator to develop with the CDK. The
 
 For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
 
-You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/)
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md)
 
 ### Example Connectors
 
@@ -54,11 +54,6 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 * [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
 * [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
 * [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
-
-**Singer connectors**:
-
-* [Salesforce](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce-singer/source_salesforce_singer/source.py)
-* [Github](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-github-singer/source_github_singer/source.py)
 
 **Simple Python connectors using the barebones `Source` abstraction**:
 
@@ -76,7 +71,7 @@ Setup a virtual env:
 ```text
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]" # [dev] installs development-only dependencies
+pip install -e ".[tests]" # [tests] installs test-only dependencies
 ```
 
 #### Iteration
@@ -85,6 +80,18 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 * Run tests via `pytest -s unit_tests`
 * Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
 * The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
+
+#### Debugging
+
+While developing your connector, you can print detailed debug information during a sync by specifying the `--debug` flag. This allows you to get a better picture of what is happening during each step of your sync.
+```text
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+```
+
+In addition to preset CDK debug statements, you can also add your own statements to emit debug information specific to your connector:
+```python
+self.logger.debug("your debug message here", extra={"debug_field": self.value})
+```
 
 #### Testing
 

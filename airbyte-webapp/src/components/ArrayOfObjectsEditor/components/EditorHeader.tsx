@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+
 const Content = styled.div`
   display: flex;
   justify-content: space-between;
@@ -13,23 +15,34 @@ const Content = styled.div`
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
-  margin: 5px 0;
+  margin: 5px 0 10px;
 `;
 
-type EditorHeaderProps = {
+interface EditorHeaderProps {
   mainTitle?: React.ReactNode;
   addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
-};
+  mode?: ConnectionFormMode;
+  disabled?: boolean;
+}
 
-const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText }) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({
+  itemsCount,
+  onAddItem,
+  mainTitle,
+  addButtonText,
+  mode,
+  disabled,
+}) => {
   return (
     <Content>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
-      <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
-        {addButtonText || <FormattedMessage id="form.addItems" />}
-      </Button>
+      {mode !== "readonly" && (
+        <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+          {addButtonText || <FormattedMessage id="form.addItems" />}
+        </Button>
+      )}
     </Content>
   );
 };

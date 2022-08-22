@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -15,7 +15,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -37,10 +38,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,6 +58,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public static Long ID_VALUE_5 = 5L;
 
   private JsonNode config;
+  private String dbName;
 
   @BeforeAll
   static void init() {
@@ -69,27 +68,41 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort() - 1)
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet().stream()
+            .findFirst()
+            .get().getValue().getIpAddress()))
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getExposedPorts().get(1))
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
-    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
-    database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
+    final JsonNode clone = Jsons.clone(config);
+    ((ObjectNode) clone).put("database", PSQL_DB.getDatabaseName());
+    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(clone);
 
-    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + config.get("database") + ";"));
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            getDriverClass(),
+            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY)));
+    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + dbName + ";"));
     super.setup();
+  }
+
+  @Override
+  protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
+    return String.format("CREATE TABLE " + dbName + ".%s(%s %s %s)",
+        tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
   }
 
   @Override
@@ -123,7 +136,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
@@ -131,10 +144,10 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
+            Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
         CatalogHelpers.createAirbyteStream(
@@ -176,9 +189,29 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
+  protected void testDiscoverWithNonCursorFields() throws Exception {
+    /*
+     * this test is not valid for cockroach db, when table has no introduced PK it will add a hidden
+     * rowid which will be taken from db , it as well present on airbyte UI thus there will be no case
+     * to create a table without cursor field.
+     * https://www.cockroachlabs.com/docs/stable/serial.html#auto-incrementing-is-not-always-sequential
+     */
+  }
+
+  @Test
+  protected void testDiscoverWithNullableCursorFields() throws Exception {
+    /*
+     * this test is not valid for cockroach db, when table has no introduced PK it will add a hidden
+     * rowid which will be taken from db , it as well present on airbyte UI thus there will be no case
+     * to create a table without cursor field.
+     * https://www.cockroachlabs.com/docs/stable/serial.html#auto-incrementing-is-not-always-sequential
+     */
+  }
+
+  @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put("password", "fake");
-    ((ObjectNode) config).put("username", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }
@@ -262,10 +295,10 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     database.execute(connection -> {
       connection.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
+          String.format("INSERT INTO " + dbName + ".%s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
               getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
+          String.format("INSERT INTO " + dbName + ".%s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
               getFullyQualifiedTableName(TABLE_NAME)));
     });
 
@@ -291,6 +324,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
@@ -321,13 +355,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 createTableQuery(getFullyQualifiedTableName(TABLE_NAME + iFinal),
                     "id INTEGER, name VARCHAR(200)", ""));
         connection.createStatement()
-            .execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
+            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
         connection.createStatement()
-            .execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
+            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
         connection.createStatement()
-            .execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
+            .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
                 getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
@@ -369,13 +403,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)",
               ""));
       ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
+          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (1,'picard')",
               getFullyQualifiedTableName(tableName2)));
       ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
+          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(tableName2)));
       ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
+          String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES (3, 'vash')",
               getFullyQualifiedTableName(tableName2)));
     });
 
@@ -421,6 +455,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
@@ -438,6 +473,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
@@ -470,16 +506,16 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // add table and data to a separate schema.
     database.execute(connection -> {
       connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))",
+          String.format("CREATE TABLE " + dbName + ".%s(id VARCHAR(200), name VARCHAR(200))",
               sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
+          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('1','picard')",
               sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
+          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('2', 'crusher')",
               sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
+          .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('3', 'vash')",
               sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
@@ -491,7 +527,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             SCHEMA_NAME2,
             Field.of(COL_ID, JsonSchemaType.STRING),
             Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
+            Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
 

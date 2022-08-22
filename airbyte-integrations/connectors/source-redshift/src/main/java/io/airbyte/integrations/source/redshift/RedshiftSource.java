@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.redshift;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -29,8 +30,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
-  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
-  private static final String SCHEMAS = "schemas";
+  public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
@@ -43,16 +43,16 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   public JsonNode toDatabaseConfig(final JsonNode redshiftConfig) {
     final List<String> additionalProperties = new ArrayList<>();
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-        .put("username", redshiftConfig.get("username").asText())
-        .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
-            redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asText(),
-            redshiftConfig.get("database").asText()));
+        .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
+            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
+    if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
+      for (final JsonNode schema : redshiftConfig.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
 
@@ -63,7 +63,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     addSsl(additionalProperties);
 
-    builder.put("connection_properties", String.join("&", additionalProperties));
+    builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());

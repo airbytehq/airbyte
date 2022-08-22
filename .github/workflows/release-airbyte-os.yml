@@ -60,9 +60,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
@@ -70,7 +70,8 @@ jobs:
       - name: Release Airbyte
         id: release_airbyte
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
@@ -91,16 +92,17 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
       - uses: actions/setup-python@v2
         with:
           python-version: "3.9"
       - name: Release Octavia
         id: release_octavia
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
 

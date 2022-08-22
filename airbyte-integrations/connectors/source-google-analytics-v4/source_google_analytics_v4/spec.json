@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-analytics-v4",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics V4 Spec",
@@ -7,32 +7,6 @@
     "required": ["view_id", "start_date"],
     "additionalProperties": true,
     "properties": {
-      "view_id": {
-        "order": 2,
-        "type": "string",
-        "title": "View ID",
-        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>."
-      },
-      "start_date": {
-        "order": 1,
-        "type": "string",
-        "title": "Start Date",
-        "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
-        "examples": ["2020-06-01"]
-      },
-      "window_in_days": {
-        "type": "integer",
-        "title": "Data request window (Optional)",
-        "description": "The amount of data batched by the number of days. The bigger the value, the bigger the batch size and the lower the API requests made. (Min=1, as for a Day; Max=364, as for a Year).",
-        "examples": [30, 60, 90, 120, 200, 364],
-        "default": 1
-      },
-      "custom_reports": {
-        "order": 3,
-        "type": "string",
-        "title": "Custom Reports (Optional)",
-        "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\">docs</a> to get more information about this field."
-      },
       "credentials": {
         "order": 0,
         "type": "object",
@@ -90,7 +64,7 @@
                 "order": 0
               },
               "credentials_json": {
-                "title": "JSON credentials",
+                "title": "Service Account JSON Key",
                 "type": "string",
                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [
@@ -101,6 +75,33 @@
             }
           }
         ]
+      },
+      "start_date": {
+        "order": 1,
+        "type": "string",
+        "title": "Replication Start Date",
+        "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
+        "examples": ["2020-06-01"]
+      },
+      "view_id": {
+        "order": 2,
+        "type": "string",
+        "title": "View ID",
+        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>."
+      },
+      "custom_reports": {
+        "order": 3,
+        "type": "string",
+        "title": "Custom Reports (Optional)",
+        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
+      },
+      "window_in_days": {
+        "type": "integer",
+        "title": "Data request time increment in days (Optional)",
+        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. ",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 1,
+        "order": 4
       }
     }
   },

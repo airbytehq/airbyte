@@ -10,9 +10,9 @@ import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionI
 
 import { RoutePaths } from "../../../pages/routePaths";
 
-type IProps = {
+interface IProps {
   id: string;
-};
+}
 
 const Content = styled.div`
   color: ${({ theme }) => theme.greyColor60};

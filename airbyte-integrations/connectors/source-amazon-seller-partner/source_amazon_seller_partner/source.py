@@ -1,33 +1,37 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
 
 import boto3
-import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic import Field
-from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
-from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
+from source_amazon_seller_partner.constants import get_marketplaces
+from source_amazon_seller_partner.spec import AmazonSellerPartnerConfig, advanced_auth
 from source_amazon_seller_partner.streams import (
     BrandAnalyticsAlternatePurchaseReports,
     BrandAnalyticsItemComparisonReports,
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
+    FbaCustomerReturnsReports,
     FbaInventoryReports,
     FbaOrdersReports,
     FbaReplacementsReports,
     FbaShipmentsReports,
+    FbaStorageFeesReports,
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
     FlatFileOrdersReportsByLastUpdate,
+    FlatFileSettlementV2Reports,
     FulfilledShipmentsReports,
+    GetXmlBrowseTreeData,
+    ListFinancialEventGroups,
+    ListFinancialEvents,
     MerchantListingsReports,
     Orders,
     SellerFeedbackReports,
@@ -36,65 +40,12 @@ from source_amazon_seller_partner.streams import (
 )
 
 
-class ConnectorConfig(BaseModel):
-    class Config:
-        title = "Amazon Seller Partner Spec"
-
-    replication_start_date: str = Field(
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        title="Start Date",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
-    )
-    period_in_days: int = Field(
-        30,
-        description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
-        examples=["30", "365"],
-    )
-    report_options: str = Field(
-        None,
-        description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
-        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
-    )
-    max_wait_seconds: int = Field(
-        500,
-        title="Max wait time for reports (in seconds)",
-        description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
-        examples=["500", "1980"],
-    )
-    refresh_token: str = Field(
-        description="The Refresh Token obtained via OAuth flow authorization.",
-        title="Refresh Token",
-        airbyte_secret=True,
-    )
-    lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LwA App Id", airbyte_secret=True)
-    lwa_client_secret: str = Field(description="Your Login with Amazon Client Secret.", title="LwA Client Secret", airbyte_secret=True)
-    aws_access_key: str = Field(
-        description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
-        title="AWS Access Key",
-        airbyte_secret=True,
-    )
-    aws_secret_key: str = Field(
-        description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
-        title="AWS Secret Access Key",
-        airbyte_secret=True,
-    )
-    role_arn: str = Field(
-        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
-        title="Role ARN",
-        airbyte_secret=True,
-    )
-    aws_environment: AWSEnvironment = Field(description="Select the AWS Environment.", title="AWS Environment")
-    region: AWSRegion = Field(description="Select the AWS Region.", title="AWS Region")
-
-
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
+    def _get_stream_kwargs(self, config: AmazonSellerPartnerConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
-        boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
-        role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
-        role_creds = role["Credentials"]
+        sts_credentials = self.get_sts_credentials(config)
+        role_creds = sts_credentials["Credentials"]
         aws_signature = AWSSignature(
             service="execute-api",
             aws_access_key_id=role_creds.get("AccessKeyId"),
@@ -104,10 +55,11 @@ class SourceAmazonSellerPartner(AbstractSource):
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
-            client_secret=config.lwa_client_secret,
             client_id=config.lwa_app_id,
+            client_secret=config.lwa_client_secret,
             refresh_token=config.refresh_token,
             host=endpoint.replace("https://", ""),
+            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         stream_kwargs = {
             "url_base": endpoint,
@@ -118,8 +70,28 @@ class SourceAmazonSellerPartner(AbstractSource):
             "period_in_days": config.period_in_days,
             "report_options": config.report_options,
             "max_wait_seconds": config.max_wait_seconds,
+            "replication_end_date": config.replication_end_date,
         }
         return stream_kwargs
+
+    @staticmethod
+    def get_sts_credentials(config: AmazonSellerPartnerConfig) -> dict:
+        """
+        We can only use a IAM User arn entity or a IAM Role entity.
+        If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
+        If we use an IAM role arn entity we need to invoke the assume_role from the boto3 sts client to get the credentials related to that role
+
+        :param config:
+        """
+        boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
+        *_, arn_resource = config.role_arn.split(":")
+        if arn_resource.startswith("user"):
+            sts_credentials = boto3_client.get_session_token()
+        elif arn_resource.startswith("role"):
+            sts_credentials = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
+        else:
+            raise ValueError("Invalid ARN, your ARN is not for a user or a role")
+        return sts_credentials
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
@@ -128,30 +100,36 @@ class SourceAmazonSellerPartner(AbstractSource):
         Show error message in case of request exception or unexpected response.
         """
         try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+            config = AmazonSellerPartnerConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except StopIteration or requests.exceptions.RequestException as e:
+        except Exception as e:
             if isinstance(e, StopIteration):
-                e = "Could not check connection without data for Orders stream. " "Please change value for replication start date field."
+                logger.error(
+                    "Could not check connection without data for Orders stream. Please change value for replication start date field."
+                )
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        config = AmazonSellerPartnerConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         stream_kwargs = self._get_stream_kwargs(config)
 
         return [
+            FbaCustomerReturnsReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
             FbaShipmentsReports(**stream_kwargs),
             FbaReplacementsReports(**stream_kwargs),
+            FbaStorageFeesReports(**stream_kwargs),
             FlatFileOpenListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
             FlatFileOrdersReportsByLastUpdate(**stream_kwargs),
+            FlatFileSettlementV2Reports(**stream_kwargs),
             FulfilledShipmentsReports(**stream_kwargs),
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
@@ -163,6 +141,9 @@ class SourceAmazonSellerPartner(AbstractSource):
             BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
             BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
             BrandAnalyticsItemComparisonReports(**stream_kwargs),
+            GetXmlBrowseTreeData(**stream_kwargs),
+            ListFinancialEventGroups(**stream_kwargs),
+            ListFinancialEvents(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
@@ -171,7 +152,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         configurations (e.g: username and password) required to run this integration.
         """
         # FIXME: airbyte-cdk does not parse pydantic $ref correctly. This override won't be needed after the fix
-        schema = ConnectorConfig.schema()
+        schema = AmazonSellerPartnerConfig.schema()
         schema["properties"]["aws_environment"] = schema["definitions"]["AWSEnvironment"]
         schema["properties"]["region"] = schema["definitions"]["AWSRegion"]
 
@@ -179,4 +160,5 @@ class SourceAmazonSellerPartner(AbstractSource):
             documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
             changelogUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
             connectionSpecification=schema,
+            advanced_auth=advanced_auth,
         )

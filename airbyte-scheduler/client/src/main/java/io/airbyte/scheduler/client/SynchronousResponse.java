@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.client;
@@ -22,12 +22,13 @@ public class SynchronousResponse<T> {
     return new SynchronousResponse<>(output, metadata);
   }
 
-  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<T> temporalResponse,
-                                                                final UUID id,
-                                                                final ConfigType configType,
-                                                                final UUID configId,
-                                                                final long createdAt,
-                                                                final long endedAt) {
+  public static <T, U> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<U> temporalResponse,
+                                                                   final T output,
+                                                                   final UUID id,
+                                                                   final ConfigType configType,
+                                                                   final UUID configId,
+                                                                   final long createdAt,
+                                                                   final long endedAt) {
 
     final SynchronousJobMetadata metadata = SynchronousJobMetadata.fromJobMetadata(
         temporalResponse.getMetadata(),
@@ -36,7 +37,7 @@ public class SynchronousResponse<T> {
         configId,
         createdAt,
         endedAt);
-    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata);
+    return new SynchronousResponse<>(output, metadata);
   }
 
   public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {

@@ -18,20 +18,19 @@ dependencies {
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation('tech.allegro.schema.json2avro:converter') {
-        version {
-            branch = 'master'
-        }
-    }
+    implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
+    integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

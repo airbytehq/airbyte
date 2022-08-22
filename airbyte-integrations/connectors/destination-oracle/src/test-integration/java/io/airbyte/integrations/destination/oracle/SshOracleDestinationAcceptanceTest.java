@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -10,7 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -31,6 +33,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   private final String schemaName = "TEST_ORCL";
 
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
+
+  private static final Network network = Network.newNetwork();
 
   private OracleContainer db;
 
@@ -44,21 +48,21 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getConfig() throws IOException, InterruptedException {
     return sshBastionContainer.getTunnelConfig(getTunnelMethod(),
-        getBasicOracleDbConfigBuilder(db).put("schema", schemaName));
+        getBasicOracleDbConfigBuilder(db).put(JdbcUtils.SCHEMA_KEY, schemaName));
   }
 
   public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
         .put("sid", db.getSid())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()));
   }
@@ -114,8 +118,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        OracleDestination.HOST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -131,8 +135,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     startTestContainers();
     SshTunnel.sshWrap(
         getConfig(),
-        OracleDestination.HOST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
@@ -141,7 +145,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void startTestContainers() {
-    sshBastionContainer.initAndStartBastion();
+    sshBastionContainer.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
@@ -150,28 +154,27 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
-        .withNetwork(sshBastionContainer.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 
   private Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
+    final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
         null);
+    return new Database(dslContext);
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        OracleDestination.HOST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("DROP USER %s CASCADE", schemaName)));

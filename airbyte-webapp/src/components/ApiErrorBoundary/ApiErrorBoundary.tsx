@@ -1,12 +1,23 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useQueryErrorResetBoundary } from "react-query";
+import { NavigateFunction, useNavigate } from "react-router-dom";
+import { useLocation } from "react-use";
+import { LocationSensorState } from "react-use/lib/useLocation";
 
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-type BoundaryState = { errorId?: string; message?: string };
+import ServerUnavailableView from "./components/ServerUnavailableView";
+
+interface ApiErrorBoundaryState {
+  errorId?: string;
+  message?: string;
+  didRetry?: boolean;
+  retryDelay?: number;
+}
 
 enum ErrorId {
   VersionMismatch = "version.mismatch",
@@ -14,13 +25,27 @@ enum ErrorId {
   UnknownError = "unknown",
 }
 
-class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
-  constructor(props: Record<string, unknown>) {
-    super(props);
-    this.state = {};
-  }
+interface ApiErrorBoundaryHookProps {
+  location: LocationSensorState;
+  onRetry?: () => void;
+  navigate: NavigateFunction;
+}
 
-  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): BoundaryState {
+interface ApiErrorBoundaryProps {
+  onError?: (errorId?: string) => void;
+}
+
+const RETRY_DELAY = 2500;
+
+class ApiErrorBoundary extends React.Component<
+  ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
+  ApiErrorBoundaryState
+> {
+  state: ApiErrorBoundaryState = {
+    retryDelay: RETRY_DELAY,
+  };
+
+  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
@@ -30,32 +55,68 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     const is502 = error.status === 502;
 
     if (isNetworkBoundaryMessage || is502) {
-      return { errorId: ErrorId.ServerUnavailable };
+      return { errorId: ErrorId.ServerUnavailable, didRetry: false };
     }
 
-    return { errorId: ErrorId.UnknownError };
+    return { errorId: ErrorId.UnknownError, didRetry: false };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidCatch(): void {}
+  componentDidUpdate(prevProps: ApiErrorBoundaryHookProps) {
+    const { location } = this.props;
+
+    if (location !== prevProps.location) {
+      this.setState({ errorId: undefined, didRetry: false });
+      this.props.onError?.(undefined);
+    } else {
+      this.props.onError?.(this.state.errorId);
+    }
+  }
+
+  retry = () => {
+    this.setState((state) => ({
+      didRetry: true,
+      errorId: undefined,
+      retryDelay: Math.round((state?.retryDelay || RETRY_DELAY) * 1.2),
+    }));
+    this.props.onRetry?.();
+  };
 
   render(): React.ReactNode {
-    if (this.state.errorId === ErrorId.VersionMismatch) {
-      return <ErrorOccurredView message={this.state.message} />;
+    const { navigate, children } = this.props;
+    const { errorId, didRetry, message, retryDelay } = this.state;
+
+    if (errorId === ErrorId.VersionMismatch) {
+      return <ErrorOccurredView message={message} />;
     }
 
-    if (this.state.errorId === ErrorId.ServerUnavailable) {
-      return <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} />;
+    if (errorId === ErrorId.ServerUnavailable && !didRetry) {
+      return <ServerUnavailableView retryDelay={retryDelay || RETRY_DELAY} onRetryClick={this.retry} />;
     }
 
-    return !this.state.errorId ? (
-      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        {this.props.children}
-      </ResourceNotFoundErrorBoundary>
+    return !errorId ? (
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
     ) : (
-      <ErrorOccurredView message="Unknown error occurred" />
+      <ErrorOccurredView
+        message={<FormattedMessage id="errorView.unknownError" />}
+        ctaButtonText={<FormattedMessage id="ui.goBack" />}
+        onCtaButtonClick={() => {
+          navigate("..");
+        }}
+      />
     );
   }
 }
 
-export default ApiErrorBoundary;
+const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
+  const { reset } = useQueryErrorResetBoundary();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  return (
+    <ApiErrorBoundary {...props} location={location} navigate={navigate} onRetry={reset}>
+      {children}
+    </ApiErrorBoundary>
+  );
+};
+
+export default ApiErrorBoundaryWithHooks;

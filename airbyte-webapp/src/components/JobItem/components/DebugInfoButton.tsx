@@ -5,13 +5,12 @@ import { useIntl } from "react-intl";
 
 import { Button } from "components";
 
-import { JobDebugInfoMeta } from "core/domain/job";
-
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
-type IProps = {
-  jobDebugInfo: JobDebugInfoMeta;
-};
+interface IProps {
+  jobDebugInfo: JobDebugInfoRead;
+}
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
   const { formatMessage } = useIntl();

@@ -7,15 +7,4 @@ export enum FeatureItem {
   AllowSync = "ALLOW_SYNC",
 }
 
-type Feature = {
-  id: FeatureItem;
-};
-
-type FeatureServiceApi = {
-  features: Feature[];
-  registerFeature: (props: Feature[]) => void;
-  unregisterFeature: (props: FeatureItem[]) => void;
-  hasFeature: (featureId: FeatureItem) => boolean;
-};
-
-export type { Feature, FeatureServiceApi };
+export type FeatureSet = Record<FeatureItem, boolean>;

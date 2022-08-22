@@ -2,8 +2,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { LoadingButton } from "components";
 import { Button } from "components/base/Button";
 import Modal from "components/Modal";
+
+import useLoadingState from "../../hooks/useLoadingState";
 
 const Content = styled.div`
   width: 585px;
@@ -30,6 +33,7 @@ export interface ConfirmationModalProps {
   submitButtonText: string;
   onSubmit: () => void;
   submitButtonDataId?: string;
+  cancelButtonText?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -39,18 +43,24 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onSubmit,
   submitButtonText,
   submitButtonDataId,
-}) => (
-  <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
-    <Content>
-      <FormattedMessage id={text} />
-      <ButtonContent>
-        <ButtonWithMargin onClick={onClose} type="button" secondary>
-          <FormattedMessage id="form.cancel" />
-        </ButtonWithMargin>
-        <Button type="button" danger onClick={onSubmit} data-id={submitButtonDataId}>
-          <FormattedMessage id={submitButtonText} />
-        </Button>
-      </ButtonContent>
-    </Content>
-  </Modal>
-);
+  cancelButtonText,
+}) => {
+  const { isLoading, startAction } = useLoadingState();
+  const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
+
+  return (
+    <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
+      <Content>
+        <FormattedMessage id={text} />
+        <ButtonContent>
+          <ButtonWithMargin onClick={onClose} type="button" secondary disabled={isLoading}>
+            <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
+          </ButtonWithMargin>
+          <LoadingButton danger onClick={onSubmitBtnClick} data-id={submitButtonDataId} isLoading={isLoading}>
+            <FormattedMessage id={submitButtonText} />
+          </LoadingButton>
+        </ButtonContent>
+      </Content>
+    </Modal>
+  );
+};

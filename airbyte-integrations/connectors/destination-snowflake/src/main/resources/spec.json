@@ -12,7 +12,7 @@
     "additionalProperties": true,
     "properties": {
       "host": {
-        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). The account identifier differs depending on your cloud region, be sure to verify with Snowflake's documentation.",
+        "description": "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)",
         "examples": [
           "accountname.us-east-2.aws.snowflakecomputing.com",
           "accountname.snowflakecomputing.com"
@@ -22,35 +22,35 @@
         "order": 0
       },
       "role": {
-        "description": "The role you created for Airbyte to access Snowflake.",
+        "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake",
         "examples": ["AIRBYTE_ROLE"],
         "type": "string",
         "title": "Role",
         "order": 1
       },
       "warehouse": {
-        "description": "The warehouse you created for Airbyte to sync data into.",
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to sync data into",
         "examples": ["AIRBYTE_WAREHOUSE"],
         "type": "string",
         "title": "Warehouse",
         "order": 2
       },
       "database": {
-        "description": "The database you created for Airbyte to sync data into.",
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">database</a> you want to sync data into",
         "examples": ["AIRBYTE_DATABASE"],
         "type": "string",
         "title": "Database",
         "order": 3
       },
       "schema": {
-        "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.. Schema name would be transformed to allowed by Snowflake if it not follow Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions ",
+        "description": "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
         "title": "Default Schema",
         "order": 4
       },
       "username": {
-        "description": "The username you created to allow Airbyte to access the database.",
+        "description": "Enter the name of the user you want to use to access the database",
         "examples": ["AIRBYTE_USER"],
         "type": "string",
         "title": "Username",
@@ -58,11 +58,12 @@
       },
       "credentials": {
         "title": "Authorization Method",
+        "description": "",
         "type": "object",
         "oneOf": [
           {
-            "type": "object",
             "title": "OAuth2.0",
+            "type": "object",
             "order": 0,
             "required": ["access_token", "refresh_token"],
             "properties": {
@@ -76,25 +77,53 @@
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
-                "description": "The Client ID of your Drift developer application.",
+                "description": "Enter your application's Client ID",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
                 "title": "Client Secret",
-                "description": "The Client Secret of your Drift developer application.",
+                "description": "Enter your application's Client secret",
                 "airbyte_secret": true
               },
               "access_token": {
                 "type": "string",
                 "title": "Access Token",
-                "description": "Access Token for making authenticated requests.",
+                "description": "Enter you application's Access Token",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
-                "description": "Refresh Token for making authenticated requests.",
+                "description": "Enter your application's Refresh Token",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase (Optional)",
+                "description": "Passphrase for private key",
                 "airbyte_secret": true
               }
             }
@@ -103,10 +132,10 @@
             "title": "Username and Password",
             "type": "object",
             "required": ["password"],
-            "order": 1,
+            "order": 2,
             "properties": {
               "password": {
-                "description": "The password associated with the username.",
+                "description": "Enter the password associated with the username.",
                 "type": "string",
                 "airbyte_secret": true,
                 "title": "Password",
@@ -118,24 +147,25 @@
         "order": 6
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "description": "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
         "title": "JDBC URL Params",
         "type": "string",
         "order": 7
       },
       "loading_method": {
         "type": "object",
-        "title": "Loading Method",
-        "description": "The loading method used to send data to Snowflake.",
+        "title": "Data Staging Method",
+        "description": "Select a data staging method",
         "order": 8,
         "oneOf": [
           {
             "title": "Select another option",
-            "additionalProperties": false,
             "description": "Select another option",
             "required": ["method"],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Standard"],
                 "default": "Standard"
@@ -144,11 +174,12 @@
           },
           {
             "title": "[Recommended] Internal Staging",
-            "additionalProperties": false,
-            "description": "Writes large batches of records to a file, uploads the file to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "description": "Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Internal Staging"],
                 "default": "Internal Staging"
@@ -157,8 +188,7 @@
           },
           {
             "title": "AWS S3 Staging",
-            "additionalProperties": false,
-            "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
               "s3_bucket_name",
@@ -167,6 +197,8 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["S3 Staging"],
                 "default": "S3 Staging",
@@ -175,7 +207,7 @@
               "s3_bucket_name": {
                 "title": "S3 Bucket Name",
                 "type": "string",
-                "description": "The name of the staging S3 bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
+                "description": "Enter your S3 bucket name",
                 "examples": ["airbyte.staging"],
                 "order": 1
               },
@@ -183,7 +215,7 @@
                 "title": "S3 Bucket Region",
                 "type": "string",
                 "default": "",
-                "description": "The region of the S3 staging bucket which is used when utilising a copy strategy.",
+                "description": "Enter the region where your S3 bucket resides",
                 "enum": [
                   "",
                   "us-east-1",
@@ -214,39 +246,86 @@
               },
               "access_key_id": {
                 "type": "string",
-                "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
-                "title": "S3 Key Id",
+                "description": "Enter your <a href=\"https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html\">AWS access key ID</a>. Airbyte requires Read and Write permissions on your S3 bucket ",
+                "title": "AWS access key ID",
                 "airbyte_secret": true,
                 "order": 3
               },
               "secret_access_key": {
                 "type": "string",
-                "description": "The corresponding secret to the above access key id.",
-                "title": "S3 Access Key",
+                "description": "Enter your <a href=\"https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html\">AWS secret access key</a>",
+                "title": "AWS secret access key",
                 "airbyte_secret": true,
                 "order": 4
-              },
-              "part_size": {
-                "type": "integer",
-                "default": 5,
-                "examples": [5],
-                "description": "Optional. Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
-                "title": "Stream Part Size",
-                "order": 5
               },
               "purge_staging_data": {
                 "title": "Purge Staging Files and Tables",
                 "type": "boolean",
-                "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. Only relevant for COPY. Defaults to true.",
+                "description": "Toggle to delete staging files from the S3 bucket after a successful sync",
                 "default": true,
-                "order": 6
+                "order": 5
+              },
+              "encryption": {
+                "title": "Encryption",
+                "type": "object",
+                "description": "Choose a data encryption method for the staging data",
+                "default": { "encryption_type": "none" },
+                "order": 6,
+                "oneOf": [
+                  {
+                    "title": "No encryption",
+                    "description": "Staging data will be stored in plaintext.",
+                    "type": "object",
+                    "required": ["encryption_type"],
+                    "properties": {
+                      "encryption_type": {
+                        "type": "string",
+                        "const": "none",
+                        "enum": ["none"],
+                        "default": "none"
+                      }
+                    }
+                  },
+                  {
+                    "title": "AES-CBC envelope encryption",
+                    "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
+                    "type": "object",
+                    "required": ["encryption_type"],
+                    "properties": {
+                      "encryption_type": {
+                        "type": "string",
+                        "const": "aes_cbc_envelope",
+                        "enum": ["aes_cbc_envelope"],
+                        "default": "aes_cbc_envelope"
+                      },
+                      "key_encrypting_key": {
+                        "type": "string",
+                        "title": "Key",
+                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
+                        "airbyte_secret": true
+                      }
+                    }
+                  }
+                ]
+              },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern (Optional)",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 7
               }
             }
           },
           {
-            "title": "GCS Staging",
-            "additionalProperties": false,
-            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "title": "Google Cloud Storage Staging",
+            "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
               "project_id",
@@ -255,29 +334,31 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["GCS Staging"],
                 "default": "GCS Staging",
                 "order": 0
               },
               "project_id": {
-                "title": "GCP Project ID",
+                "title": "Google Cloud project ID",
                 "type": "string",
-                "description": "The name of the GCP project ID for your credentials.",
+                "description": "Enter the <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">Google Cloud project ID</a>",
                 "examples": ["my-project"],
                 "order": 1
               },
               "bucket_name": {
-                "title": "GCS Bucket Name",
+                "title": "Cloud Storage bucket name",
                 "type": "string",
-                "description": "The name of the staging GCS bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
+                "description": "Enter the <a href=\"https://cloud.google.com/storage/docs/creating-buckets\">Cloud Storage bucket name</a>",
                 "examples": ["airbyte-staging"],
                 "order": 2
               },
               "credentials_json": {
                 "title": "Google Application Credentials",
                 "type": "string",
-                "description": "The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">GCP docs</a> for more information on how to generate a JSON key for your service account.",
+                "description": "Enter your <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">Google Cloud service account key</a> in the JSON format with read/write access to your Cloud Storage staging bucket",
                 "airbyte_secret": true,
                 "multiline": true,
                 "order": 3
@@ -286,8 +367,7 @@
           },
           {
             "title": "Azure Blob Storage Staging",
-            "additionalProperties": false,
-            "description": "Writes large batches of records to a file, uploads the file to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
               "azure_blob_storage_account_name",
@@ -296,30 +376,32 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Azure Blob Staging"],
                 "default": "Azure Blob Staging",
                 "order": 0
               },
               "azure_blob_storage_endpoint_domain_name": {
-                "title": "Endpoint Domain Name",
+                "title": "Azure Blob Storage Endpoint",
                 "type": "string",
                 "default": "blob.core.windows.net",
-                "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+                "description": "Enter the Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">endpoint domain name</a>",
                 "examples": ["blob.core.windows.net"],
                 "order": 1
               },
               "azure_blob_storage_account_name": {
-                "title": "Azure Blob Storage Account Name",
+                "title": "Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">account name</a>",
                 "type": "string",
-                "description": "The account's name of the Azure Blob Storage.",
+                "description": "Enter your Azure Blob Storage account name",
                 "examples": ["airbyte5storage"],
                 "order": 2
               },
               "azure_blob_storage_container_name": {
-                "title": "Azure blob storage container (Bucket) Name",
+                "title": "Azure Blob Storage Container Name",
                 "type": "string",
-                "description": "The name of the Azure blob storage container. *This needs to coincide with the container specified in the Snowflake Storage Integration and Snowflake Azure External Stage (see description of 'Snowflake Azure External Stage' for details",
+                "description": "Enter your Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names\">container name</a>",
                 "examples": ["airbytetestcontainername"],
                 "order": 3
               },
@@ -327,7 +409,7 @@
                 "title": "SAS Token",
                 "type": "string",
                 "airbyte_secret": true,
-                "description": "Shared access signature(SAS) token to grant Snowflake limited access to objects in your storage account. See more https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token",
+                "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token\">Shared access signature</a> (SAS) token to grant Snowflake limited access to objects in your Azure Blob Storage account",
                 "examples": [
                   "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
                 ],
@@ -355,7 +437,6 @@
       },
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "access_token": {
             "type": "string",
@@ -369,7 +450,6 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
@@ -381,7 +461,6 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string",

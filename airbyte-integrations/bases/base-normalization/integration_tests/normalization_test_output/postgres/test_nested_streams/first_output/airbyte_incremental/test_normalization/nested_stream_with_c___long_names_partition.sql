@@ -40,15 +40,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__nested_stream_with_c___long_names_partition_ab2
 select
-    md5(cast(coalesce(cast(_airbyte_nested_stre__nto_long_names_hashid as 
-    varchar
-), '') || '-' || coalesce(cast(double_array_data as 
-    varchar
-), '') || '-' || coalesce(cast("DATA" as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_partition_hashid,
+    md5(cast(coalesce(cast(_airbyte_nested_stre__nto_long_names_hashid as text), '') || '-' || coalesce(cast(double_array_data as text), '') || '-' || coalesce(cast("DATA" as text), '') as text)) as _airbyte_partition_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_c___long_names_partition_ab2 tmp
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition

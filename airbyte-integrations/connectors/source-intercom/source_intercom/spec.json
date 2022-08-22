@@ -9,15 +9,15 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "title": "Start Date",
+        "title": "Start date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
       "access_token": {
-        "title": "Access Token",
+        "title": "Access token",
         "type": "string",
-        "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/intercom\">docs</a> for more information on how to obtain this key manually.",
+        "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token\">Intercom docs</a> for more information.",
         "airbyte_secret": true
       }
     }

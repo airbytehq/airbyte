@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -29,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +40,14 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
-  static final String DRIVER_CLASS = "org.postgresql.Driver";
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
   public CockroachDbSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new CockroachJdbcSourceOperations());
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
+    return new SshWrappedSource(new CockroachDbSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -54,11 +56,11 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
+    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean() || !config.has(JdbcUtils.SSL_KEY)) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -66,13 +68,13 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     LOGGER.warn(jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -101,10 +103,9 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database
-        .unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)
-        .map(this::getPrivilegeDto)
-        .collect(Collectors.toSet());
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)) {
+      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    }
   }
 
   @Override
@@ -113,19 +114,24 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+  protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
-        sourceOperations);
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY));
+    dataSources.add(dataSource);
+    return dataSource;
+  }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final DataSource dataSource = createDataSource(config);
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
     return new CockroachJdbcDatabase(database, sourceOperations);
   }
 
@@ -135,7 +141,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
               + "FROM   information_schema.table_privileges\n"
               + "WHERE  (grantee  = ? AND privilege_type in ('SELECT', 'ALL')) OR (table_schema = 'public')");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      ps.setString(1, database.getDatabaseConfig().get(JdbcUtils.USERNAME_KEY).asText());
       return ps;
     };
   }

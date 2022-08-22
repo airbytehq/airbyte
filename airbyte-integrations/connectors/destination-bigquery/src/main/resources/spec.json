@@ -11,24 +11,17 @@
     "required": ["project_id", "dataset_location", "dataset_id"],
     "additionalProperties": true,
     "properties": {
-      "big_query_client_buffer_size_mb": {
-        "title": "Google BigQuery Client Chunk Size (Optional)",
-        "description": "Google BigQuery client's chunk (buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MB value is used if not set explicitly. Read more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>.",
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 15,
-        "default": 15,
-        "examples": ["15"]
-      },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
-        "title": "Project ID"
+        "title": "Project ID",
+        "order": 0
       },
       "dataset_location": {
         "type": "string",
-        "description": "The location of the dataset. Warning: Changes made after creation will not be applied. The default \"US\" value is used if not set explicitly. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
+        "description": "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
         "title": "Dataset Location",
+        "order": 1,
         "enum": [
           "US",
           "EU",
@@ -66,29 +59,17 @@
       "dataset_id": {
         "type": "string",
         "description": "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>.",
-        "title": "Default Dataset ID"
-      },
-      "credentials_json": {
-        "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
-        "title": "Service Account Key JSON (Optional)",
-        "airbyte_secret": true
-      },
-      "transformation_priority": {
-        "type": "string",
-        "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
-        "title": "Transformation Query Run Type (Optional)",
-        "default": "interactive",
-        "enum": ["interactive", "batch"]
+        "title": "Default Dataset ID",
+        "order": 2
       },
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
         "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging. <br/><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for most workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
+        "order": 3,
         "oneOf": [
           {
             "title": "Standard Inserts",
-            "additionalProperties": false,
             "required": ["method"],
             "properties": {
               "method": {
@@ -99,7 +80,6 @@
           },
           {
             "title": "GCS Staging",
-            "additionalProperties": false,
             "required": [
               "method",
               "gcs_bucket_name",
@@ -109,43 +89,14 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "GCS Staging"
-              },
-              "gcs_bucket_name": {
-                "title": "GCS Bucket Name",
-                "type": "string",
-                "description": "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
-                "examples": ["airbyte_sync"]
-              },
-              "gcs_bucket_path": {
-                "title": "GCS Bucket Path",
-                "description": "Directory under the GCS bucket where data will be written.",
-                "type": "string",
-                "examples": ["data_sync/test"]
-              },
-              "part_size_mb": {
-                "title": "Block Size (MB) for GCS Multipart Upload (Optional)",
-                "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
-                "type": "integer",
-                "default": 5,
-                "minimum": 5,
-                "maximum": 525,
-                "examples": [5]
-              },
-              "keep_files_in_gcs-bucket": {
-                "type": "string",
-                "description": "This upload method is supposed to temporary store records in GCS bucket. What do you want to do with data in GCS bucket when migration has finished? The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
-                "title": "GCS Tmp Files Afterward Processing (Optional)",
-                "default": "Delete all tmp files from GCS",
-                "enum": [
-                  "Delete all tmp files from GCS",
-                  "Keep all tmp files in GCS"
-                ]
+                "const": "GCS Staging",
+                "order": 0
               },
               "credential": {
                 "title": "Credential",
                 "description": "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
                 "type": "object",
+                "order": 1,
                 "oneOf": [
                   {
                     "title": "HMAC key",
@@ -157,29 +108,84 @@
                     "properties": {
                       "credential_type": {
                         "type": "string",
-                        "const": "HMAC_KEY"
+                        "const": "HMAC_KEY",
+                        "order": 0
                       },
                       "hmac_key_access_id": {
                         "type": "string",
                         "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
                         "title": "HMAC Key Access ID",
                         "airbyte_secret": true,
-                        "examples": ["1234567890abcdefghij1234"]
+                        "examples": ["1234567890abcdefghij1234"],
+                        "order": 1
                       },
                       "hmac_key_secret": {
                         "type": "string",
                         "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
                         "title": "HMAC Key Secret",
                         "airbyte_secret": true,
-                        "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"]
+                        "examples": [
+                          "1234567890abcdefghij1234567890ABCDEFGHIJ"
+                        ],
+                        "order": 2
                       }
                     }
                   }
                 ]
+              },
+              "gcs_bucket_name": {
+                "title": "GCS Bucket Name",
+                "type": "string",
+                "description": "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
+                "examples": ["airbyte_sync"],
+                "order": 2
+              },
+              "gcs_bucket_path": {
+                "title": "GCS Bucket Path",
+                "description": "Directory under the GCS bucket where data will be written.",
+                "type": "string",
+                "examples": ["data_sync/test"],
+                "order": 3
+              },
+              "keep_files_in_gcs-bucket": {
+                "type": "string",
+                "description": "This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
+                "title": "GCS Tmp Files Afterward Processing (Optional)",
+                "default": "Delete all tmp files from GCS",
+                "enum": [
+                  "Delete all tmp files from GCS",
+                  "Keep all tmp files in GCS"
+                ],
+                "order": 4
               }
             }
           }
         ]
+      },
+      "credentials_json": {
+        "type": "string",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
+        "title": "Service Account Key JSON (Required for cloud, optional for open-source)",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "transformation_priority": {
+        "type": "string",
+        "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
+        "title": "Transformation Query Run Type (Optional)",
+        "default": "interactive",
+        "enum": ["interactive", "batch"],
+        "order": 5
+      },
+      "big_query_client_buffer_size_mb": {
+        "title": "Google BigQuery Client Chunk Size (Optional)",
+        "description": "Google BigQuery client's chunk (buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MB value is used if not set explicitly. Read more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 15,
+        "default": 15,
+        "examples": ["15"],
+        "order": 6
       }
     }
   }

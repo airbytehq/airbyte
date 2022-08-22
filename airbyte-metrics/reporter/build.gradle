@@ -3,10 +3,12 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
+    implementation libs.flyway.core
+
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-db:jooq')
-    implementation project(':airbyte-db:lib')
-    implementation project(':airbyte-metrics:lib')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
 }
 
 application {

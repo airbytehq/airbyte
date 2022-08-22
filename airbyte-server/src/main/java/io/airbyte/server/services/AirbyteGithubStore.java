@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.services;
@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class AirbyteGithubStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);

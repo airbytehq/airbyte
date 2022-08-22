@@ -1,42 +1,65 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 public class ClickhouseDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestinationStrictEncryptAcceptanceTest.class);
 
-  private static final String DB_NAME = "default";
-
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
-
-  private ClickHouseContainer db;
-
   public static final Integer HTTP_PORT = 8123;
   public static final Integer NATIVE_PORT = 9000;
   public static final Integer HTTPS_PORT = 8443;
   public static final Integer NATIVE_SECURE_PORT = 9440;
+  private static final String DB_NAME = "default";
+  private static final String USER_NAME = "default";
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private GenericContainer db;
+
+  private static JdbcDatabase getDatabase(final JsonNode config) {
+    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
+        ClickhouseDestination.HTTPS_PROTOCOL,
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
+    return new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        ClickhouseDestination.DRIVER_CLASS,
+        jdbcStr), new ClickhouseTestSourceOperations());
+  }
 
   @Override
   protected String getImageName() {
@@ -59,32 +82,51 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
   protected JsonNode getConfig() {
-    // Note: ClickHouse official JDBC driver uses HTTP protocol, its default port is 8123
-    // dbt clickhouse adapter uses native protocol, its default port is 9000
-    // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getMappedPort(HTTPS_PORT))
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(db))
+        .put(JdbcUtils.TCP_PORT_KEY, NATIVE_SECURE_PORT)
+        .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, "")
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
+        .put(JdbcUtils.SSL_KEY, true)
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password").put("ssl", false);
+    ((ObjectNode) clone).put("password", "wrong password").put(JdbcUtils.SSL_KEY, false);
     return clone;
   }
 
@@ -97,10 +139,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -110,9 +152,8 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-        .collect(Collectors.toList());
+    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return jdbcDB.queryJsons(query);
   }
 
   @Override
@@ -128,77 +169,46 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     return result;
   }
 
-  private static JdbcDatabase getDatabase(final JsonNode config) {
-    final String jdbcStr = String.format("jdbc:clickhouse://%s:%s/%s?ssl=true&sslmode=none",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        jdbcStr,
-        ClickhouseDestination.DRIVER_CLASS);
-  }
-
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server")
-        .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
-        .withClasspathResourceMapping("config.xml", "/etc/clickhouse-server/config.xml", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("server.crt", "/etc/clickhouse-server/server.crt", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("server.key", "/etc/clickhouse-server/server.key", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("dhparam.pem", "/etc/clickhouse-server/dhparam.pem", BindMode.READ_ONLY);
+  protected void setup(final TestDestinationEnv testEnv) {
+    db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
+        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+            .withEnv("TZ", "UTC")
+            .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
+            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+            .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
+                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+
     db.start();
 
-    LOGGER.info(String.format("Clickhouse server container port mapping: %d -> %d, %d -> %d",
+    LOGGER.info(String.format("Clickhouse server container port mapping: %d -> %d, %d -> %d, %d -> %d, %d -> %d",
         HTTP_PORT, db.getMappedPort(HTTP_PORT),
-        HTTPS_PORT, db.getMappedPort(HTTPS_PORT)));
+        HTTPS_PORT, db.getMappedPort(HTTPS_PORT),
+        NATIVE_PORT, db.getMappedPort(NATIVE_PORT),
+        NATIVE_SECURE_PORT, db.getMappedPort(NATIVE_SECURE_PORT)));
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }
 
-  /**
-   * The SQL script generated by old version of dbt in 'test' step isn't compatible with ClickHouse,
-   * so we skip this test for now.
-   *
-   * Ref: https://github.com/dbt-labs/dbt-core/issues/3905
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testCustomDbtTransformations() throws Exception {
-    super.testCustomDbtTransformations();
-  }
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
 
-  @Disabled
-  public void testCustomDbtTransformationsFailure() throws Exception {}
+    // arrays are not fully supported yet in jdbc driver
+    // https://github.com/ClickHouse/clickhouse-jdbc/blob/master/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
+    if (messagesFilename.contains("array")) {
+      return;
+    }
 
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testIncrementalDedupeSync() throws Exception {
-    super.testIncrementalDedupeSync();
-  }
-
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    super.testSyncWithNormalization(messagesFilename, catalogFilename);
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }

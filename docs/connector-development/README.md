@@ -1,6 +1,6 @@
 # Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
 
@@ -20,7 +20,7 @@ You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https
 
 ## The Airbyte specification
 
-Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 
 ## Adding a new connector
 
@@ -64,7 +64,7 @@ and choose the relevant template by using the arrow keys. This will generate a n
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
 * [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
 * [Building a Python source](tutorials/building-a-python-source.md) 
 * [Building a Python destination](tutorials/building-a-python-destination.md)
 * [Building a Java destination](tutorials/building-a-java-destination.md)
@@ -119,7 +119,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests, publish the connector and bump the connector version
+   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```
@@ -131,17 +131,18 @@ Once you've finished iterating on the changes to a connector as specified in its
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
-5. The new version of the connector is now available for everyone who uses it. Thank you!
+5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
+6. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ### The /publish command
 
 Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
-* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`
+* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`. This can also be a comma-separated list of many connectors, e.g. `connector=connectors/source-s3,connectors/destination-postgres,connectors/source-facebook-marketing`. See the parallel flag below if publishing multiple connectors.
 * **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
 * **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
-* **run-tests** - Defaults to true. Should always run the tests as part of the publish flow so that if tests fail, the connector is not published.
 * **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
 * **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
+* **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
 

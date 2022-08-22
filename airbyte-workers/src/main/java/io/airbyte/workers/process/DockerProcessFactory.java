@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -14,8 +14,8 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class DockerProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
+  private static final int DOCKER_NAME_LEN_LIMIT = 128;
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -77,7 +78,8 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobId,
+  public Process create(final String jobType,
+                        final String jobId,
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
@@ -114,6 +116,9 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
+      final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+      cmd.add("--name");
+      cmd.add(containerName);
 
       if (networkName != null) {
         cmd.add("--network");

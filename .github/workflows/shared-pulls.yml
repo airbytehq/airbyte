@@ -1,0 +1,16 @@
+name: "Shared Pull Requests"
+on:
+  pull_request_target:
+    types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
+
+jobs:
+  shared-pulls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nick-fields/private-action-loader@v3
+        with:
+          pal-repo-token: "${{ secrets.OCTAVIA_PAT }}"
+          pal-repo-name: airbytehq/workflow-actions@production
+          # the following input gets passed to the private action
+          token: "${{ secrets.OCTAVIA_PAT }}"
+          command: "pull"

@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
-from base_python import AirbyteLogger
-from base_singer import BaseSingerSource
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources.singer.source import BaseSingerSource
 from requests import HTTPError
 from tap_zoom.client import ZoomClient
 

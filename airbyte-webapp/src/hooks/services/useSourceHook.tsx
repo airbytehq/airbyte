@@ -2,18 +2,19 @@ import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Source } from "core/domain/connector";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -24,27 +25,27 @@ export const sourcesKeys = {
   detail: (sourceId: string) => [...sourcesKeys.all, "details", sourceId] as const,
 };
 
-type ValuesProps = {
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
   frequency?: string;
-};
-
-type ConnectorProps = { name: string; sourceDefinitionId: string };
-
-function useSourceService(): SourceService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new SourceService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
 }
 
-type SourceList = { sources: Source[] };
+interface ConnectorProps {
+  name: string;
+  sourceDefinitionId: string;
+}
+
+function useSourceService() {
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+}
+
+interface SourceList {
+  sources: SourceRead[];
+}
 
 const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
@@ -55,7 +56,7 @@ const useSourceList = (): SourceList => {
 
 const useGetSource = <T extends string | undefined | null>(
   sourceId: T
-): T extends string ? Source : Source | undefined => {
+): T extends string ? SourceRead : SourceRead | undefined => {
   const service = useSourceService();
 
   return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
@@ -68,19 +69,11 @@ const useCreateSource = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalyticsService();
-
   return useMutation(
-    async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
+    async (createSourcePayload: { values: ValuesProps; sourceConnector: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
-      analyticsService.track("New Source - Action", {
-        action: "Test a connector",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-
       try {
-        // Try to crete source
+        // Try to create source
         const result = await service.create({
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
@@ -88,19 +81,8 @@ const useCreateSource = () => {
           connectionConfiguration: values.connectionConfiguration,
         });
 
-        analyticsService.track("New Source - Action", {
-          action: "Tested connector - success",
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
-
         return result;
       } catch (e) {
-        analyticsService.track("New Source - Action", {
-          action: "Tested connector - failure",
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
         throw e;
       }
     },
@@ -120,13 +102,14 @@ const useDeleteSource = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { source: Source; connectionsWithSource: Connection[] }) => service.delete(payload.source.sourceId),
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+      service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
-        analyticsService.track("Source - Action", {
-          action: "Delete source",
+        analyticsService.track(Namespace.SOURCE, Action.DELETE, {
+          actionDescription: "Source deleted",
           connector_source: ctx.source.sourceName,
-          connector_source_id: ctx.source.sourceDefinitionId,
+          connector_source_definition_id: ctx.source.sourceDefinitionId,
         });
 
         queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));
@@ -174,13 +157,13 @@ const useDiscoverSchema = (
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: JobInfo } | null;
-  catalogId: string;
+  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {
   const service = useSourceService();
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
-  const [catalogId, setCatalogId] = useState<string>("");
+  const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
     status: number;

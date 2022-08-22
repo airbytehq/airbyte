@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -19,74 +20,60 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationCoreConfig;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.SourceCoreConfig;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.OperatorNormalization.Option;
-import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
-import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
-import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.airbyte.workers.temporal.ErrorCode;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -106,8 +93,6 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_DOCKER_REPO = "dstimage";
   private static final String DESTINATION_DOCKER_TAG = "tag";
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
-
-  private static final String OPERATION_NAME = "transfo";
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -130,19 +115,18 @@ class SchedulerHandlerTest {
       .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
 
+  private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("1");
+
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
-  private SecretsRepositoryReader secretsRepositoryReader;
   private SecretsRepositoryWriter secretsRepositoryWriter;
   private Job completedJob;
-  private SchedulerJobClient schedulerJobClient;
   private SynchronousSchedulerClient synchronousSchedulerClient;
   private SynchronousResponse<?> jobResponse;
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
   private EventRunner eventRunner;
-  private FeatureFlags featureFlags;
   private JobConverter jobConverter;
 
   @BeforeEach
@@ -155,36 +139,22 @@ class SchedulerHandlerTest {
     when(completedJob.getConfig().getConfigType()).thenReturn(ConfigType.SYNC);
     when(completedJob.getScope()).thenReturn("sync:123");
 
-    schedulerJobClient = spy(SchedulerJobClient.class);
     synchronousSchedulerClient = mock(SynchronousSchedulerClient.class);
     configRepository = mock(ConfigRepository.class);
-    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
-    final JobNotifier jobNotifier = mock(JobNotifier.class);
     eventRunner = mock(EventRunner.class);
-
-    featureFlags = mock(FeatureFlags.class);
-    when(featureFlags.usesNewScheduler()).thenReturn(false);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
         secretsRepositoryWriter,
-        secretsRepositoryReader,
-        schedulerJobClient,
         synchronousSchedulerClient,
         configurationUpdate,
         jsonSchemaValidator,
         jobPersistence,
-        jobNotifier,
-        mock(WorkflowServiceStubs.class),
-        mock(OAuthConfigSupplier.class),
-        WorkerEnvironment.DOCKER,
-        LogConfigs.EMPTY,
         eventRunner,
-        featureFlags,
         jobConverter);
   }
 
@@ -269,7 +239,6 @@ class SchedulerHandlerTest {
     final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId =
         new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
-    final SynchronousResponse<ConnectorSpecification> specResponse = (SynchronousResponse<ConnectorSpecification>) jobResponse;
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("name")
         .withDockerRepository(SOURCE_DOCKER_REPO)
@@ -588,146 +557,24 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testSyncConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(UUID.randomUUID());
-    final ConnectionIdRequestBody request = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
-    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID()).withSourceId(standardSync.getSourceId());
-    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID())
-        .withDestinationId(standardSync.getDestinationId());
-    final UUID operationId = standardSync.getOperationIds().get(0);
-    final List<StandardSyncOperation> operations = getOperations(standardSync);
-
-    final ActorDefinitionResourceRequirements sourceResourceReqs =
-        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
-            .withDockerRepository(SOURCE_DOCKER_REPO)
-            .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId())
-            .withResourceRequirements(sourceResourceReqs));
-    final ActorDefinitionResourceRequirements destResourceReqs =
-        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
-    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDockerRepository(DESTINATION_DOCKER_REPO)
-            .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId())
-            .withResourceRequirements(destResourceReqs));
-    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
-    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(getOperation(operationId));
-    when(schedulerJobClient.createOrGetActiveSyncJob(
-        source,
-        destination,
-        standardSync,
-        SOURCE_DOCKER_IMAGE,
-        DESTINATION_DOCKER_IMAGE,
-        operations,
-        sourceResourceReqs,
-        destResourceReqs))
-            .thenReturn(completedJob);
-    when(completedJob.getScope()).thenReturn("cat:12");
-    final JobConfig jobConfig = mock(JobConfig.class);
-    when(completedJob.getConfig()).thenReturn(jobConfig);
-    when(jobConfig.getConfigType()).thenReturn(ConfigType.SYNC);
-
-    final JobInfoRead jobStatusRead = schedulerHandler.syncConnection(request);
-
-    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
-    verify(configRepository).getStandardSync(standardSync.getConnectionId());
-    verify(configRepository).getSourceConnection(standardSync.getSourceId());
-    verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createOrGetActiveSyncJob(
-        source,
-        destination,
-        standardSync,
-        SOURCE_DOCKER_IMAGE,
-        DESTINATION_DOCKER_IMAGE,
-        operations,
-        sourceResourceReqs,
-        destResourceReqs);
-  }
-
-  @Test
-  void testResetConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(UUID.randomUUID());
-    final ConnectionIdRequestBody request = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
-    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID()).withSourceId(standardSync.getSourceId());
-    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID())
-        .withDestinationId(standardSync.getDestinationId());
-    final UUID operationId = standardSync.getOperationIds().get(0);
-    final List<StandardSyncOperation> operations = getOperations(standardSync);
-
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
-            .withDockerRepository(SOURCE_DOCKER_REPO)
-            .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
-    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDockerRepository(DESTINATION_DOCKER_REPO)
-            .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
-    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
-    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(getOperation(operationId));
-    when(schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE, operations))
-        .thenReturn(completedJob);
-    when(completedJob.getScope()).thenReturn("cat:12");
-    final JobConfig jobConfig = mock(JobConfig.class);
-    when(completedJob.getConfig()).thenReturn(jobConfig);
-    when(jobConfig.getConfigType()).thenReturn(ConfigType.SYNC);
-
-    final JobInfoRead jobStatusRead = schedulerHandler.resetConnection(request);
-
-    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
-    verify(configRepository).getStandardSync(standardSync.getConnectionId());
-    verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE, operations);
-  }
-
-  @Test
-  void testGetCurrentState() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 1)));
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
-  }
-
-  @Test
-  void testGetCurrentStateEmpty() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.empty());
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
-  }
-
-  @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
-    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
   }
 
   @Test
-  void testNewSchedulerSync() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(featureFlags.usesNewScheduler()).thenReturn(true);
-
+  void testSyncConnection() throws IOException {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+    final ManualOperationResult manualOperationResult = ManualOperationResult
         .builder()
         .failingReason(Optional.empty())
         .jobId(Optional.of(jobId))
         .build();
 
     when(eventRunner.startNewManualSync(connectionId))
-        .thenReturn(manualSyncSubmissionResult);
+        .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
         .when(jobConverter).getJobInfoRead(any());
@@ -737,20 +584,74 @@ class SchedulerHandlerTest {
     verify(eventRunner).startNewManualSync(connectionId);
   }
 
-  private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {
-    if (standardSync.getOperationIds() != null && !standardSync.getOperationIds().isEmpty()) {
-      return List.of(getOperation(standardSync.getOperationIds().get(0)));
-    } else {
-      return List.of();
-    }
+  @Test
+  void testSyncConnectionFailWithOtherSyncRunning() throws IOException {
+    final UUID connectionId = UUID.randomUUID();
+
+    final ManualOperationResult manualOperationResult = ManualOperationResult
+        .builder()
+        .failingReason(Optional.of("another sync running"))
+        .jobId(Optional.empty())
+        .errorCode(Optional.of(ErrorCode.WORKFLOW_RUNNING))
+        .build();
+
+    when(eventRunner.startNewManualSync(connectionId))
+        .thenReturn(manualOperationResult);
+
+    assertThrows(ValueConflictKnownException.class,
+        () -> schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId)));
+
   }
 
-  private static StandardSyncOperation getOperation(final UUID operationId) {
-    return new StandardSyncOperation()
-        .withOperationId(operationId)
-        .withName(OPERATION_NAME)
-        .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+  @Test
+  void testResetConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID connectionId = UUID.randomUUID();
+
+    final long jobId = 123L;
+    final ManualOperationResult manualOperationResult = ManualOperationResult
+        .builder()
+        .failingReason(Optional.empty())
+        .jobId(Optional.of(jobId))
+        .build();
+
+    final List<StreamDescriptor> streamDescriptors = List.of(STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(connectionId))
+        .thenReturn(streamDescriptors);
+
+    when(eventRunner.resetConnection(connectionId, streamDescriptors))
+        .thenReturn(manualOperationResult);
+
+    doReturn(new JobInfoRead())
+        .when(jobConverter).getJobInfoRead(any());
+
+    schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
+  }
+
+  @Test
+  void testCancelJob() throws IOException {
+    final UUID connectionId = UUID.randomUUID();
+    final long jobId = 123L;
+    final Job job = mock(Job.class);
+    when(job.getScope()).thenReturn(connectionId.toString());
+    when(jobPersistence.getJob(jobId)).thenReturn(job);
+
+    final ManualOperationResult manualOperationResult = ManualOperationResult
+        .builder()
+        .failingReason(Optional.empty())
+        .jobId(Optional.of(jobId))
+        .build();
+
+    when(eventRunner.startNewCancellation(connectionId))
+        .thenReturn(manualOperationResult);
+
+    doReturn(new JobInfoRead())
+        .when(jobConverter).getJobInfoRead(any());
+
+    schedulerHandler.cancelJob(new JobIdRequestBody().id(jobId));
+
+    verify(eventRunner).startNewCancellation(connectionId);
   }
 
 }

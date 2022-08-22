@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -40,6 +40,10 @@ public class PostgresDestinationTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
+
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslmode", "require");
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -53,28 +57,30 @@ public class PostgresDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        "ssl", true,
+        "ssl_mode", ImmutableMap.of("mode", "require")));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "ssl", false));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, false));
   }
 
   @BeforeAll
@@ -96,20 +102,20 @@ public class PostgresDestinationTest {
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigNoJdbcParameters());
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
@@ -123,7 +129,7 @@ public class PostgresDestinationTest {
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         buildConfigNoJdbcParameters());
-    assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
+    assertEquals(SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
@@ -148,7 +154,7 @@ public class PostgresDestinationTest {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(config);
+    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),

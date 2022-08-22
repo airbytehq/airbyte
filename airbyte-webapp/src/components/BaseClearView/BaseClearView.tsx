@@ -1,4 +1,6 @@
 import React from "react";
+import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 import Version from "components/Version";
@@ -13,24 +15,28 @@ const Content = styled.div`
   justify-content: space-between;
 `;
 
-const Img = styled.img`
+const LogoImg = styled.img`
   width: 90px;
   height: 94px;
   margin-bottom: 20px;
 `;
 
 const MainInfo = styled.div`
+  min-width: 550px;
   display: flex;
   align-items: center;
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC = (props) => {
+const BaseClearView: React.FC = ({ children }) => {
+  const { formatMessage } = useIntl();
   return (
     <Content>
       <MainInfo>
-        <Img src="/logo.png" alt="logo" />
-        {props.children}
+        <Link to="..">
+          <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
+        </Link>
+        {children}
       </MainInfo>
       <Version />
     </Content>

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -85,7 +85,9 @@ def test_apply_single_resource(patch_click, mocker, resource_was_created):
     if resource_was_created:
         commands.update_resource.assert_called_once_with(resource, force)
         commands.create_resource.assert_not_called()
-        expected_message = "🐙 - my_resource_name exists on your Airbyte instance, let's check if we need to update it!"
+        expected_message = (
+            "🐙 - my_resource_name exists on your Airbyte instance according to your state file, let's check if we need to update it!"
+        )
         expected_message_color = "yellow"
         expected_echo_calls = [mocker.call(commands.click.style.return_value), mocker.call("\n".join(["updated"]))]
     else:

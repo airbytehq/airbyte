@@ -1,15 +1,20 @@
-import { Connection, ConnectionStatus } from "core/domain/connection";
-import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
-import Status from "core/statuses";
-
+import {
+  ConnectionStatus,
+  DestinationDefinitionRead,
+  DestinationRead,
+  JobStatus,
+  SourceDefinitionRead,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "../../core/request/AirbyteClient";
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? Source : Destination,
-  Def extends S extends "source" ? SourceDefinition : DestinationDefinition
->(entities: SoD[], connections: Connection[], definitions: Def[], type: S): EntityTableDataItem[] {
+  SoD extends S extends "source" ? SourceRead : DestinationRead,
+  Def extends S extends "source" ? SourceDefinitionRead : DestinationDefinitionRead
+>(entities: SoD[], connections: WebBackendConnectionRead[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
@@ -41,7 +46,7 @@ export function getEntityTableData<
 
     const connectEntities = entityConnections.map((connection) => ({
       name: connection[connectType]?.name || "",
-      // @ts-ignore ts is not that clever to infer such types
+      // @ts-expect-error ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
       status: connection.status,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
@@ -59,7 +64,7 @@ export function getEntityTableData<
       enabled: true,
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
-      connectEntities: connectEntities,
+      connectEntities,
       connectorIcon: definition?.icon,
     };
   });
@@ -68,9 +73,9 @@ export function getEntityTableData<
 }
 
 export const getConnectionTableData = (
-  connections: Connection[],
-  sourceDefinitions: SourceDefinition[],
-  destinationDefinitions: DestinationDefinition[],
+  connections: WebBackendConnectionRead[],
+  sourceDefinitions: SourceDefinitionRead[],
+  destinationDefinitions: DestinationDefinitionRead[],
   type: "source" | "destination" | "connection"
 ): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
@@ -85,6 +90,7 @@ export const getConnectionTableData = (
 
     return {
       connectionId: connection.connectionId,
+      name: connection.name,
       entityName:
         type === "connection"
           ? `${connection.source?.sourceName} - ${connection.source?.name}`
@@ -92,10 +98,9 @@ export const getConnectionTableData = (
       connectorName:
         type === "connection"
           ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
-          : // @ts-ignore conditional types are not supported here
-            connection[connectType]?.[`${connectType}Name`] || "",
+          : connection[connectType]?.name || "",
       lastSync: connection.latestSyncJobCreatedAt,
-      enabled: connection.status === ConnectionStatus.ACTIVE,
+      enabled: connection.status === ConnectionStatus.active,
       schedule: connection.schedule,
       status: connection.status,
       isSyncing: connection.isSyncing,
@@ -108,20 +113,22 @@ export const getConnectionTableData = (
 
 export const getConnectionSyncStatus = (
   status: ConnectionStatus,
-  lastSyncJobStatus: Status | null
+  lastSyncJobStatus: JobStatus | undefined
 ): ConnectionSyncStatus => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
+  if (status === ConnectionStatus.inactive) {
+    return ConnectionSyncStatus.INACTIVE;
+  }
 
   switch (lastSyncJobStatus) {
-    case Status.SUCCEEDED:
+    case JobStatus.succeeded:
       return ConnectionSyncStatus.ACTIVE;
 
-    case Status.FAILED:
-    case Status.CANCELLED:
+    case JobStatus.failed:
+    case JobStatus.cancelled:
       return ConnectionSyncStatus.FAILED;
 
-    case Status.PENDING:
-    case Status.RUNNING:
+    case JobStatus.pending:
+    case JobStatus.running:
       return ConnectionSyncStatus.PENDING;
 
     default:

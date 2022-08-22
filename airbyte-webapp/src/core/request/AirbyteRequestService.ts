@@ -1,15 +1,29 @@
 import merge from "lodash/merge";
 
+import { ApiOverrideRequestOptions } from "./apiOverride";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
-  constructor(protected rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
+  private readonly rootUrl: string;
+
+  constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
+    // Remove the `/v1/` at the end of the URL if it exists, during the transition period
+    // to remove it from all cloud environments
+    this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
+  }
+
+  protected get requestOptions(): ApiOverrideRequestOptions {
+    return {
+      config: { apiUrl: this.rootUrl },
+      middlewares: this.middlewares,
+    };
+  }
 
   /** Perform network request */
   public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
-    const path = `${this.rootUrl}${url}`;
+    const path = `${this.rootUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 
     const requestOptions: RequestInit = merge(
       {
@@ -45,8 +59,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
       return await response.json();
     }
 
-    // @ts-ignore needs refactoring of services
-    // TODO: refactor
+    // @ts-expect-error TODO: needs refactoring of services
     return response;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,4 +82,4 @@ async function parseResponse<T>(response: Response): Promise<T> {
   throw new CommonRequestError(response, resultJsonResponse?.message);
 }
 
-export { AirbyteRequestService, parseResponse };
+export { AirbyteRequestService };

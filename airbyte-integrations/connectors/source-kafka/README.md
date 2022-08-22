@@ -43,16 +43,10 @@ We use `JUnit` for Java tests.
 Place unit tests under `src/test/io/airbyte/integrations/source/kafka`.
 
 #### Acceptance Tests
-Airbyte has a standard test suite that all destination connectors must pass. Implement the `TODO`s in
-`src/test-integration/java/io/airbyte/integrations/source/KafkaSourceAcceptanceTest.java`.
+Airbyte has a standard test suite that all source connectors must pass.
 
 ### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
-```
-./gradlew :airbyte-integrations:connectors:source-kafka:unitTest
-```
-To run acceptance and custom integration tests:
+All commands should be run from airbyte project root. To run acceptance and custom integration tests:
 ```
 ./gradlew :airbyte-integrations:connectors:source-kafka:integrationTest
 ```

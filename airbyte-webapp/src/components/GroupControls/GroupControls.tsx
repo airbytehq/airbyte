@@ -3,17 +3,13 @@ import styled from "styled-components";
 
 import { Label, TextWithHTML } from "components";
 
-const GroupTitle = styled.div`
+const GroupTitle = styled.div<{ $fullWidthTitle: boolean }>`
   margin-top: -23px;
   background: ${({ theme }) => theme.whiteColor};
   padding: 0 5px;
   display: inline-block;
   vertical-align: middle;
-
-  & > div {
-    min-width: 180px;
-    display: inline-block;
-  }
+  width: ${({ $fullWidthTitle }) => ($fullWidthTitle ? "100%" : "auto")};
 `;
 
 const FormGroup = styled.div`
@@ -24,16 +20,23 @@ const FormGroup = styled.div`
   padding: 0 20px;
 `;
 
-type GroupControlsProps = {
+interface GroupControlsProps {
   title: React.ReactNode;
   description?: string;
   name?: string;
-};
+  fullWidthTitle?: boolean;
+}
 
-const GroupControls: React.FC<GroupControlsProps> = ({ title, description, children, name }) => {
+const GroupControls: React.FC<GroupControlsProps> = ({
+  title,
+  description,
+  children,
+  name,
+  fullWidthTitle = false,
+}) => {
   return (
     <FormGroup data-testid={name}>
-      <GroupTitle>{title}</GroupTitle>
+      <GroupTitle $fullWidthTitle={fullWidthTitle}>{title}</GroupTitle>
       {description && <Label message={<TextWithHTML text={description} />} />}
       {children}
     </FormGroup>

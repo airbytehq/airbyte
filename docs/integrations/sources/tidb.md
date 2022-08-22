@@ -55,7 +55,7 @@ GRANT SELECT ON <database name>.* TO 'airbyte'@'%';
 
 Your database user should now be ready for use with Airbyte.
 
-## Connection via SSH Tunnel
+### Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a TiDB instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
 
@@ -73,7 +73,7 @@ Using this feature requires additional configuration, when creating the source. 
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` TiDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
-### Data type mapping
+## Data type mapping
 
 [TiDB data types](https://docs.pingcap.com/tidb/stable/data-type-overview) are mapped to the following data types when synchronizing data:
 
@@ -116,9 +116,20 @@ Using this feature requires additional configuration, when creating the source. 
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination.
 
+## External resources
+
+Now that you have set up the TiDB source connector, check out the following TiDB tutorial:
+
+- [Using Airbyte to Migrate Data from TiDB Cloud to Snowflake](https://en.pingcap.com/blog/using-airbyte-to-migrate-data-from-tidb-cloud-to-snowflake/)
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | ------- |
+| 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
+| 0.1.5 | 2022-07-25 | [14996](https://github.com/airbytehq/airbyte/pull/14996) | Removed additionalProperties:false from spec |
+| 0.1.4 | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
+| 0.1.3 | 2022-07-04 | [14243](https://github.com/airbytehq/airbyte/pull/14243) | Update JDBC string builder |
+| 0.1.2 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.1   | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.1.0   | 2022-04-19 | [11283](https://github.com/airbytehq/airbyte/pull/11283) | Initial Release |

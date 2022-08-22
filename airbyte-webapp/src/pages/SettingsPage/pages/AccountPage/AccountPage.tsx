@@ -19,7 +19,13 @@ const AccountPage: React.FC = () => {
   } = useWorkspaceEditor();
 
   const onSubmit = async (data: { email: string }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({
+      ...workspace,
+      ...data,
+      news: !!workspace.news,
+      anonymousDataCollection: !!workspace.anonymousDataCollection,
+      securityUpdates: !!workspace.securityUpdates,
+    });
   };
 
   return (
@@ -28,7 +34,7 @@ const AccountPage: React.FC = () => {
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
         <Content>
           <AccountForm
-            email={workspace.email}
+            email={workspace.email ?? ""}
             onSubmit={onSubmit}
             errorMessage={errorMessage}
             successMessage={successMessage}

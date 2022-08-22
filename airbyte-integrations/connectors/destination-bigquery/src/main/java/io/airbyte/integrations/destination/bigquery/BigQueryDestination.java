@@ -1,14 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.Objects.isNull;
-
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
@@ -48,6 +46,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,11 +92,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
-        // this is not currently possible because using the Storage class to check perms requires
-        // a service account key, and the GCS destination does not accept a Service Account Key,
-        // only an HMAC key
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkStorageIamPermissions(config);
+        final AirbyteConnectionStatus airbyteConnectionStatus = checkGcsPermission(config);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -110,47 +105,52 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
       }
     } catch (final Exception e) {
-      LOGGER.info("Check failed.", e);
+      LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
-  public AirbyteConnectionStatus checkStorageIamPermissions(final JsonNode config) {
+  /**
+   * This method does two checks: 1) permissions related to the bucket, and 2) the ability to create
+   * and delete an actual file. The latter is important because even if the service account may have
+   * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
+   */
+  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    final List<String> missingPermissions = new ArrayList<>();
 
     try {
-      final ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
-
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
           .build().getService();
       final List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
-      final List<String> missingPermissions = StreamUtils
+      missingPermissions.addAll(StreamUtils
           .zipWithIndex(permissionsCheckStatusList.stream())
           .filter(i -> !i.getValue())
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
-          .toList();
+          .toList());
 
-      if (!missingPermissions.isEmpty()) {
-        LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
-        // if user or service account has a conditional binding for processing handling in the GCS bucket,
-        // testIamPermissions will not work properly, so we use the standard check method of GCS destination
-        final GcsDestination gcsDestination = new GcsDestination();
-        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
-        return gcsDestination.check(gcsJsonNodeConfig);
-
-      }
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-
+      final GcsDestination gcsDestination = new GcsDestination();
+      final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+      return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+      final StringBuilder message = new StringBuilder("Cannot access the GCS bucket.");
+      if (!missingPermissions.isEmpty()) {
+        message.append(" The following permissions are missing on the service account: ")
+            .append(String.join(", ", missingPermissions))
+            .append(".");
+      }
+      message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
+
+      LOGGER.error(message.toString(), e);
 
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
+          .withMessage("Could access the GCS bucket with the provided configuration.\n" + e
               .getMessage());
     }
   }
@@ -160,15 +160,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     try {
       final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-      ServiceAccountCredentials credentials = null;
-      if (BigQueryUtils.isUsingJsonCredentials(config)) {
-        // handle the credentials json being passed as a json object or a json object already serialized as
-        // a string.
-        credentials = getServiceAccountCredentials(config);
-      }
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
           .build()
           .getService();
     } catch (final IOException e) {
@@ -176,14 +171,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ServiceAccountCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    final ServiceAccountCredentials credentials;
+  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+      LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
+      LOGGER.info("Using the default service account credential from environment.");
+      return GoogleCredentials.getApplicationDefault();
+    }
+
+    // The JSON credential can either be a raw JSON object, or a serialized JSON object.
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    return credentials;
+    return GoogleCredentials.fromStream(
+        new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -13,7 +13,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.bigquery.BigQuerySourceOperations;
@@ -60,7 +59,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode config) {
     dbConfig = Jsons.clone(config);
-    return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
   }
 
   @Override
@@ -139,12 +138,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
                                                                final String tableName,
                                                                final String cursorField,
                                                                final StandardSQLTypeName cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
         cursorField),
-        sourceOperations.getQueryParameter(cursorFieldType, cursor));
+        sourceOperations.getQueryParameter(cursorFieldType, cursorValue));
   }
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
@@ -175,5 +174,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", BigQuerySource.class);
   }
+
+  @Override
+  public void close() throws Exception {}
 
 }

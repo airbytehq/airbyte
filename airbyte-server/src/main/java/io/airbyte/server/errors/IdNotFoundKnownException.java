@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.NotFoundKnownExceptionInfo;
+import io.airbyte.api.model.generated.NotFoundKnownExceptionInfo;
 import org.apache.logging.log4j.core.util.Throwables;
 
 public class IdNotFoundKnownException extends KnownException {

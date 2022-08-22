@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
@@ -19,10 +19,9 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
@@ -37,6 +36,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   private final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final String database = "test";
   private static MSSQLServerContainer<?> db;
+  private static final Network network = Network.newNetwork();
   private final SshBastionContainer bastion = new SshBastionContainer();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
@@ -48,7 +48,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName));
   }
 
   @Override
@@ -105,29 +105,16 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
-    return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
-            .getIpAddress()))
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
-        .put("database", database)
-        .put("schema", schemaName)
-        .put("ssl", false);
-  }
-
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
+    return new Database(dslContext);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
@@ -135,8 +122,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -156,8 +143,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
     SshTunnel.sshWrap(
         getConfig(),
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
@@ -170,13 +157,13 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
-        .withNetwork(bastion.getNetWork())
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-CU16-ubuntu-20.04")
+        .withNetwork(network)
         .acceptLicense();
     db.start();
   }

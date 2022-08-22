@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -21,12 +21,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
@@ -39,6 +42,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,10 +58,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MSSQLServerContainer<?> container;
 
   private String dbName;
+  private String dbNamewithDot;
   private Database database;
   private JdbcDatabase testJdbcDatabase;
   private MssqlSource source;
   private JsonNode config;
+  private DSLContext dslContext;
+  private DataSource dataSource;
+  private DataSource testDataSource;
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -73,36 +82,47 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     container.start();
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
+        .put("replication", replicationConfig)
         .build());
 
-    database = Databases.createDatabase(
+    dataSource = DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
         DRIVER_CLASS,
-        null);
+        String.format("jdbc:sqlserver://%s:%d",
+            container.getHost(),
+            container.getFirstMappedPort()));
 
-    testJdbcDatabase = Databases.createJdbcDatabase(
+    testDataSource = DataSourceFactory.create(
         TEST_USER_NAME,
         TEST_USER_PASSWORD,
-        String.format("jdbc:sqlserver://%s:%s",
+        DRIVER_CLASS,
+        String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()),
-        DRIVER_CLASS);
+            container.getFirstMappedPort()));
+
+    dslContext = DSLContextFactory.create(dataSource, null);
+
+    database = new Database(dslContext);
+
+    testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("CREATE DATABASE [" + dbNamewithDot + "];");
     switchSnapshotIsolation(true, dbName);
   }
 
@@ -141,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
-    executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
+    executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);
   }
 
   @Override
@@ -203,7 +223,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @AfterEach
   public void tearDown() {
     try {
-      database.close();
+      dslContext.close();
+      DataSourceFactory.close(dataSource);
+      DataSourceFactory.close(testDataSource);
       container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -254,6 +276,20 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertThrows(RuntimeException.class, () -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
+  @Test
+  void testAssertSnapshotIsolationDisabled() {
+    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_type", "CDC")
+        .put("data_to_sync", "New Changes Only")
+        // set snapshot_isolation level to "Read Committed" to disable snapshot
+        .put("snapshot_isolation", "Read Committed")
+        .build());
+    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+    switchSnapshotIsolation(false, dbName);
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+  }
+
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
   @Test
@@ -278,6 +314,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     switchSnapshotIsolation(false, dbName);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+  }
+
+  @Test
+  void testCdcCheckOperationsWithDot() throws Exception {
+    // assertCdcEnabledInDb and validate escape with special character
+    switchCdcOnDatabase(true, dbNamewithDot);
+    AirbyteConnectionStatus status = getSource().check(getConfig());
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   // todo: check LSN returned is actually the max LSN
@@ -309,17 +353,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
-    final JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName),
-        DRIVER_CLASS,
-        AdaptiveStreamingQueryConfig::new,
-        Maps.newHashMap(),
-        new MssqlSourceOperations());
+    final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DRIVER_CLASS,
+            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                dbName)),
+        new MssqlSourceOperations(),
+        AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 

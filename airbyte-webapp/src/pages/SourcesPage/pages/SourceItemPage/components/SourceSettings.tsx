@@ -1,33 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Source } from "core/domain/connector";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-const Content = styled.div`
-  max-width: 813px;
-  margin: 18px auto;
-`;
+import styles from "./SourceSettings.module.scss";
 
-type IProps = {
-  currentSource: Source;
-  connectionsWithSource: Connection[];
-};
+interface SourceSettingsProps {
+  currentSource: SourceRead;
+  connectionsWithSource: WebBackendConnectionRead[];
+}
 
-const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {
+const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
 
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
-  const sourceDefinition = useSourceDefinition(currentSource?.sourceDefinitionId);
+  const sourceDefinition = useSourceDefinition(currentSource.sourceDefinitionId);
 
   const onSubmit = async (values: {
     name: string;
@@ -42,7 +47,7 @@ const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource
   const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
-    <Content>
+    <div className={styles.content}>
       <ConnectorCard
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
@@ -57,7 +62,7 @@ const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
-    </Content>
+    </div>
   );
 };
 

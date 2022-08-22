@@ -289,10 +289,45 @@
               "examples": ["2017-01-26T00:00:00Z"],
               "type": "string",
               "format": "date-time"
+            },
+            "insights_lookback_window": {
+              "title": "Custom Insights Lookback Window",
+              "description": "The attribution window",
+              "default": 28,
+              "maximum": 28,
+              "mininum": 1,
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name"]
         }
+      },
+      "page_size": {
+        "title": "Page Size of Requests",
+        "description": "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        "default": 100,
+        "order": 7,
+        "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "insights_lookback_window": {
+        "title": "Insights Lookback Window",
+        "description": "The attribution window",
+        "default": 28,
+        "order": 8,
+        "maximum": 28,
+        "mininum": 1,
+        "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "max_batch_size": {
+        "title": "Maximum size of Batched Requests",
+        "description": "Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        "default": 50,
+        "order": 9,
+        "exclusiveMinimum": 0,
+        "type": "integer"
       }
     },
     "required": ["account_id", "start_date", "access_token"]

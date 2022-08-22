@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: postgres-source
-          image: postgres:13-alpine
+          image: debezium/postgres:13-alpine
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 5432

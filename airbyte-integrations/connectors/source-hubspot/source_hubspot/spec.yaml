@@ -10,7 +10,7 @@ connectionSpecification:
   properties:
     start_date:
       type: string
-      title: Start Date
+      title: Start date
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
@@ -18,12 +18,12 @@ connectionSpecification:
       examples:
         - "2017-01-25T00:00:00Z"
     credentials:
-      title: Authentication mechanism
+      title: Authentication
       description: Choose how to authenticate to HubSpot.
       type: object
       oneOf:
         - type: object
-          title: Authenticate via HubSpot (OAuth)
+          title: OAuth
           required:
             - client_id
             - client_secret
@@ -32,25 +32,24 @@ connectionSpecification:
           properties:
             credentials_title:
               type: string
-              title: Credentials Title
-              description: Name of the credentials set
+              title: Credentials
+              description: Name of the credentials
               const: OAuth Credentials
               order: 0
             client_id:
               title: Client ID
               description: >-
-                The Client ID of your HubSpot developer application. See our <a
-                href="https://docs.airbyte.io/integrations/sources/hubspot#getting-started">docs</a>
-                if you need help finding this id.
+                The Client ID of your HubSpot developer application. See the <a
+                href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
+                if you need help finding this ID.
               type: string
               examples:
                 - "123456789000"
             client_secret:
               title: Client Secret
               description: >-
-                The Client Secret of your HubSpot developer application. See our
-                <a
-                href="https://docs.airbyte.io/integrations/sources/hubspot#getting-started">docs</a>
+                The client secret for your HubSpot developer application. See the <a
+                href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
                 if you need help finding this secret.
               type: string
               examples:
@@ -59,9 +58,9 @@ connectionSpecification:
             refresh_token:
               title: Refresh Token
               description: >-
-                Refresh Token to renew the expired Access Token. See our <a
-                href="https://docs.airbyte.io/integrations/sources/hubspot#getting-started">docs</a>
-                if you need help generating the token.
+                Refresh token to renew an expired access token. See the <a
+                href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
+                if you need help finding this token.
               type: string
               examples:
                 - refresh_token
@@ -74,16 +73,36 @@ connectionSpecification:
           properties:
             credentials_title:
               type: string
-              title: Credentials title
+              title: Credentials
               description: Name of the credentials set
               const: API Key Credentials
               order: 0
             api_key:
               title: API key
               description: >-
-                HubSpot API Key. See our <a
-                href="https://docs.airbyte.io/integrations/sources/hubspot#getting-started">docs</a>
+                HubSpot API Key. See the <a
+                href="https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key">Hubspot docs</a>
                 if you need help finding this key.
+              type: string
+              airbyte_secret: true
+        - type: object
+          title: Private APP
+          required:
+            - access_token
+            - credentials_title
+          properties:
+            credentials_title:
+              type: string
+              title: Credentials
+              description: Name of the credentials set
+              const: Private App Credentials
+              order: 0
+            access_token:
+              title: Access token
+              description: >-
+                HubSpot Access token. See the <a
+                href="https://developers.hubspot.com/docs/api/private-apps">Hubspot docs</a>
+                if you need help finding this token.
               type: string
               airbyte_secret: true
 authSpecification:

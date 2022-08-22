@@ -10,7 +10,6 @@
     "title": "GCS Destination Spec",
     "type": "object",
     "required": ["gcs_bucket_name", "gcs_bucket_path", "credential", "format"],
-    "additionalProperties": false,
     "properties": {
       "gcs_bucket_name": {
         "title": "GCS Bucket Name",
@@ -226,13 +225,6 @@
                     }
                   }
                 ]
-              },
-              "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload (Optional)",
-                "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
-                "type": "integer",
-                "default": 5,
-                "examples": [5]
               }
             }
           },
@@ -251,13 +243,6 @@
                 "description": "Whether the input JSON data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
-              },
-              "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload (Optional)",
-                "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
-                "type": "integer",
-                "default": 5,
-                "examples": [5]
               },
               "compression": {
                 "title": "Compression",
@@ -298,13 +283,6 @@
                 "type": "string",
                 "enum": ["JSONL"],
                 "default": "JSONL"
-              },
-              "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload (Optional)",
-                "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
-                "type": "integer",
-                "default": 5,
-                "examples": [5]
               },
               "compression": {
                 "title": "Compression",

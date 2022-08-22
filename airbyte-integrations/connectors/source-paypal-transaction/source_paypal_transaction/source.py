@@ -1,20 +1,25 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import json
 import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from dateutil.parser import isoparse
+
+from .utils import middle_date_slices
 
 
 class PaypalHttpException(Exception):
@@ -27,15 +32,19 @@ class PaypalHttpException(Exception):
         message = repr(self.error)
 
         if self.error.response.content:
-            content = self.error.response.content.decode()
-            try:
-                details = json.loads(content)
-            except json.decoder.JSONDecodeError:
-                details = content
-
+            details = self.error_message()
             message = f"{message} Details: {details}"
 
         return message
+
+    def error_message(self):
+        content = self.error.response.content.decode()
+        try:
+            details = json.loads(content)
+        except json.decoder.JSONDecodeError:
+            details = content
+
+        return details
 
     def __repr__(self):
         return self.__str__()
@@ -43,10 +52,9 @@ class PaypalHttpException(Exception):
 
 def get_endpoint(is_sandbox: bool = False) -> str:
     if is_sandbox:
-        endpoint = "https://api-m.sandbox.paypal.com"
-    else:
-        endpoint = "https://api-m.paypal.com"
-    return endpoint
+        return "https://api-m.sandbox.paypal.com"
+
+    return "https://api-m.paypal.com"
 
 
 class PaypalTransactionStream(HttpStream, ABC):
@@ -71,9 +79,13 @@ class PaypalTransactionStream(HttpStream, ABC):
     # API limit: (now() - start_date_min) <= start_date <= end_date <= last_refreshed_datetime <= now
     start_date_min: Mapping[str, int] = {"days": 3 * 365}  # API limit - 3 years
     last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the most resent possible start_date
-    stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
+    stream_slice_period: Mapping[str, int] = {"days": 15}  # max period is 31 days (API limit)
 
     requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
+    # if the stream has nested cursor_field, we should trry to unnest it once parsing the recods to avoid normalization conflicts.
+    unnest_cursor: bool = False
+    unnest_pk: bool = False
+    nested_object: str = None
 
     def __init__(
         self,
@@ -148,10 +160,24 @@ class PaypalTransactionStream(HttpStream, ABC):
             # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
             # convert any date format to python iso format string for date based cursors
             self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
+            # unnest cursor_field to handle normalization correctly
+            if self.unnest_cursor:
+                self.unnest_field(record, self.nested_object, self.cursor_field)
+            # unnest primary_key to handle normalization correctly
+            if self.unnest_pk:
+                self.unnest_field(record, self.nested_object, self.primary_key)
             yield record
 
         # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
         time.sleep(60 / self.requests_per_minute)
+
+    @staticmethod
+    def unnest_field(record: Mapping[str, Any], unnest_from: Dict, cursor_field: str):
+        """
+        Unnest cursor_field to the root level of the record.
+        """
+        if unnest_from in record:
+            record[cursor_field] = record.get(unnest_from).get(cursor_field)
 
     @staticmethod
     def update_field(record: Mapping[str, Any], field_path: Union[List[str], str], update: Callable[[Any], None]):
@@ -177,6 +203,11 @@ class PaypalTransactionStream(HttpStream, ABC):
                 return None
 
         return data
+
+    @staticmethod
+    def max_records_in_response_reached(exception: Exception, **kwargs):
+        message = exception.error_message()
+        return message.get("name") == "RESULTSET_TOO_LARGE"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
@@ -252,6 +283,59 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return slices
 
+    def _prepared_request(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Optional[dict] = None
+    ):
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        return request, request_kwargs
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            request, request_kwargs = self._prepared_request(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
+
+            try:
+                response = self._send_request(request, request_kwargs)
+            except PaypalHttpException as exception:
+                if self.max_records_in_response_reached(exception):
+                    date_slices = middle_date_slices(stream_slice)
+                    if date_slices:
+                        for date_slice in date_slices:
+                            yield from self.read_records(
+                                sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                            )
+                        break
+                    else:
+                        raise exception
+
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
             return super()._send_request(request, request_kwargs)
@@ -266,8 +350,15 @@ class Transactions(PaypalTransactionStream):
     """
 
     data_field = "transaction_details"
-    primary_key = [["transaction_info", "transaction_id"]]
-    cursor_field = ["transaction_info", "transaction_initiation_date"]
+    nested_object = "transaction_info"
+
+    primary_key = "transaction_id"
+    cursor_field = "transaction_initiation_date"
+
+    unnest_cursor = True
+    unnest_pk = True
+
+    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
 
     # TODO handle API error when 1 request returns more than 10000 records.
     # https://github.com/airbytehq/airbyte/issues/4404
@@ -300,6 +391,15 @@ class Transactions(PaypalTransactionStream):
             "page": page_number,
         }
 
+    @transformer.registerCustomTransform
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        if isinstance(original_value, str) and field_schema["type"] == "number":
+            return float(original_value)
+        elif isinstance(original_value, str) and field_schema["type"] == "integer":
+            return int(original_value)
+        else:
+            return original_value
+
 
 class Balances(PaypalTransactionStream):
     """Get account balance on a specific date
@@ -326,39 +426,67 @@ class Balances(PaypalTransactionStream):
 
 class PayPalOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
-    curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
-      -H "Accept: application/json" \
-      -H "Accept-Language: en_US" \
-      -u "CLIENT_ID:SECRET" \
-      -d "grant_type=client_credentials"
+    For `old_config` scenario:
+        curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
+        -H "Accept: application/json" \
+        -H "Accept-Language: en_US" \
+        -u "CLIENT_ID:SECRET" \
+        -d "grant_type=client_credentials"
     """
 
-    def __init__(self, config):
-        super().__init__(
-            token_refresh_endpoint=f"{get_endpoint(config['is_sandbox'])}/v1/oauth2/token",
-            client_id=config["client_id"],
-            client_secret=config["secret"],
-            refresh_token="",
-        )
+    def __init__(self, config: Dict):
+        self.old_config: bool = False
+        # default auth args
+        self.auth_args: Dict = {
+            "token_refresh_endpoint": f"{get_endpoint(config['is_sandbox'])}/v1/oauth2/token",
+            "refresh_token": "",
+        }
+        # support old configs
+        if "client_id" and "secret" in config.keys():
+            self.old_config = True
+            self.auth_args.update(**{"client_id": config["client_id"], "client_secret": config["secret"]})
+        # new configs
+        if "credentials" in config.keys():
+            credentials = config.get("credentials")
+            auth_type = credentials.get("auth_type")
+            self.auth_args.update(**{"client_id": credentials["client_id"], "client_secret": credentials["client_secret"]})
+            if auth_type == "oauth2.0":
+                self.auth_args["refresh_token"] = credentials["refresh_token"]
+            elif auth_type == "private_oauth":
+                self.old_config = True
+
+        self.config = config
+        super().__init__(**self.auth_args)
+
+    def get_headers(self):
+        # support old configs
+        if self.old_config:
+            return {"Accept": "application/json", "Accept-Language": "en_US"}
+        # new configs
+        basic_auth = base64.b64encode(bytes(f"{self.client_id}:{self.client_secret}", "utf-8")).decode("utf-8")
+        return {"Authorization": f"Basic {basic_auth}"}
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        return {"grant_type": "client_credentials"}
+        # support old configs
+        if self.old_config:
+            return {"grant_type": "client_credentials"}
+        # new configs
+        return {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
+        request_args = {
+            "url": self.token_refresh_endpoint,
+            "data": self.get_refresh_request_body(),
+            "headers": self.get_headers(),
+        }
         try:
-            data = "grant_type=client_credentials"
-            headers = {"Accept": "application/json", "Accept-Language": "en_US"}
-            auth = (self.client_id, self.client_secret)
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=data,
-                headers=headers,
-                auth=auth,
-            )
+            # support old configs
+            if self.old_config:
+                request_args["auth"] = (self.client_id, self.client_secret)
+            response = requests.post(**request_args)
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]

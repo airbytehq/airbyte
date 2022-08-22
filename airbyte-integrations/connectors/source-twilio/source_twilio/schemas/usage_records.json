@@ -62,7 +62,7 @@
       "type": ["null", "number"]
     },
     "start_date": {
-      "format": "date",
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "count_unit": {

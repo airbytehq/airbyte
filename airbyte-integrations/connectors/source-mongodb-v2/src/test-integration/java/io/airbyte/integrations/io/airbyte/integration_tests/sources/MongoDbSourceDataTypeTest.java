@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -69,27 +70,27 @@ public class MongoDbSourceDataTypeTest {
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
-    String connectionString = String.format("mongodb://%s:%s/",
+    final String connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
-        .put("host", mongoDBContainer.getHost())
-        .put("port", mongoDBContainer.getFirstMappedPort())
-        .put("tls", false)
+        .put(JdbcUtils.HOST_KEY, mongoDBContainer.getHost())
+        .put(JdbcUtils.PORT_KEY, mongoDBContainer.getFirstMappedPort())
+        .put(JdbcUtils.TLS_KEY, false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
-        .put("database", "test")
+        .put(JdbcUtils.DATABASE_KEY, "test")
         .put("auth_source", "admin")
         .build());
 
     database = new MongoDatabase(connectionString, "test");
     database.createCollection("acceptance_test");
 
-    BsonDocument bsonDocument = new BsonDocument()
+    final BsonDocument bsonDocument = new BsonDocument()
         .append("_id", new BsonObjectId(new ObjectId("61703280f3ca180ab088b574")))
         .append("boolean", BsonBoolean.TRUE)
         .append("int32", new BsonInt32(Integer.MAX_VALUE))

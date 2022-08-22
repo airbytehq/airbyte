@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -135,12 +135,23 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
-        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        """
+        When the connector gets a custom report which has unknown metric(s) or dimension(s)
         and API returns an error with 400 code, the connector ignores an error with 400 code
-        to finish successfully sync and inform the user about an error in logs with an error message."""
+        to finish successfully sync and inform the user about an error in logs with an error message.
+
+        When the daily request limit reached, the connector ignores an error with 429 code and
+        'has exceeded the daily request limit' error massage to finish successfully sync and
+        inform the user about an error in logs with an error message and link to google analytics docs.
+        """
 
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
+            self._raise_on_http_errors = False
+
+        elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
+            rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
+            self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
 
         result: bool = HttpStream.should_retry(self, response)
@@ -181,7 +192,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "properties": {
                 "view_id": {"type": ["string"]},
             },
@@ -209,7 +220,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             if data_format:
                 metric_data["format"] = data_format
             schema["properties"][metric] = metric_data
-
+        schema["properties"]["isDataGolden"] = {"type": "boolean"}
         return schema
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -226,14 +237,15 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
-        today = pendulum.now().date()
+        end_date = pendulum.now().date()
         start_date = pendulum.parse(self.start_date).date()
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
-            start_date = prev_end_date.add(days=1)
-        end_date = today
-        if start_date > end_date:
-            return [None]
+            start_date = prev_end_date.add(days=1)  # do not include previous `end_date`
+        # always resync 2 previous days to be sure data is golden
+        # https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article
+        # https://github.com/airbytehq/airbyte/issues/12013#issuecomment-1111255503
+        start_date = start_date.subtract(days=2)
 
         date_slices = []
         slice_start_date = start_date
@@ -261,7 +273,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     # strings
                     return "string"
 
+                elif attribute.startswith("ga:dateHourMinute"):
+                    return "integer"
+
                 attr_type = self.dimensions_ref[attribute]
+
             elif field_type == "metric":
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as strings as we can not be sure of their data type
@@ -403,11 +419,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                         record[metric_name.replace("ga:", "ga_")] = value
 
                 record["view_id"] = self.view_id
-
+                record["isDataGolden"] = report.get("data", {}).get("isDataGolden", False)
                 yield record
 
     def check_for_sampled_result(self, data: Mapping) -> None:
-        if not data.get("isDataGolden", True):
+        if not data.get("isDataGolden", False):
             self.logger.warning(DATA_IS_NOT_GOLDEN_MSG)
         if data.get("samplesReadCounts", False):
             self.logger.warning(RESULT_IS_SAMPLED_MSG)

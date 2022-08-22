@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.formatter;
@@ -49,6 +49,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private static final String ANY_OF_FIELD = "anyOf";
   private static final String ARRAY_ITEMS_FIELD = "items";
   private static final String FORMAT_FIELD = "format";
+  private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final String REF_DEFINITION_KEY = "$ref";
   private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -84,8 +85,9 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
                 if (type.isArray()) {
                   final ArrayNode typeNode = (ArrayNode) type;
                   for (final JsonNode arrayTypeNode : typeNode) {
-                    if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array"))
+                    if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
                       return true;
+                    }
                   }
                 } else if (type.isTextual()) {
                   return jsonNode.asText().equals("array");
@@ -236,10 +238,10 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   /**
    * @param properties - JSON schema with properties
-   *
+   *        <p>
    *        The method is responsible for population of fieldsContainRefDefinitionValue set with keys
    *        contain $ref definition
-   *
+   *        <p>
    *        Currently, AirByte doesn't support parsing value by $ref key definition. The issue to
    *        track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
    */
@@ -291,6 +293,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
     JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
+    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
       final JsonSchemaType fieldType = fieldTypes.get(i);
@@ -304,8 +307,15 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           case NULL -> {
             builder.setType(StandardSQLTypeName.STRING);
           }
-          case STRING, NUMBER, INTEGER, BOOLEAN -> {
+          case STRING, INTEGER, BOOLEAN -> {
             builder.setType(primaryType.getBigQueryType());
+          }
+          case NUMBER -> {
+            if (airbyteType != null && airbyteType.asText().equals("big_integer")) {
+              builder.setType(StandardSQLTypeName.INT64);
+            } else {
+              builder.setType(primaryType.getBigQueryType());
+            }
           }
           case ARRAY -> {
             final JsonNode items;
@@ -347,7 +357,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     // If a specific format is defined, use their specific type instead of the JSON's one
     final JsonNode fieldFormat = updatedFileDefinition.get(FORMAT_FIELD);
     if (fieldFormat != null) {
-      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
+      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText(),
+          (airbyteType != null ? airbyteType.asText() : null));
       if (schemaFormat != null) {
         builder.setType(schemaFormat.getBigQueryType());
       }

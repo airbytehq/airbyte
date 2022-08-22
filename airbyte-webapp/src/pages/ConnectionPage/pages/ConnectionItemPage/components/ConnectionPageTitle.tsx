@@ -1,90 +1,93 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { H6, Link } from "components";
+import { H6 } from "components";
+import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
-import { Source, Destination } from "core/domain/connector/types";
+import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import useRouter from "hooks/useRouter";
 
-import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
+import ConnectionName from "./ConnectionName";
+import styles from "./ConnectionPageTitle.module.scss";
+import { StatusMainInfo } from "./StatusMainInfo";
 
-type IProps = {
-  source: Source;
-  destination: Destination;
+interface ConnectionPageTitleProps {
+  source: SourceRead;
+  destination: DestinationRead;
+  connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
-};
+  onStatusUpdating?: (updating: boolean) => void;
+}
 
-const Title = styled.div`
-  text-align: center;
-  padding: 21px 0 10px;
-`;
-
-const Links = styled.div`
-  margin-bottom: 18px;
-  font-size: 15px;
-  font-weight: bold;
-`;
-
-const ConnectorsLink = styled(Link)`
-  font-style: normal;
-  font-weight: bold;
-  font-size: 24px;
-  line-height: 29px;
-  text-align: center;
-  display: inline-block;
-  margin: 0 16px;
-  color: ${({ theme }) => theme.textColor};
-`;
-
-const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentStep }) => {
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
+  source,
+  destination,
+  connection,
+  currentStep,
+  onStatusUpdating,
+}) => {
   const { push } = useRouter<{ id: string }>();
 
-  const steps = [
-    {
-      id: ConnectionSettingsRoutes.STATUS,
-      name: <FormattedMessage id="sources.status" />,
-    },
-    {
-      id: ConnectionSettingsRoutes.REPLICATION,
-      name: <FormattedMessage id="connection.replication" />,
-    },
-    {
-      id: ConnectionSettingsRoutes.TRANSFORMATION,
-      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
-    },
-    {
-      id: ConnectionSettingsRoutes.SETTINGS,
-      name: <FormattedMessage id="sources.settings" />,
-    },
-  ];
+  const steps = useMemo(() => {
+    const steps = [
+      {
+        id: ConnectionSettingsRoutes.STATUS,
+        name: <FormattedMessage id="sources.status" />,
+      },
+      {
+        id: ConnectionSettingsRoutes.REPLICATION,
+        name: <FormattedMessage id="connection.replication" />,
+      },
+      {
+        id: ConnectionSettingsRoutes.TRANSFORMATION,
+        name: <FormattedMessage id="connectionForm.transformation.title" />,
+      },
+    ];
 
-  const onSelectStep = (id: string) => {
-    if (id === ConnectionSettingsRoutes.STATUS) {
-      push("");
-    } else {
-      push(id);
-    }
-  };
+    connection.status !== ConnectionStatus.deprecated &&
+      steps.push({
+        id: ConnectionSettingsRoutes.SETTINGS,
+        name: <FormattedMessage id="sources.settings" />,
+      });
+
+    return steps;
+  }, [connection.status]);
+
+  const onSelectStep = useCallback(
+    (id: string) => {
+      if (id === ConnectionSettingsRoutes.STATUS) {
+        push("");
+      } else {
+        push(id);
+      }
+    },
+    [push]
+  );
 
   return (
-    <Title>
+    <div className={styles.container}>
+      {connection.status === ConnectionStatus.deprecated && (
+        <InfoBox className={styles.connectionDeleted} icon={faTrash}>
+          <FormattedMessage id="connection.connectionDeletedView" />
+        </InfoBox>
+      )}
       <H6 center bold highlighted>
         <FormattedMessage id="connection.title" />
       </H6>
-      <Links>
-        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>{source.name}</ConnectorsLink>
-        <FontAwesomeIcon icon={faArrowRight} />
-        <ConnectorsLink to={`../../${RoutePaths.Destination}/${destination.destinationId}`}>
-          {destination.name}
-        </ConnectorsLink>
-      </Links>
+      <ConnectionName connection={connection} />
+      <div className={styles.statusContainer}>
+        <StatusMainInfo
+          connection={connection}
+          source={source}
+          destination={destination}
+          onStatusUpdating={onStatusUpdating}
+        />
+      </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
-    </Title>
+    </div>
   );
 };
 

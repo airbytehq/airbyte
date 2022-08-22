@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import argparse
@@ -11,6 +11,7 @@ from unittest.mock import ANY
 
 import pytest
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.destinations import destination as destination_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -136,6 +137,13 @@ class OrderedIterableMatcher(Iterable):
 
 
 class TestRun:
+    def test_run_initializes_exception_handler(self, mocker, destination: Destination):
+        mocker.patch.object(destination_module, "init_uncaught_exception_handler")
+        mocker.patch.object(destination, "parse_args")
+        mocker.patch.object(destination, "run_cmd")
+        destination.run(["dummy"])
+        destination_module.init_uncaught_exception_handler.assert_called_once_with(destination_module.logger)
+
     def test_run_spec(self, mocker, destination: Destination):
         args = {"command": "spec"}
         parsed_args = argparse.Namespace(**args)

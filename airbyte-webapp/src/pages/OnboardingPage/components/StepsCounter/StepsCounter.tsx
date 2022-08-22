@@ -5,10 +5,10 @@ import { StepType } from "../../types";
 import StarsIcon from "./components/StarsIcon";
 import StepItem from "./components/StepItem";
 
-type StepsCounterProps = {
-  steps: { id: StepType; name?: React.ReactNode }[];
+interface StepsCounterProps {
+  steps: Array<{ id: StepType; name?: React.ReactNode }>;
   currentStep: StepType;
-};
+}
 
 const Steps = styled.div`
   display: flex;

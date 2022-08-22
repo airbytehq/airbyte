@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -61,7 +61,8 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
                 Field.of("test_array", JsonSchemaType.ARRAY),
                 Field.of("empty_test", JsonSchemaType.STRING),
                 Field.of("double_test", JsonSchemaType.NUMBER),
-                Field.of("int_test", JsonSchemaType.NUMBER))
+                Field.of("int_test", JsonSchemaType.NUMBER),
+                Field.of("object_test", JsonSchemaType.OBJECT))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

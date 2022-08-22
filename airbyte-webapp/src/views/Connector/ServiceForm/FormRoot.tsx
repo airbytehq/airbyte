@@ -26,7 +26,7 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-type FormRootProps = {
+interface FormRootProps {
   formFields: FormBlock;
   hasSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
@@ -35,7 +35,7 @@ type FormRootProps = {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-};
+}
 
 const FormRoot: React.FC<FormRootProps> = ({
   isTestConnectionInProgress = false,
@@ -47,13 +47,12 @@ const FormRoot: React.FC<FormRootProps> = ({
   hasSuccess,
   onStopTestingConnector,
 }) => {
-  const { resetForm, dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
-
-  const { resetUiFormProgress, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
+  const { dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
+  const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>
-      <FormSection blocks={formFields} />
+      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
@@ -70,12 +69,11 @@ const FormRoot: React.FC<FormRootProps> = ({
           isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
           formType={formType}
-          onRetest={onRetest}
+          onRetestClick={onRetest}
           isValid={isValid}
           dirty={dirty}
-          resetForm={() => {
-            resetForm();
-            resetUiFormProgress();
+          onCancelClick={() => {
+            resetServiceForm();
           }}
           successMessage={successMessage}
         />

@@ -1,49 +1,27 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { CommonRequestError } from "core/request/CommonRequestError";
+import {
+  WebBackendConnectionCreate,
+  WebBackendConnectionUpdate,
+  webBackendCreateConnection,
+  webBackendGetConnection,
+  webBackendListConnectionsForWorkspace,
+  webBackendUpdateConnectionNew as webBackendUpdateConnection,
+} from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
-import { Connection } from "./types";
-
-class WebBackendConnectionService extends AirbyteRequestService {
-  get url() {
-    return "web_backend/connections";
+export class WebBackendConnectionService extends AirbyteRequestService {
+  public getConnection(connectionId: string, withRefreshedCatalog?: boolean) {
+    return webBackendGetConnection({ connectionId, withRefreshedCatalog }, this.requestOptions);
   }
 
-  public async getConnection(connectionId: string, withRefreshedCatalog?: boolean): Promise<Connection> {
-    return await this.fetch<Connection>(`${this.url}/get`, {
-      connectionId,
-      withRefreshedCatalog,
-    });
+  public list(workspaceId: string) {
+    return webBackendListConnectionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public async list(workspaceId: string): Promise<{ connections: Connection[] }> {
-    return await this.fetch<{ connections: Connection[] }>(`${this.url}/list`, {
-      workspaceId,
-    });
+  public update(payload: WebBackendConnectionUpdate) {
+    return webBackendUpdateConnection(payload, this.requestOptions);
   }
 
-  public async update(payload: Record<string, unknown>): Promise<Connection> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/update`, payload);
-
-    if (result.status === "failure") {
-      throw new CommonRequestError(result, result.message);
-    }
-
-    return result;
-  }
-
-  public async create(payload: Record<string, unknown>): Promise<Connection> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/create`, payload);
-
-    if (result.status === "failure") {
-      throw new CommonRequestError(result, result.message);
-    }
-
-    return result;
+  public create(payload: WebBackendConnectionCreate) {
+    return webBackendCreateConnection(payload, this.requestOptions);
   }
 }
-
-export { WebBackendConnectionService };

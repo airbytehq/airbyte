@@ -1,6 +1,6 @@
 # Configuration for airbyte/destination-s3
 # Documentation about this connector can be found at https://docs.airbyte.io/integrations/destinations/s3
-resource_name: my_s3_destination
+resource_name: "my_s3_destination"
 definition_type: destination
 definition_id: foobar
 definition_image: airbyte/destination-s3

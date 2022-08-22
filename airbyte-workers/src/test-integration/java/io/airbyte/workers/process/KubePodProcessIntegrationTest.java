@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -17,7 +17,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -82,9 +82,6 @@ public class KubePodProcessIntegrationTest {
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
-  private static final String ENV_KEY = "ENV_VAR_1";
-  private static final String ENV_VALUE = "ENV_VALUE_1";
-  private static final Map<String, String> ENV_MAP = ImmutableMap.of(ENV_KEY, ENV_VALUE);
 
   private WorkerHeartbeatServer server;
 
@@ -431,6 +428,7 @@ public class KubePodProcessIntegrationTest {
   private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
       throws WorkerException {
     return processFactory.create(
+        "tester",
         "some-id",
         0,
         Path.of("/tmp/job-root"),

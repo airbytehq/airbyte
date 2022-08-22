@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,6 +16,10 @@ HERE = Path(__file__).parent.absolute()
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "default_timeout: mark test to be wrapped by `timeout` decorator with default value")
+    config.addinivalue_line(
+        "markers",
+        "backward_compatibility: mark test to be part of the backward compatibility tests suite (deselect with '-m \"not backward_compatibility\"')",
+    )
 
 
 def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):

@@ -30,13 +30,13 @@ const MainView = styled.div`
   margin-left: 47px;
 `;
 
-export type PageConfig = {
+export interface PageConfig {
   menuConfig: CategoryItem[];
-};
+}
 
-type SettingsPageProps = {
+interface SettingsPageProps {
   pageConfig?: PageConfig;
-};
+}
 
 export const SettingsRoute = {
   Account: "account",

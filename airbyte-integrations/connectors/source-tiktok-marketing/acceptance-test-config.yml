@@ -9,13 +9,16 @@ tests:
   connection:
     - config_path: "secrets/prod_config.json"
       status: "succeed"
-    - config_path: "secrets/prod_config_day.json"
+    - config_path: "secrets/prod_config_with_day_granularity.json"
       status: "succeed"
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
       status: "succeed"
+# Sandbox creds are not working temporary because of issues from APi side
+#    - config_path: "secrets/config.json"
+#      status: "succeed"
+#    - config_path: "secrets/new_config_sandbox.json"
+#      status: "succeed"
     - config_path: "secrets/new_config_prod.json"
-      status: "succeed"
-    - config_path: "secrets/new_config_sandbox.json"
       status: "succeed"
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
@@ -27,58 +30,54 @@ tests:
       status: "failed"
 
   discovery:
-    - config_path: "secrets/prod_config_day.json"
     - config_path: "secrets/prod_config.json"
+    - config_path: "secrets/prod_config_with_day_granularity.json"
+    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
     - config_path: "secrets/config.json"
     - config_path: "secrets/new_config_prod.json"
     - config_path: "secrets/config_oauth.json"
 
   basic_read:
-    # DAY granularity:
-    - config_path: "secrets/prod_config_day.json"
-      configured_catalog_path: "integration_tests/streams_all.json"
-      timeout_seconds: 1200
-    # LIFETIME granularity:
+    # New style streams (for >= 0.1.13):
     - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_lifetime.json"
+      configured_catalog_path: "integration_tests/streams_basic.json"
+      timeout_seconds: 1200
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_reports_daily.json"
+      timeout_seconds: 1200
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
+      timeout_seconds: 1200
+    # Old style streams with granularity config (for < 0.1.13)
+    # Note: not needed to be tested separately in full and incremental tests, because code of
+    # these streams is called directly in new style streams
+    - config_path: "secrets/prod_config_with_day_granularity.json"
+      configured_catalog_path: "integration_tests/streams_with_day_granularity.json"
+      timeout_seconds: 1200
+    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+      configured_catalog_path: "integration_tests/streams_with_lifetime_granularity.json"
       timeout_seconds: 1200
 
   incremental:
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_basic.json"
+      timeout_seconds: 2400
+      future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_reports_daily.json"
+      timeout_seconds: 2400
+      future_state_path: "integration_tests/abnormal_state.json"
     # LIFETIME granularity: does not support incremental sync
-    # DAY granularity:
-    - config_path: "secrets/prod_config_day.json"
-      configured_catalog_path: "integration_tests/streams_all_incremental.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 600
-      cursor_paths:
-        ads_reports: [ "dimensions", "stat_time_day" ]
-        advertisers_reports: [ "dimensions", "stat_time_day" ]
-        campaigns_reports: [ "dimensions", "stat_time_day" ]
-        ad_groups_reports: [ "dimensions", "stat_time_day" ]
-
-    # audience report streams have unexpected and inexplicable test failure caused by problem with schema (KeyError: 'properties'),
-    # It happens ONLY when incremental tests are run together with discovery tests.
-    # Error can't be reproduced by running test manually or ONLY incremental tests
-    - config_path: "secrets/prod_config_day.json"
-      configured_catalog_path: "integration_tests/streams_audience_incremental.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 600
-      cursor_paths:
-        ad_group_audience_reports: [ "dimensions", "stat_time_day" ]
-        ads_audience_reports: [ "dimensions", "stat_time_day" ]
-        advertisers_audience_reports: [ "dimensions", "stat_time_day" ]
-        campaigns_audience_reports_by_country: [ "dimensions", "stat_time_day" ]
 
   full_refresh:
-    # DAY granularity:
-    - config_path: "secrets/prod_config_day.json"
-      configured_catalog_path: "integration_tests/streams_all.json"
-      timeout_seconds: 6000
-      ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
-        "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
-    # LIFETIME granularity:
     - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_lifetime.json"
-      timeout_seconds: 600
+      configured_catalog_path: "integration_tests/streams_basic.json"
+      timeout_seconds: 2400
       ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
         "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_reports_daily.json"
+      timeout_seconds: 2400
+    - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
+      timeout_seconds: 2400

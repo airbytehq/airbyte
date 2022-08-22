@@ -28,11 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-:::info
-
-If you're using Mac M1 \(Apple Silicon\) machines, you may run into some problems (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
-
-:::
 
 To compile and build just the platform \(not all the connectors\):
 
@@ -76,6 +71,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ## Run in `dev` mode with `docker-compose`
 
 These instructions explain how to run a version of Airbyte that you are developing on (e.g. has not been released yet).
+
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
 VERSION=dev docker-compose up
@@ -97,7 +93,7 @@ SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
 
 ```bash
-USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests 
+USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
 
 ## Run formatting automation/tests
@@ -105,13 +101,26 @@ USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:accepta
 Airbyte runs a code formatter as part of the build to enforce code styles. You should run the formatter yourself before submitting a PR (otherwise the build will fail).
 
 The command to run formatting varies slightly depending on which part of the codebase you are working in.
+
 ### Platform
+
 If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` from the root of the repo.
 
 ### Connector
-If you are working on an individual connectors run: `./gradlew :airbyte-integrations:<directory the connector is in e.g. source-postgres>:format`.
+
+To format an individual connector in python, run: 
+```
+ ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+For instance:
+```
+./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+```
+
+To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
+
 Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run `SUB_BUILD=CONNECTORS_BASE ./gradlew format`.
 
 Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
@@ -124,14 +133,14 @@ Note: If you are contributing a Python file without imports or function definiti
 
 ### Develop on `airbyte-webapp`
 
-* Spin up Airbyte locally so the UI can make requests against the local API.
-* Stop the `webapp`.
+- Spin up Airbyte locally so the UI can make requests against the local API.
+- Stop the `webapp`.
 
 ```bash
 docker-compose stop webapp
 ```
 
-* Start up the react app.
+- Start up the react app.
 
 ```bash
 cd airbyte-webapp
@@ -139,13 +148,13 @@ npm install
 npm start
 ```
 
-* Happy Hacking!
+- Happy Hacking!
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options: 
+The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options:
 
-1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache. 
+1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache.
 2. Restart the server by running the following commands:
 
 ```bash
@@ -157,25 +166,48 @@ VERSION=dev docker-compose up
 
 Sometimes you'll want to reset the data in your local environment. One common case for this is if you are updating an connector's entry in the database \(`airbyte-config/init/src/main/resources/config`\), often the easiest thing to do, is wipe the local database and start it from scratch. To reset your data back to a clean install of Airbyte, follow these steps:
 
-* Delete the datastore volumes in docker
+- Delete the datastore volumes in docker
 
   ```bash
     VERSION=dev docker-compose down -v
   ```
 
-* Remove the data on disk
+- Remove the data on disk
 
   ```bash
     rm -rf /tmp/dev_root
     rm -rf /tmp/airbyte_local
   ```
 
-* Rebuild the project
+- Rebuild the project
 
   ```bash
    SUB_BUILD=PLATFORM ./gradlew clean build
    VERSION=dev docker-compose up -V
   ```
+
+While not as common as the above steps, you may also get into a position where want to erase all of the data on your local docker server. This is useful if you've been modifying image tags while developing.
+
+```bash
+docker system prune -a
+docker volume prune
+```
+
+If you are working on python connectors, you may also need to reset the `virtualenv` and re-install the connector's dependencies.
+
+```bash
+# Assuming you have a virtualenv loaded into your shell
+deactivate
+
+# From the connector's directory
+# remove the venv directory entirely
+rm -rf .venv
+
+# make and activate a new venv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
 
 ## Troubleshooting
 
@@ -188,4 +220,3 @@ For example:
 ```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
-

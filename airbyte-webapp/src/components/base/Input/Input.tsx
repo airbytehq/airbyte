@@ -1,6 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import classNames from "classnames";
+import React, { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -23,6 +24,7 @@ const getBackgroundColor = (props: IStyleProps) => {
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
+  defaultFocus?: boolean;
 }
 
 const InputContainer = styled.div<InputProps>`
@@ -32,10 +34,14 @@ const InputContainer = styled.div<InputProps>`
   border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
   border-radius: 4px;
 
-  &:hover {
-    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.greyColor20)};
-    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
-  }
+  ${({ disabled, theme, light, error }) =>
+    !disabled &&
+    `
+      &:hover {
+        background: ${light ? theme.whiteColor : theme.greyColor20};
+        border-color: ${error ? theme.dangerColor : theme.greyColor20};
+      }
+    `}
 
   &.input-container--focused {
     background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
@@ -45,7 +51,7 @@ const InputContainer = styled.div<InputProps>`
 
 const InputComponent = styled.input<InputProps & { isPassword?: boolean }>`
   outline: none;
-  width: ${({ isPassword }) => (isPassword ? "calc(100% - 22px)" : "100%")};
+  width: ${({ isPassword, disabled }) => (isPassword && !disabled ? "calc(100% - 22px)" : "100%")};
   padding: 7px 8px 7px 8px;
   font-size: 14px;
   line-height: 20px;
@@ -77,25 +83,41 @@ const VisibilityButton = styled(Button)`
   border: none;
 `;
 
-const Input: React.FC<InputProps> = (props) => {
+const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ...props }) => {
   const { formatMessage } = useIntl();
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isContentVisible, setIsContentVisible] = useToggle(false);
-  const [focused, toggleFocused] = useToggle(false);
+  const [focused, setFocused] = useState(false);
 
   const isPassword = props.type === "password";
   const isVisibilityButtonVisible = isPassword && !props.disabled;
   const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
-  const onInputFocusChange = () => toggleFocused();
+
+  useEffect(() => {
+    if (defaultFocus && inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  }, [inputRef, defaultFocus]);
 
   return (
-    <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
+    <InputContainer
+      className={classNames("input-container", { "input-container--focused": focused })}
+      data-testid="input-container"
+    >
       <InputComponent
+        data-testid="input"
         {...props}
+        ref={inputRef}
         type={type}
         isPassword={isPassword}
-        onFocus={onInputFocusChange}
-        onBlur={onInputFocusChange}
-        data-testid="input"
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
       />
       {isVisibilityButtonVisible ? (
         <VisibilityButton

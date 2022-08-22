@@ -1,56 +1,50 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
+import { useIntl } from "react-intl";
 
 import { Button } from "components";
+import { CrossIcon } from "components/icons/CrossIcon";
+import { PencilIcon } from "components/icons/PencilIcon";
+import ToolTip from "components/ToolTip";
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  color: ${({ theme }) => theme.textColor};
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  padding: 5px 12px 6px 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+import styles from "./EditorRow.module.scss";
 
-  &:last-child {
-    border: none;
-  }
-`;
-
-const Delete = styled(FontAwesomeIcon)`
-  color: ${({ theme }) => theme.greyColor55};
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 24px;
-  margin-left: 7px;
-  cursor: pointer;
-`;
-
-type EditorRowProps = {
-  name: string;
+interface EditorRowProps {
+  name?: React.ReactNode;
+  description?: React.ReactNode;
   id: number;
   onEdit: (id: number) => void;
   onRemove: (id: number) => void;
-};
+  disabled?: boolean;
+}
 
-const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove }) => {
-  return (
-    <Content>
-      <div>{name || id}</div>
-      <div>
-        <Button secondary onClick={() => onEdit(id)} type="button">
-          <FormattedMessage id="form.edit" />
+export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
+  const { formatMessage } = useIntl();
+
+  const body = (
+    <div className={styles.body}>
+      <div className={styles.name}>{name || id}</div>
+      <div className={styles.actions}>
+        <Button
+          type="button"
+          iconOnly
+          arial-label={formatMessage({ id: "form.edit" })}
+          onClick={() => onEdit(id)}
+          disabled={disabled}
+        >
+          <PencilIcon />
         </Button>
-        <Delete icon={faTimes} onClick={() => onRemove(id)} />
+        <Button
+          type="button"
+          iconOnly
+          aria-label={formatMessage({ id: "form.delete" })}
+          onClick={() => onRemove(id)}
+          disabled={disabled}
+        >
+          <CrossIcon />
+        </Button>
       </div>
-    </Content>
+    </div>
   );
-};
 
-export { EditorRow };
+  return <div className={styles.container}>{description ? <ToolTip control={body}>{description}</ToolTip> : body}</div>;
+};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -12,19 +12,19 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.SourceCloneConfiguration;
+import io.airbyte.api.model.generated.SourceCloneRequestBody;
+import io.airbyte.api.model.generated.SourceCreate;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -63,7 +63,6 @@ class SourceHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
-  private String imageName;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -86,8 +85,6 @@ class SourceHandlerTest {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
         .withSpec(connectorSpecification);
-
-    imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -198,12 +195,12 @@ class SourceHandlerTest {
   }
 
   @Test
-  void testCloneSource() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testCloneSourceWithoutConfigChange() throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceConnection clonedConnection = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
     final SourceRead expectedClonedSourceRead = SourceHelpers.getSourceRead(clonedConnection, standardSourceDefinition);
     final SourceRead sourceRead = SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
 
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceRead.getSourceId());
+    final SourceCloneRequestBody sourceCloneRequestBody = new SourceCloneRequestBody().sourceCloneId(sourceRead.getSourceId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getSourceId());
     when(secretsRepositoryReader.getSourceConnectionWithSecrets(sourceConnection.getSourceId())).thenReturn(sourceConnection);
@@ -216,7 +213,33 @@ class SourceHandlerTest {
         secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(sourceConnection.getConfiguration());
 
-    final SourceRead actualSourceRead = sourceHandler.cloneSource(sourceIdRequestBody);
+    final SourceRead actualSourceRead = sourceHandler.cloneSource(sourceCloneRequestBody);
+
+    assertEquals(expectedClonedSourceRead, actualSourceRead);
+  }
+
+  @Test
+  void testCloneSourceWithConfigChange() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final SourceConnection clonedConnection = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
+    final SourceRead expectedClonedSourceRead = SourceHelpers.getSourceRead(clonedConnection, standardSourceDefinition);
+    final SourceRead sourceRead = SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
+
+    final SourceCloneConfiguration sourceCloneConfiguration = new SourceCloneConfiguration().name("Copy Name");
+    final SourceCloneRequestBody sourceCloneRequestBody =
+        new SourceCloneRequestBody().sourceCloneId(sourceRead.getSourceId()).sourceConfiguration(sourceCloneConfiguration);
+
+    when(uuidGenerator.get()).thenReturn(clonedConnection.getSourceId());
+    when(secretsRepositoryReader.getSourceConnectionWithSecrets(sourceConnection.getSourceId())).thenReturn(sourceConnection);
+    when(configRepository.getSourceConnection(clonedConnection.getSourceId())).thenReturn(clonedConnection);
+
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
+        .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
+    when(
+        secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(sourceConnection.getConfiguration());
+
+    final SourceRead actualSourceRead = sourceHandler.cloneSource(sourceCloneRequestBody);
 
     assertEquals(expectedClonedSourceRead, actualSourceRead);
   }
@@ -320,8 +343,6 @@ class SourceHandlerTest {
 
     verify(secretsRepositoryWriter).writeSourceConnection(expectedSourceConnection, connectorSpecification);
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
-        .connectionId(connectionRead.getConnectionId());
     verify(connectionsHandler).deleteConnection(connectionRead.getConnectionId());
   }
 

@@ -3,11 +3,11 @@ import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 
-type IProps = {
+interface IProps {
   value: string;
   enabled?: boolean;
   img?: string;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
@@ -23,7 +23,7 @@ const Image = styled(ConnectorIcon)`
 const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small icon={img} />
+      <Image icon={img} />
       {value}
     </Content>
   );

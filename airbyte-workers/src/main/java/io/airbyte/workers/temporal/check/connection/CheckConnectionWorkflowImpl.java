@@ -1,31 +1,42 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.check.connection;
 
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.activity.ActivityOptions;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
+import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
-import java.time.Duration;
 
 public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
 
-  final ActivityOptions options = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(Duration.ofHours(1))
-      .setRetryOptions(TemporalUtils.NO_RETRY)
-      .build();
-  private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
+  private final CheckConnectionActivity activity =
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
+
+  private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
+  private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
 
   @Override
-  public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
-                                           final IntegrationLauncherConfig launcherConfig,
-                                           final StandardCheckConnectionInput connectionConfiguration) {
-    return activity.run(jobRunConfig, launcherConfig, connectionConfiguration);
+  public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
+                                final IntegrationLauncherConfig launcherConfig,
+                                final StandardCheckConnectionInput connectionConfiguration) {
+    final CheckConnectionInput checkInput = new CheckConnectionInput(jobRunConfig, launcherConfig, connectionConfiguration);
+
+    final int jobOutputVersion =
+        Workflow.getVersion(CHECK_JOB_OUTPUT_TAG, Workflow.DEFAULT_VERSION, CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION);
+
+    if (jobOutputVersion < CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION) {
+      final StandardCheckConnectionOutput checkOutput = activity.run(checkInput);
+      return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(checkOutput);
+    }
+
+    return activity.runWithJobOutput(checkInput);
   }
 
 }

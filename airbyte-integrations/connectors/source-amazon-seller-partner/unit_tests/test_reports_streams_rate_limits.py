@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -22,6 +22,7 @@ def reports_stream():
         url_base="https://test.url",
         aws_signature=aws_signature,
         replication_start_date="2017-01-25T00:00:00Z",
+        replication_end_date="2017-02-25T00:00:00Z",
         marketplace_id="id",
         authenticator=None,
         period_in_days=0,

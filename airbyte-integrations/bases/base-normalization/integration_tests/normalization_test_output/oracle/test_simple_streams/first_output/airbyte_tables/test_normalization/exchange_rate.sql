@@ -18,6 +18,10 @@ select
     json_value("_AIRBYTE_DATA", '$."NZD"') as nzd,
     json_value("_AIRBYTE_DATA", '$."USD"') as usd,
     json_value("_AIRBYTE_DATA", '$."column___with__quotes"') as column___with__quotes,
+    json_value("_AIRBYTE_DATA", '$."datetime_tz"') as datetime_tz,
+    json_value("_AIRBYTE_DATA", '$."datetime_no_tz"') as datetime_no_tz,
+    json_value("_AIRBYTE_DATA", '$."time_tz"') as time_tz,
+    json_value("_AIRBYTE_DATA", '$."time_no_tz"') as time_no_tz,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     
@@ -52,6 +56,18 @@ select
     float
 ) as usd,
     cast(column___with__quotes as varchar2(4000)) as column___with__quotes,
+    cast(nullif(datetime_tz, '') as 
+    varchar2(4000)
+) as datetime_tz,
+    cast(nullif(datetime_no_tz, '') as 
+    varchar2(4000)
+) as datetime_no_tz,
+    cast(nullif(time_tz, '') as 
+    varchar2(4000)
+) as time_tz,
+    cast(nullif(time_no_tz, '') as 
+    varchar2(4000)
+) as time_no_tz,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     
@@ -91,7 +107,19 @@ select
                 usd || '~' ||
             
             
-                column___with__quotes
+                column___with__quotes || '~' ||
+            
+            
+                datetime_tz || '~' ||
+            
+            
+                datetime_no_tz || '~' ||
+            
+            
+                time_tz || '~' ||
+            
+            
+                time_no_tz
             
     ) as "_AIRBYTE_EXCHANGE_RATE_HASHID",
     tmp.*
@@ -110,6 +138,10 @@ select
     nzd,
     usd,
     column___with__quotes,
+    datetime_tz,
+    datetime_no_tz,
+    time_tz,
+    time_no_tz,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     

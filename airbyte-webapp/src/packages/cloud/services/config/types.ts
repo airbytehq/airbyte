@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-export type CloudConfigExtension = {
+export interface CloudConfigExtension {
   cloudApiUrl: string;
   fullstory: Fullstory.SnippetOptions & { enabled: boolean };
   firebase: {
@@ -24,6 +24,6 @@ export type CloudConfigExtension = {
   intercom: {
     appId: string;
   };
-};
+}
 
 export type CloudConfig = Config & CloudConfigExtension;

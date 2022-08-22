@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -21,6 +23,7 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.util.function.Function;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +33,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static MSSQLServerContainer<?> dbContainer;
-  private static JdbcDatabase database;
+  private static DataSource dataSource;
   private JsonNode config;
 
   @BeforeAll
@@ -42,33 +45,38 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
+        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
+        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
 
-    database = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    dataSource = DataSourceFactory.create(
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
 
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    try {
+      database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
-    super.setup();
+      config = Jsons.clone(configWithoutDbName);
+      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+
+      super.setup();
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    database.close();
     dbContainer.close();
   }
 
