@@ -48,11 +48,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: FULLSTORY
-            - name: IS_DEMO
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: IS_DEMO
             - name: INTERNAL_API_HOST
               valueFrom:
                 configMapKeyRef:
