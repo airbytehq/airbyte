@@ -84,12 +84,12 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
           </div>
         </div>
       ) : (
-        <div className={styles.nameContainer} onClick={() => setEditingState(true)}>
+        <button tabIndex={0} className={styles.nameContainer} onClickCapture={() => setEditingState(true)}>
           <div>
             <h2>{name}</h2>
           </div>
           <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
-        </div>
+        </button>
       )}
     </div>
   );
