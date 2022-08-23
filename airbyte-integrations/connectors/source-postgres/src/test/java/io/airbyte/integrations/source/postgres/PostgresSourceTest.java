@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -25,6 +26,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -302,6 +304,74 @@ class PostgresSourceTest {
       assertEquals(expectedStream.get(), actualStream);
     });
   }
+
+  @Test
+  void testWrongHost() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ObjectNode)config).put(JdbcUtils.HOST_KEY, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+  @Test
+  void testWrongPort() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ObjectNode)config).put(JdbcUtils.PASSWORD_KEY, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+  @Test
+  void testWrongUser() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ObjectNode)config).put(JdbcUtils.USERNAME_KEY, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+  @Test
+  void testWrongPassword() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ObjectNode)config).put(JdbcUtils.PASSWORD_KEY, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+  @Test
+  void testWrongDatabase() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ObjectNode)config).put(JdbcUtils.DATABASE_KEY, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+  @Test
+  void testWrongSchema() throws Exception {
+    final PostgresSource postgresSource = new PostgresSource();
+    System.out.println("**** checking");
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    ((ArrayNode)config.get(JdbcUtils.SCHEMAS_KEY)).set(0, "wrong");
+    final AirbyteConnectionStatus check = postgresSource.check(config);
+    System.out.println("**** check = " + check);
+    System.out.println("**** checked");
+  }
+
+
 
   @Test
   void testDiscoverRecursiveRolePermissions() throws Exception {
