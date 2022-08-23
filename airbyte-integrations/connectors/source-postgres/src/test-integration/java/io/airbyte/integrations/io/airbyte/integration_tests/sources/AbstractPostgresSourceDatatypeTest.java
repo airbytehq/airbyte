@@ -176,13 +176,16 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     // Debezium does not handle era indicators (AD nd BC)
     // https://github.com/airbytehq/airbyte/issues/14590
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("date")
-            .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
-            .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
-            .build());
+    for (final String type : Set.of("date", "date not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("date")
+              .fullSourceDataType(type)
+              .airbyteType(JsonSchemaType.STRING_DATE)
+              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'")
+              .addExpectedValues("1999-01-08", "1991-02-10 BC")
+              .build());
+    }
 
     for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
@@ -385,15 +388,15 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     }
 
     // time without time zone
-    for (final String fullSourceType : Set.of("time", "time without time zone")) {
+    for (final String fullSourceType : Set.of("time", "time without time zone", "time without time zone not null default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType("time")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
-              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+              .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addExpectedValues("13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
                   "13:00:00.000000")
               .build());
     }
@@ -565,7 +568,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
   protected void addTimestampWithInfinityValuesTest() {
     // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType("timestamp")

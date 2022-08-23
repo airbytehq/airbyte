@@ -170,7 +170,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   @Override
   protected void addTimestampWithInfinityValuesTest() {
     // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType("timestamp")
