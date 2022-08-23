@@ -16,6 +16,7 @@ import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
@@ -24,11 +25,9 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
+    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
+        .asCompatibleSubstituteFor("postgres"));
     container.start();
-
     certs = getCertificate(container);
     /**
      * The publication is not being set as part of the config and because of it
