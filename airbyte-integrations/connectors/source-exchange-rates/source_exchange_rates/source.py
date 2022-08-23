@@ -19,15 +19,15 @@ class ExchangeRates(HttpStream):
     date_field_name = "date"
 
     # HttpStream related fields
-    url_base = "http://api.exchangeratesapi.io/v1/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = date_field_name
     primary_key = ""
 
-    def __init__(self, base: Optional[str], start_date: DateTime, access_key: str, ignore_weekends: Optional[bool]):
+    def __init__(self, base: Optional[str], start_date: DateTime, api_key: str, ignore_weekends: Optional[bool]):
         super().__init__()
         self._base = base
         self._start_date = start_date
-        self.access_key = access_key
+        self.api_key = api_key
         self.ignore_weekends = ignore_weekends
 
     def path(
@@ -39,12 +39,17 @@ class ExchangeRates(HttpStream):
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = {"access_key": self.access_key}
+        params = {}
 
         if self._base is not None:
             params["base"] = self._base
 
         return params
+    
+    def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
+        headers = {"apikey": self.api_key}
+
+        return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -82,12 +87,13 @@ def chunk_date_range(start_date: DateTime, ignore_weekends: bool) -> Iterable[Ma
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            params = {"access_key": config["access_key"]}
+            headers = {"apikey": config["api_key"]}
+            params = {}
             base = config.get("base")
             if base is not None:
                 params["base"] = base
-
-            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params)
+            
+            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params, headers=headers)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -107,4 +113,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"], config.get("ignore_weekends", True))]
+        return [ExchangeRates(config.get("base"), config["start_date"], config["api_key"], config.get("ignore_weekends", True))]

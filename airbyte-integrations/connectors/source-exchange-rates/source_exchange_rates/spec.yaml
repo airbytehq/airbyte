@@ -5,7 +5,7 @@ connectionSpecification:
   type: object
   required:
     - start_date
-    - access_key
+    - api_key
   additionalProperties: false
   properties:
     start_date:
@@ -14,11 +14,11 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - YYYY-MM-DD
-    access_key:
+    api_key:
       type: string
       description: >-
-        Your API Access Key. See <a
-        href="https://exchangeratesapi.io/documentation/">here</a>. The key is
+        Your API Key. See <a
+        href="https://apilayer.com/marketplace/exchangerates_data-api">here</a>. The key is
         case sensitive.
       airbyte_secret: true
     base:
