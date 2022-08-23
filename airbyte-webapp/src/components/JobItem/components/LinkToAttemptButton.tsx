@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useDebounce } from "react-use";
 
 import { Button } from "components";
-import ToolTip from "components/ToolTip";
+import { Tooltip } from "components/base/Tooltip";
 
 import { copyToClipboard } from "utils/clipboard";
 
@@ -33,7 +33,7 @@ export const LinkToAttemptButton: React.FC<Props> = ({ jobId, attemptId }) => {
   };
 
   return (
-    <ToolTip
+    <Tooltip
       disabled={!showCopyTooltip}
       control={
         <Button
@@ -47,6 +47,6 @@ export const LinkToAttemptButton: React.FC<Props> = ({ jobId, attemptId }) => {
       }
     >
       <FormattedMessage id="connection.linkCopied" />
-    </ToolTip>
+    </Tooltip>
   );
 };
