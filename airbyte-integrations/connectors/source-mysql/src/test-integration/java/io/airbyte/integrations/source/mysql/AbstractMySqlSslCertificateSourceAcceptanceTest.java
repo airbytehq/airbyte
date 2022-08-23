@@ -13,11 +13,10 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import java.io.IOException;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
-
-import java.io.IOException;
 
 public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 

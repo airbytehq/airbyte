@@ -399,7 +399,7 @@ class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    final var conn =
+    final var connection =
         testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
@@ -409,7 +409,7 @@ class BasicAcceptanceTests {
     List<io.airbyte.api.client.model.generated.JobWithAttemptsRead> jobs = new ArrayList<>();
     while (jobs.size() < 2) {
       final var listSyncJobsRequest = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
-          .configId(conn.getConnectionId().toString());
+          .configId(connection.getConnectionId().toString());
       final var resp = apiClient.getJobsApi().listJobsFor(listSyncJobsRequest);
       jobs = resp.getJobs();
       sleep(Duration.ofSeconds(30).toMillis());
