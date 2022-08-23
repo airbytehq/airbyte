@@ -67,5 +67,4 @@ jobs:
         with:
           body: ${{ env.CHANGELOG }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
           tag: v${{ steps.get_version.outputs.VERSION }}
