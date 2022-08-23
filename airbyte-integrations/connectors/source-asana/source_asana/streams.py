@@ -220,5 +220,7 @@ class Users(WorkspaceRequestParamsRelatedStream):
 
 
 class Workspaces(AsanaStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "workspaces"

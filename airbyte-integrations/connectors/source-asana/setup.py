@@ -9,11 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "requests-mock~=1.9.3",
-    "source-acceptance-test"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock~=1.9.3", "source-acceptance-test"]
 
 setup(
     name="source_asana",
