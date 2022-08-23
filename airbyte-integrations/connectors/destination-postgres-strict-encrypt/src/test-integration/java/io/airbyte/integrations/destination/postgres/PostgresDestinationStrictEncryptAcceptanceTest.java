@@ -50,12 +50,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-                .put("mode", "verify-full")
-                .put("ca_certificate", certs.getCaCertificate())
-                .put("client_certificate", certs.getClientCertificate())
-                .put("client_key", certs.getClientKey())
-                .put("client_key_password", PASSWORD)
-                .build())
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build());
   }
 
