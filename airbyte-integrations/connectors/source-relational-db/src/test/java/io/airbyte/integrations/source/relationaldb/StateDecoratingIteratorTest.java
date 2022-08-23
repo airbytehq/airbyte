@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -145,6 +146,40 @@ class StateDecoratingIteratorTest {
     // null because no records with a cursor field were replicated for the stream.
     assertNull(iterator.next().getState());
     assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testIteratorThrowsException() {
+    final Iterator<AirbyteMessage> messageIterator = new Iterator<AirbyteMessage>() {
+
+      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
+
+      @Override
+      public boolean hasNext() {
+        return true;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        if (internalMessageIterator.hasNext()) {
+          return internalMessageIterator.next();
+        } else {
+          throw new RuntimeException("Error with iterating through records");
+        }
+      }
+
+    };
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        messageIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        0);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertThrows(RuntimeException.class, () -> iterator.next());
   }
 
   @Test
