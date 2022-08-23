@@ -415,20 +415,18 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP '0001-01-01 00:00:00.000000'",
                   // The last possible timestamp in BCE
                   "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
-                  "'epoch'",
-                  "'infinity'",
-                  "'-infinity'")
+                  "'epoch'")
               .addExpectedValues(
                   "2004-10-19T10:23:00.000000",
                   "2004-10-19T10:23:54.123456",
                   "3004-10-19T10:23:54.123456 BC",
                   "0001-01-01T00:00:00.000000",
                   "0001-12-31T23:59:59.999999 BC",
-                  "1970-01-01T00:00:00.000000",
-                  "+292278994-08-16T23:00:00.000000",
-                  "+292269055-12-02T23:00:00.000000 BC")
+                  "1970-01-01T00:00:00.000000")
               .build());
     }
+
+    addTimestampWithInfinityValuesTest();
 
     // timestamp with time zone
     for (final String fullSourceType : Set.of("timestamptz", "timestamp with time zone")) {
@@ -561,6 +559,24 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               // so 13:00:01 is returned as 13:00:01-07.
               .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
                   "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .build());
+    }
+  }
+
+  protected void addTimestampWithInfinityValuesTest() {
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamp")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues(
+                  "'infinity'",
+                  "'-infinity'")
+              .addExpectedValues(
+                  "+292278994-08-16T23:00:00.000000",
+                  "+292269055-12-02T23:00:00.000000 BC")
               .build());
     }
   }
