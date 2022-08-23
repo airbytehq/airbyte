@@ -372,6 +372,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------------------|
+| 1.0.4   | 2022-08-23  | [15877](https://github.com/airbytehq/airbyte/pull/15877) | Fix temporal data type bug which was causing failure in CDC mode                                               |
 | 1.0.3   | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 1.0.2   | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
 | 1.0.1   | 2022-08-10 | [15496](https://github.com/airbytehq/airbyte/pull/15496) | Fix state emission in incremental sync |
