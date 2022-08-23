@@ -163,7 +163,7 @@ public class AvroFormat extends AbstractFormat{
                         String newString = String.format("{\"avro_schema\": \"%s\"}", namespace);
                         JsonNode newNode = mapper.readTree(newString);
                         output = mapper.readTree(avro_data.toString());
-                        ((ObjectNode) output).set("namespace", newNode);
+                        ((ObjectNode) output).set("_namespace_", newNode);
                     } catch (JsonProcessingException e) {
                         LOGGER.error("Exception whilst reading avro data from stream", e);
                         throw new RuntimeException(e);
