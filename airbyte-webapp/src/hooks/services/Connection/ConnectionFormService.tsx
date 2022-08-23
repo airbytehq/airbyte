@@ -1,5 +1,3 @@
-// import { useDiscoverSchema } from "../useSourceHook";
-
 import { FormikHelpers } from "formik";
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { Subject } from "rxjs";
@@ -78,7 +76,7 @@ const useConnectionForm = ({
   );
 
   const errorMessage = useMemo(() => (submitError ? createFormErrorMessage(submitError) : null), [submitError]);
-  const frequencies = useFrequencyDropdownData();
+  const frequencies = useFrequencyDropdownData(connection.schedule);
 
   const formDirty = new Subject<boolean>();
 
