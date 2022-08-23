@@ -39,6 +39,7 @@
         "title": "Credentials",
         "description": "Credentials for the service",
         "required": ["auth_type"],
+        "default": {"auth_type": "Client"},
         "discriminator": {"propertyName": "auth_type" },
         "oneOf": [{
           "title": "Google OAuth",
