@@ -135,7 +135,6 @@ public class SshTunnel implements AutoCloseable {
       this.remoteDatabasePort = remoteDatabasePort;
 
       this.sshclient = createClient();
-      this.tunnelSession = openTunnel(sshclient);
     }
   }
 
