@@ -53,7 +53,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
-
   public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
     this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
         new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
