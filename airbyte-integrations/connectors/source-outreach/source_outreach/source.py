@@ -116,6 +116,66 @@ class SequenceStates(IncrementalOutreachStream):
         return "sequenceStates"
 
 
+class Account(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#account
+    """
+
+    def path(self, **kwargs) -> str:
+        return "accounts"
+
+
+class Opportunity(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#opportunity
+    """
+
+    def path(self, **kwargs) -> str:
+        return "opportunities"
+
+
+class Persona(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#persona
+    """
+
+    def path(self, **kwargs) -> str:
+        return "personas"
+
+
+class Mailing(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#mailing
+    """
+
+    def path(self, **kwargs) -> str:
+        return "mailings"
+
+
+class Mailbox(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#mailbox
+    """
+
+    def path(self, **kwargs) -> str:
+        return "mailboxes"
+
+
+class Stage(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#stage
+    """
+
+    def path(self, **kwargs) -> str:
+        return "stages"
+
+
 class OutreachAuthenticator(Oauth2Authenticator):
     def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
@@ -156,4 +216,10 @@ class SourceOutreach(AbstractSource):
             Prospects(authenticator=auth, **config),
             Sequences(authenticator=auth, **config),
             SequenceStates(authenticator=auth, **config),
+            Account(authenticator=auth, **config),
+            Opportunity(authenticator=auth, **config),
+            Persona(authenticator=auth, **config),
+            Mailing(authenticator=auth, **config),
+            Mailbox(authenticator=auth, **config),
+            Stage(authenticator=auth, **config),
         ]
