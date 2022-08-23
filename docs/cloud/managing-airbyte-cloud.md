@@ -162,6 +162,89 @@ The log summary for a failed sync may show the following data.
 ### Running
 The sync log summary displays **Running** when the sync is actively running.
 
+## Change Streams in a Connection
+
+### Navigating to the Replication tab
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection in the list you want to change.  
+
+    The **Connection** page displays.  
+
+2. Click **Replication**.
+
+    The **Replication** tab displays.
+
+### Transfer and Streams
+If you change settings in the **Transfer** and **Streams** sections of the **Replication** tab, those changes apply to all streams in the connection.
+
+| Parameter                 | Description                                                                                                                               |
+|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| Replication Frequency     | How often the data syncs                                                                                                                  |
+| Destination Namespace     | Where the replicated data is written                                                                                                      |
+| Destination Stream Prefix | Add a stream name prefix to help identify streams from different connectors.   Streams are separated by prefix in the destination tables. |
+
+### Applying changes to streams
+In the **Activate the streams you want to sync section**, you can make changes to any stream you choose.
+
+#### Searching for a stream
+You can filter to find the stream you want to change.
+
+1. Click the **Search stream name** search box. 
+
+2. Type the name of the stream you want to find.
+
+3. Streams matching your search are displayed in the list.
+
+#### Reconfiguring streams
+You can change the settings of individual or multiple streams.
+
+##### Changing individual stream configuration
+1. In the **Sync** column of the stream, toggle the sync on or off. 
+
+2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to that stream.
+
+3. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and select a column in the database to use as the cursor or primary key. If there is no dropdown arrow, the cursor and primary key are chosen by the source.
+
+##### Changing multiple stream configurations
+1. Click the first checkbox in the table header. This selects all the streams in the connection. 
+
+:::note 
+    
+Deselect the checkboxes next to the streams you do not want to change.
+
+:::
+
+2. In the highlighted header of the table, toggle the sync on or off. 
+
+3. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to these streams.
+
+4. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and select a column in the database to use as the cursor or primary key. If there is no dropdown arrow, the cursor and primary key are chosen by the source.
+
+5. Click **Apply** to apply the changes to the streams you selected, or click **Cancel** to discard your selection.
+
+### Saving the changes
+1. After you make changes to the streams, click **Save changes**.
+
+:::note 
+    
+To discard the changes, click **Cancel**.
+
+:::
+
+2. The **Stream configuration changed** dialog displays. This gives you the option to reset the streams when you save the changes.
+
+:::caution
+
+Airbyte recommends that you reset the streams. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.
+
+:::
+
+3. Click **Save connection**.
+
+### Refreshing the source schema
+1. Click **Refresh source schema** to fetch the schema of your data source.
+
+2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
+
 ## Buy Credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
