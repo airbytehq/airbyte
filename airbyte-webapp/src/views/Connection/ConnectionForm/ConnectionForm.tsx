@@ -185,7 +185,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-  const frequencies = useFrequencyDropdownData();
+  const frequencies = useFrequencyDropdownData(connection.schedule);
 
   return (
     <Formik
