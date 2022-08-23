@@ -80,10 +80,10 @@ class MixpanelStream(HttpStream, ABC):
             yield record
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            **kwargs,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        **kwargs,
     ) -> Iterable[Mapping]:
 
         # parse the whole response

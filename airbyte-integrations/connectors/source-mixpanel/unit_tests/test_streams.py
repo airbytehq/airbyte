@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 from datetime import timedelta
 from unittest.mock import MagicMock
@@ -407,7 +408,7 @@ def export_response():
         {
             "event": "Viewed E-commerce Page",
             "properties": {
-                "time": 1623860880, # 2021-06-16T16:28:00
+                "time": 1623860880,  # 2021-06-16T16:28:00
                 "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
                 "$browser": "Chrome",
                 "$browser_version": "91.0.4472.101",
@@ -448,4 +449,4 @@ def test_export_stream_request_params():
     request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
     assert "where" in request_params
     timestamp = int(datetime.datetime.fromisoformat("2021-06-16T17:00:00").timestamp())
-    assert request_params.get("where") == f"properties[\"$time\"]>=datetime({timestamp})"
+    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
