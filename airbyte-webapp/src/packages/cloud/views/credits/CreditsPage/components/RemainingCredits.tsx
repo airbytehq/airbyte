@@ -84,11 +84,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       }
     }
 
-    return () => {
-      if (retryIntervalId.current) {
-        clearInterval(retryIntervalId.current);
-      }
-    };
+    return () => clearInterval(retryIntervalId.current);
   });
 
   useEffect(() => {
