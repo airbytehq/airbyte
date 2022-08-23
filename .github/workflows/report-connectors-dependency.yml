@@ -18,7 +18,7 @@ jobs:
         id: extract_branch
       - name: Extract git-dif change file
         run: |
-          git diff --name-only remotes/origin/master...origin/${{ steps.extract_branch.outputs.branch }} > ./changed_files.txt
+          git diff --name-only remotes/origin/master...origin/${{ steps.extract_branch.outputs.branch }} -- airbyte-integrations/ > ./changed_files.txt
         id: extract_changed_files
       - name: Install dependencies
         run: |
