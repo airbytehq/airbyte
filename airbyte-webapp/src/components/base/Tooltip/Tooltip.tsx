@@ -1,6 +1,7 @@
 import { autoUpdate, flip, offset, shift, useFloating, UseFloatingProps } from "@floating-ui/react-dom";
 import classNames from "classnames";
-import React, { useState, useEffect } from "react";
+import { uniqueId } from "lodash";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { tooltipContext } from "./context";
@@ -21,8 +22,10 @@ const FLOATING_OPTIONS: UseFloatingProps = {
 export const Tooltip: React.FC<TooltipProps> = (props) => {
   const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
 
-  const [isMouseOver, setIsMouseOver] = useState(false);
+  const [isOverTooltip, setIsOverTooltip] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+
+  const tooltipId = useMemo(() => uniqueId("tooltip_"), []);
 
   const { x, y, reference, floating, strategy } = useFloating({
     ...FLOATING_OPTIONS,
@@ -30,7 +33,7 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
   });
 
   useEffect(() => {
-    if (isMouseOver) {
+    if (isOverTooltip) {
       setIsVisible(true);
       return;
     }
@@ -42,16 +45,16 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [isMouseOver]);
+  }, [isOverTooltip]);
 
   const canShowTooltip = isVisible && !disabled;
 
-  const onMouseOver = () => {
-    setIsMouseOver(true);
+  const onFocus = () => {
+    setIsOverTooltip(true);
   };
 
-  const onMouseOut = () => {
-    setIsMouseOver(false);
+  const onBlur = () => {
+    setIsOverTooltip(false);
   };
 
   return (
@@ -60,8 +63,12 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
         ref={reference}
         className={styles.container}
         style={disabled ? undefined : { cursor }}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onMouseOver={onFocus}
+        onMouseOut={onBlur}
+        aria-details={tooltipId}
+        tabIndex={0}
       >
         {control}
       </div>
@@ -69,6 +76,7 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
         createPortal(
           <div
             role="tooltip"
+            id={tooltipId}
             ref={floating}
             className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
             style={{
@@ -76,8 +84,10 @@ export const Tooltip: React.FC<TooltipProps> = (props) => {
               top: y ?? 0,
               left: x ?? 0,
             }}
-            onMouseOver={onMouseOver}
-            onMouseOut={onMouseOut}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onMouseOver={onFocus}
+            onMouseOut={onBlur}
           >
             <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
           </div>,
