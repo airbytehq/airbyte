@@ -91,7 +91,7 @@
   "form.dockerError": "Could not find docker image",
   "form.edit": "Edit",
   "form.done": "Done",
-  "form.examples": "( e.g. {examples} )",
+  "form.examples": "E.g. {examples}"
   "form.prefix": "Destination Stream Prefix (Optional)",
   "form.prefix.message": "Add a prefix to stream names (ex. “airbyte_” causes “projects” => “airbyte_projects”)",
   "form.prefix.placeholder": "prefix",
