@@ -137,7 +137,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
+      database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -168,7 +168,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
         // retrieve column metadata from the database
-        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
         // store essential column metadata to a Json object from the result set about each column
         this::getColumnMetadata)
         .stream()
@@ -275,7 +275,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
+          connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -299,7 +299,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                   .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
+                    connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (final SQLException e) {
