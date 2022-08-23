@@ -679,7 +679,7 @@ public class KubePodProcess extends Process implements KubePod {
     final Optional<Container> containerOptional = podDefinition.getSpec()
         .getContainers()
         .stream()
-        .filter(c -> c.getName().contentEquals(MAIN_CONTAINER_NAME))
+        .filter(c -> MAIN_CONTAINER_NAME.equals(c.getName()))
         .findFirst();
     if (containerOptional.isEmpty()) {
       LOGGER.warn(String.format("Could not find main container definition for pod: %s", podDefinition.getMetadata().getName()));

@@ -211,7 +211,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.24"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -5182,7 +5182,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.5"
+- dockerImage: "airbyte/source-marketo:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -5685,7 +5685,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.19"
+- dockerImage: "airbyte/source-mixpanel:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -10432,7 +10432,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-youtube-analytics:0.1.0"
+- dockerImage: "airbyte/source-youtube-analytics:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/youtube-analytics"
     connectionSpecification:
@@ -10441,7 +10441,7 @@
       type: "object"
       required:
       - "credentials"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         credentials:
           title: "Authenticate via OAuth 2.0"
@@ -10450,7 +10450,7 @@
           - "client_id"
           - "client_secret"
           - "refresh_token"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               title: "Client ID"
