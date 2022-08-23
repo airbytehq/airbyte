@@ -441,7 +441,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.81
+  dockerImageTag: 0.1.82
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -948,7 +948,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1060,7 +1060,7 @@
 - sourceDefinitionId: afa734e4-3571-11ec-991a-1e0031268139
   name: YouTube Analytics
   dockerRepository: airbyte/source-youtube-analytics
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/youtube-analytics
   icon: youtube.svg
   sourceType: api
