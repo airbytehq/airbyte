@@ -133,8 +133,16 @@ public class SSLCertificateUtils {
         Runtime.getRuntime());
 
     final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Files.readAllBytes(pkcs8Key));
-    final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-    final PrivateKey privateKey = keyFactory.generatePrivate(spec);
+    PrivateKey privateKey;
+    try {
+      privateKey = KeyFactory.getInstance("RSA").generatePrivate(spec);
+    } catch (final InvalidKeySpecException ex1) {
+      try {
+        privateKey = KeyFactory.getInstance("DSA").generatePrivate(spec);
+      } catch (final InvalidKeySpecException ex2) {
+          privateKey = KeyFactory.getInstance("EC").generatePrivate(spec);
+      }
+    }
 
     return keyStoreFromClientCertificate(fromPEMString(certString), privateKey, keyStorePassword, filesystem, directory);
 
