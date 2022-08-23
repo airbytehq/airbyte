@@ -25,6 +25,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionTy
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
@@ -564,6 +565,46 @@ public class MetricsQueriesTest {
       assertEquals(0, res.size());
     }
 
+  }
+
+  @Nested
+  class AbnormalJobsInLastDay {
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+    }
+    @Test
+    @DisplayName("should return correct number for abnormal jobs")
+    void shouldReturnTerminalJobs() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(30, ChronoUnit.HOURS);
+      final var connectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAt.minus(expAgeSecs, ChronoUnit.SECONDS);
+      final var syncConfigType = JobConfigType.SYNC;
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+              .values(connectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(1L, connectionId.toString(), JobStatus.succeeded, createAt, updateAt, syncConfigType).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(2L, connectionId.toString(), JobStatus.succeeded, createAt, updateAt,syncConfigType).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(3L, connectionId.toString(), JobStatus.succeeded, createAt, updateAt,syncConfigType).execute());
+
+      final var res = configDb.query(MetricQueries::totalActiveConnectionsInLastDay);
+      assertEquals(3, res.size());
+
+    }
   }
 
 }
