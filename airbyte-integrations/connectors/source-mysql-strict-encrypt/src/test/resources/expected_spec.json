@@ -70,10 +70,7 @@
           {
             "title": "Verify CA",
             "description": "Verify CA SSL mode.",
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -118,10 +115,7 @@
           {
             "title": "Verify Identity",
             "description": "Verify-full SSL mode.",
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
