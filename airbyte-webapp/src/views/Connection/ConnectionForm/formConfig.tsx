@@ -4,7 +4,7 @@ import * as yup from "yup";
 
 import { DropDownRow } from "components";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { frequencyConfig } from "config/frequencyConfig";
 import { SyncSchema } from "core/domain/catalog";
 import {
   isDbtTransformation,
@@ -268,24 +268,35 @@ const useInitialValues = (
   ]);
 };
 
-const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
+const useFrequencyDropdownData = (
+  additionalFrequency: WebBackendConnectionRead["schedule"]
+): DropDownRow.IDataItem[] => {
   const { formatMessage } = useIntl();
 
-  return useMemo(
-    () =>
-      FrequencyConfig.map((item) => ({
-        value: item.config,
-        label: item.config
-          ? formatMessage(
-              {
-                id: `form.every.${item.config.timeUnit}`,
-              },
-              { value: item.config.units }
-            )
-          : formatMessage({ id: "frequency.manual" }),
-      })),
-    [formatMessage]
-  );
+  return useMemo(() => {
+    const frequencies = [...frequencyConfig];
+    if (additionalFrequency) {
+      const additionalFreqAlreadyPresent = frequencies.some(
+        (frequency) =>
+          frequency?.timeUnit === additionalFrequency.timeUnit && frequency?.units === additionalFrequency.units
+      );
+      if (!additionalFreqAlreadyPresent) {
+        frequencies.push(additionalFrequency);
+      }
+    }
+
+    return frequencies.map((frequency) => ({
+      value: frequency,
+      label: frequency
+        ? formatMessage(
+            {
+              id: `form.every.${frequency.timeUnit}`,
+            },
+            { value: frequency.units }
+          )
+        : formatMessage({ id: "frequency.manual" }),
+    }));
+  }, [formatMessage, additionalFrequency]);
 };
 
 export type { ConnectionFormValues, FormikConnectionFormValues };

@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { CheckBox, H5 } from "components";
 import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { TooltipLearnMoreLink } from "components/ToolTip/TooltipLearnMoreLink";
 
 import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -57,18 +58,6 @@ const NextLineText = styled.div`
   margin-top: 10px;
 `;
 
-const LearnMoreLink = styled.a`
-  opacity: 0.6;
-  display: block;
-  margin-top: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-  text-decoration: none;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
@@ -111,9 +100,7 @@ const CatalogHeader: React.FC = () => {
         <FormattedMessage id="form.syncMode" />
         <InformationToolTip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
-            <FormattedMessage id="form.entrypoint.docs" />
-          </LearnMoreLink>
+          <TooltipLearnMoreLink url={config.links.syncModeLink} />
         </InformationToolTip>
       </Cell>
       <Cell lighter>
