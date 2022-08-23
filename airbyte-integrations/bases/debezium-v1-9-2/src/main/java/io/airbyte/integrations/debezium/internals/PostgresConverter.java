@@ -125,12 +125,12 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         case "TIMESTAMPTZ":
           return DateTimeConverter.convertToTimestampWithTimezone(x);
         case "TIMESTAMP":
-          if (x instanceof Long) {
+          if (x instanceof final Long l) {
             if (getTimePrecision(field) <= 3) {
-              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis((Long) x));
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis(l));
             }
             if (getTimePrecision(field) <= 6) {
-              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros((Long) x));
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros(l));
             }
           }
           return DateTimeConverter.convertToTimestamp(x);

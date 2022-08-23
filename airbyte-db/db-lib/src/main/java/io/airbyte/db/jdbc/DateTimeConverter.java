@@ -74,8 +74,6 @@ public class DateTimeConverter {
       final String value = timestamptz.format(TIMESTAMPTZ_FORMATTER);
       return resolveEra(localDate, value);
     } else {
-      // This case probably isn't strictly necessary, but I'm leaving it just in case there's some weird
-      // situation that I'm not aware of.
       if (!loggedUnknownTimestampWithTimeZoneClass) {
         LOGGER.info("Unknown class for Timestamp with time zone data type" + timestamp.getClass());
         loggedUnknownTimestampWithTimeZoneClass = true;

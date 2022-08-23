@@ -187,6 +187,15 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .build());
     }
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
+            .build());
+
+
     for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -401,6 +410,19 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .build());
     }
 
+    // time without time zone
+    for (final String fullSourceType : Set.of("time", "time without time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("time")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+              // time column will ignore time zone
+              .addInsertValues("null")
+              .addExpectedValues((String) null)
+              .build());
+    }
+
     // timestamp without time zone
     for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
       addDataTypeTestData(
@@ -426,6 +448,18 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "0001-01-01T00:00:00.000000",
                   "0001-12-31T23:59:59.999999 BC",
                   "1970-01-01T00:00:00.000000")
+              .build());
+    }
+
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamp")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues("null")
+              .addExpectedValues((String) null)
               .build());
     }
 
