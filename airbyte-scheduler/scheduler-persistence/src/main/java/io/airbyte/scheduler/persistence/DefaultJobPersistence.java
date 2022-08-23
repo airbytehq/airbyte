@@ -92,25 +92,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public static final String METADATA_VAL_COL = "value";
 
   @VisibleForTesting
-  static final String BASE_JOB_SELECT_AND_JOIN =
-      "SELECT\n"
-          + "jobs.id AS job_id,\n"
-          + "jobs.config_type AS config_type,\n"
-          + "jobs.scope AS scope,\n"
-          + "jobs.config AS config,\n"
-          + "jobs.status AS job_status,\n"
-          + "jobs.started_at AS job_started_at,\n"
-          + "jobs.created_at AS job_created_at,\n"
-          + "jobs.updated_at AS job_updated_at,\n"
-          + "attempts.attempt_number AS attempt_number,\n"
-          + "attempts.log_path AS log_path,\n"
-          + "attempts.output AS attempt_output,\n"
-          + "attempts.status AS attempt_status,\n"
-          + "attempts.failure_summary AS attempt_failure_summary,\n"
-          + "attempts.created_at AS attempt_created_at,\n"
-          + "attempts.updated_at AS attempt_updated_at,\n"
-          + "attempts.ended_at AS attempt_ended_at\n"
-          + "FROM jobs LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
+  static final String BASE_JOB_SELECT_AND_JOIN = jobSelectAndJoin("jobs");
 
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
@@ -134,6 +116,27 @@ public class DefaultJobPersistence implements JobPersistence {
 
   public DefaultJobPersistence(final Database jobDatabase) {
     this(jobDatabase, Instant::now, 30, 500, 10);
+  }
+
+  private static String jobSelectAndJoin(String jobsSubquery) {
+    return "SELECT\n"
+        + "jobs.id AS job_id,\n"
+        + "jobs.config_type AS config_type,\n"
+        + "jobs.scope AS scope,\n"
+        + "jobs.config AS config,\n"
+        + "jobs.status AS job_status,\n"
+        + "jobs.started_at AS job_started_at,\n"
+        + "jobs.created_at AS job_created_at,\n"
+        + "jobs.updated_at AS job_updated_at,\n"
+        + "attempts.attempt_number AS attempt_number,\n"
+        + "attempts.log_path AS log_path,\n"
+        + "attempts.output AS attempt_output,\n"
+        + "attempts.status AS attempt_status,\n"
+        + "attempts.failure_summary AS attempt_failure_summary,\n"
+        + "attempts.created_at AS attempt_created_at,\n"
+        + "attempts.updated_at AS attempt_updated_at,\n"
+        + "attempts.ended_at AS attempt_ended_at\n"
+        + "FROM " + jobsSubquery + " LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
   }
 
   /**
@@ -344,13 +347,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
+    final String fromJobsString = "(SELECT * FROM jobs WHERE CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
+        + " AND jobs.scope = '" + configId + "' ORDER BY jobs.created_at DESC, jobs.id DESC LIMIT " + pagesize + " OFFSET " + offset + ") AS jobs";
     return jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
-        BASE_JOB_SELECT_AND_JOIN + WHERE +
-            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
-            "AND scope = ? " +
-            ORDER_BY_JOB_TIME_ATTEMPT_TIME +
-            "LIMIT ? OFFSET ?",
-        configId, pagesize, offset)));
+        jobSelectAndJoin(fromJobsString) + ORDER_BY_JOB_TIME_ATTEMPT_TIME)));
   }
 
   @Override
