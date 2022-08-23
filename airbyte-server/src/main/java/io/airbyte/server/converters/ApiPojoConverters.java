@@ -25,6 +25,7 @@ import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class ApiPojoConverters {

@@ -437,13 +437,15 @@ public class WebBackendConnectionsHandler {
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
 
-    for (final var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
-      if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
-        final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
-        operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
-      } else {
-        final OperationUpdate operationUpdate = toOperationUpdate(operationCreateOrUpdate);
-        operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
+    if (webBackendConnectionUpdate.getOperations() != null) {
+      for (final var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
+        if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
+          final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
+          operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
+        } else {
+          final OperationUpdate operationUpdate = toOperationUpdate(operationCreateOrUpdate);
+          operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
+        }
       }
     }
     originalOperationIds.removeAll(operationIds);
