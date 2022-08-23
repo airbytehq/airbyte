@@ -3,8 +3,9 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LabeledInput, LoadingButton } from "components";
+import { Button, LabeledInput, LabeledSwitch, LoadingButton } from "components";
 
+import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveWorkspace,
@@ -38,6 +39,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();
   const updateWorkspace = useUpdateWorkspace();
+  const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting(workspace.workspaceId);
 
   return (
     <>
@@ -77,6 +79,11 @@ export const WorkspaceSettingsView: React.FC = () => {
                     />
                   )}
                 </Field>
+                <LabeledSwitch
+                  label="Advanced Mode"
+                  checked={isAdvancedMode}
+                  onChange={(ev) => setAdvancedMode(ev.target.checked)}
+                />
                 <Buttons>
                   <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
                     cancel
