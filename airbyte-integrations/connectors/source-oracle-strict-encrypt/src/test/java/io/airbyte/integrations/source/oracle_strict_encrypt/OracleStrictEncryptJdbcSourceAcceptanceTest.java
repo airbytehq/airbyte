@@ -138,21 +138,21 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   void cleanUpTables() throws SQLException {
-    final Connection conn = DriverManager.getConnection(
+    final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
     for (final String schemaName : TEST_SCHEMAS) {
       final ResultSet resultSet =
-          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+          connection.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
         final String tableNameProcessed = tableName.contains(" ") ? sourceOperations.enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
+        connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
-    if (!conn.isClosed())
-      conn.close();
+    if (!connection.isClosed())
+      connection.close();
   }
 
   @Override
@@ -206,11 +206,11 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   public void executeOracleStatement(final String query) {
-    try (final Connection conn = DriverManager.getConnection(
+    try (final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-        final Statement stmt = conn.createStatement()) {
+        final Statement stmt = connection.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);
