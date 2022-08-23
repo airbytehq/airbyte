@@ -1,0 +1,17 @@
+{
+  "type" : "object",
+  "properties" : {
+    "uuid" : {
+      "type" : "string"
+    },
+    "connector" : {
+      "type" : "string"
+    },
+    "status" : {
+      "type" : "string"
+    },
+    "name" : {
+      "type" : "string"
+    }
+  }
+}

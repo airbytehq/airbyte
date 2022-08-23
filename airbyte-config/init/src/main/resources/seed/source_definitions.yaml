@@ -775,6 +775,14 @@
   icon: prestashop.svg
   sourceType: api
   releaseStage: alpha
+- name: Primetric
+  sourceDefinitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
+  dockerRepository: airbyte/source-primetric
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.io/integrations/sources/presta-shop
+  icon: primetric.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Qualaroo
   sourceDefinitionId: b08e4776-d1de-4e80-ab5c-1e51dad934a2
   dockerRepository: airbyte/source-qualaroo

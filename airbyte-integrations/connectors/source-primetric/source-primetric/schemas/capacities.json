@@ -1,0 +1,88 @@
+{
+  "type" : "object",
+  "properties" : {
+    "uuid" : {
+      "type" : "string"
+    },
+    "starts_at" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date"
+    },
+    "ends_at" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date"
+    },
+    "employment_type" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_monday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_tuesday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_wednesday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_thursday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_friday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_saturday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "capacity_sunday" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "contract_title" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "employee_id" : {
+      "type" : "string"
+    },
+    "custom_attributes" : {
+      "type" : "array",
+      "items" : {
+        "type" : [
+          "null",
+          "object"
+        ]
+      }
+    }
+  }
+}

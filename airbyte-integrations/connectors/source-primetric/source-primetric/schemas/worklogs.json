@@ -1,0 +1,70 @@
+{
+  "type" : "object",
+  "properties" : {
+    "uuid" : {
+      "type" : "string"
+    },
+    "assignment_id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "project_id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "starts_at" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date-time"
+    },
+    "created_at" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date-time"
+    },
+    "work" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "desc" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "in_progress" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
+    },
+    "billable" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
+    },
+    "developer_id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "custom_attributes" : {
+      "type" : [
+        "null",
+        "array"
+      ]
+    }
+  }
+}

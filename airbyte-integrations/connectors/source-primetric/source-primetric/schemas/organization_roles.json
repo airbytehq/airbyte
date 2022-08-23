@@ -1,0 +1,14 @@
+{
+  "type" : "object",
+  "properties" : {
+    "uuid" : {
+      "type" : "string"
+    },
+    "text" : {
+      "type" : "string"
+    },
+    "default_hour_rate" : {
+      "type" : "string"
+    }
+  }
+}

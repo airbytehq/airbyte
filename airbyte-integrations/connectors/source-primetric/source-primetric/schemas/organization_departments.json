@@ -1,0 +1,11 @@
+{
+  "type" : "object",
+  "properties" : {
+    "uuid" : {
+      "type" : "string"
+    },
+    "text" : {
+      "type" : "string"
+    }
+  }
+}

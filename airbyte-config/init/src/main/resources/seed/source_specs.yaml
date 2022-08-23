@@ -7521,6 +7521,28 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-primetric:dev"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Primetric Spec"
+      type: "object"
+      required:
+        - "client_id"
+        - "client_secret"
+      additionalProperties: false
+      properties:
+        client_id:
+          type: "string"
+          description: "Client Id of our Primetric client"
+        client_secret:
+          type: "string"
+          description: "The Client Secret for our Primetric client."
+          airbyte_secret: true
+    supportsNormalization: true
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"

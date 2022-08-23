@@ -1,0 +1,20 @@
+{
+  "type" : "object",
+  "properties" : {
+    "text" : {
+      "type" : "string"
+    },
+    "rag_type" : {
+      "type" : "integer"
+    },
+    "default_choice" : {
+      "type" : "integer"
+    },
+    "allow_undefined" : {
+      "type" : "boolean"
+    },
+    "is_financial" : {
+      "type" : "boolean"
+    }
+  }
+}
