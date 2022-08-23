@@ -39,7 +39,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();
   const updateWorkspace = useUpdateWorkspace();
-  const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting(workspace.workspaceId);
+  const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
 
   return (
     <>
