@@ -17,6 +17,9 @@ from pendulum import DateTime
 
 # Basic full refresh stream
 class WrikeStream(HttpStream, ABC):
+    """
+    Wrike API Reference: https://developers.wrike.com/overview/
+    """
 
     primary_key = "id"
     url_base = ""
