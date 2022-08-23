@@ -38,7 +38,7 @@ Authenticating this Alpha connector is currently blocked. This is a known issue 
 6. Paste all other data to required fields using your IAM user.
 7. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
 2. Go to local Airbyte page.

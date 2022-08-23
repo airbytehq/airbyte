@@ -12,7 +12,7 @@ This page guides you through setting up the BigQuery destination connector.
 
     **Note:** Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
 
-- (Required for Airbyte Cloud; Optional for Airbyte OSS) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+- (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 ## Connector modes
 
@@ -42,7 +42,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 
 ### Step 2: Set up the BigQuery connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Destinations** and then click **+ New destination**.
 3. On the Set up the destination page, select **BigQuery** or **BigQuery (denormalized typed struct)** from the **Destination type** dropdown depending on whether you want to set up the connector in [BigQuery](#connector-modes) or [BigQuery (Denormalized)](#connector-modes) mode.
 4. Enter the name for the BigQuery connector.
