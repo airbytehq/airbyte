@@ -38,15 +38,19 @@ export const WorkspaceSettingsView: React.FC = () => {
         }
       >
         <Formik
-          initialValues={{ name: workspace.name }}
-          onSubmit={async (payload) =>
-            updateWorkspace.mutateAsync({
+          initialValues={{
+            name: workspace.name,
+            advancedMode: isAdvancedMode,
+          }}
+          onSubmit={async (payload) => {
+            setAdvancedMode(payload.advancedMode);
+            return updateWorkspace.mutateAsync({
               workspaceId: workspace.workspaceId,
               name: payload.name,
-            })
-          }
+            });
+          }}
         >
-          {({ dirty, isSubmitting, resetForm, isValid }) => (
+          {({ dirty, isSubmitting, resetForm, isValid, setFieldValue }) => (
             <Form>
               <Content>
                 <Field name="name">
@@ -63,12 +67,16 @@ export const WorkspaceSettingsView: React.FC = () => {
                     />
                   )}
                 </Field>
-                <LabeledSwitch
-                  label="Advanced Mode"
-                  checked={isAdvancedMode}
-                  onChange={(ev) => setAdvancedMode(ev.target.checked)}
-                  className={styles.formItem}
-                />
+                <Field name="advancedMode">
+                  {({ field }: FieldProps<boolean>) => (
+                    <LabeledSwitch
+                      label="Advanced Mode"
+                      checked={field.value}
+                      onChange={() => setFieldValue(field.name, !field.value)}
+                      className={styles.formItem}
+                    />
+                  )}
+                </Field>
                 <div className={classNames(styles.formItem, styles.buttonGroup)}>
                   <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
                     cancel
