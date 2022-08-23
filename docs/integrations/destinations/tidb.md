@@ -65,6 +65,8 @@ Config the following information in the TiDB destination:
 * **Database**
 * **jdbc_url_params** (Optional)
 
+**Note:** When connecting to TiDB Cloud with TLS enabled, you need to specify TLS protocol, such as `enabledTLSProtocols=TLSv1.2` or `enabledTLSProtocols=TLSv1.3` in the JDBC parameters.
+
 ### Default JDBC URL Parameters
 
 * `useSSL=false` (unless `ssl` is set to true)
@@ -95,6 +97,6 @@ Using this feature requires additional configuration, when creating the destinat
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                       | Subject                 |
-|:--------|:-----------|:---------------------------------------------------|:------------------------|
-| 0.1.0   | 2022-08-10 | []()                                               | Added TiDB destination. |
+| Version | Date       | Pull Request                                                  | Subject                 |
+|:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.1.0   | 2022-08-12 | [#15592](https://github.com/airbytehq/airbyte/pull/15592)     | Added TiDB destination. |

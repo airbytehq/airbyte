@@ -1,7 +1,7 @@
 # Destination TiDB
 
 This is the repository for the TiDB destination connector in Java.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/ti-db).
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/tidb).
 
 ## Local development
 
