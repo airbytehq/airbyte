@@ -4,12 +4,12 @@
 
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_file import SourceFile
 from source_file.client import Client
-from unittest.mock import patch
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 
@@ -79,7 +79,7 @@ def test_csv_schema():
             "First Name": {"type": ["string", "null"]},
             "Last Name": {"type": ["string", "null"]},
             "State": {"type": ["string", "null"]},
-            "zip_code": {"type": ["string", "null"]}
+            "zip_code": {"type": ["string", "null"]},
         },
-        "type": "object"
+        "type": "object",
     }
