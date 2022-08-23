@@ -27,7 +27,7 @@ class MixpanelStream(HttpStream, ABC):
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    reqs_per_hour_limit: int = 60  # 1 query per minute
+    reqs_per_hour_limit: int = 0  # 1 query per minute
 
     def __init__(
         self,
@@ -38,6 +38,7 @@ class MixpanelStream(HttpStream, ABC):
         date_window_size: int = 30,  # in days
         attribution_window: int = 0,  # in days
         select_properties_by_default: bool = True,
+        projects: Optional[List] = None,
         **kwargs,
     ):
         self.start_date = start_date
@@ -46,6 +47,7 @@ class MixpanelStream(HttpStream, ABC):
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
         self.region = region if region else "US"
+        self.projects = [{'project_id': item['id']} for item in projects] if projects else None
 
         super().__init__(authenticator=authenticator)
 
@@ -112,10 +114,24 @@ class Projects(MixpanelStream):
             project_info["id"] = project_id
             yield project_info
 
-class DateSlicesMixin:
+class ProjectSlicesMixin:
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return self.projects if self.projects else [None]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        if stream_slice and "project_id" in stream_slice:
+            return {"project_id": stream_slice["project_id"]}
+        else:
+            return {}
+
+
+class DateSlicesMixin(ProjectSlicesMixin):
+
+    def date_slices(self, stream_state=None):
         date_slices: list = []
 
         # use the latest date between self.start_date and stream_state
@@ -144,13 +160,25 @@ class DateSlicesMixin:
             start_date = end_date + timedelta(days=1)
 
         return date_slices
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        project_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        for date_slice in self.date_slices(stream_state=stream_state):
+            for project_slice in project_slices:
+                if project_slice:
+                    date_slice.update(project_slice)
+                yield date_slice
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         return {
             "from_date": stream_slice["start_date"],
             "to_date": stream_slice["end_date"],
+            **params
         }
 
 

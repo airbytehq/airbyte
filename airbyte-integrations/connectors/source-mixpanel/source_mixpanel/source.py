@@ -92,12 +92,20 @@ class SourceMixpanel(AbstractSource):
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = TokenAuthenticatorBase64(token=self.get_auth_token(config))
+
+        if config.get('credentials', {}).get("auth_type") == "service_account":
+            projects = Projects(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh)
+            config["projects"] = list(projects)
+
+        AirbyteLogger().log("INFO", f"projects: {config.get('projects')}")
+
         return [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             CohortMembers(authenticator=auth, **config),
             Engage(authenticator=auth, **config),
             Export(authenticator=auth, **config),
+            FunnelsList(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
             Projects(authenticator=auth, **config),

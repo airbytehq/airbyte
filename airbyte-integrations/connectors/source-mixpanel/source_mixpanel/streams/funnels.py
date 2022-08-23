@@ -7,10 +7,10 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
+from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream, ProjectSlicesMixin
 
 
-class FunnelsList(MixpanelStream):
+class FunnelsList(ProjectSlicesMixin, MixpanelStream):
     """List all funnels
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
     Endpoint: https://mixpanel.com/api/2.0/funnels/list
