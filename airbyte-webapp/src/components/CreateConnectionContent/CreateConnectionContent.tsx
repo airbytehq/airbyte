@@ -46,7 +46,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
-  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
+    source.sourceId,
+    true
+  );
 
   const connection = useMemo<ConnectionFormProps["connection"]>(
     () => ({
