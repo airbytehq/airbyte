@@ -4,28 +4,87 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.PostgresConverter;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Properties;
 
 public class PostgresCdcProperties {
 
-  static Properties getDebeziumDefaultProperties(final JsonNode config) {
+  static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    final JsonNode dbConfig = database.getDatabaseConfig();
     final Properties props = commonProperties();
-    props.setProperty("plugin.name", PostgresUtils.getPluginValue(config.get("replication_method")));
-    if (config.has("snapshot_mode")) {
+    props.setProperty("plugin.name", PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
+    if (sourceConfig.has("snapshot_mode")) {
       // The parameter `snapshot_mode` is passed in test to simulate reading the WAL Logs directly and
       // skip initial snapshot
-      props.setProperty("snapshot.mode", config.get("snapshot_mode").asText());
+      props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
       props.setProperty("snapshot.mode", "initial");
     }
 
-    props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
-    props.setProperty("publication.name", config.get("replication_method").get("publication").asText());
+    props.setProperty("slot.name", sourceConfig.get("replication_method").get("replication_slot").asText());
+    props.setProperty("publication.name", sourceConfig.get("replication_method").get("publication").asText());
 
     props.setProperty("publication.autocreate.mode", "disabled");
 
+    // Check params for SSL connection in config and add properties for CDC SSL connection
+    // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode
+    if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
+        props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(
+                SslMode.valueOf(sourceConfig.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText())));
+        props.setProperty("database.history.producer.security.protocol", "SSL");
+        props.setProperty("database.history.consumer.security.protocol", "SSL");
+
+        if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
+          props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
+
+        }
+        if (dbConfig.has(TRUST_KEY_STORE_PASS) && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+
+        }
+        if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.keystore.type", "PKCS12");
+          props.setProperty("database.history.consumer.ssl.keystore.type", "PKCS12");
+
+        }
+        if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty("database.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+        }
+      } else {
+        props.setProperty("database.ssl.mode", "required");
+      }
+    }
     return props;
   }
 

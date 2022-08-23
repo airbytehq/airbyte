@@ -179,7 +179,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String PARAM_SSL = "ssl";
   public static final String PARAM_SSL_TRUE = "true";
-  public static final String PARAM_SSL_FALSE = "FALSE";
+  public static final String PARAM_SSL_FALSE = "false";
 
   @Override
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
@@ -352,7 +352,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
               : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
       final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
-          Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
+          Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
           catalog,
           state,
           // We can assume that there will be only 1 replication slot cause before the sync starts for
@@ -374,7 +374,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           new PostgresCdcSavedInfoFetcher(savedOffsetAfterReplicationSlotLSN ? stateManager.getCdcStateManager().getCdcState() : null),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
-          PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
+          PostgresCdcProperties.getDebeziumDefaultProperties(database),
           emittedAt);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
@@ -503,6 +503,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected String toSslJdbcParam(final SslMode sslMode) {
+    return toSslJdbcParamInternal(sslMode);
+  }
+
+  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED -> "disable";
       case ALLOWED -> "allow";

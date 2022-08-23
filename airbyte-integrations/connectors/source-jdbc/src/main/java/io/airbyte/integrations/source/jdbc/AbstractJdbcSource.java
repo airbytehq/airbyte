@@ -398,7 +398,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   Pair<URI, String> caCertKeyStorePair;
   Pair<URI, String> clientCertKeyStorePair;
 
-  protected enum SslMode {
+  public enum SslMode {
 
     DISABLED("disable"),
     ALLOWED("allow"),
@@ -499,7 +499,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   protected String toSslJdbcParam(final SslMode sslMode) {
-    return null; //TEMP
+    // Default implementation
+    return sslMode.name();
   }
 
 }
