@@ -117,9 +117,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
-    if (config.has(PARAM_SSL_MODE) && !config.get(PARAM_SSL_MODE).asText().isEmpty()
-    && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
+    if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
+      LOGGER.info("*** saving CA cert to file");
       sslParameters.put("ca_certificate_path", JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
+      LOGGER.info("*** crt file: {}", sslParameters.get("ca_certificate_path"));
     }
 
 //    System.setProperty("javax.net.ssl.trustStore", sslParameters.get(TRUST_KEY_STORE_URL));

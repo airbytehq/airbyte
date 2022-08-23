@@ -17,6 +17,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -53,8 +54,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         .put("method", "Standard")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", HostPortResolver.resolvePort(container))
         .put("database", container.getDatabaseName())
         .put("schemas", Jsons.jsonNode(List.of("public")))
         .put("username", "postgres")
@@ -69,8 +70,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            container.getHost(),
+            container.getFirstMappedPort(),
             config.get("database").asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
