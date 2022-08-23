@@ -60,7 +60,7 @@ public final class DebeziumConverterUtils {
     return input.toString();
   }
 
-  public static Object convertDefaultValue(RelationalColumn field) {
+  public static Object convertDefaultValue(final RelationalColumn field) {
     if (field.isOptional()) {
       return null;
     } else if (field.hasDefaultValue()) {
