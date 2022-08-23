@@ -5,8 +5,8 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.db.Database;
-import java.io.IOException;
 import java.util.Optional;
 import org.jooq.DSLContext;
 
@@ -22,7 +22,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload);
 
-  static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);
@@ -40,7 +40,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static SecretsHydrator getSecretsHydrator(final DSLContext dslContext, final Configs configs) throws IOException {
+  static SecretsHydrator getSecretsHydrator(final DSLContext dslContext, final Configs configs) {
     final var persistence = getLongLived(dslContext, configs);
 
     if (persistence.isPresent()) {
@@ -50,7 +50,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);
@@ -66,6 +66,14 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
         return Optional.empty();
       }
     }
+  }
+
+  static SecretsHydrator getDataPlaneSecretsHydrator(final Configs configs) {
+    if (!configs.getSecretPersistenceType().equals(SecretPersistenceType.GOOGLE_SECRET_MANAGER)) {
+      throw new IllegalArgumentException("Data Plane workers currently only support Google Secret Manager as a backing store for secrets.");
+    }
+    return new RealSecretsHydrator(
+        GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
   }
 
 }
