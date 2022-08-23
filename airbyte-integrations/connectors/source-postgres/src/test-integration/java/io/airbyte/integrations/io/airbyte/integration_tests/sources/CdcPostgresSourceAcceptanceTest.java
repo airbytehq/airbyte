@@ -40,15 +40,15 @@ import org.testcontainers.utility.MountableFile;
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String NAMESPACE = "public";
+  static final String SLOT_NAME_BASE = "debezium_slot";
+  static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  static final String PUBLICATION = "publication";
+  static final int INITIAL_WAITING_SECONDS = 5;
 
-  private PostgreSQLContainer<?> container;
-  private JsonNode config;
+  PostgreSQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
