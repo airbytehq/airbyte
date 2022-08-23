@@ -51,4 +51,3 @@ public class GcsStorageOperations extends S3StorageOperations {
   }
 
 }
-
