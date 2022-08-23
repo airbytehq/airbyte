@@ -102,6 +102,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `0.1.7` | 2022-08-23 | [15817](https://github.com/airbytehq/airbyte/pull/15817) | Improved unit test coverage                                                                   |
 | `0.1.6` | 2022-08-21 | [15824](https://github.com/airbytehq/airbyte/pull/15824) | Fix semi incremental streams: do not ignore start date, make one api call instead of multiple |
 | `0.1.5` | 2022-08-16 | [15683](https://github.com/airbytehq/airbyte/pull/15683) | Retry failed creation of a job instead of skipping it                                         |
 | `0.1.4` | 2022-06-20 | [13930](https://github.com/airbytehq/airbyte/pull/13930) | Process failing creation of export jobs                                                       |
