@@ -1,6 +1,6 @@
 {
   "type": ["null", "object"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "channel_id": {
       "type": ["null", "string"]
