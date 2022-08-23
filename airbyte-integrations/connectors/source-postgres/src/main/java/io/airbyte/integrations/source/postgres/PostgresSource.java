@@ -53,6 +53,10 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -183,16 +187,19 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         : sslParams.entrySet()
             .stream()
             .map((entry) -> {
-              final String result = switch (entry.getKey()) {
-                case SSL_MODE -> PARAM_SSLMODE + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
-                    + JdbcUtils.AMPERSAND + PARAM_SSL + "=" + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
-                case "ca_certificate_path" -> "sslrootcert" + "=" + entry.getValue();
-                case CLIENT_KEY_STORE_URL -> "sslkey" + "=" + entry.getValue();
-                case CLIENT_KEY_STORE_PASS -> "sslpassword" + "=" + entry.getValue();
-                default -> "";
-              };
-              return result;
-
+              try {
+                final String result = switch (entry.getKey()) {
+                  case SSL_MODE -> PARAM_SSLMODE + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
+                      + JdbcUtils.AMPERSAND + PARAM_SSL + "=" + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
+                  case "ca_certificate_path" -> "sslrootcert" + "=" + entry.getValue();
+                  case CLIENT_KEY_STORE_URL -> "sslkey" + "=" + Path.of(new URI(entry.getValue()));
+                  case CLIENT_KEY_STORE_PASS -> "sslpassword" + "=" + entry.getValue();
+                  default -> "";
+                };
+                return result;
+              } catch (final URISyntaxException e) {
+                throw new IllegalArgumentException("unable to convert to URI", e);
+              }
             })
             .filter(s -> Objects.nonNull(s) && !s.isEmpty())
             .collect(Collectors.joining(JdbcUtils.AMPERSAND));
