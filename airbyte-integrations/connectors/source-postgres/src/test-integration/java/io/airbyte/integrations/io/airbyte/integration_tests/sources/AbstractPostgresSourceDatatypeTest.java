@@ -399,7 +399,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     }
 
     // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone")) {
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType("timestamp")
@@ -415,14 +415,18 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP '0001-01-01 00:00:00.000000'",
                   // The last possible timestamp in BCE
                   "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
-                  "null")
+                  "'epoch'",
+                  "'infinity'",
+                  "'-infinity'")
               .addExpectedValues(
                   "2004-10-19T10:23:00.000000",
                   "2004-10-19T10:23:54.123456",
                   "3004-10-19T10:23:54.123456 BC",
                   "0001-01-01T00:00:00.000000",
                   "0001-12-31T23:59:59.999999 BC",
-                  null)
+                  "1970-01-01T00:00:00.000000",
+                  "+292278994-08-16T23:00:00.000000",
+                  "+292269055-12-02T23:00:00.000000 BC")
               .build());
     }
 
