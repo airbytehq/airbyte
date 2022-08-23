@@ -394,12 +394,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private void logMessageAsJSON(final String caller, AirbyteMessage message) {
-    if (!logConnectorMessages)
+    if (!logConnectorMessages) {
       return;
+    }
 
     try {
       final String json = new ObjectMapper().writeValueAsString(message);
-      log.info(caller + " -> " + json);
+      log.info(caller + " message | " + json);
     } catch (JsonProcessingException e) {
       log.warn("Error serializing " + message + " to JSON: " + e);
     }
