@@ -4,14 +4,11 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
-
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
 
 public class MySqlCdcProperties {
 
@@ -33,7 +30,8 @@ public class MySqlCdcProperties {
 
     // snapshot config
     if (config.has("snapshot_mode")) {
-      //The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip initial snapshot
+      // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip
+      // initial snapshot
       props.setProperty("snapshot.mode", config.get("snapshot_mode").asText());
     } else {
       // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-mode
