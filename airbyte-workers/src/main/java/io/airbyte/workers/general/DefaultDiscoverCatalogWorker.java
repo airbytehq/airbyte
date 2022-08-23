@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -34,22 +36,28 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
   private static final int TEMPORAL_MESSAGE_LIMIT_MB = 1024 * 1024 * 4;
 
+  private final ConfigRepository configRepository;
+
   private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final WorkerConfigs workerConfigs,
+  public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
+                                      final WorkerConfigs workerConfigs,
                                       final IntegrationLauncher integrationLauncher,
                                       final AirbyteStreamFactory streamFactory) {
+    this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultDiscoverCatalogWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
-    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
+                                      final WorkerConfigs workerConfigs,
+                                      final IntegrationLauncher integrationLauncher) {
+    this(configRepository, workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
@@ -82,16 +90,14 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           throw new WorkerException("Integration failed to output a catalog struct.");
         }
 
-        // This message is sent through temporal that utilizes GRPC as is set to limit messages to 4mb.
-        // We fail fast here so users will not have to wait the 10 minutes before a timeout error occurs.
-        if (catalog.get().toString().length() > TEMPORAL_MESSAGE_LIMIT_MB) {
-          throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
-        }
-
-        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withDiscoverCatalog(catalog.get());
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(catalog.get(), UUID.fromString(discoverSchemaInput.getSourceId()),
+                discoverSchemaInput.getConnectorVersion(),
+                discoverSchemaInput.getConfigHash());
+        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId.toString());
       } else {
         return WorkerUtils.getJobFailureOutputOrThrow(
-            OutputType.DISCOVER_CATALOG,
+            OutputType.DISCOVER_CATALOG_ID,
             messagesByType,
             String.format("Discover job subprocess finished with exit code %s", exitCode));
       }

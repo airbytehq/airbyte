@@ -246,7 +246,8 @@ public class WorkerApp {
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
         .registerActivitiesImplementations(
-            new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
+            new DiscoverCatalogActivityImpl(configRepository, discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot,
+                workerEnvironment,
                 logConfigs,
                 jobPersistence, airbyteVersion));
   }

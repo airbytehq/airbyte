@@ -69,8 +69,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchedulerHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
@@ -218,14 +222,8 @@ public class SchedulerHandler {
         configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-      final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
-      if (response.isSuccess()) {
-        final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
-        returnValue.catalogId(catalogId);
-      }
-      return returnValue;
+      final SynchronousResponse<String> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion);
+      return discoverJobToOutput(response);
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
     final SynchronousJobRead emptyJob = new SynchronousJobRead()
@@ -255,16 +253,19 @@ public class SchedulerHandler {
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(partialConfig);
-    final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
+    final SynchronousResponse<String> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag());
     return discoverJobToOutput(response);
   }
 
-  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<String> response) throws ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
+      ActorCatalog catalog = configRepository.getActorCatalogById(UUID.fromString(response.getOutput()));
+      final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
+          io.airbyte.protocol.models.AirbyteCatalog.class);
+      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
     }
 
     return sourceDiscoverSchemaRead;

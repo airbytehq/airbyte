@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,6 +29,7 @@ import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -45,14 +47,20 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 class DefaultDiscoverCatalogWorkerTest {
 
+  @Mock
+  private ConfigRepository mConfigRepository;
+
   private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
-  private static final StandardDiscoverCatalogInput INPUT = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS);
+  private static final StandardDiscoverCatalogInput INPUT =
+      new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS).withSourceId(UUID.randomUUID().toString());
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM = "users";
@@ -70,12 +78,18 @@ class DefaultDiscoverCatalogWorkerTest {
   private Process process;
   private AirbyteStreamFactory streamFactory;
 
+  private UUID catalogId;
+
   @BeforeEach
   void setup() throws Exception {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
+    mConfigRepository = mock(ConfigRepository.class);
+
+    catalogId = UUID.randomUUID();
+    when(mConfigRepository.writeActorCatalogFetchEvent(any(), any(), any(), any())).thenReturn(catalogId);
 
     when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
@@ -90,12 +104,13 @@ class DefaultDiscoverCatalogWorkerTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testDiscoverSchema() throws Exception {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
     assertNull(output.getFailureReason());
-    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
-    assertEquals(CATALOG, output.getDiscoverCatalog());
+    assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
+    assertEquals(catalogId.toString(), output.getDiscoverCatalogId());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -111,7 +126,8 @@ class DefaultDiscoverCatalogWorkerTest {
   void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
@@ -131,10 +147,11 @@ class DefaultDiscoverCatalogWorkerTest {
 
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, traceStreamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, traceStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
-    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
-    assertNull(output.getDiscoverCatalog());
+    // assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
+    // assertNull(output.getDiscoverCatalog());
     assertNotNull(output.getFailureReason());
 
     final FailureReason failureReason = output.getFailureReason();
@@ -154,13 +171,15 @@ class DefaultDiscoverCatalogWorkerTest {
     when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
         .thenThrow(new RuntimeException());
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
   void testCancel() throws WorkerException {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();

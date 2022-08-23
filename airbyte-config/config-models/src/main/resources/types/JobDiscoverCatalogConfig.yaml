@@ -8,10 +8,22 @@ additionalProperties: false
 required:
   - connectionConfiguration
   - dockerImage
+  - sourceId
+  - connectorVersion
+  - configHash
 properties:
   connectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   dockerImage:
+    type: string
+  sourceId:
+    description: The ID of the source being discovered, so we can persist the result
+    type: string
+  connectorVersion:
+    description: Connector version
+    type: string
+  configHash:
+    description: Config hash
     type: string
