@@ -4,6 +4,7 @@
 
 import json
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from gzip import decompress
@@ -102,6 +103,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     cursor_field = "reportDate"
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
@@ -143,6 +145,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
         report_infos = self._init_and_try_read_records(profile, report_date)
+        self._update_state(profile, report_date)
 
         for report_info in report_infos:
             for metric_object in report_info.metric_objects:
@@ -305,21 +308,27 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if no_data:
             yield None
 
-    def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
-        profileId = str(latest_data["profileId"])
-        profile = {str(p.profileId): p for p in self._profiles}[profileId]
-        record_date = latest_data[self.cursor_field]
-        record_date = pendulum.from_format(record_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW)
-        start_date = self.get_start_date(profile, current_stream_state)
-        updated_state = max(min(record_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
+    @property
+    def state(self):
+        return self._state
 
-        stream_state_value = current_stream_state.get(profileId, {}).get(self.cursor_field)
+    @state.setter
+    def state(self, value):
+        self._state = deepcopy(value)
+
+    def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
+        return self._state
+
+    def _update_state(self, profile: Profile, report_date: str):
+        report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW - 1)
+        start_date = self.get_start_date(profile, self._state)
+        updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
+
+        stream_state_value = self._state.get(str(profile.profileId), {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(profileId, {})[self.cursor_field] = updated_state
-
-        return current_stream_state
+        self._state.setdefault(str(profile.profileId), {})[self.cursor_field] = updated_state
 
     @abstractmethod
     def _get_init_report_body(self, report_date: str, record_type: str, profile) -> Dict[str, Any]:
