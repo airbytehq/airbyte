@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.internal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.BiMap;
@@ -55,6 +57,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final StateAggregator stateAggregator;
   private DateTime firstRecordReceivedAt;
   private final DateTime lastStateMessageReceivedAt;
+  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   private short nextStreamIndex;
 
@@ -99,6 +102,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
+    logMessageAsJSON("source", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
@@ -109,6 +114,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromDestination(final AirbyteMessage message) {
+    logMessageAsJSON("destination", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
@@ -384,6 +391,18 @@ public class AirbyteMessageTracker implements MessageTracker {
     final Long previousCount = totalCount - 1;
     final double result = (Double.valueOf(currentMean * previousCount) / totalCount) + (Double.valueOf(newDataPoint) / totalCount);
     return (long) result;
+  }
+
+  private void logMessageAsJSON(final String caller, AirbyteMessage message) {
+    if (!logConnectorMessages)
+      return;
+
+    try {
+      final String json = new ObjectMapper().writeValueAsString(message);
+      log.info(caller + " -> " + json);
+    } catch (JsonProcessingException e) {
+      log.warn("Error serializing " + message + " to JSON: " + e);
+    }
   }
 
 }
