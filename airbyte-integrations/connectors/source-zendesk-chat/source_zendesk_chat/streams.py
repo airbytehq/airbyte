@@ -103,7 +103,7 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
-    
+
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date, **kwargs):
