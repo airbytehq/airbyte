@@ -4,7 +4,7 @@ connectionSpecification:
   title: Wrike Spec
   type: object
   required:
-    - access_token 
+    - access_token
     - wrike_instance
   properties:
     access_token:

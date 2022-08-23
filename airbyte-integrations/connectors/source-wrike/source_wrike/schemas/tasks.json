@@ -6,36 +6,35 @@
       "type": "string"
     },
     "accountId": {
-      "type":  "string"
+      "type": "string"
     },
     "title": {
-      "type":  "string"
+      "type": "string"
     },
     "status": {
-      "type":  "string"
+      "type": "string"
     },
     "importance": {
-      "type":  ["null","string"]
-    },   
+      "type": ["null", "string"]
+    },
     "scope": {
-      "type":  ["null","string"]
-    },   
+      "type": ["null", "string"]
+    },
     "briefDescription": {
-      "type":  ["null","string"]
-    },  
+      "type": ["null", "string"]
+    },
     "description": {
-      "type":  ["null","string"]
-    },           
+      "type": ["null", "string"]
+    },
     "customStatusId": {
-      "type": 
-       ["null","string"]
-    },      
+      "type": ["null", "string"]
+    },
     "permalink": {
-      "type":  ["null","string"]
-    },  
+      "type": ["null", "string"]
+    },
     "priority": {
-      "type":  ["null","string"]
-    },  
+      "type": ["null", "string"]
+    },
     "createdDate": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -57,13 +56,13 @@
       "items": {
         "type": ["string", "null"]
       }
-    },    
+    },
     "authorIds": {
       "type": ["array", "null"],
       "items": {
         "type": ["string", "null"]
       }
-    },    
+    },
     "customFields": {
       "type": ["array", "null"],
       "items": {
@@ -74,15 +73,15 @@
           },
           "value": {
             "type": ["string", "null"]
-          }      
+          }
         }
       }
     },
     "dates": {
-      "type": ["object","null"],
+      "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": ["string","null"]
+          "type": ["string", "null"]
         }
       }
     },
