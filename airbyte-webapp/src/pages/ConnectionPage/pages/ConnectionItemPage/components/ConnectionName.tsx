@@ -1,6 +1,6 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, createElement, useState } from "react";
 
 import { Input } from "components";
 
@@ -84,12 +84,18 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
           </div>
         </div>
       ) : (
-        <button tabIndex={0} className={styles.nameContainer} onClickCapture={() => setEditingState(true)}>
-          <div>
-            <h2>{name}</h2>
-          </div>
-          <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
-        </button>
+        //same weird thing happening as pathpopout with typings
+        createElement("button", {
+          onClick: () => setEditingState(true),
+          children: (
+            <>
+              <div className={styles.nameContainer}>
+                <h2>{name}</h2>
+              </div>
+              <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
+            </>
+          ),
+        })
       )}
     </div>
   );
