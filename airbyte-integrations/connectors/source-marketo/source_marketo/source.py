@@ -63,17 +63,6 @@ class MarketoStream(HttpStream, ABC):
         for record in data:
             yield record
 
-    def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
-        """
-        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
-        """
-        try:
-            res = datetime.datetime.strptime(dt, format)
-        except ValueError:
-            self.logger.warning("date-time field in unexpected format: '%s'", dt)
-            return dt
-        return to_datetime_str(res)
-
 
 class IncrementalMarketoStream(MarketoStream):
     cursor_field = "createdAt"
@@ -92,7 +81,7 @@ class IncrementalMarketoStream(MarketoStream):
         if record[self.cursor_field] >= (stream_state or {}).get(self.cursor_field, self.start_date):
             yield record
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
         json_response = response.json().get(self.data_field) or []
 
         for record in json_response:
@@ -471,7 +460,18 @@ class Programs(IncrementalMarketoStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
+        """
+        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
+        """
+        try:
+            res = datetime.datetime.strptime(dt, format)
+        except ValueError:
+            self.logger.warning("date-time field in unexpected format: '%s'", dt)
+            return dt
+        return to_datetime_str(res)
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
             # delete +00:00 part from the end of createdAt and updatedAt
             record["updatedAt"] = self.normalize_datetime(record["updatedAt"])
@@ -544,7 +544,7 @@ class SourceMarketo(AbstractSource):
 
             return True, None
         except requests.exceptions.RequestException as e:
-            return False, e
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
