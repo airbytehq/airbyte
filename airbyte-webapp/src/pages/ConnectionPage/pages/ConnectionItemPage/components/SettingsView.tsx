@@ -2,6 +2,7 @@ import React from "react";
 
 import DeleteBlock from "components/DeleteBlock";
 
+import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
@@ -15,11 +16,12 @@ interface SettingsViewProps {
 const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
+  const [isAdvancedMode] = useAdvancedModeSetting();
   const onDelete = () => deleteConnection(connection);
 
   return (
     <div className={styles.container}>
-      <StateBlock connectionId={connection.connectionId} />
+      {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />
     </div>
   );
