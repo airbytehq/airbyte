@@ -1,6 +1,6 @@
 # TiDB
 
-[TiDB](https://github.com/pingcap/tidb) (/’taɪdiːbi:/, "Ti" stands for Titanium) is an open-source, distributed, NewSQL database that supports Hybrid Transactional and Analytical Processing (HTAP) workloads. It is TiDB compatible and features horizontal scalability, strong consistency, and high availability. Now, everyone can take a free dev trial on [TiDB Cloud](https://en.pingcap.com/tidb-cloud/).
+[TiDB](https://github.com/pingcap/tidb) (/’taɪdiːbi:/, "Ti" stands for Titanium) is an open-source, distributed, NewSQL database that supports Hybrid Transactional and Analytical Processing (HTAP) workloads. It is MySQL compatible and features horizontal scalability, strong consistency, and high availability. Now, everyone can take a free dev trial on [TiDB Cloud](https://en.pingcap.com/tidb-cloud/).
 
 This page guides you through the process of setting up the TiDB destination connector.
 
