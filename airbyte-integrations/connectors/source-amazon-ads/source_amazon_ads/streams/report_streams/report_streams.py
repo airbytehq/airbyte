@@ -411,10 +411,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
 
-        The connector has to correctly calculate the start date of the report and in theory,
-        it does not have to get such an error. But from practice, we can still catch such errors from time to time.
+        In theory, it does not have to get such an error because the connector correctly calculates the start date,
+        but from practice, we can still catch such errors from time to time.
 
-        Connector self recovers in subsequent sync because it will re-evaluate start date and will succeed.
+        Anyway connector self recovers in subsequent sync because it will re-evaluate the start date and will succeed.
         """
 
         if response.status_code == 406:
