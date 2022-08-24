@@ -20,8 +20,8 @@ def fixtures():
             "counter_id": "00000000",
             "start_date": "2022-07-01",
             "end_date": "2022-07-02",
-            "hits_fields": ["ym:pv:watchID", "ym:pv:dateTime", "ym:pv:counterID"],
-            "visits_fields": ["ym:s:visitID", "ym:s:dateTime", "ym:s:counterID"],
+            "hits_fields": ["watchID", "dateTime", "counterID"],
+            "visits_fields": ["visitID", "dateTime", "counterID"],
             "check_connectivity": True,
         }
     }

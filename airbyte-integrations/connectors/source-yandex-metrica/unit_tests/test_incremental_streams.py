@@ -13,12 +13,12 @@ def fixtures():
     return {
         "views_stream": Views(
             counter_id=00000000,
-            params={"start_date": "2022-07-01", "end_date": "2022-07-02", "fields": ["ym:pv:watchID", "ym:pv:dateTime"]},
+            params={"start_date": "2022-07-01", "end_date": "2022-07-02", "fields": ["watchID", "dateTime"]},
             **kwargs,
         ),
         "sessions_stream": Sessions(
             counter_id=00000000,
-            params={"start_date": "2022-07-01", "end_date": "2022-07-02", "fields": ["ym:s:visitID", "ym:s:dateTime"]},
+            params={"start_date": "2022-07-01", "end_date": "2022-07-02", "fields": ["visitID", "dateTime"]},
             **kwargs,
         ),
     }
@@ -27,7 +27,7 @@ def fixtures():
 # Views stream tests
 def test_views_cursor_field(fixtures):
     stream = fixtures["views_stream"]
-    expected_cursor_field = "ym:pv:dateTime"
+    expected_cursor_field = "dateTime"
 
     assert stream.cursor_field == expected_cursor_field
 
@@ -54,7 +54,7 @@ def test_views_checkpoint_interval(fixtures):
 # Sessions stream tests
 def test_sessions_cursor_field(fixtures):
     stream = fixtures["sessions_stream"]
-    expected_cursor_field = "ym:s:dateTime"
+    expected_cursor_field = "dateTime"
 
     assert stream.cursor_field == expected_cursor_field
 

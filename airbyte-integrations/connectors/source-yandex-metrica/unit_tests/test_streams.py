@@ -135,8 +135,8 @@ def test_views_schema(patch_base_class):
         "$schema": "http://json-schema.org/draft-04/schema#",
         "type": "object",
         "properties": {
-            "ym:pv:watchID": {"type": "string"},
-            "ym:pv:dateTime": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+            "watchID": {"type": "string"},
+            "dateTime": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
         },
     }
 
@@ -182,8 +182,8 @@ def test_sessions_schema(patch_base_class):
         "$schema": "http://json-schema.org/draft-04/schema#",
         "type": "object",
         "properties": {
-            "ym:s:visitID": {"type": "string"},
-            "ym:s:dateTime": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+            "visitID": {"type": "string"},
+            "dateTime": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
         },
     }
 
@@ -327,11 +327,11 @@ def test_download_http_method(patch_base_class):
 def test_download_parse_response(patch_base_class):
     stream = patch_base_class["download_substream_1_page"]
     expected_records = [
-        {"ym:pv:watchID": "00000000", "ym:pv:dateTime": "2022-07-01T12:00:00"},
-        {"ym:pv:watchID": "00000001", "ym:pv:dateTime": "2022-07-01T12:00:10"},
+        {"watchID": "00000000", "dateTime": "2022-07-01T12:00:00"},
+        {"watchID": "00000001", "dateTime": "2022-07-01T12:00:10"},
     ]
     mock_response = MockResponse(
-        {}, 200, text="ym:pv:watchID\tym:pv:dateTime\n00000000\t2022-07-01 12:00:00\n00000000\t2022-07-01 12:00:10"
+        {}, 200, text="watchID\tdateTime\n00000000\t2022-07-01 12:00:00\n00000000\t2022-07-01 12:00:10"
     )
     inputs = {"response": mock_response}
 
