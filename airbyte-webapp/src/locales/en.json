@@ -329,6 +329,7 @@
   "connection.destinationTestAgain": "Test destination connection again",
   "connection.sourceTestAgain": "Test source connection again",
   "connection.resetData": "Reset your data",
+  "connection.loadMoreJobs": "Load more",
   "connection.updateSchema": "Refresh source schema",
   "connection.updateSchema.formChanged.title": "Unsaved changes",
   "connection.updateSchema.formChanged.text": "Your replication settings have unsaved changes. Those will be lost when refreshing the source schema. Save your changes before refreshing the source schema to not lose them.",
