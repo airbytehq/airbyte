@@ -34,7 +34,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 11. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.

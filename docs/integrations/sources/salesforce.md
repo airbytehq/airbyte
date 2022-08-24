@@ -48,7 +48,7 @@ To set up Salesforce as a source in Airbyte Cloud:
 8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
 9. Click **Set up source**.
 
-### For Airbyte OSS
+### For Airbyte Open Source
 
 To set up Salesforce as a source in Airbyte Open Source:
 
