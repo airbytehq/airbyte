@@ -134,6 +134,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.15  | 2022-08-22 | [15787](https://github.com/airbytehq/airbyte/pull/15787) | Throw exception if job failed                                                        |
 | 1.1.14  | 2022-08-03 | [14784](https://github.com/airbytehq/airbyte/pull/14784) | Enabling Application Default Credentials                                                        |
 | 1.1.13  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                       |
 | 1.1.12  | 2022-08-02 | [15180](https://github.com/airbytehq/airbyte/pull/15180) | Fix standard loading mode                                                                       |

@@ -119,6 +119,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.13   | 2022-08-23 | [15901](https://github.com/airbytehq/airbyte/pull/15901)     | Exclude `KnowledgeArticle` from using bulk API |  
 | 1.0.12   | 2022-08-09 | [15444](https://github.com/airbytehq/airbyte/pull/15444)     | Fixed bug when `Bulk Job` was timeout by the connector, but remained running on the server   |
 | 1.0.11   | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)     | Improve configuration field descriptions   |
 | 1.0.10   | 2022-06-09 | [13658](https://github.com/airbytehq/airbyte/pull/13658)     | Correct logic to sync stream larger than page size   |

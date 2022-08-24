@@ -88,6 +88,8 @@ The API user account should be assigned one of the following roles:
 * CREATIVE\_MANAGER
 * VIEWER \(Recommended\)
 
+To edit these roles, sign into Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075). 
+
 ## Step 2: Set up the source connector in Airbyte
 
 **For Airbyte Cloud:**

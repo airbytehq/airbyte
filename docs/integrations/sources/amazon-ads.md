@@ -90,6 +90,8 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.16 | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822)    | Set default value for 'region' if needed                                                                          |
+| 0.1.15 | 2022-08-20 | [15816](https://github.com/airbytehq/airbyte/pull/15816)    | Update STATE of incremental sync if no records                                                                    |
 | 0.1.14 | 2022-08-15 | [15637](https://github.com/airbytehq/airbyte/pull/15637)    | Generate slices by lazy evaluation                                                                                |
 | 0.1.12 | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469)    | Define primary_key for all report streams                                                                         |
 | 0.1.11 | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031)    | Improve report streams date-range generation                                                                      |

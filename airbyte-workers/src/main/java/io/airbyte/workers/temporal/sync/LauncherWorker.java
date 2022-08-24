@@ -15,6 +15,7 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -72,7 +73,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext) {
-
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -115,8 +115,11 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
-
-        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
+        final var mainContainerInfo = new KubeContainerInfo(containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.containerOrchestratorImagePullPolicy());
+        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(),
+            podName,
+            mainContainerInfo);
         val featureFlag = new EnvVariableFeatureFlags();
 
         process = new AsyncOrchestratorPodProcess(
@@ -125,7 +128,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
-            containerOrchestratorConfig.containerOrchestratorImage(),
             containerOrchestratorConfig.googleApplicationCredentials(),
             featureFlag.useStreamCapableState());
 
