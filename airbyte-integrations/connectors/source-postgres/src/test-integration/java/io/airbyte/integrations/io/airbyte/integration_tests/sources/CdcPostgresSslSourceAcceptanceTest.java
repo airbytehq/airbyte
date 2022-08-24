@@ -25,11 +25,10 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"))
+    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
-
     container.start();
     certs = getCertificate(container);
     /**
