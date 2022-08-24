@@ -1,27 +1,27 @@
-from unittest.mock import Mock, MagicMock
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
-from source_fauna import SourceFauna
+from unittest.mock import MagicMock, Mock
 
-from faunadb import query as q
-from faunadb.objects import Ref
 from faunadb import _json
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, Column, expand_columns_query, mock_logger
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import Status, AirbyteStream
-
-from test_util import expand_columns_query, mock_logger, ref, config, CollectionConfig, Column
 
 def results(modified, after):
-    modified_obj = { "data": modified }
+    modified_obj = {"data": modified}
     if after is not None:
         modified_obj["after"] = after
     return modified_obj
+
 
 # Tests to make sure the read_all() function handles the pagination cursor correctly.
 def test_read_all():
     TS = 12342134
     PAGE_SIZE = 12344315
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
+    FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
 
     current_query = 0
     QUERIES = [
@@ -32,8 +32,8 @@ def test_read_all():
                 q.paginate(
                     q.documents(q.collection("my_stream_name")),
                     size=PAGE_SIZE,
-                )
-            )
+                ),
+            ),
         ),
         q.at(
             TS,
@@ -43,8 +43,8 @@ def test_read_all():
                     q.documents(q.collection("my_stream_name")),
                     size=PAGE_SIZE,
                     after=FIRST_AFTER_TOKEN,
-                )
-            )
+                ),
+            ),
         ),
     ]
     QUERY_RESULTS = [
@@ -53,7 +53,7 @@ def test_read_all():
                 {
                     "ref": "3",
                     "ts": 12345,
-                    "data": { "foo": "bar" },
+                    "data": {"foo": "bar"},
                 }
             ],
             after=FIRST_AFTER_TOKEN,
@@ -63,11 +63,11 @@ def test_read_all():
                 {
                     "ref": "5",
                     "ts": 9999999,
-                    "data": { "more": "data here" },
+                    "data": {"more": "data here"},
                 }
             ],
             after=None,
-        )
+        ),
     ]
 
     def query_hardcoded(expr):
@@ -87,12 +87,7 @@ def test_read_all():
     stream.stream.name = "my_stream_name"
     # ts should be "now", which is whatever we want
     # ref must not be present, as we are not resuming
-    result = list(source.read_all(
-        logger,
-        stream,
-        conf=CollectionConfig(page_size=PAGE_SIZE),
-        state={ "full_sync_cursor": { "ts": TS } }
-    ))
+    result = list(source.read_all(logger, stream, conf=CollectionConfig(page_size=PAGE_SIZE), state={"full_sync_cursor": {"ts": TS}}))
     assert result == [
         {
             "ref": "3",
@@ -107,36 +102,42 @@ def test_read_all():
             "data": {
                 "more": "data here",
             },
-        }
+        },
     ]
 
     assert not source._setup_client.called
     assert current_query == 2
     assert not logger.error.called
 
+
 # Tests to make sure the read_all() function handles the pagination cursor correctly.
 def test_read_all_extra_columns():
     def expand_columns_query_with_extra(ref):
         doc = q.var("document")
-        return q.let({
-            "document": q.get(ref),
-        }, {
-            "ref": q.select(["ref", "id"], doc),
-            "ts": q.select("ts", doc),
-            "my_column": q.select(
-                ["data", "my_field"],
-                doc,
-                q.abort(q.format(
-                    f"The path ['data', 'my_field'] does not exist in document Ref(%s, collection=%s)",
-                    q.select(["ref", "id"], doc),
-                    q.select(["ref", "collection", "id"], doc),
-                ))
-            ),
-            "optional_data": q.select(["data", "nested", "nested_field"], doc, None),
-        })
+        return q.let(
+            {
+                "document": q.get(ref),
+            },
+            {
+                "ref": q.select(["ref", "id"], doc),
+                "ts": q.select("ts", doc),
+                "my_column": q.select(
+                    ["data", "my_field"],
+                    doc,
+                    q.abort(
+                        q.format(
+                            "The path ['data', 'my_field'] does not exist in document Ref(%s, collection=%s)",
+                            q.select(["ref", "id"], doc),
+                            q.select(["ref", "collection", "id"], doc),
+                        )
+                    ),
+                ),
+                "optional_data": q.select(["data", "nested", "nested_field"], doc, None),
+            },
+        )
+
     TS = 12342134
     PAGE_SIZE = 12344315
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
 
     current_query = 0
     QUERIES = [
@@ -147,8 +148,8 @@ def test_read_all_extra_columns():
                 q.paginate(
                     q.documents(q.collection("my_stream_name")),
                     size=PAGE_SIZE,
-                )
-            )
+                ),
+            ),
         ),
     ]
     QUERY_RESULTS = [
@@ -160,20 +161,15 @@ def test_read_all_extra_columns():
                     "my_column": "fancy string here",
                     "optional_data": 3,
                 },
-                {
-                    "ref": "5",
-                    "ts": 123459,
-                    "my_column": "another fancy string here",
-                    "optional_data": 5
-                },
+                {"ref": "5", "ts": 123459, "my_column": "another fancy string here", "optional_data": 5},
                 {
                     "ref": "7",
                     "ts": 1234599,
                     "my_column": "even more fancy string here",
                     "optional_data": None,
-                }
+                },
             ],
-            after=None
+            after=None,
         ),
     ]
 
@@ -194,19 +190,23 @@ def test_read_all_extra_columns():
     stream.stream.name = "my_stream_name"
     # ts should be "now", which is whatever we want
     # ref must not be present, as we are not resuming
-    result = list(source.read_all(
-        logger,
-        stream,
-        conf=CollectionConfig(
-            page_size=PAGE_SIZE,
-            data_column=False,
-            additional_columns=[
-                Column(name="my_column", path=["data", "my_field"], type="this doesn't matter in read()", required=True),
-                Column(name="optional_data", path=["data", "nested", "nested_field"], type="this doesn't matter in read()", required=False),
-            ]
-        ),
-        state={ "full_sync_cursor": { "ts": TS } }
-    ))
+    result = list(
+        source.read_all(
+            logger,
+            stream,
+            conf=CollectionConfig(
+                page_size=PAGE_SIZE,
+                data_column=False,
+                additional_columns=[
+                    Column(name="my_column", path=["data", "my_field"], type="this doesn't matter in read()", required=True),
+                    Column(
+                        name="optional_data", path=["data", "nested", "nested_field"], type="this doesn't matter in read()", required=False
+                    ),
+                ],
+            ),
+            state={"full_sync_cursor": {"ts": TS}},
+        )
+    )
     assert result == [
         {
             "ref": "3",
@@ -232,13 +232,14 @@ def test_read_all_extra_columns():
     assert current_query == 1
     assert not logger.error.called
 
+
 # After a failure, the source should emit the state, which we should pass back in,
 # and then it should resume correctly.
 def test_read_all_resume():
     TS = 12342134
     PAGE_SIZE = 12344315
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
-    SECOND_AFTER_TOKEN = [ "even more magical", 3, "data" ]
+    FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
+    SECOND_AFTER_TOKEN = ["even more magical", 3, "data"]
 
     def make_query(after):
         return q.at(
@@ -249,8 +250,8 @@ def test_read_all_resume():
                     q.documents(q.collection("foo")),
                     size=PAGE_SIZE,
                     after=after,
-                )
-            )
+                ),
+            ),
         )
 
     current_query = 0
@@ -265,7 +266,7 @@ def test_read_all_resume():
                 {
                     "ref": "3",
                     "ts": 12345,
-                    "data": { "foo": "bar" },
+                    "data": {"foo": "bar"},
                 }
             ],
             after=FIRST_AFTER_TOKEN,
@@ -275,7 +276,7 @@ def test_read_all_resume():
                 {
                     "ref": "5",
                     "ts": 9999999,
-                    "data": { "more": "data here" },
+                    "data": {"more": "data here"},
                 }
             ],
             after=SECOND_AFTER_TOKEN,
@@ -285,14 +286,15 @@ def test_read_all_resume():
                 {
                     "ref": "100",
                     "ts": 92321341234,
-                    "data": { "last data": "some data" },
+                    "data": {"last data": "some data"},
                 }
             ],
             after=None,
-        )
+        ),
     ]
 
     failed_yet = False
+
     def query_hardcoded(expr):
         nonlocal current_query
         nonlocal failed_yet
@@ -314,7 +316,7 @@ def test_read_all_resume():
     stream.stream.name = "foo"
     # ts should be "now", which is whatever we want
     # ref must not be present, as we are not resuming
-    state = { "full_sync_cursor": { "ts": TS } }
+    state = {"full_sync_cursor": {"ts": TS}}
     config = CollectionConfig(page_size=PAGE_SIZE)
     outputs = []
     try:
@@ -338,14 +340,16 @@ def test_read_all_resume():
             "data": {
                 "more": "data here",
             },
-        }
+        },
     ]
     # Now we make sure our after token was serialized to json,
     # and that it was stored within the state.
-    assert state == { "full_sync_cursor": {
-        "ts": TS,
-        "after": _json.to_json(SECOND_AFTER_TOKEN),
-    } }
+    assert state == {
+        "full_sync_cursor": {
+            "ts": TS,
+            "after": _json.to_json(SECOND_AFTER_TOKEN),
+        }
+    }
 
     # Pass that state back in to resume.
     result = list(source.read_all(logger, stream, config, state))
@@ -354,7 +358,7 @@ def test_read_all_resume():
         {
             "ref": "100",
             "ts": 92321341234,
-            "data": { "last data": "some data" },
+            "data": {"last data": "some data"},
         }
     ]
 

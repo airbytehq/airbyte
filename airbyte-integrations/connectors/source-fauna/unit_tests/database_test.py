@@ -1,72 +1,93 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 # This file contains the longest unit tests. This spawns a local fauna container and
 # tests against that. These tests are used to make sure we don't skip documents on
 # certain edge cases.
 
-from source_fauna import SourceFauna
+import subprocess
+import time
+from datetime import datetime
 
-from faunadb import query as q
+import docker
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteStream,
-    ConfiguredAirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
     SyncMode,
     Type,
 )
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, DeletionsConfig, FullConfig, config, mock_logger, ref
 
-import time
-import subprocess
-from datetime import datetime
-from test_util import config, mock_logger, ref, FullConfig, CollectionConfig, DeletionsConfig
-
-import docker
 
 def setup_database(source: SourceFauna):
     print("Setting up database...")
     source.client.query(
-        q.create_collection({
-            "name": "foo",
-        })
+        q.create_collection(
+            {
+                "name": "foo",
+            }
+        )
     )
     # All these documents will have the same `ts`, so we need to make sure
     # that we don't skip any of these.
     db_results = source.client.query(
-        q.do([
-            q.create(ref(101, "foo"), {
-                "data": {
-                    "a": 5,
-                },
-            }),
-            q.create(ref(102, "foo"), {
-                "data": {
-                    "a": 6,
-                },
-            }),
-            q.create(ref(103, "foo"), {
-                "data": {
-                    "a": 7,
-                },
-            }),
-            q.create(ref(104, "foo"), {
-                "data": {
-                    "a": 8,
-                },
-            }),
-        ])
+        q.do(
+            [
+                q.create(
+                    ref(101, "foo"),
+                    {
+                        "data": {
+                            "a": 5,
+                        },
+                    },
+                ),
+                q.create(
+                    ref(102, "foo"),
+                    {
+                        "data": {
+                            "a": 6,
+                        },
+                    },
+                ),
+                q.create(
+                    ref(103, "foo"),
+                    {
+                        "data": {
+                            "a": 7,
+                        },
+                    },
+                ),
+                q.create(
+                    ref(104, "foo"),
+                    {
+                        "data": {
+                            "a": 8,
+                        },
+                    },
+                ),
+            ]
+        )
     )
     # Do this seperately, so that the above documents get added to this index.
     source.client.query(
-        q.create_index({
-            "name": "foo_ts",
-            "source": q.collection("foo"),
-            "terms": [],
-            "values": [
-                { "field": "ts" },
-                { "field": "ref" },
-            ],
-        }),
+        q.create_index(
+            {
+                "name": "foo_ts",
+                "source": q.collection("foo"),
+                "terms": [],
+                "values": [
+                    {"field": "ts"},
+                    {"field": "ref"},
+                ],
+            }
+        ),
     )
     print("Database is setup!")
 
@@ -81,10 +102,12 @@ def setup_database(source: SourceFauna):
         db_data["ts"].append(create_result["ts"])
     return db_data
 
+
 def stop_container(container):
     print("Stopping FaunaDB container...")
     container.stop()
     print("Stopped FaunaDB container")
+
 
 def setup_container():
     """Starts and stops a local fauna container"""
@@ -93,20 +116,24 @@ def setup_container():
     container = client.containers.run(
         "fauna/faunadb",
         remove=True,
-        ports={ 8443:9000 },
+        ports={8443: 9000},
         detach=True,
     )
     print("Waiting for FaunaDB to start...")
     i = 0
     while i < 100:
-        res = subprocess.run([
-            "curl",
-            "-m", "1",
-            "--output", "/dev/null",
-            "--silent",
-            "--head",
-            "http://127.0.0.1:9000",
-        ])
+        res = subprocess.run(
+            [
+                "curl",
+                "-m",
+                "1",
+                "--output",
+                "/dev/null",
+                "--silent",
+                "--head",
+                "http://127.0.0.1:9000",
+            ]
+        )
         if res.returncode == 0:
             print("")
             break
@@ -118,25 +145,35 @@ def setup_container():
     try:
         source = SourceFauna()
         # Port 9000, bound above
-        source._setup_client(FullConfig(
-            secret="secret",
-            port=9000,
-            domain="localhost",
-            scheme="http",
-        ))
+        source._setup_client(
+            FullConfig(
+                secret="secret",
+                port=9000,
+                domain="localhost",
+                scheme="http",
+            )
+        )
         db_data = setup_database(source)
         return container, db_data, source
-    except Exception as e:
+    except Exception:
         stop_container(container)
         raise
 
+
 def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteStream):
     source._setup_client(FullConfig.localhost())
-    source.client.query(q.create(ref(105, "foo"), { "data": { "a": 10 } }))
-    deleted_ts = source.client.query(q.do(
-        q.delete(ref(105, "foo")),
-        q.now(),
-    )).to_datetime().timestamp() * 1_000_000
+    source.client.query(q.create(ref(105, "foo"), {"data": {"a": 10}}))
+    deleted_ts = (
+        source.client.query(
+            q.do(
+                q.delete(ref(105, "foo")),
+                q.now(),
+            )
+        )
+        .to_datetime()
+        .timestamp()
+        * 1_000_000
+    )
 
     conf = CollectionConfig(
         name="foo",
@@ -148,14 +185,15 @@ def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteS
     assert results[0]["ts"] >= deleted_ts
     assert datetime.fromisoformat(results[0]["my_deletion_col"]).timestamp() * 1_000_000 >= deleted_ts
 
+
 def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyteStream):
     source._setup_client(FullConfig.localhost())
 
     start = source.client.query(q.to_micros(q.now()))
 
-    ref1 = source.client.query(q.select("ref", q.create(q.collection("foo"), { "data": {} })))
-    ref2 = source.client.query(q.select("ref", q.create(q.collection("foo"), { "data": {} })))
-    ref3 = source.client.query(q.select("ref", q.create(q.collection("foo"), { "data": {} })))
+    ref1 = source.client.query(q.select("ref", q.create(q.collection("foo"), {"data": {}})))
+    ref2 = source.client.query(q.select("ref", q.create(q.collection("foo"), {"data": {}})))
+    ref3 = source.client.query(q.select("ref", q.create(q.collection("foo"), {"data": {}})))
 
     # Delete in a different order than created
     source.client.query(q.delete(ref1))
@@ -169,12 +207,17 @@ def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyt
         deletions=DeletionsConfig.ignore(),
         page_size=2,
     )
-    results = list(source.read_removes(
-        logger, stream, conf,
-        state={
-            "ts": start - 1,
-        },
-        deletion_column="my_deletion_col"))
+    results = list(
+        source.read_removes(
+            logger,
+            stream,
+            conf,
+            state={
+                "ts": start - 1,
+            },
+            deletion_column="my_deletion_col",
+        )
+    )
     assert len(results) == 3
     # The order received should be the order deleted
     assert results[0]["ref"] == ref1.id()
@@ -184,87 +227,105 @@ def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyt
     assert results[0]["ts"] < results[1]["ts"]
     assert results[1]["ts"] < results[2]["ts"]
 
+
 def run_general_remove_test(source: SourceFauna, logger):
     stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(
-            name="deletions_test",
-            json_schema={}
-        ),
+        stream=AirbyteStream(name="deletions_test", json_schema={}),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append_dedup,
     )
     catalog = ConfiguredAirbyteCatalog(streams=[stream])
     source.client.query(
-        q.create_collection({
-            "name": "deletions_test",
-        })
+        q.create_collection(
+            {
+                "name": "deletions_test",
+            }
+        )
     )
-    db_data = source.client.query([
-        q.create(ref(101, "deletions_test"), {
-            "data": {
-                "a": 5,
-            },
-        }),
-        q.create(ref(102, "deletions_test"), {
-            "data": {
-                "a": 6,
-            },
-        }),
-        q.create(ref(103, "deletions_test"), {
-            "data": {
-                "a": 7,
-            },
-        }),
-        q.create(ref(104, "deletions_test"), {
-            "data": {
-                "a": 8,
-            },
-        }),
-    ])
+    db_data = source.client.query(
+        [
+            q.create(
+                ref(101, "deletions_test"),
+                {
+                    "data": {
+                        "a": 5,
+                    },
+                },
+            ),
+            q.create(
+                ref(102, "deletions_test"),
+                {
+                    "data": {
+                        "a": 6,
+                    },
+                },
+            ),
+            q.create(
+                ref(103, "deletions_test"),
+                {
+                    "data": {
+                        "a": 7,
+                    },
+                },
+            ),
+            q.create(
+                ref(104, "deletions_test"),
+                {
+                    "data": {
+                        "a": 8,
+                    },
+                },
+            ),
+        ]
+    )
     # Do this seperately, so that the above documents get added to this index.
     source.client.query(
-        q.create_index({
-            "name": "deletions_test_ts",
-            "source": q.collection("deletions_test"),
-            "terms": [],
-            "values": [
-                { "field": "ts" },
-                { "field": "ref" },
-            ],
-        }),
+        q.create_index(
+            {
+                "name": "deletions_test_ts",
+                "source": q.collection("deletions_test"),
+                "terms": [],
+                "values": [
+                    {"field": "ts"},
+                    {"field": "ref"},
+                ],
+            }
+        ),
     )
-    conf = config({
-        "port": 9000,
-        "collection": {
-            "data_column": True,
-            "additional_columns": [],
-            "name": "deletions_test",
-            "index": "deletions_test_ts",
-            "deletions": { "deletion_mode": "deleted_field", "column": "deleted_at" },
+    conf = config(
+        {
+            "port": 9000,
+            "collection": {
+                "data_column": True,
+                "additional_columns": [],
+                "name": "deletions_test",
+                "index": "deletions_test_ts",
+                "deletions": {"deletion_mode": "deleted_field", "column": "deleted_at"},
+            },
         }
-    })
+    )
     print("=== check: make sure we read the initial state")
     documents, state = read_records(source.read(logger, conf, catalog, {}), "deletions_test")
     assert documents == [
         {
             "ref": "101",
             "ts": db_data[0]["ts"],
-            "data": { "a": 5 },
+            "data": {"a": 5},
         },
         {
             "ref": "102",
             "ts": db_data[1]["ts"],
-            "data": { "a": 6 },
+            "data": {"a": 6},
         },
         {
             "ref": "103",
             "ts": db_data[2]["ts"],
-            "data": { "a": 7 },
+            "data": {"a": 7},
         },
         {
             "ref": "104",
             "ts": db_data[3]["ts"],
-            "data": { "a": 8 },
+            "data": {"a": 8},
         },
     ]
 
@@ -286,7 +347,7 @@ def run_general_remove_test(source: SourceFauna, logger):
 
     assert documents[1]["ref"] == "103"
     assert documents[1]["ts"] > db_data[2]["ts"]
-    assert not "data" in documents[1]
+    assert "data" not in documents[1]
     assert datetime.fromisoformat(documents[1]["deleted_at"]).timestamp() * 1_000_000 > db_data[2]["ts"]
 
     print("=== check: make sure we don't produce more deleted documents when nothing changed")
@@ -308,12 +369,15 @@ def run_general_remove_test(source: SourceFauna, logger):
     documents, state = read_records(source.read(logger, conf, catalog, state), "deletions_test")
     assert documents == []
 
+
 def handle_check(result: AirbyteConnectionStatus):
     if result.status == Status.FAILED:
         print("======================")
         print("CHECK FAILED:", result.message)
         print("======================")
         raise ValueError("check failed")
+
+
 def read_records(generator, collection_name):
     state = None
     records = []
@@ -329,23 +393,26 @@ def read_records(generator, collection_name):
         raise ValueError("no state message")
     return records, state
 
+
 def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAirbyteCatalog):
-    conf = config({
-        "port": 9000,
-        "collection": {
-            "data_column": False,
-            "additional_columns": [
-                {
-                    "name": "a",
-                    "path": ["data", "a"],
-                    "type": "integer",
-                    "required": True,
-                }
-            ],
-            "name": "foo",
-            "index": "foo_ts",
+    conf = config(
+        {
+            "port": 9000,
+            "collection": {
+                "data_column": False,
+                "additional_columns": [
+                    {
+                        "name": "a",
+                        "path": ["data", "a"],
+                        "type": "integer",
+                        "required": True,
+                    }
+                ],
+                "name": "foo",
+                "index": "foo_ts",
+            },
         }
-    })
+    )
     handle_check(source.check(logger, conf))
     state = {}
     print("=== check: make sure we read the initial state")
@@ -381,16 +448,16 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
         q.update(
             db_data["ref"][1],
             {
-                "data": { "a": 10 },
-            }
+                "data": {"a": 10},
+            },
         )
     )
     create_result = source.client.query(
         q.create(
             ref(200, "foo"),
             {
-                "data": { "a": 10000 },
-            }
+                "data": {"a": 10000},
+            },
         )
     )
     documents, state = read_records(source.read(logger, conf, catalog, state=state), "foo")
@@ -413,13 +480,11 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
         },
     ]
 
+
 def run_test(db_data, source: SourceFauna):
     logger = mock_logger()
     stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(
-            name="foo",
-            json_schema={}
-        ),
+        stream=AirbyteStream(name="foo", json_schema={}),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append_dedup,
     )
@@ -429,10 +494,10 @@ def run_test(db_data, source: SourceFauna):
     run_updates_test(db_data, source, logger, catalog)
     run_general_remove_test(source, logger)
 
+
 def test_incremental_reads():
     container, db_data, source = setup_container()
 
-    error = None
     try:
         run_test(db_data, source)
     except Exception as e:
@@ -440,4 +505,3 @@ def test_incremental_reads():
         stop_container(container)
         raise
     stop_container(container)
-

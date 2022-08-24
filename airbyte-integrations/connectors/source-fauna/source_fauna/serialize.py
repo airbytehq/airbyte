@@ -1,9 +1,15 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 # Handles serializing any fauna document into an airbyte record
 
 import base64
 from datetime import date
+
 from faunadb import _json
 from faunadb.objects import FaunaTime, Query, Ref, SetRef
+
 
 def fauna_doc_to_airbyte(doc: dict) -> dict:
     """
@@ -15,6 +21,7 @@ def fauna_doc_to_airbyte(doc: dict) -> dict:
     for k, v in doc.items():
         doc[k] = _fauna_value_to_airbyte(v)
     return doc
+
 
 def _fauna_value_to_airbyte(value: any) -> any:
     """
@@ -45,32 +52,33 @@ def _fauna_value_to_airbyte(value: any) -> any:
         return value.isoformat()
     elif isinstance(value, (bytes, bytearray)):
         # airbyte has no byte arrays, so this is just a string
-        return base64.urlsafe_b64encode(value).decode('utf-8')
+        return base64.urlsafe_b64encode(value).decode("utf-8")
     else:
         # if its anything else, we don't mutate it, and let the json
         # serializer deal with it.
         return value
+
 
 def ref_to_airbyte(ref) -> dict:
     # Note that the ref.database() field is never set, so we ignore it.
     if ref.collection() is None:
         # We have no nesting on this ref. Therefore, it is invalid, so
         # we return an unknown type.
-        return { "id": ref.id(), "type": "unknown" }
+        return {"id": ref.id(), "type": "unknown"}
     elif ref.collection().collection() is None:
         # We have a singly nested ref.
         # Example: Ref("my_collection", Ref("collections"))
         #      or: Ref("my_index", Ref("indexes"))
         collection_names = {
-            "collections":      "collection",
-            "databases":        "database",
-            "indexes":          "index",
-            "functions":        "function",
-            "roles":            "role",
+            "collections": "collection",
+            "databases": "database",
+            "indexes": "index",
+            "functions": "function",
+            "roles": "role",
             "access_providers": "access_provider",
-            "keys":             "key",
-            "tokens":           "token",
-            "credentials":      "credential",
+            "keys": "key",
+            "tokens": "token",
+            "credentials": "credential",
         }
         return {
             "id": ref.id(),
@@ -78,7 +86,7 @@ def ref_to_airbyte(ref) -> dict:
                 # Use the collection id as the key in the above map
                 ref.collection().id(),
                 # If that fails, we have an invalid ref, so we fallback to this id.
-                ref.collection().id()
+                ref.collection().id(),
             ),
         }
     elif (ref.collection().collection().collection() is None) and (ref.collection().collection().id() == "collections"):

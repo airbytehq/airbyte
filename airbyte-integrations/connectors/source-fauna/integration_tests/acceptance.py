@@ -4,9 +4,9 @@
 
 
 import pytest
-from source_fauna import SourceFauna
 
 pytest_plugins = ("source_acceptance_test.plugin",)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def connector_setup():
