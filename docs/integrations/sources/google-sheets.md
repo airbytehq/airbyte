@@ -22,9 +22,9 @@ To set up Google Sheets as a source in Airbyte Cloud:
 6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**. 
 7. For Row Batch Size, define the number of records you want the Google API to fetch at a time. The default value is 200.
 
-### For Airbyte OSS
+### For Airbyte Open Source
 
-To set up Google Sheets as a source in Airbyte OSS:
+To set up Google Sheets as a source in Airbyte Open Source:
 
 1. [Enable the Google Cloud Platform APIs for your personal or organization account](https://support.google.com/googleapi/answer/6158841?hl=en).
 
