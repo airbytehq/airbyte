@@ -89,7 +89,6 @@ const useConnectionForm = ({
     frequencies,
     formId,
     formDirty,
-    setSubmitError,
     onFormSubmit,
     onAfterSubmit,
     onFrequencySelect,
