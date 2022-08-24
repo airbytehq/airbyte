@@ -4,6 +4,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
+import { InfoTooltip } from "components/base/Tooltip";
 
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -15,6 +16,15 @@ import {
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import styles from "./WorkspaceSettingsView.module.scss";
+
+const AdvancedModeSwitchLabel = () => (
+  <>
+    <FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />
+    <InfoTooltip>
+      <FormattedMessage id="settings.generalSettings.form.advancedMode.tooltip" />
+    </InfoTooltip>
+  </>
+);
 
 export const WorkspaceSettingsView: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -73,12 +83,13 @@ export const WorkspaceSettingsView: React.FC = () => {
                 <Field name="advancedMode">
                   {({ field }: FieldProps<boolean>) => (
                     <LabeledSwitch
-                      label={<FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />}
+                      label={<AdvancedModeSwitchLabel />}
                       checked={field.value}
                       onChange={() => setFieldValue(field.name, !field.value)}
                     />
                   )}
                 </Field>
+
                 <div className={classNames(styles.formItem, styles.buttonGroup)}>
                   <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
                     cancel
