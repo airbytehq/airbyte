@@ -36,6 +36,7 @@ public class JobErrorReporter {
   private static final String FAILURE_ORIGIN_META_KEY = "failure_origin";
   private static final String FAILURE_TYPE_META_KEY = "failure_type";
   private static final String WORKSPACE_ID_META_KEY = "workspace_id";
+  private static final String WORKSPACE_URL_META_KEY = "workspace_url";
   private static final String CONNECTION_ID_META_KEY = "connection_id";
   private static final String CONNECTION_URL_META_KEY = "connection_url";
   private static final String CONNECTOR_NAME_META_KEY = "connector_name";
@@ -217,6 +218,13 @@ public class JobErrorReporter {
     return outMetadata;
   }
 
+  private Map<String, String> getWorkspaceMetadata(final UUID workspaceId) {
+    final String workspaceUrl = webUrlHelper.getWorkspaceUrl(workspaceId);
+    return Map.ofEntries(
+        Map.entry(WORKSPACE_ID_META_KEY, workspaceId.toString()),
+        Map.entry(WORKSPACE_URL_META_KEY, workspaceUrl));
+  }
+
   private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
                                       final FailureReason failureReason,
                                       final String dockerImage,
@@ -226,7 +234,7 @@ public class JobErrorReporter {
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
 
     if (workspace != null) {
-      commonMetadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
+      commonMetadata.putAll(getWorkspaceMetadata(workspace.getWorkspaceId()));
     }
 
     final Map<String, String> allMetadata = MoreMaps.merge(
