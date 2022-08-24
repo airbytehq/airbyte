@@ -587,11 +587,11 @@ public class AirbyteAcceptanceTestHarness {
   public JsonNode getDbConfig(final PostgreSQLContainer psql,
                               final boolean hiddenPassword,
                               final boolean withSchema,
-                              final boolean strictEnforce,
+                              final boolean forCloudTests,
                               final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema, strictEnforce);
+          : localConfig(psql, hiddenPassword, withSchema, forCloudTests);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -601,7 +601,7 @@ public class AirbyteAcceptanceTestHarness {
   private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
                                           final boolean hiddenPassword,
                                           final boolean withSchema,
-                                          final boolean strictEnforce)
+                                          final boolean forCloudTests)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -628,11 +628,9 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
-    // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
-    // not included in the schema.
-    if (!strictEnforce) {
-      dbConfig.put(JdbcUtils.SSL_KEY, false);
-    }
+
+    dbConfig.put("is_test", true);
+    dbConfig.put(JdbcUtils.SSL_KEY, false);
 
     if (withSchema) {
       dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
