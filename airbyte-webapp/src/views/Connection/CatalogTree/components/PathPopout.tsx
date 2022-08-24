@@ -1,7 +1,4 @@
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import styled from "styled-components";
 
 import { Popout } from "components";
 import { Tooltip } from "components/base/Tooltip";
@@ -80,13 +77,10 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       }}
       placeholder={props.placeholder}
       components={props.isMulti ? { MultiValue: () => null } : undefined}
-      /** todo: weird styles */
       targetComponent={({ onOpen }) => (
-        <button onClick={onOpen}>
+        <PathPopoutButton items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} onClick={onOpen}>
           {text}
-          <Arrow icon={faSortDown} />
-          <Tooltip items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} />
-        </button>
+        </PathPopoutButton>
       )}
     />
   );

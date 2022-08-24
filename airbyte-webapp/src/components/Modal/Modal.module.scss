@@ -39,11 +39,7 @@
 
 .card {
   margin-left: variables.$width-size-menu;
-<<<<<<< HEAD
-  max-width: calc(100% - (#{variables.$width-size-menu} - #{variables.$spacing-lg}) * 2);
-=======
   max-width: calc(100vw - variables.$width-size-menu - variables.$spacing-lg * 2);
->>>>>>> 10bbd86ef5 (modal and switch)
 
   &.sm {
     width: variables.$width-modal-sm;
