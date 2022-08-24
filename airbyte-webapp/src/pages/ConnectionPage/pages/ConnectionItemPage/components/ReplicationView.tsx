@@ -11,7 +11,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { ModalCancel, useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
@@ -213,7 +213,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   return (
     <Content>
       {!isRefreshingCatalog && connection ? (
-        <ConnectionFormProvider
+        <ConnectionFormServiceProvider
           connection={connection}
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
           onSubmit={onSubmitForm}
@@ -230,7 +230,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
             }
             onFormDirtyChanges={onDirtyChanges}
           />
-        </ConnectionFormProvider>
+        </ConnectionFormServiceProvider>
       ) : (
         <LoadingSchema />
       )}

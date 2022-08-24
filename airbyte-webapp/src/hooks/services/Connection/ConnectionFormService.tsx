@@ -21,7 +21,7 @@ import {
 import { useFormChangeTrackerService, useUniqueFormId } from "../FormChangeTracker";
 import { ModalCancel } from "../Modal";
 
-interface ConnectionServiceProps {
+export interface ConnectionServiceProps {
   connection:
     | WebBackendConnectionRead
     | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
@@ -99,7 +99,7 @@ const useConnectionForm = ({
 
 const ConnectionFormContext = createContext<ReturnType<typeof useConnectionForm> | null>(null);
 
-export const ConnectionFormProvider: React.FC<ConnectionServiceProps> = ({ children, ...props }) => {
+export const ConnectionFormServiceProvider: React.FC<ConnectionServiceProps> = ({ children, ...props }) => {
   const data = useConnectionForm(props);
   return <ConnectionFormContext.Provider value={data}>{children}</ConnectionFormContext.Provider>;
 };

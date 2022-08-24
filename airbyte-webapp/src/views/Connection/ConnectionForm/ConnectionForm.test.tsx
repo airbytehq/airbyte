@@ -9,7 +9,7 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
-import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { render } from "utils/testutils";
 
 import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
@@ -72,9 +72,9 @@ jest.mock("services/workspaces/WorkspacesService", () => {
 const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionFormProvider mode={mode} connection={connection} onSubmit={jest.fn()}>
+      <ConnectionFormServiceProvider mode={mode} connection={connection} onSubmit={jest.fn()}>
         <ConnectionForm />
-      </ConnectionFormProvider>
+      </ConnectionFormServiceProvider>
     </ConfirmationModalService>
   );
 

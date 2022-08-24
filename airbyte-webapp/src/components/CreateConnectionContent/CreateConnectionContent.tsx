@@ -8,7 +8,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { ConnectionFormProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
@@ -90,7 +90,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionFormProvider
+      <ConnectionFormServiceProvider
         connection={connection}
         mode="create"
         onSubmit={onSubmitConnectionStep}
@@ -98,7 +98,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         onFrequencySelect={onFrequencySelect}
       >
         <ConnectionForm />
-      </ConnectionFormProvider>
+      </ConnectionFormServiceProvider>
     </Suspense>
   );
 };
