@@ -4,9 +4,9 @@
 
 import csv
 import io
+import re
 from abc import ABC
 from datetime import datetime, timedelta
-import re
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -394,8 +394,8 @@ class Download(YandexMetricaStream):
                 # Transform datetime fields
                 row[self.cursor_field] = row[self.cursor_field].replace(" ", "T")
                 row["dateTimeUTC"] = row["dateTimeUTC"].replace(" ", "T")
-            except:
-                pass
+            except Exception as e:
+                print(f"Something went wrong while transforming datetime fields. More info: {e}")
 
             yield row
 

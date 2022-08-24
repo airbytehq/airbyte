@@ -51,7 +51,5 @@
       ]
     }
   },
-  "required": [
-    "log_request"
-  ]
+  "required": ["log_request"]
 }

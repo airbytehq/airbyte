@@ -26,8 +26,8 @@ The Yandex Metrica source connector supports the following [sync modes](https://
     * After the first sync the connector will set the state for next sync. The **start date** will be set to last syncs **end date**. The **end date** will be set to 1 day before today.
 
 ## Supported Streams
-* [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html).
-* [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html).
+* [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html) (Incremental).
+* [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html) (Incremental).
 
 ## Notes
 - We recommend syncing data once a day. Because of the Yandex Metrica API limitation it is only possible to extract records up to yesterdays date. Todays records will only be available tomorrow.

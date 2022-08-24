@@ -3,11 +3,6 @@
   "counter_id": "00000000",
   "start_date": "2022-07-04",
   "end_date": "2022-07-05",
-  "hits_fields": [
-    "ym:pv:title",
-    "ym:pv:URL"
-  ],
-  "visits_fields": [
-    "ym:s:pageViews"
-  ]
+  "hits_fields": ["ym:pv:title", "ym:pv:URL"],
+  "visits_fields": ["ym:s:pageViews"]
 }

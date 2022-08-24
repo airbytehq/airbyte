@@ -11,17 +11,17 @@
         "properties": {
           "ym:pv:watchID": {
             "type": "string"
-          },          
+          },
           "ym:pv:counterID": {
             "type": "string"
-          },          
+          },
           "ym:pv:dateTime": {
             "type": "string",
             "format": "date-time"
-          },     
+          },
           "ym:pv:title": {
             "type": "string"
-          },     
+          },
           "ym:pv:URL": {
             "type": "string"
           }
@@ -39,14 +39,14 @@
         "properties": {
           "ym:s:visitID": {
             "type": "string"
-          },                  
+          },
           "ym:s:dateTime": {
             "type": "string",
             "format": "date-time"
-          },     
+          },
           "ym:s:startURL": {
             "type": "string"
-          },     
+          },
           "ym:pv:endURL": {
             "type": "string"
           },
