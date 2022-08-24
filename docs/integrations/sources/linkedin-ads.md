@@ -103,7 +103,7 @@ To edit these roles, sign into Campaign Manager and follow [these instructions](
 7. Log in and Authorize to the LinkedIn Ads account
 8. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 

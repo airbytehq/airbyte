@@ -27,7 +27,7 @@ This connector supports only authentication with API Key. To obtain API key foll
 6. Enter the `replication_start_date` you want your sync to start from
 7. Click **Set up source**
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source 
 3. Enter your `api_token`
