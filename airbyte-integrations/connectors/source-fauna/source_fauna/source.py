@@ -3,10 +3,9 @@
 #
 
 
-import os
 import json
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, Generator, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -16,9 +15,7 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
-    AirbyteStateType,
     AirbyteStream,
-    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
@@ -26,14 +23,13 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-
-from faunadb import query as q
 from faunadb import _json
-from faunadb.objects import Ref, FaunaTime
+from faunadb import query as q
 from faunadb.client import FaunaClient
 from faunadb.errors import FaunaError, Unauthorized
-
+from faunadb.objects import Ref
 from source_fauna.serialize import fauna_doc_to_airbyte
+
 
 # All config fields. These match the shape of spec.yaml.
 class Config:
@@ -47,6 +43,8 @@ class Config:
         # Secret of a Fauna DB (my-secret).
         self.secret = conf["secret"]
         self.collection = CollectionConfig(conf["collection"])
+
+
 class CollectionConfig:
     def __init__(self, conf):
         # Name of the collection we are reading from.
@@ -62,6 +60,7 @@ class CollectionConfig:
 
         # Configs for how deletions are handled
         self.deletions = DeletionsConfig(conf["deletions"])
+
 
 class Column:
     def __init__(self, conf):
@@ -79,10 +78,12 @@ class Column:
         self.format = conf.get("format")
         self.airbyte_type = conf.get("airbyte_type")
 
+
 class DeletionsConfig:
     def __init__(self, conf):
         self.mode = conf["deletion_mode"]
         self.column = conf.get("column")
+
 
 def expand_column_query(conf: CollectionConfig, value):
     """
@@ -108,19 +109,22 @@ def expand_column_query(conf: CollectionConfig, value):
             obj[column.name] = q.select(
                 column.path,
                 doc,
-                q.abort(q.format(
-                    f"The path {column.path} does not exist in document Ref(%s, collection=%s)",
-                    q.select(["ref", "id"], doc),
-                    q.select(["ref", "collection", "id"], doc),
-                ))
+                q.abort(
+                    q.format(
+                        f"The path {column.path} does not exist in document Ref(%s, collection=%s)",
+                        q.select(["ref", "id"], doc),
+                        q.select(["ref", "collection", "id"], doc),
+                    )
+                ),
             )
         else:
             # If not required, default to None
             obj[column.name] = q.select(column.path, doc, None)
     return q.let(
-        { "document": q.get(value) },
+        {"document": q.get(value)},
         obj,
     )
+
 
 class SourceFauna(Source):
     def _setup_client(self, config):
@@ -144,6 +148,7 @@ class SourceFauna(Source):
         """
 
         config = Config(config)
+
         def fail(message: str) -> AirbyteConnectionStatus:
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
@@ -188,7 +193,7 @@ class SourceFauna(Source):
             # If they entered an index, make sure it's correct
             if conf.index != "":
                 res = self._validate_index(conf.name, conf.index)
-                if res != None:
+                if res is not None:
                     return fail(res)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -209,8 +214,8 @@ class SourceFauna(Source):
         # If the index has no values, we return `[]`
         actual_values = self.client.query(q.select("values", q.get(q.index(index)), []))
         expected_values = [
-            { "field": "ts" },
-            { "field": "ref" },
+            {"field": "ts"},
+            {"field": "ref"},
         ]
         # If the index has extra values, that is fine. We just need the first two values to
         # be `ts` and `ref`. Also note that python will not crash if 2 is out of range,
@@ -257,7 +262,7 @@ class SourceFauna(Source):
                 },
             }
             if conf.data_column:
-                properties["data"] = { "type": "object" }
+                properties["data"] = {"type": "object"}
             for column in conf.additional_columns:
                 column_object = {}
 
@@ -284,13 +289,15 @@ class SourceFauna(Source):
             supported_sync_modes = ["full_refresh"]
             if can_sync_incremental:
                 supported_sync_modes.append("incremental")
-            streams.append(AirbyteStream(
-                name=stream_name,
-                json_schema=json_schema,
-                supported_sync_modes=supported_sync_modes,
-                source_defined_cursor=True,
-                default_cursor_field=["ts"],
-            ))
+            streams.append(
+                AirbyteStream(
+                    name=stream_name,
+                    json_schema=json_schema,
+                    supported_sync_modes=supported_sync_modes,
+                    source_defined_cursor=True,
+                    default_cursor_field=["ts"],
+                )
+            )
         except Exception as e:
             logger.error(f"error in discover: {e}")
             return AirbyteCatalog(streams=[])
@@ -307,8 +314,7 @@ class SourceFauna(Source):
         return int(time.time() * 1000)
 
     def read_removes(
-        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig,
-        state: dict[str, any], deletion_column: str
+        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict[str, any], deletion_column: str
     ) -> Generator[any, None, None]:
         """
         This handles all additions and deletions, not updates.
@@ -353,10 +359,13 @@ class SourceFauna(Source):
                 paginate_section,
             )
             return q.map_(
-                q.lambda_("x", {
-                    "ref": q.select("document", q.var("x")),
-                    "ts": q.select("ts", q.var("x")),
-                }),
+                q.lambda_(
+                    "x",
+                    {
+                        "ref": q.select("document", q.var("x")),
+                        "ts": q.select("ts", q.var("x")),
+                    },
+                ),
                 paginate_section,
             )
 
@@ -411,8 +420,7 @@ class SourceFauna(Source):
                 break
 
     def read_updates(
-        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig,
-        state: Dict[str, any], index: str, page_size: int
+        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int
     ) -> Generator[any, None, None]:
         """
         This handles all document creations/updates. It does not handle document deletions.
@@ -432,7 +440,6 @@ class SourceFauna(Source):
         stream_name = stream.stream.name
         logger.info(f"reading document updates for stream {stream_name}")
 
-        cursor = state.get("ts", 0)
         if "after" in state:
             # If the last query failed, we will have stored the after token used there, so we can
             # resume more reliably.
@@ -452,15 +459,19 @@ class SourceFauna(Source):
                 expr,
             )
 
-        modified_documents = self.client.query(get_event_values(q.paginate(
-            q.range(
-                q.match(q.index(index)),
-                range_min, # use the min we got above
-                [],        # no max
-            ),
-            size=page_size,
-            after=after,
-        )))
+        modified_documents = self.client.query(
+            get_event_values(
+                q.paginate(
+                    q.range(
+                        q.match(q.index(index)),
+                        range_min,  # use the min we got above
+                        [],  # no max
+                    ),
+                    size=page_size,
+                    after=after,
+                )
+            )
+        )
         # These are the new state values. It will be written to the state after we are done emitting
         # documents.
         #
@@ -480,15 +491,19 @@ class SourceFauna(Source):
                 yield doc
             if "after" in modified_documents:
                 state["after"] = _json.to_json(modified_documents["after"])
-                modified_documents = self.client.query(get_event_values(q.paginate(
-                    q.range(
-                        q.match(q.index(index)),
-                        range_min,
-                        [],
-                    ),
-                    size=page_size,
-                    after=modified_documents["after"],
-                )))
+                modified_documents = self.client.query(
+                    get_event_values(
+                        q.paginate(
+                            q.range(
+                                q.match(q.index(index)),
+                                range_min,
+                                [],
+                            ),
+                            size=page_size,
+                            after=modified_documents["after"],
+                        )
+                    )
+                )
             else:
                 # Completed successfully, so we remove the after token, and update the ts.
                 if "after" in state:
@@ -499,10 +514,7 @@ class SourceFauna(Source):
                 state["ref"] = new_ref
                 break
 
-    def read_all(
-        self, logger, stream: ConfiguredAirbyteStream,
-        conf: CollectionConfig, state: dict
-    ) -> Generator[any, None, None]:
+    def read_all(self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict) -> Generator[any, None, None]:
         """
         Reads all documents. The `state` must have a field of 'full_sync_cursor', which is a dict
         containing elements: `ts` and `ref`.
@@ -522,7 +534,7 @@ class SourceFauna(Source):
             after = _json.parse_json(after)
             logger.info(f"using after token {after}")
         else:
-            logger.info(f"no after token, starting from beginning")
+            logger.info("no after token, starting from beginning")
 
         ts = state["full_sync_cursor"]["ts"]
 
@@ -532,17 +544,18 @@ class SourceFauna(Source):
                 q.map_(
                     q.lambda_("x", expand_column_query(conf, q.var("x"))),
                     expr,
-                )
+                ),
             )
 
         all_documents = self.client.query(
-            get_event_values(q.paginate(
-                q.documents(q.collection(stream_name)),
-                size=conf.page_size,
-                after=after,
-            ))
+            get_event_values(
+                q.paginate(
+                    q.documents(q.collection(stream_name)),
+                    size=conf.page_size,
+                    after=after,
+                )
+            )
         )
-        last_after_token = None
         while True:
             yield from all_documents["data"]
             if "after" in all_documents:
@@ -552,11 +565,15 @@ class SourceFauna(Source):
                 # if this query crashes, the state will have this after token stored.
                 # therefore, on the next retry, this same query will be performend,
                 # which is what we want to have happened.
-                all_documents = self.client.query(get_event_values(q.paginate(
-                    q.documents(q.collection(stream_name)),
-                    size=conf.page_size,
-                    after=all_documents["after"],
-                )))
+                all_documents = self.client.query(
+                    get_event_values(
+                        q.paginate(
+                            q.documents(q.collection(stream_name)),
+                            size=conf.page_size,
+                            after=all_documents["after"],
+                        )
+                    )
+                )
             else:
                 break
 
@@ -599,19 +616,15 @@ class SourceFauna(Source):
         try:
             self._setup_client(config)
 
-            streams = []
             for stream in catalog.streams:
                 stream_name = stream.stream.name
-                page_size = config.collection.page_size
                 if stream.sync_mode == SyncMode.full_refresh:
                     logger.info(f"syncing stream '{stream_name}' with full_refresh")
 
                     if state[stream_name].get("full_sync_cursor", {}).get("ts") is None:
                         # No sync yet, so determine `ts`
                         logger.info("this is the start of a sync (no cursor has been set)")
-                        state[stream_name]["full_sync_cursor"] = {
-                            "ts": self.find_ts(config)
-                        }
+                        state[stream_name]["full_sync_cursor"] = {"ts": self.find_ts(config)}
                     else:
                         logger.info("this is the middle of a sync (a cursor has been set)")
 
@@ -649,10 +662,12 @@ class SourceFauna(Source):
                         if "remove_cursor" not in state[stream_name]:
                             state[stream_name]["remove_cursor"] = {}
                         for data_obj in self.read_removes(
-                                logger, stream, config.collection,
-                                state[stream_name]["remove_cursor"],
-                                deletion_column=config.collection.deletions.column,
-                            ):
+                            logger,
+                            stream,
+                            config.collection,
+                            state[stream_name]["remove_cursor"],
+                            deletion_column=config.collection.deletions.column,
+                        ):
                             yield make_message(stream_name, data_obj)
                     else:
                         logger.info("skipping collection events (no deletions needed)")
@@ -660,11 +675,13 @@ class SourceFauna(Source):
                     if "updates_cursor" not in state[stream_name]:
                         state[stream_name]["updates_cursor"] = {}
                     for data_obj in self.read_updates(
-                            logger, stream, config.collection,
-                            state[stream_name]["updates_cursor"],
-                            config.collection.index,
-                            config.collection.page_size,
-                        ):
+                        logger,
+                        stream,
+                        config.collection,
+                        state[stream_name]["updates_cursor"],
+                        config.collection.index,
+                        config.collection.page_size,
+                    ):
                         yield make_message(stream_name, data_obj)
                     # Yield our state
                     yield AirbyteMessage(

@@ -1,11 +1,10 @@
-import time
-from unittest.mock import Mock, MagicMock
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
-from source_fauna import SourceFauna
-
-from faunadb import query as q
-from faunadb.objects import FaunaTime
-from faunadb import _json
+from datetime import datetime, timezone
+from typing import Dict, Generator
+from unittest.mock import MagicMock, Mock
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -18,19 +17,20 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
-from test_util import config, expand_columns_query, mock_logger, ref, CollectionConfig
-
-from datetime import datetime, timezone
-from typing import Dict, Generator, Optional
+from faunadb import _json
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, config, expand_columns_query, mock_logger, ref
 
 NOW = 1234512987
 
+
 def results(modified, after):
-    modified_obj = { "data": modified }
+    modified_obj = {"data": modified}
     if after is not None:
         modified_obj["after"] = after
     return modified_obj
+
 
 def record(stream: str, data: dict[str, any]) -> AirbyteMessage:
     return AirbyteMessage(
@@ -41,6 +41,8 @@ def record(stream: str, data: dict[str, any]) -> AirbyteMessage:
             emitted_at=NOW,
         ),
     )
+
+
 def state(data: dict[str, any]) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.STATE,
@@ -50,16 +52,21 @@ def state(data: dict[str, any]) -> AirbyteMessage:
         ),
     )
 
+
 # Tests to make sure the read() function handles the various config combinations of
 # updates/deletions correctly.
 def test_read_no_updates_or_creates_but_removes_present():
     def read_updates_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig,
-        state: Dict[str, any], index: str, page_size: int
+        logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int
     ) -> Generator[any, None, None]:
         return []
+
     def read_removes_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf, state, deletion_column: str,
+        logger,
+        stream: ConfiguredAirbyteStream,
+        conf,
+        state,
+        deletion_column: str,
     ) -> Generator[any, None, None]:
         yield {
             "ref": "555",
@@ -71,6 +78,7 @@ def test_read_no_updates_or_creates_but_removes_present():
             "ts": 3,
             "my_deleted_column": 3,
         }
+
     source = SourceFauna()
     source._setup_client = Mock()
     source.read_all = Mock()
@@ -81,63 +89,74 @@ def test_read_no_updates_or_creates_but_removes_present():
 
     logger = mock_logger()
     # Simplest query. Here we should only query Events(), and only track adds.
-    result = list(source.read(
-        logger,
-        config({ "collection": {
-            "name": "my_stream_name",
-            "deletions": {
-                "deletion_mode": "deleted_field",
-                "column": "my_deleted_column",
-            },
-        }}),
-        ConfiguredAirbyteCatalog(streams=[
-            ConfiguredAirbyteStream(
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.append_dedup,
-                stream=AirbyteStream(
-                    name="my_stream_name",
-                    json_schema={},
-                ),
-            )
-        ]),
-        state={},
-    ))
+    result = list(
+        source.read(
+            logger,
+            config(
+                {
+                    "collection": {
+                        "name": "my_stream_name",
+                        "deletions": {
+                            "deletion_mode": "deleted_field",
+                            "column": "my_deleted_column",
+                        },
+                    }
+                }
+            ),
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.append_dedup,
+                        stream=AirbyteStream(
+                            name="my_stream_name",
+                            json_schema={},
+                        ),
+                    )
+                ]
+            ),
+            state={},
+        )
+    )
     # read_removes should update the state, so we should see a state message in the output.
     assert result == [
-        record("my_stream_name", {
-            "ref": "555",
-            "ts": 5,
-            "my_deleted_column": 5,
-        }),
-        record("my_stream_name", {
-            "ref": "123",
-            "ts": 3,
-            "my_deleted_column": 3,
-        }),
-        state({
-            "my_stream_name": {
-                "remove_cursor": {},
-                "updates_cursor": {},
+        record(
+            "my_stream_name",
+            {
+                "ref": "555",
+                "ts": 5,
+                "my_deleted_column": 5,
+            },
+        ),
+        record(
+            "my_stream_name",
+            {
+                "ref": "123",
+                "ts": 3,
+                "my_deleted_column": 3,
+            },
+        ),
+        state(
+            {
+                "my_stream_name": {
+                    "remove_cursor": {},
+                    "updates_cursor": {},
+                }
             }
-        }),
+        ),
     ]
 
     assert source._setup_client.called
     assert not source.read_all.called
     assert not logger.error.called
 
-def results(modified, after):
-    modified_obj = { "data": modified }
-    if after is not None:
-        modified_obj["after"] = after
-    return modified_obj
 
 # Test to make sure read() calls read_updates() correctly.
 def test_read_updates_ignore_deletes():
     was_called = False
+
     def read_updates_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf,
-        state: dict[str, any], index: str, page_size: int
+        logger, stream: ConfiguredAirbyteStream, conf, state: dict[str, any], index: str, page_size: int
     ) -> Generator[any, None, None]:
         yield {
             "some_document": "data_here",
@@ -147,8 +166,13 @@ def test_read_updates_ignore_deletes():
             "more_document": "data_here",
             "ts": 3,
         }
+
     def read_removes_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf, state, deletion_column: str,
+        logger,
+        stream: ConfiguredAirbyteStream,
+        conf,
+        state,
+        deletion_column: str,
     ) -> Generator[any, None, None]:
         nonlocal was_called
         was_called = True
@@ -162,6 +186,7 @@ def test_read_updates_ignore_deletes():
             "ts": 3,
             "my_deleted_column": 3,
         }
+
     source = SourceFauna()
     source._setup_client = Mock()
     source.read_all = Mock()
@@ -172,42 +197,58 @@ def test_read_updates_ignore_deletes():
 
     logger = mock_logger()
     # Here we want updates and adds (no deletions), so Events() should be skipped.
-    result = list(source.read(
-        logger,
-        config({ "collection": {
-            "name": "my_stream_name",
-            "index": "my_stream_name_ts",
-            "deletions": {
-                "deletion_mode": "ignore",
-            },
-        }}),
-        ConfiguredAirbyteCatalog(streams=[
-            ConfiguredAirbyteStream(
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.append_dedup,
-                stream=AirbyteStream(
-                    name="my_stream_name",
-                    json_schema={},
-                ),
-            )
-        ]),
-        state={},
-    ))
+    result = list(
+        source.read(
+            logger,
+            config(
+                {
+                    "collection": {
+                        "name": "my_stream_name",
+                        "index": "my_stream_name_ts",
+                        "deletions": {
+                            "deletion_mode": "ignore",
+                        },
+                    }
+                }
+            ),
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.append_dedup,
+                        stream=AirbyteStream(
+                            name="my_stream_name",
+                            json_schema={},
+                        ),
+                    )
+                ]
+            ),
+            state={},
+        )
+    )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == [
-        record("my_stream_name", {
-            "some_document": "data_here",
-            "ts": 5,
-        }),
-        record("my_stream_name", {
-            "more_document": "data_here",
-            "ts": 3,
-        }),
-        state({
-            "my_stream_name": {
-                "updates_cursor": {},
+        record(
+            "my_stream_name",
+            {
+                "some_document": "data_here",
+                "ts": 5,
+            },
+        ),
+        record(
+            "my_stream_name",
+            {
+                "more_document": "data_here",
+                "ts": 3,
+            },
+        ),
+        state(
+            {
+                "my_stream_name": {
+                    "updates_cursor": {},
+                }
             }
-        }),
+        ),
     ]
 
     assert source._setup_client.called
@@ -215,27 +256,23 @@ def test_read_updates_ignore_deletes():
     assert not source.read_all.called
     assert not logger.error.called
 
-def results(modified, after):
-    modified_obj = { "data": modified }
-    if after is not None:
-        modified_obj["after"] = after
-    return modified_obj
 
 # After a failure, the source should emit the state, which we should pass back in,
 # and then it should resume correctly.
 def test_read_removes_resume_from_partial_failure():
-    TS = 12342134
     PAGE_SIZE = 12344315
-    INDEX = "foo_ts"
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
-    SECOND_AFTER_TOKEN = [ "even more magical", 3, "data" ]
+    FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
+    SECOND_AFTER_TOKEN = ["even more magical", 3, "data"]
 
     def make_query(after):
         return q.map_(
-            q.lambda_("x", {
-                        "ref": q.select("document", q.var("x")),
-                        "ts": q.select("ts", q.var("x")),
-            }),
+            q.lambda_(
+                "x",
+                {
+                    "ref": q.select("document", q.var("x")),
+                    "ts": q.select("ts", q.var("x")),
+                },
+            ),
             q.filter_(
                 q.lambda_("x", q.equals(q.select(["action"], q.var("x")), "remove")),
                 q.paginate(
@@ -243,19 +280,21 @@ def test_read_removes_resume_from_partial_failure():
                     events=True,
                     size=PAGE_SIZE,
                     after=after,
-                )
-            )
+                ),
+            ),
         )
 
     current_query = 0
     QUERIES = [
-        make_query(after={
-            "ts": 0,
-            "action": "remove",
-        }),
+        make_query(
+            after={
+                "ts": 0,
+                "action": "remove",
+            }
+        ),
         make_query(after=FIRST_AFTER_TOKEN),
         make_query(after=SECOND_AFTER_TOKEN),
-        make_query(after={ "ts": 12345, "action": "remove", "resource": q.ref(q.collection("foo"), "3")}),
+        make_query(after={"ts": 12345, "action": "remove", "resource": q.ref(q.collection("foo"), "3")}),
     ]
     QUERY_RESULTS = [
         results(
@@ -296,10 +335,11 @@ def test_read_removes_resume_from_partial_failure():
                 }
             ],
             after=None,
-        )
+        ),
     ]
 
     failed_yet = False
+
     def query_hardcoded(expr):
         nonlocal current_query
         nonlocal failed_yet
@@ -310,6 +350,7 @@ def test_read_removes_resume_from_partial_failure():
             raise ValueError("something has gone terribly wrong")
         current_query += 1
         return result
+
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
@@ -340,7 +381,7 @@ def test_read_removes_resume_from_partial_failure():
             "ref": "5",
             "ts": 999,
             "deletes_here": datetime.utcfromtimestamp(999 / 1_000_000).isoformat(),
-        }
+        },
     ]
     # Now we make sure our after token was serialized to json,
     # and that it was stored within the state.
@@ -365,8 +406,7 @@ def test_read_removes_resume_from_partial_failure():
 
     result = list(source.read_removes(logger, stream, config, state, deletion_column="deletes_here"))
     # We should skip the one result as it matches the state
-    assert result == [
-    ]
+    assert result == []
     assert state == {
         "ts": 12345,
         "ref": "3",
@@ -377,20 +417,23 @@ def test_read_removes_resume_from_partial_failure():
     assert failed_yet
     assert not logger.error.called
 
+
 # Make sure we get deleted events when we need them.
 def test_read_remove_deletions():
     DATE = datetime(2022, 4, 3).replace(tzinfo=timezone.utc)
     # This is a timestamp in microseconds sync epoch
     TS = DATE.timestamp() * 1_000_000
     PAGE_SIZE = 12344315
-    INDEX = "foo_ts"
 
     def make_query(after):
         return q.map_(
-            q.lambda_("x",  {
-                "ref": q.select("document", q.var("x")),
-                "ts": q.select("ts", q.var("x")),
-            }),
+            q.lambda_(
+                "x",
+                {
+                    "ref": q.select("document", q.var("x")),
+                    "ts": q.select("ts", q.var("x")),
+                },
+            ),
             q.filter_(
                 q.lambda_("x", q.equals(q.select(["action"], q.var("x")), "remove")),
                 q.paginate(
@@ -398,26 +441,20 @@ def test_read_remove_deletions():
                     events=True,
                     size=PAGE_SIZE,
                     after=after,
-                )
-            )
+                ),
+            ),
         )
 
     current_query = 0
     QUERIES = [
-        make_query(after={
-            "ts": 0,
-            "action": "remove",
-        }),
-        make_query(after={
-            "ts": TS,
-            "action": "remove",
-            "resource": q.ref(q.collection("foo"), "100")
-        }),
-        make_query(after={
-            "ts": TS,
-            "action": "remove",
-            "resource": q.ref(q.collection("foo"), "100")
-        }),
+        make_query(
+            after={
+                "ts": 0,
+                "action": "remove",
+            }
+        ),
+        make_query(after={"ts": TS, "action": "remove", "resource": q.ref(q.collection("foo"), "100")}),
+        make_query(after={"ts": TS, "action": "remove", "resource": q.ref(q.collection("foo"), "100")}),
     ]
     QUERY_RESULTS = [
         results(
@@ -447,10 +484,10 @@ def test_read_remove_deletions():
                 {
                     "ref": ref(300),
                     "ts": TS + 1_000_000,
-                }
+                },
             ],
             after=None,
-        )
+        ),
     ]
 
     def query_hardcoded(expr):
@@ -490,8 +527,7 @@ def test_read_remove_deletions():
 
     outputs = list(source.read_removes(logger, stream, config, state, deletion_column="my_deleted_column"))
     # We should get the first document again, but not emit it
-    assert outputs == [
-    ]
+    assert outputs == []
     # State should be the same
     assert state == {
         "ts": TS,
@@ -514,24 +550,23 @@ def test_read_remove_deletions():
         "ref": "300",
     }
 
-
     assert not source._setup_client.called
     assert current_query == 3
     assert not logger.error.called
+
 
 def test_read_updates_query():
     """
     Validates that read_updates() queries the database correctly.
     """
 
-    TS = 12342134
     PAGE_SIZE = 12344315
     INDEX = "my_index_name"
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
-    SECOND_AFTER_TOKEN = [ "even more magical", 3, "data" ]
+    FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
+    SECOND_AFTER_TOKEN = ["even more magical", 3, "data"]
     state = {}
 
-    def make_query(after, start = [0]):
+    def make_query(after, start=[0]):
         return q.map_(
             q.lambda_("x", expand_columns_query(q.select(1, q.var("x")))),
             q.paginate(
@@ -605,14 +640,16 @@ def test_read_updates_query():
                 },
             ],
             after=None,
-        )
+        ),
     ]
+
     def query_hardcoded(expr):
         nonlocal current_query
         assert expr == QUERIES[current_query]
         result = QUERY_RESULTS[current_query]
         current_query += 1
         return result
+
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
@@ -621,21 +658,23 @@ def test_read_updates_query():
 
     logger = mock_logger()
     # Here we want updates and adds (no deletions), so Events() should be skipped.
-    result = list(source.read_updates(
-        logger,
-        ConfiguredAirbyteStream(
-            sync_mode=SyncMode.incremental,
-            destination_sync_mode=DestinationSyncMode.append_dedup,
-            stream=AirbyteStream(
-                name="my_stream_name",
-                json_schema={},
+    result = list(
+        source.read_updates(
+            logger,
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(
+                    name="my_stream_name",
+                    json_schema={},
+                ),
             ),
-        ),
-        CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
-        state=state,
-        index=INDEX,
-        page_size=PAGE_SIZE,
-    ))
+            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            state=state,
+            index=INDEX,
+            page_size=PAGE_SIZE,
+        )
+    )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == [
         {
@@ -652,51 +691,56 @@ def test_read_updates_query():
         },
     ]
 
-    assert state == { "ref": "10", "ts": 999}
+    assert state == {"ref": "10", "ts": 999}
 
     # Call again with the emitted state but no new data, we should get no results
-    result = list(source.read_updates(
-        logger,
-        ConfiguredAirbyteStream(
-            sync_mode=SyncMode.incremental,
-            destination_sync_mode=DestinationSyncMode.append_dedup,
-            stream=AirbyteStream(
-                name="my_stream_name",
-                json_schema={},
+    result = list(
+        source.read_updates(
+            logger,
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(
+                    name="my_stream_name",
+                    json_schema={},
+                ),
             ),
-        ),
-        CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
-        state=state,
-        index=INDEX,
-        page_size=PAGE_SIZE,
-    ))
+            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            state=state,
+            index=INDEX,
+            page_size=PAGE_SIZE,
+        )
+    )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == []
-    assert state == { "ref": "10", "ts": 999}
+    assert state == {"ref": "10", "ts": 999}
 
     # Call again - we should skip the record in the state again but emit the match
-    result = list(source.read_updates(
-        logger,
-        ConfiguredAirbyteStream(
-            sync_mode=SyncMode.incremental,
-            destination_sync_mode=DestinationSyncMode.append_dedup,
-            stream=AirbyteStream(
-                name="my_stream_name",
-                json_schema={},
+    result = list(
+        source.read_updates(
+            logger,
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(
+                    name="my_stream_name",
+                    json_schema={},
+                ),
             ),
-        ),
-        CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
-        state=state,
-        index=INDEX,
-        page_size=PAGE_SIZE,
-    ))
+            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            state=state,
+            index=INDEX,
+            page_size=PAGE_SIZE,
+        )
+    )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
-    assert result == [{ "ref": "11", "ts": 1000}]
-    assert state == { "ref": "11", "ts": 1000}
+    assert result == [{"ref": "11", "ts": 1000}]
+    assert state == {"ref": "11", "ts": 1000}
 
     assert not source._setup_client.called
     assert not logger.error.called
     assert current_query == 5
+
 
 def test_read_updates_resume():
     """
@@ -704,11 +748,10 @@ def test_read_updates_resume():
     a failed query correctly.
     """
 
-    TS = 12342134
     PAGE_SIZE = 12344315
     INDEX = "my_index_name"
-    FIRST_AFTER_TOKEN = [ "some magical", 3, "data" ]
-    SECOND_AFTER_TOKEN = [ "even more magical", 3, "data" ]
+    FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
+    SECOND_AFTER_TOKEN = ["even more magical", 3, "data"]
 
     def make_query(after):
         return q.map_(
@@ -758,9 +801,10 @@ def test_read_updates_resume():
                 }
             ],
             after=None,
-        )
+        ),
     ]
     failed_yet = False
+
     def query_hardcoded(expr):
         nonlocal current_query
         nonlocal failed_yet
@@ -771,6 +815,7 @@ def test_read_updates_resume():
             raise ValueError("oh no something went wrong")
         current_query += 1
         return result
+
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
@@ -801,9 +846,9 @@ def test_read_updates_resume():
             result.append(record)
     except ValueError:
         got_error = True
-    assert "ts" not in state # This is set after we finish reading
-    assert "ref" not in state # This is set after we finish reading
-    assert "after" in state # This is some after token, serialized to json
+    assert "ts" not in state  # This is set after we finish reading
+    assert "ref" not in state  # This is set after we finish reading
+    assert "after" in state  # This is some after token, serialized to json
     assert got_error
     assert current_query == 1
     # Here we also validate that the cursor will stay on the latest 'ts' value.
@@ -813,21 +858,23 @@ def test_read_updates_resume():
             "ts": 99,
         },
     ]
-    assert list(source.read_updates(
-        logger,
-        ConfiguredAirbyteStream(
-            sync_mode=SyncMode.incremental,
-            destination_sync_mode=DestinationSyncMode.append_dedup,
-            stream=AirbyteStream(
-                name="my_stream_name",
-                json_schema={},
+    assert list(
+        source.read_updates(
+            logger,
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(
+                    name="my_stream_name",
+                    json_schema={},
+                ),
             ),
-        ),
-        CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
-        state=state,
-        index=INDEX,
-        page_size=PAGE_SIZE,
-    )) == [
+            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            state=state,
+            index=INDEX,
+            page_size=PAGE_SIZE,
+        )
+    ) == [
         {
             "ref": "5",
             "ts": 123,
@@ -838,9 +885,9 @@ def test_read_updates_resume():
         },
     ]
 
-    assert state["ts"] == 999   # This is set after we finish reading
-    assert state["ref"] == "10" # This is set after we finish reading
-    assert "after" not in state # This is some after token, serialized to json
+    assert state["ts"] == 999  # This is set after we finish reading
+    assert state["ref"] == "10"  # This is set after we finish reading
+    assert "after" not in state  # This is some after token, serialized to json
     assert not source._setup_client.called
     assert not logger.error.called
     assert current_query == 3

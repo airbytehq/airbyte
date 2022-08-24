@@ -8,7 +8,7 @@ connectionSpecification:
     - port
     - scheme
     - secret
-  additionalProperties: false
+  additionalProperties: true
   properties:
     domain:
       order: 0
