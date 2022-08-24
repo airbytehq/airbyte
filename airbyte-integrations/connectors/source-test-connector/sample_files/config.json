@@ -3,6 +3,8 @@
         "resourcesNumber": 1,
         "recordsPerResource": 1000,
         "throwError": true,
-        "extractRate": 100
+        "extractRate": 100,
+        "triggerOOM": true,
+        "memoryLimit": 512
     }
 }

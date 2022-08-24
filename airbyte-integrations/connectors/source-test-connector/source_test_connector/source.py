@@ -91,6 +91,8 @@ class SourceTestConnector(Source):
         throwError = readConfig.get("throwError")
         extractRate = readConfig.get("extractRate")
         initDelay = readConfig.get("initDelay")
+        readConfig["triggerOOM"] = readConfig.get("triggerOOM", False)
+        readConfig["memoryLimit"] = readConfig.get("memoryLimit", 512)
         if(resourcesNumber == None):
             readConfig["resourcesNumber"] = 3
         if(recordsPerResource == None):
@@ -120,6 +122,13 @@ class SourceTestConnector(Source):
         throwError = config["read"]["throwError"]
         extractRate = config["read"]["extractRate"]
         initDelay = config["read"]["initDelay"]
+        triggerOOM = config["read"]["triggerOOM"]
+
+        if triggerOOM:
+            # eat up memory by allocating a long bytearray
+            memory_to_allocate = (config["read"]["memoryLimit"] * 1024 * 1024) + 1
+            bytearray(memory_to_allocate)
+
         time.sleep(initDelay)
         for i in range(resourcesNumber):
             for y in range(recordsPerResource):
