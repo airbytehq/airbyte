@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.internal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -161,12 +159,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return;
     }
 
-    try {
-      final String json = new ObjectMapper().writeValueAsString(sourceConfig.getState().getState());
-      LOGGER.info("source starting state | " + json);
-    } catch (JsonProcessingException e) {
-      LOGGER.warn("Error serializing " + sourceConfig.getState() + " to JSON: " + e);
-    }
+    LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
   }
 
 }

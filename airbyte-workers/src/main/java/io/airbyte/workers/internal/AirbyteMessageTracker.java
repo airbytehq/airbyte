@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.internal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.BiMap;
@@ -398,12 +396,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       return;
     }
 
-    try {
-      final String json = new ObjectMapper().writeValueAsString(message);
-      log.info(caller + " message | " + json);
-    } catch (JsonProcessingException e) {
-      log.warn("Error serializing " + message + " to JSON: " + e);
-    }
+    log.info(caller + " message | " + Jsons.serialize(message));
   }
 
 }
