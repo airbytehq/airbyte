@@ -4,25 +4,25 @@
       "name": "views",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": "ym:pv:dateTime",
+      "default_cursor_field": "dateTime",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "ym:pv:watchID": {
+          "watchID": {
             "type": "string"
           },
-          "ym:pv:counterID": {
+          "counterID": {
             "type": "string"
           },
-          "ym:pv:dateTime": {
+          "dateTime": {
             "type": "string",
             "format": "date-time"
           },
-          "ym:pv:title": {
+          "title": {
             "type": "string"
           },
-          "ym:pv:URL": {
+          "URL": {
             "type": "string"
           }
         }
@@ -32,25 +32,25 @@
       "name": "sessions",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": "ym:s:dateTime",
+      "default_cursor_field": "dateTime",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "ym:s:visitID": {
+          "visitID": {
             "type": "string"
           },
-          "ym:s:dateTime": {
+          "dateTime": {
             "type": "string",
             "format": "date-time"
           },
-          "ym:s:startURL": {
+          "startURL": {
             "type": "string"
           },
-          "ym:pv:endURL": {
+          "endURL": {
             "type": "string"
           },
-          "ym:s:pageViews": {
+          "pageViews": {
             "type": "integer"
           }
         }

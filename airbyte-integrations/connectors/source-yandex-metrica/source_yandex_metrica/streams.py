@@ -393,9 +393,8 @@ class Download(YandexMetricaStream):
             try:
                 # Transform datetime fields
                 row[self.cursor_field] = row[self.cursor_field].replace(" ", "T")
-                row["dateTimeUTC"] = row["dateTimeUTC"].replace(" ", "T")
             except Exception as e:
-                print(f"Something went wrong while transforming datetime fields. More info: {e}")
+                print(f"Something went wrong while transforming datetime fields. {e}")
 
             yield row
 
