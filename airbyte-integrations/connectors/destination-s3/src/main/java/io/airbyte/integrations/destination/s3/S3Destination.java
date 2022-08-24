@@ -136,16 +136,17 @@ public class S3Destination extends BaseConnector implements Destination {
                                       final AmazonS3 s3) {
     final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-    attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3);
+    attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3, bucketPath);
   }
 
   private static void attemptWriteAndDeleteS3Object(final S3StorageOperations storageOperations,
                                                     final S3DestinationConfig s3Config,
                                                     final String outputTableName,
-                                                    final AmazonS3 s3) {
+                                                    final AmazonS3 s3,
+                                                    final String bucketPath) {
     final var s3Bucket = s3Config.getBucketName();
 
-    storageOperations.createBucketObjectIfNotExists(s3Bucket);
+    storageOperations.createBucketObjectIfNotExists(bucketPath);
     s3.putObject(s3Bucket, outputTableName, "check-content");
     testIAMUserHasListObjectPermission(s3, s3Bucket);
     s3.deleteObject(s3Bucket, outputTableName);
