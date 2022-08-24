@@ -402,6 +402,9 @@ class DbtIntegrationTest(object):
             profiles_config["schema"] = self.target_schema
             if random_schema:
                 profiles_config["schema"] = self.target_schema + "_" + "".join(random.choices(string.ascii_lowercase, k=5))
+        elif destination_type.value == DestinationType.FIREBOLT.value:
+            # Firebolt does not have a concept of schema yet
+            pass
         else:
             profiles_config["schema"] = self.target_schema
         if destination_type.value == DestinationType.CLICKHOUSE.value:
@@ -448,6 +451,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-oracle:dev"
         elif DestinationType.CLICKHOUSE.value == destination_type.value:
             return "airbyte/normalization-clickhouse:dev"
+        elif DestinationType.FIREBOLT.value == destination_type.value:
+            return "airbyte/normalization-firebolt:dev"
         elif DestinationType.SNOWFLAKE.value == destination_type.value:
             return "airbyte/normalization-snowflake:dev"
         elif DestinationType.REDSHIFT.value == destination_type.value:

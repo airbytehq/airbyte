@@ -26,6 +26,10 @@
     ARRAY JOIN {{ array_col }}
 {%- endmacro %}
 
+{% macro firebolt__cross_join_unnest(stream_name, array_col) -%}
+    UNNEST({{ array_col }})
+{%- endmacro %}
+
 {% macro oracle__cross_join_unnest(stream_name, array_col) -%}
     {% do exceptions.warn("Normalization does not support unnesting for Oracle yet.") %}
 {%- endmacro %}

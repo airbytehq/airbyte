@@ -29,6 +29,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
     DestinationType.TIDB.value: 64,
+    # https://docs.firebolt.io/general-reference/identifier-requirements.html
+    DestinationType.FIREBOLT.value: 255,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -157,6 +159,8 @@ class DestinationNameTransformer:
                 result = "_" + result
             elif self.destination_type == DestinationType.ORACLE:
                 result = "ab_" + result
+            elif self.destination_type == DestinationType.FIREBOLT:
+                result = "_" + result
         return result
 
     def __normalize_identifier_name(
@@ -170,6 +174,8 @@ class DestinationNameTransformer:
                 result = result.replace('"', "_")
                 result = result.replace("`", "_")
                 result = result.replace("'", "_")
+            elif self.destination_type.value == DestinationType.FIREBOLT.value:
+                result = result.replace('"', '"')
             elif self.destination_type.value != DestinationType.MYSQL.value and self.destination_type.value != DestinationType.TIDB.value:
                 result = result.replace('"', '""')
             else:
@@ -200,6 +206,8 @@ class DestinationNameTransformer:
     def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name
         if self.destination_type.value == DestinationType.ORACLE.value:
+            return transform_standard_naming(result)
+        elif self.destination_type.value == DestinationType.FIREBOLT.value:
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.BIGQUERY.value:
             # Can start with number: datasetId, table
@@ -239,6 +247,9 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.FIREBOLT.value:
+            # https://docs.firebolt.io/general-reference/identifier-requirements.html#unquoted-identifiers
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -279,6 +290,11 @@ class DestinationNameTransformer:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
+        elif self.destination_type.value == DestinationType.FIREBOLT.value:
+            # Unquoted columns are always lowercase
+            # https://docs.firebolt.io/general-reference/identifier-requirements.html#unquoted-identifiers
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

@@ -11,7 +11,7 @@ import socket
 import subprocess
 from typing import Any, Dict
 
-import yaml
+import yaml  # mypy: ignore
 from normalization.destination_type import DestinationType
 
 
@@ -349,6 +349,7 @@ class TransformConfig:
 
     @staticmethod
     def transform_firebolt(config: Dict[str, Any]):
+        print("transform_firebolt")
         # https://docs.getdbt.com/reference/warehouse-profiles/firebolt-profile
         dbt_config = {
             "type": "firebolt",
@@ -359,6 +360,8 @@ class TransformConfig:
             "host": config["host"],
             "schema": config["database"],
         }
+        if "account_name" in config:
+            dbt_config["account_name"] = config["account_name"]
         return dbt_config
 
     @staticmethod
