@@ -587,7 +587,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/marketo
   icon: marketo.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
