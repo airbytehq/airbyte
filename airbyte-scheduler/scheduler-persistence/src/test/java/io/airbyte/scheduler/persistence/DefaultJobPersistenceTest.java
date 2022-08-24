@@ -89,6 +89,7 @@ class DefaultJobPersistenceTest {
   private static final String SPEC_SCOPE = SCOPE + "-spec";
   private static final String CHECK_SCOPE = SCOPE + "-check";
   private static final String SYNC_SCOPE = SCOPE + "-sync";
+  private static final UUID CONNECTION_ID2 = UUID.randomUUID();
   private static final JobConfig SPEC_JOB_CONFIG = new JobConfig()
       .withConfigType(ConfigType.GET_SPEC)
       .withGetSpec(new JobGetSpecConfig());
@@ -1005,15 +1006,24 @@ class DefaultJobPersistenceTest {
     @DisplayName("Should return the correct page of results with multiple pages of history")
     void testListJobsByPage() throws IOException {
       final List<Long> ids = new ArrayList<Long>();
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 50; i++) {
         final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
         ids.add(jobId);
+
+        // create two attempts per job to verify pagination is applied at the job record level
+        final int attemptNum1 = jobPersistence.createAttempt(jobId, LOG_PATH);
+        jobPersistence.failAttempt(jobId, attemptNum1);
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+
+        // also create a job for another connection, to verify the query is properly filtering down to only
+        // jobs for the desired connection
+        jobPersistence.enqueueJob(CONNECTION_ID2.toString(), SPEC_JOB_CONFIG).orElseThrow();
       }
       final int pagesize = 10;
       final int offset = 3;
 
       final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
-      assertEquals(actualList.size(), pagesize);
+      assertEquals(pagesize, actualList.size());
       assertEquals(ids.get(ids.size() - 1 - offset), actualList.get(0).getId());
     }
 
