@@ -1,10 +1,11 @@
-import { deleteEntity } from "commands/common";
+import { deleteEntity, submitButtonClick } from "commands/common";
 import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
 import { initialSetupCompleted } from "commands/workspaces";
-import { confirmStreamConfigurationChangedPopup, clickSaveChanges, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectFullAppendSyncMode, checkSuccessResult} from "pages/replicationPage";
+import { confirmStreamConfigurationChangedPopup, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectFullAppendSyncMode, checkSuccessResult} from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage} from "pages/sourcePage";
+import { goToSettingsPage } from "pages/settingsConnectionPage"
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -12,10 +13,13 @@ describe("Connection main actions", () => {
   });
 
   it("Create new connection", () => {
-    createTestConnection("Test connection source cypress", "Test destination cypress");
+    createTestConnection("Test connection source cypress", "Test connection destination cypress");
 
     cy.get("div").contains("Test connection source cypress").should("exist");
-    cy.get("div").contains("Test destination cypress").should("exist");
+    cy.get("div").contains("Test connection destination cypress").should("exist");
+
+    deleteSource("Test connection source cypress");
+    deleteDestination("Test connection destination cypress");
   });
 
   it("Update connection", () => {
@@ -23,23 +27,24 @@ describe("Connection main actions", () => {
 
     createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
 
-    cy.visit("/source");
-    cy.get("div").contains("Test update connection source cypress").click();
-    cy.get("div").contains("Test update connection destination cypress").click();
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection source cypress");
+    openSourceDestinationFromGrid("Test update connection destination cypress");
 
-    cy.get("div[data-id='replication-step']").click();
+    goToReplicationTab();
 
-    cy.get("div[data-testid='scheduleData.basicSchedule']").click();
-    cy.get("div[data-testid='Every hour']").click();
-    cy.get("input[data-testid='prefixInput']").clear();
-    cy.get("input[data-testid='prefixInput']").type('auto_test');
-    cy.get("button[type=submit]").first().click();
+    selectSchedule('Every hour');
+    fillOutDestinationPrefix('auto_test');
+
+    submitButtonClick();
     cy.wait("@updateConnection").then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, '200');
-    cy.get("span[data-id='success-result']").should("exist");
+      assert.isNotNull(interception.response?.statusCode, '200');    
+    });
 
+    checkSuccessResult();
 
-    })
+    deleteSource("Test update connection source cypress");
+    deleteDestination("Test update connection destination cypress");
   });
 
   it("Update connection (pokeAPI)", () => {
@@ -60,7 +65,7 @@ describe("Connection main actions", () => {
     setupDestinationNamespaceCustomFormat('_test');
     selectFullAppendSyncMode();
 
-    clickSaveChanges();
+    submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
     cy.wait("@updateConnection").then((interception) => {
@@ -92,16 +97,19 @@ describe("Connection main actions", () => {
       );
     })
     checkSuccessResult();
+
+    deleteSource("Test update connection PokeAPI source cypress");
+    deleteDestination("Test update connection Local JSON destination cypress");
   });
 
   it("Delete connection", () => {
     createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
 
-    cy.visit("/source");
-    cy.get("div").contains("Test delete connection source cypress").click();
-    cy.get("div").contains("Test delete connection destination cypress").click();
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test delete connection source cypress");
+    openSourceDestinationFromGrid("Test delete connection destination cypress");
 
-    cy.get("div[data-id='settings-step']").click();
+    goToSettingsPage();
 
     deleteEntity();
 
