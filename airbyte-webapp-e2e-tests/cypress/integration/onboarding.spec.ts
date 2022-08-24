@@ -1,5 +1,6 @@
-import { fillEmail, submitButtonClick } from "commands/common";
+import { submitButtonClick } from "commands/common";
 import { initialSetupCompleted } from "commands/workspaces";
+import { fillEmail } from "pages/onboaardingPage";
 
 describe("Preferences actions", () => {
   beforeEach(() => {

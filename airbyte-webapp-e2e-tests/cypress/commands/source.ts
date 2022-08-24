@@ -1,61 +1,31 @@
-import { deleteEntity, openNewSourceForm, openSettingForm, openSourcePage, submitButtonClick, updateField } from "./common";
+import { deleteEntity, openSettingForm, submitButtonClick, updateField } from "./common";
+import { goToSourcePage, openNewSourceForm} from "pages/sourcePage";
+import { fillPostgresForm, fillPokeAPIForm } from "./connector"
 
-export const fillPgSourceForm = (name: string) => {
-  cy.intercept("/api/v1/source_definition_specifications/get").as(
-    "getSourceSpecifications"
-  );
-  
-  cy.get("div[data-testid='serviceType']").click();
-  cy.get("div").contains("Postgres").click();
-  
-  cy.wait("@getSourceSpecifications");
-  
-  cy.get("input[name=name]").clear().type(name);
-  cy.get("input[name='connectionConfiguration.host']").type("localhost");
-  cy.get("input[name='connectionConfiguration.port']").type("{selectAll}{del}5433");
-  cy.get("input[name='connectionConfiguration.database']").type("airbyte_ci");
-  cy.get("input[name='connectionConfiguration.username']").type("postgres");
-  cy.get("input[name='connectionConfiguration.password']").type(
-    "secret_password"
-  );
-};
-
-export const fillPokeAPISourceForm = (name: string) => {
-  cy.intercept("/api/v1/source_definition_specifications/get").as(
-    "getSourceSpecifications"
-  );
-  
-  cy.get("div[data-testid='serviceType']").click();
-  cy.get("div").contains("PokeAPI").click();
-  
-  cy.wait("@getSourceSpecifications");
-  
-  cy.get("input[name=name]").clear().type(name);
-  cy.get("input[name='connectionConfiguration.pokemon_name']").type("luxray");
-};
-
-export const createTestSource = (name: string) => {
+export const createPostgresSource = (name: string, host: string, port: string, database: string, username: string, password: string) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );
   cy.intercept("/api/v1/sources/create").as("createSource");
 
+  goToSourcePage();
   openNewSourceForm();
-  fillPgSourceForm(name);
+  fillPostgresForm(name, host, port, database, username, password);
   submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
   cy.wait("@createSource");
 };
 
-export const createPokeTestSource = (name: string) => {
+export const createPokeTestSource = (name: string, pokeName: string) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );
   cy.intercept("/api/v1/sources/create").as("createSource");
 
+  goToSourcePage();
   openNewSourceForm();
-  fillPokeAPISourceForm(name);
+  fillPokeAPIForm(name, pokeName);
   submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
@@ -68,7 +38,7 @@ export const updateSource = (name: string, field: string, value: string) => {
   );
   cy.intercept("/api/v1/sources/update").as("updateSource");
 
-  openSourcePage();
+  goToSourcePage();
   openSettingForm(name);
   updateField(field, value);
   submitButtonClick();
@@ -78,7 +48,9 @@ export const updateSource = (name: string, field: string, value: string) => {
 }
 
 export const deleteSource = (name: string) => {
-  openSourcePage();
+  cy.intercept("/api/v1/sources/delete").as("deleteSource");
+  goToSourcePage();
   openSettingForm(name);
   deleteEntity();
+  cy.wait("@deleteSource");
 }

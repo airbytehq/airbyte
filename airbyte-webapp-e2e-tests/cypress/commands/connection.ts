@@ -1,6 +1,8 @@
 import { submitButtonClick } from "./common";
-import { createTestDestination } from "./destination";
-import { createPokeTestSource, createTestSource } from "./source";
+import { createLocalJsonDestination } from "./destination";
+import { createPokeTestSource, createPostgresSource } from "./source";
+import { openAddSource } from "pages/destinationPage"
+import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage"
 
 export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
@@ -8,29 +10,27 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   switch (true) {
     case sourceName.includes('PokeAPI'):
-      createPokeTestSource(sourceName)
+      createPokeTestSource(sourceName, "luxray")
       break;
     case sourceName.includes('Postgres'):
-      createTestSource(sourceName);
+      createPostgresSource(sourceName, "localhost", "{selectAll}{del}5433", "airbyte_ci", "postgres", "secret_password");
       break;
     default:
-      createTestSource(sourceName);
+      createPostgresSource(sourceName, "localhost", "{selectAll}{del}5433", "airbyte_ci", "postgres", "secret_password");
   }
 
-  createTestDestination(destinationName);
-  cy.wait(3000);
+  createLocalJsonDestination(destinationName, "/local");
+  cy.wait(6000);
 
-  cy.get("div[data-testid='select-source']").click();
+  openAddSource();
   cy.get("div").contains(sourceName).click();
 
   cy.wait("@discoverSchema");
 
-  cy.get("input[data-testid='connectionName']").type("Connection name");
-  cy.get("div[data-testid='schedule']").click();
-  cy.get("div[data-testid='Manual']").click();
+  enterConnectionName("Connection name");
+  selectSchedule("Manual");
 
-  cy.get("div[data-testid='namespaceDefinition']").click();
-  cy.get("div[data-testid='namespaceDefinition-source']").click();
+  setupDestinationNamespaceSourceFormat();
   submitButtonClick();
 
   cy.wait("@createConnection");
