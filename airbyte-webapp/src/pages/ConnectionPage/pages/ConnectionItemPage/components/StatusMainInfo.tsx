@@ -63,7 +63,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
             onStatusUpdating={onStatusUpdating}
             disabled={!allowSync}
             connection={connection}
-            frequencyType={getFrequencyType(connection.schedule)}
+            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
           />
         </div>
       )}
