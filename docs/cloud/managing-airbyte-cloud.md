@@ -162,9 +162,8 @@ The log summary for a failed sync may show the following data.
 ### Running
 The sync log summary displays **Running** when the sync is actively running.
 
-## Change Streams in a Connection
+### Change Streams in a Connection
 
-### Navigating to the Replication tab
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection in the list you want to change.  
 
     The **Connection** page displays.  
@@ -173,20 +172,17 @@ The sync log summary displays **Running** when the sync is actively running.
 
     The **Replication** tab displays.
 
-### Transfer and Streams
 If you change settings in the **Transfer** and **Streams** sections of the **Replication** tab, those changes apply to all streams in the connection.
 
 | Parameter                 | Description                                                                                                                               |
 |---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | Replication Frequency     | How often the data syncs                                                                                                                  |
-| Destination Namespace     | Where the replicated data is written                                                                                                      |
-| Destination Stream Prefix | Add a stream name prefix to help identify streams from different connectors.   Streams are separated by prefix in the destination tables. |
+| [Destination Namespace](https://docs.airbyte.com/understanding-airbyte/namespaces/)     | Where the replicated data is written                                                                                                      |
+| Destination Stream Prefix | Add a stream name prefix to help identify streams from different connectors. |
 
-### Applying changes to streams
 In the **Activate the streams you want to sync section**, you can make changes to any stream you choose.
 
-#### Searching for a stream
-You can filter to find the stream you want to change.
+To search for the stream you want to change:
 
 1. Click the **Search stream name** search box. 
 
@@ -194,17 +190,14 @@ You can filter to find the stream you want to change.
 
 3. Streams matching your search are displayed in the list.
 
-#### Reconfiguring streams
-You can change the settings of individual or multiple streams.
-
-##### Changing individual stream configuration
+To change individual stream configuration:
 1. In the **Sync** column of the stream, toggle the sync on or off. 
 
 2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to that stream.
 
-3. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and select a column in the database to use as the cursor or primary key. If there is no dropdown arrow, the cursor and primary key are chosen by the source.
+3. Depending on the sync mode you select, you may need to choose a cursor or primary key. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
 
-##### Changing multiple stream configurations
+To change multiple stream configurations:
 1. Click the first checkbox in the table header. This selects all the streams in the connection. 
 
 :::note 
@@ -217,11 +210,11 @@ Deselect the checkboxes next to the streams you do not want to change.
 
 3. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to these streams.
 
-4. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and select a column in the database to use as the cursor or primary key. If there is no dropdown arrow, the cursor and primary key are chosen by the source.
+4. Depending on the sync mode you select, you may need to choose a cursor or primary key. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and and choose the cursor or primary key.
 
 5. Click **Apply** to apply the changes to the streams you selected, or click **Cancel** to discard your selection.
 
-### Saving the changes
+To save the changes:
 1. After you make changes to the streams, click **Save changes**.
 
 :::note 
@@ -240,7 +233,7 @@ Airbyte recommends that you reset the streams. A reset will delete data in the d
 
 3. Click **Save connection**.
 
-### Refreshing the source schema
+To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
