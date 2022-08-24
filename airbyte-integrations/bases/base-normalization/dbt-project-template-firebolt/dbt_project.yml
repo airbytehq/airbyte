@@ -47,7 +47,6 @@ models:
         +tags: airbyte_internal_cte
         +materialized: ephemeral
       airbyte_incremental:
-        # +enabled: false
         +tags: incremental_tables
         +materialized: incremental
         # schema change test isn't supported in Firebolt yet

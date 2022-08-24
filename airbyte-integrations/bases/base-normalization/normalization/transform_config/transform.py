@@ -11,7 +11,7 @@ import socket
 import subprocess
 from typing import Any, Dict
 
-import yaml  # mypy: ignore
+import yaml
 from normalization.destination_type import DestinationType
 
 
