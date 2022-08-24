@@ -43,6 +43,9 @@ const Tr = styled.tr<{
 }>`
   background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
+  &:hover {
+    background-color: ${({ theme }) => `${theme.greyColor0}`};
+  }
 `;
 
 const Td = styled.td<{
@@ -75,6 +78,8 @@ const Td = styled.td<{
 `;
 
 const Th = styled.th<IThProps>`
+  position: sticky;
+  top: -15px;
   background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
   padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
@@ -92,7 +97,7 @@ const Th = styled.th<IThProps>`
   }
 
   &:last-child {
-    padding-left: 45px;
+    padding-left: 15px;
     border-radius: 0 10px 0 0;
   }
 `;
