@@ -1,21 +1,21 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { ToolTip } from "./ToolTip";
+import { Tooltip } from "./Tooltip";
 import { TooltipLearnMoreLink } from "./TooltipLearnMoreLink";
 import { TooltipTable } from "./TooltipTable";
 
 export default {
-  title: "Ui/ToolTip",
-  component: ToolTip,
+  title: "Ui/Tooltip",
+  component: Tooltip,
   argTypes: {
     control: { type: { name: "string", required: true } },
     children: { type: { name: "string", required: true } },
   },
-} as ComponentMeta<typeof ToolTip>;
+} as ComponentMeta<typeof Tooltip>;
 
-const Template: ComponentStory<typeof ToolTip> = (args) => (
+const Template: ComponentStory<typeof Tooltip> = (args) => (
   <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center" }}>
-    <ToolTip {...args} />
+    <Tooltip {...args} />
   </div>
 );
 
