@@ -631,6 +631,9 @@ public class AirbyteAcceptanceTestHarness {
 
     dbConfig.put("is_test", true);
     dbConfig.put(JdbcUtils.SSL_KEY, false);
+    if (forCloudTests) {
+      dbConfig.put("only add to pass build, to cleanup", true);
+    }
 
     if (withSchema) {
       dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
