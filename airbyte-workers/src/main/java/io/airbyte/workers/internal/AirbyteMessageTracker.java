@@ -51,8 +51,6 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
-  private DateTime firstRecordReceivedAt;
-  private final DateTime lastStateMessageReceivedAt;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   private short nextStreamIndex;
