@@ -156,59 +156,62 @@ public class MetricQueries {
   public static Long numberOfJobsNotRunningOnScheduleInLastDay(final DSLContext ctx) {
     final var countField = "cnt";
     final var queryForAbnormalSyncInHoursInLastDay = """
-        select count(1) as cnt
-          from
-            (
-            select
-              c.id,
-              count(*) as cnt
-            from
-              connection c
-            left join Jobs j on
-              j.scope::uuid = c.id
-            where
-              c.schedule is not null
-              and c.schedule != 'null'
-              and j.created_at > now() - interval '24 hours 1 minutes'
-              and c.status = 'active'
-              and j.config_type = 'sync'
-              and c.updated_at < now() - interval '24 hours 1 minutes'
-              and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
-            group by 1
-            having count(*) < 24 / cast(c.schedule::jsonb->'units' as integer)
-        """;
+                                                     select count(1) as cnt
+                                                       from
+                                                         (
+                                                         select
+                                                           c.id,
+                                                           count(*) as cnt
+                                                         from
+                                                           connection c
+                                                         left join Jobs j on
+                                                           j.scope::uuid = c.id
+                                                         where
+                                                           c.schedule is not null
+                                                           and c.schedule != 'null'
+                                                           and j.created_at > now() - interval '24 hours 1 minutes'
+                                                           and c.status = 'active'
+                                                           and j.config_type = 'sync'
+                                                           and c.updated_at < now() - interval '24 hours 1 minutes'
+                                                           and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
+                                                         group by 1
+                                                         having count(*) < 24 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
+                                                     """;
 
-    final var queryForAbnormalSYncInMinutesInLastDay = """
-        select
-          c.id,
-          count(*) as cnt
-        from
-          connection c
-        left join Jobs j on
-          j.scope::uuid = c.id
-        where
-          c.schedule is not null
-          and c.schedule != 'null'
-          and j.created_at > now() - interval '24 hours 1 minutes'
-          and c.status = 'active'
-          and j.config_type = 'sync'
-          and c.updated_at < now() - interval '24 hours 1 minutes'
-          and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
-        group by 1
-        having count(*) < 1440 / cast(c.schedule::jsonb->'units' as integer)
-        """;
-    return ctx.fetch(queryForAbnormalSyncInHoursInLastDay).getValues(countField, long.class).get(0) + ctx.fetch(queryForAbnormalSYncInMinutesInLastDay).getValues(countField, long.class).get(0);
+    final var queryForAbnormalSyncInMinutesInLastDay = """
+                                                       select count(1) as cnt from (
+                                                         select
+                                                           c.id,
+                                                           count(*) as cnt
+                                                         from
+                                                           connection c
+                                                         left join Jobs j on
+                                                           j.scope::uuid = c.id
+                                                         where
+                                                           c.schedule is not null
+                                                           and c.schedule != 'null'
+                                                           and j.created_at > now() - interval '24 hours 1 minutes'
+                                                           and c.status = 'active'
+                                                           and j.config_type = 'sync'
+                                                           and c.updated_at < now() - interval '24 hours 1 minutes'
+                                                           and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
+                                                         group by 1
+                                                         having count(*) < 1440 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
+                                                       """;
+    return ctx.fetch(queryForAbnormalSyncInHoursInLastDay).getValues(countField, long.class).get(0)
+        + ctx.fetch(queryForAbnormalSyncInMinutesInLastDay).getValues(countField, long.class).get(0);
   }
 
-  public static Long totalActiveConnectionsInLastDay(final DSLContext ctx) {
+  public static Long totalActiveConnectionsSinceLastDay(final DSLContext ctx) {
     final var countField = "cnt";
     final var queryForTotalConnections = """
-        select count(1) as cnt
-          from connection c
-          where
-            c.updated_at < now() - interval '24 hours 1 minutes'
-              and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"' and c.status = 'active')
-        """;
+                                         select count(1) as cnt
+                                           from connection c
+                                           where
+                                             c.updated_at < now() - interval '24 hours 1 minutes'
+                                               and cast(c.schedule::jsonb->'timeUnit' as text) IN ('"hours"', '"minutes"')
+                                               and c.status = 'active'
+                                         """;
 
     return ctx.fetch(queryForTotalConnections).getValues(countField, long.class).get(0);
   }

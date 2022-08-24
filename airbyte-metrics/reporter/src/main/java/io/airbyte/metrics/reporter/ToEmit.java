@@ -54,7 +54,7 @@ public enum ToEmit {
     MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
   }), 1, TimeUnit.HOURS),
   NUM_TOTAL_SCHEDULED_SYNCS_LAST_DAY(countMetricEmission(() -> {
-    final var count = ReporterApp.configDatabase.query(MetricQueries::totalActiveConnectionsInLastDay);
+    final var count = ReporterApp.configDatabase.query(MetricQueries::totalActiveConnectionsSinceLastDay);
     MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
   }), 1, TimeUnit.HOURS),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
