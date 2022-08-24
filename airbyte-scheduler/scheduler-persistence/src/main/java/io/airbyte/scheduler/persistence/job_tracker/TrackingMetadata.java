@@ -115,6 +115,10 @@ public class TrackingMetadata {
                 syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
             metadata.put("mean_seconds_before_source_state_message_emitted",
                 syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("max_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
+            metadata.put("mean_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
           }
         }
 

@@ -316,12 +316,12 @@
     "workspaceId": "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
     "connectionConfiguration": {
       "ssl": false,
-      "host": "ec2-54-158-247-210.compute-1.amazonaws.com",
+      "host": "asdf",
       "port": 5432,
       "schema": "public",
-      "database": "d51c2tbpfm4m0v",
+      "database": "asdf",
       "password": "**********",
-      "username": "ykupokammmqbxg",
+      "username": "asdf",
       "tunnel_method": {
         "tunnel_method": "NO_TUNNEL"
       }
