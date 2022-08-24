@@ -15,6 +15,7 @@ WORKDIR /airbyte
 ENV APPLICATION destination-s3
 
 COPY --from=build /airbyte /airbyte
+<<<<<<< HEAD
 RUN /bin/bash -c 'set -e && \
     ARCH=`uname -m` && \
     if [ "$ARCH" == "x86_64" ] || [ "$ARCH" = "amd64" ]; then \
@@ -43,3 +44,8 @@ RUN /bin/bash -c 'set -e && \
 
 LABEL io.airbyte.version=0.3.14
 LABEL io.airbyte.name=airbyte/destination-s3
+=======
+
+LABEL io.airbyte.version=0.3.12
+LABEL io.airbyte.name=airbyte/destination-s3
+>>>>>>> b3b2b2ccbc (typo)
