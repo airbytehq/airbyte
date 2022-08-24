@@ -3,7 +3,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, LabeledInput, LabeledSwitch, LoadingButton } from "components";
+import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
 
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -67,13 +67,15 @@ export const WorkspaceSettingsView: React.FC = () => {
                     />
                   )}
                 </Field>
+                <Label className={styles.formItem}>
+                  <FormattedMessage id="settings.generalSettings.form.advancedMode.label" />
+                </Label>
                 <Field name="advancedMode">
                   {({ field }: FieldProps<boolean>) => (
                     <LabeledSwitch
-                      label="Advanced Mode"
+                      label={<FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />}
                       checked={field.value}
                       onChange={() => setFieldValue(field.name, !field.value)}
-                      className={styles.formItem}
                     />
                   )}
                 </Field>

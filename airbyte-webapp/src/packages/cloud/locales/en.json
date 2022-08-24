@@ -90,6 +90,8 @@
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
   "settings.generalSettings.form.name.placeholder": "Workspace name",
+  "settings.generalSettings.form.advancedMode.label": "Advanced mode",
+  "settings.generalSettings.form.advancedMode.switchLabel": "Enable advanced mode",
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.accessManagementSettings": "Access Management",
