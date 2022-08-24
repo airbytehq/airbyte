@@ -2,6 +2,8 @@
 @use "../../../scss/variables";
 
 .menuItem {
+  background-color: transparent;
+  border: none;
   color: colors.$grey-30;
   width: 100%;
   cursor: pointer;
