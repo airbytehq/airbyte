@@ -17,6 +17,7 @@
     }
   },
   "rules": {
+    "jsx-a11y/label-has-associated-control": "error",
     "curly": "warn",
     "css-modules/no-undef-class": ["error", { "camelCase": true }],
     "css-modules/no-unused-class": ["error", { "camelCase": true }],
