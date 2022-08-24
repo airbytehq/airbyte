@@ -133,6 +133,15 @@ public class ServerApp implements ServerRunnable {
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      try {
+        server.stop();
+      } catch (Exception ex) {
+        // silently fail at this stage because server is terminating.
+        LOGGER.warn("exception: " + ex);
+      }
+    }));
   }
 
   private static void assertDatabasesReady(final Configs configs,
