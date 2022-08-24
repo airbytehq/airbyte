@@ -4,10 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics Data API Spec",
     "type": "object",
-    "required": [
-      "property_id",
-      "date_ranges_start_date"
-    ],
+    "required": ["property_id", "date_ranges_start_date"],
     "additionalProperties": true,
     "properties": {
       "property_id": {

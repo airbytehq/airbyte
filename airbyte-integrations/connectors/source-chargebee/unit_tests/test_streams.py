@@ -3,11 +3,24 @@
 #
 
 import pytest
-
 import responses
 from airbyte_cdk.models import SyncMode
-from source_chargebee.streams import Addon, AttachedItem, Coupon, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription, \
-    SemiIncrementalChargebeeStream, CreditNote, Transaction
+from source_chargebee.streams import (
+    Addon,
+    AttachedItem,
+    Coupon,
+    CreditNote,
+    Customer,
+    Event,
+    Invoice,
+    Item,
+    ItemPrice,
+    Order,
+    Plan,
+    SemiIncrementalChargebeeStream,
+    Subscription,
+    Transaction,
+)
 
 
 @responses.activate
@@ -153,11 +166,13 @@ def test_attached_item_stream(test_config_v2, attached_items_response, items_res
         json=attached_items_response,
     )
     stream = AttachedItem(start_date=test_config_v2["start_date"])
-    stream_slice = next(stream.stream_slices(
-        cursor_field=None,
-        sync_mode=SyncMode.incremental,
-        stream_state=None,
-    ))
+    stream_slice = next(
+        stream.stream_slices(
+            cursor_field=None,
+            sync_mode=SyncMode.incremental,
+            stream_state=None,
+        )
+    )
     records = [r for r in stream.read_records(SyncMode.incremental, None, stream_slice, None)]
     assert len(records) == 2
     assert len(responses.calls) == 2
@@ -191,8 +206,8 @@ def test_updated_state(test_config_v2, stream, state, expected):
 @pytest.mark.parametrize(
     "stream, expected",
     [
-        (CreditNote, {'include_deleted': 'true', 'limit': 100, 'sort_by[asc]': 'date', 'updated_at[after]': 1621666664}),
-        (Transaction, {'include_deleted': 'true', 'limit': 100, 'sort_by[asc]': 'date', 'updated_at[after]': 1621666664}),
+        (CreditNote, {"include_deleted": "true", "limit": 100, "sort_by[asc]": "date", "updated_at[after]": 1621666664}),
+        (Transaction, {"include_deleted": "true", "limit": 100, "sort_by[asc]": "date", "updated_at[after]": 1621666664}),
     ],
 )
 def test_request_params(test_config_v2, stream, expected):
