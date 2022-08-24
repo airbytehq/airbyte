@@ -12,7 +12,7 @@ from source_rki_covid.source import GermanyHistoryCases
 
 @fixture
 def patch_incremental_german_history_cases(mocker):
-    # Mock abstract methods to enable instantiating abstract class
+    # Mock abstract methods to enable instantiating abstract class.
     mocker.patch.object(GermanyHistoryCases, "primary_key", None)
 
 
