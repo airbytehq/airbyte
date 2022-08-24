@@ -65,11 +65,6 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: FULLSTORY
-        - name: IS_DEMO
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: IS_DEMO
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:
