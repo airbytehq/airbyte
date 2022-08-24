@@ -172,17 +172,23 @@ The sync log summary displays **Running** when the sync is actively running.
 
     The **Replication** tab displays.
 
-If you change settings in the **Transfer** and **Streams** sections of the **Replication** tab, those changes apply to all streams in the connection.
+The **Transfer** and **Streams** settings include the following parameters:
 
 | Parameter                 | Description                                                                                                                               |
 |---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | Replication Frequency     | How often the data syncs                                                                                                                  |
 | [Destination Namespace](https://docs.airbyte.com/understanding-airbyte/namespaces/)     | Where the replicated data is written                                                                                                      |
-| Destination Stream Prefix | Add a stream name prefix to help identify streams from different connectors. |
+| Destination Stream Prefix | Helps you identify streams from different connectors |
+
+:::note 
+    
+Changes to these parameters apply to all streams in the connection.
+
+:::
 
 In the **Activate the streams you want to sync section**, you can make changes to any stream you choose.
 
-To search for the stream you want to change:
+To search for a stream:
 
 1. Click the **Search stream name** search box. 
 
@@ -193,35 +199,31 @@ To search for the stream you want to change:
 To change individual stream configuration:
 1. In the **Sync** column of the stream, toggle the sync on or off. 
 
-2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to that stream.
+2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply.
 
 3. Depending on the sync mode you select, you may need to choose a cursor or primary key. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
 
 To change multiple stream configurations:
-1. Click the first checkbox in the table header. This selects all the streams in the connection. 
+1. Click the first checkbox in the table header to select all streams in the connection.
+    
+2. Deselect the checkboxes of streams you do not want to apply these changes to.
+
+3. In the highlighted header of the table, toggle the sync on or off. 
+
+4. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to these streams.
 
 :::note 
     
-Deselect the checkboxes next to the streams you do not want to change.
+Depending on the sync mode you select, you may need to choose a cursor or primary key.
 
 :::
 
-2. In the highlighted header of the table, toggle the sync on or off. 
+5. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and and choose the cursor or primary key.
 
-3. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to these streams.
-
-4. Depending on the sync mode you select, you may need to choose a cursor or primary key. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and and choose the cursor or primary key.
-
-5. Click **Apply** to apply the changes to the streams you selected, or click **Cancel** to discard your selection.
+6. Click **Apply** to apply these changes to the streams you selected, or click **Cancel** to discard the changes.
 
 To save the changes:
-1. After you make changes to the streams, click **Save changes**.
-
-:::note 
-    
-To discard the changes, click **Cancel**.
-
-:::
+1. After you make changes to the streams, click **Save changes**, or click **Cancel** to discard the changes.
 
 2. The **Stream configuration changed** dialog displays. This gives you the option to reset the streams when you save the changes.
 
@@ -231,7 +233,7 @@ Airbyte recommends that you reset the streams. A reset will delete data in the d
 
 :::
 
-3. Click **Save connection**.
+3. Click **Save connection**, or click **Cancel** to close the dialog. 
 
 To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
