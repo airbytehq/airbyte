@@ -162,7 +162,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     try {
-      final String json = new ObjectMapper().writeValueAsString(sourceConfig.getState());
+      final String json = new ObjectMapper().writeValueAsString(sourceConfig.getState().getState());
       LOGGER.info("source starting state | " + json);
     } catch (JsonProcessingException e) {
       LOGGER.warn("Error serializing " + sourceConfig.getState() + " to JSON: " + e);
