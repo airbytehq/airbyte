@@ -11,6 +11,10 @@ test_data = [
     ("string", {"type": "string"}, str),
     (True, {"type": ["boolean", "null"]}, bool),
     (1, {"type": ["number", "null"]}, float),
+    ("", {"type": ["number", "null"]}, type(None)),
+    ("1.5", {"type": "integer"}, int),
+    ("15", {"type": "integer"}, int),
+    ("true", {"type": "boolean"}, bool),
 ]
 
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.79
+- Fix yaml schema parsing when running from docker container
+
 ## 0.1.78
 - Fix yaml config parsing when running from docker container
 

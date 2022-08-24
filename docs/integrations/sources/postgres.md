@@ -15,10 +15,10 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 ## Prerequisites
 
-- For Airbyte OSS users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer 
+- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer 
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
 - Allowlist the IP address `34.106.109.131` to enable access to Airbyte
-- For Airbyte Cloud (and optionally for Airbyte OSS), ensure SSL is enabled in your environment
+- For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
 
@@ -87,7 +87,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
 ### Step 2: Set up the Postgres connector in Airbyte
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Postgres** from the Source type dropdown.
 4. Enter a name for your source.
@@ -112,7 +112,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
     
-9. For Airbyte OSS, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
+9. For Airbyte Open Source, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
 10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
 11. For SSH Tunnel Method, select:
     - No Tunnel for a direct connection to the database
@@ -372,6 +372,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------------------|
+| 1.0.4   | 2022-08-23  | [15877](https://github.com/airbytehq/airbyte/pull/15877) | Fix temporal data type bug which was causing failure in CDC mode                                               |
 | 1.0.3   | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 1.0.2   | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
 | 1.0.1   | 2022-08-10 | [15496](https://github.com/airbytehq/airbyte/pull/15496) | Fix state emission in incremental sync |
