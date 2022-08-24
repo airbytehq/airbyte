@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.api.client.model.generated.SetTemporalWorkflowInAttemptRequestBody;
+import io.airbyte.api.client.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -144,8 +144,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     // for info.
     if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
       final String workflowId = workflowIdProvider.get();
-      airbyteApiClient.getInternalApi().setTemporalWorkflowInAttempt(new SetTemporalWorkflowInAttemptRequestBody()
-          .jobId(Long.parseLong(jobRunConfig.getJobId())).attemptId(jobRunConfig.getAttemptId().intValue()).temporalWorkflowId(workflowId));
+      airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
+          .jobId(Long.parseLong(jobRunConfig.getJobId())).attemptId(jobRunConfig.getAttemptId().intValue()).workflowId(workflowId));
     }
   }
 
