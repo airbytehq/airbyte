@@ -342,6 +342,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
+    LOGGER.info("*** getIncrementalIterators");
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);

@@ -25,11 +25,11 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
-    container = new PostgreSQLContainer<>(myImage)
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
+    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
+        .asCompatibleSubstituteFor("postgres"))
+        .withCommand("postgres -c wal_level=logical");
     container.start();
+
     certs = getCertificate(container);
     /**
      * The publication is not being set as part of the config and because of it
@@ -41,6 +41,7 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+//        .put("logical_decoding", "on")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))

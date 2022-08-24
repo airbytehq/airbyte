@@ -140,7 +140,7 @@ public class SSLCertificateUtils {
       try {
         privateKey = KeyFactory.getInstance("DSA").generatePrivate(spec);
       } catch (final InvalidKeySpecException ex2) {
-          privateKey = KeyFactory.getInstance("EC").generatePrivate(spec);
+        privateKey = KeyFactory.getInstance("EC").generatePrivate(spec);
       }
     }
 
