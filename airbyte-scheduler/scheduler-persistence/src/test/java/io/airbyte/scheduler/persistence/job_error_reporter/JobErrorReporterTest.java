@@ -79,12 +79,16 @@ class JobErrorReporterTest {
     final AttemptFailureSummary mFailureSummary = Mockito.mock(AttemptFailureSummary.class);
 
     final FailureReason sourceFailureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "read"))
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
     final FailureReason destinationFailureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "write"))
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -131,6 +135,7 @@ class JobErrorReporterTest {
         Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
         Map.entry(FAILURE_ORIGIN_KEY, SOURCE),
         Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(CONNECTOR_COMMAND_KEY, "read"),
         Map.entry(CONNECTOR_DEFINITION_ID_KEY, SOURCE_DEFINITION_ID.toString()),
         Map.entry(CONNECTOR_REPOSITORY_KEY, SOURCE_DOCKER_REPOSITORY),
         Map.entry(CONNECTOR_NAME_KEY, SOURCE_DEFINITION_NAME),
@@ -145,6 +150,7 @@ class JobErrorReporterTest {
         Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
         Map.entry(FAILURE_ORIGIN_KEY, "destination"),
         Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(CONNECTOR_COMMAND_KEY, "write"),
         Map.entry(CONNECTOR_DEFINITION_ID_KEY, DESTINATION_DEFINITION_ID.toString()),
         Map.entry(CONNECTOR_REPOSITORY_KEY, DESTINATION_DOCKER_REPOSITORY),
         Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
@@ -192,7 +198,9 @@ class JobErrorReporterTest {
   @Test
   void testReportSourceCheckJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
     final FailureReason failureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "check"))
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -231,7 +239,9 @@ class JobErrorReporterTest {
   @Test
   void testReportDestinationCheckJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
     final FailureReason failureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "check"))
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -270,7 +280,9 @@ class JobErrorReporterTest {
   @Test
   void testReportDiscoverJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
     final FailureReason failureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "discover"))
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -309,7 +321,9 @@ class JobErrorReporterTest {
   @Test
   void testReportSpecJobFailure() {
     final FailureReason failureReason = new FailureReason()
-        .withMetadata(new Metadata().withAdditionalProperty(FROM_TRACE_MESSAGE, true))
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "spec"))
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
