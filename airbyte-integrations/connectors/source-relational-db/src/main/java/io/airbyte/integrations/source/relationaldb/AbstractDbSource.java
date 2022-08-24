@@ -61,8 +61,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains helper functions and boilerplate for implementing a source connector for a
- * DB source of both non-relational and relational type
+ * This class contains helper functions and boilerplate for implementing a source connector for a DB
+ * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
@@ -345,7 +345,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * Creates a AirbyteMessageIterator that contains all records for a database source connection
    *
    * @param database Source Database
-   * @param streamName name of an individual stream in which a stream represents a source (e.g. API endpoint or database table)
+   * @param streamName name of an individual stream in which a stream represents a source (e.g. API
+   *        endpoint or database table)
    * @param namespace Namespace of the database (e.g. public)
    * @param selectedDatabaseFields List of all interested database column names
    * @param table information in tabular format

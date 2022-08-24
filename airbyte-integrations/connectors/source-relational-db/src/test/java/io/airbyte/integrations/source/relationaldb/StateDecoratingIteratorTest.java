@@ -75,7 +75,6 @@ class StateDecoratingIteratorTest {
 
   private Iterator<AirbyteMessage> createExceptionIterator() {
     return new Iterator<AirbyteMessage>() {
-//      final static DataSource mockDataSource = mock(DataSource.class);
 
       final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
 
@@ -89,18 +88,10 @@ class StateDecoratingIteratorTest {
         if (internalMessageIterator.hasNext()) {
           return internalMessageIterator.next();
         } else {
-          // how to get around this would be to implement a iterator class that wasn't using the Iterator interface
           throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
         }
-        // READING MATERIAL
-        // PMD might be useful to turn on to see if there's code violation
-        // (e.g. variable referenced and doesn't appear to be set)
-        // ./gradlew check -> HTML file with all the violations
-        // PMD is a preset dictionary of rules - some of the rules are opinions
-        // turned out check style and enforce - opposite of format
-        // java at a system level - the well grounded java developer - talks about how to interact with JVM itself and understand garbage collection
-        // java concurrency practice brain goetz - understanding all things concurrency
       }
+
     };
   };
 
@@ -195,8 +186,9 @@ class StateDecoratingIteratorTest {
       assertEquals(RECORD_MESSAGE_1, iterator.next());
       assertEquals(RECORD_MESSAGE_2, iterator.next());
       assertThrows(RuntimeException.class, () -> iterator.next());
-    } catch (final Exception e){
-      assertEquals(e.getMessage(), "Message iterator failed to read next record. java.sql.SQLException: Connection marked broken because of SQLSTATE(080006)");
+    } catch (final Exception e) {
+      assertEquals(e.getMessage(),
+          "Message iterator failed to read next record. java.sql.SQLException: Connection marked broken because of SQLSTATE(080006)");
     }
   }
 

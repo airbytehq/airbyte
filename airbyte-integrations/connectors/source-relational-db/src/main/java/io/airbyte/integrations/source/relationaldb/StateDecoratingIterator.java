@@ -12,7 +12,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,8 +88,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   @Override
   protected AirbyteMessage computeNext() {
     if (hasCaughtException) {
-      // Mark iterator as done since the next call to messageIterator will result in an IllegalArgumentException and resets exception caught state.
-      // This occurs when the previous iteration emitted state so this iteration cycle will indicate iteration is complete
+      // Mark iterator as done since the next call to messageIterator will result in an
+      // IllegalArgumentException and resets exception caught state.
+      // This occurs when the previous iteration emitted state so this iteration cycle will indicate
+      // iteration is complete
       hasCaughtException = false;
       return endOfData();
     }
@@ -140,8 +141,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * Returns AirbyteStateMessage when in a ready state, a ready state means that it has satifies the
    * conditions of:
    * <p>
-   * cursorField has changed (e.g. 08-22-2022 -> 08-23-2022) and there have been at least stateEmissionFrequency number of records since the last
-   * emission
+   * cursorField has changed (e.g. 08-22-2022 -> 08-23-2022) and there have been at least
+   * stateEmissionFrequency number of records since the last emission
    * </p>
    *
    * @return AirbyteStateMessage if one exists, otherwise Optional indicating state was not ready to

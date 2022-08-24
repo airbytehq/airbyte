@@ -40,7 +40,8 @@ public class IncrementalUtils {
   }
 
   /**
-   * Comparator where if original is less than candidate then value less than 0, if greater than candidate then value greater than 0, else 0
+   * Comparator where if original is less than candidate then value less than 0, if greater than
+   * candidate then value greater than 0, else 0
    *
    * @param original the first value to compare
    * @param candidate the second value to compare
