@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,8 +96,9 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     }
 
     if (messageIterator.hasNext()) {
-      if (getIntermediateMessage().isPresent()) {
-        return getIntermediateMessage().get();
+      Optional<AirbyteMessage> optionalIntermediateMessage = getIntermediateMessage();
+      if (optionalIntermediateMessage.isPresent()) {
+        return optionalIntermediateMessage.get();
       }
 
       totalRecordCount++;
@@ -124,8 +126,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         emitIntermediateState = true;
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
-        final Optional<AirbyteMessage> message = getIntermediateMessage();
-        return message.orElseGet(this::endOfData);
+        optionalIntermediateMessage = getIntermediateMessage();
+        return optionalIntermediateMessage.orElseGet(this::endOfData);
       }
     } else if (!hasEmittedFinalState) {
       return createStateMessage(true);

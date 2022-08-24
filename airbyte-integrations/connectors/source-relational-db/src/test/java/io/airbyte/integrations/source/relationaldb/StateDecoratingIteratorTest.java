@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -71,6 +72,37 @@ class StateDecoratingIteratorTest {
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(ImmutableMap.of("cursor", recordValue))));
   }
+
+  private Iterator<AirbyteMessage> createExceptionIterator() {
+    return new Iterator<AirbyteMessage>() {
+//      final static DataSource mockDataSource = mock(DataSource.class);
+
+      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
+
+      @Override
+      public boolean hasNext() {
+        return true;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        if (internalMessageIterator.hasNext()) {
+          return internalMessageIterator.next();
+        } else {
+          // how to get around this would be to implement a iterator class that wasn't using the Iterator interface
+          throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
+        }
+        // READING MATERIAL
+        // PMD might be useful to turn on to see if there's code violation
+        // (e.g. variable referenced and doesn't appear to be set)
+        // ./gradlew check -> HTML file with all the violations
+        // PMD is a preset dictionary of rules - some of the rules are opinions
+        // turned out check style and enforce - opposite of format
+        // java at a system level - the well grounded java developer - talks about how to interact with JVM itself and understand garbage collection
+        // java concurrency practice brain goetz - understanding all things concurrency
+      }
+    };
+  };
 
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
@@ -149,37 +181,42 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  void testIteratorThrowsException() {
-    final Iterator<AirbyteMessage> messageIterator = new Iterator<AirbyteMessage>() {
+  void testIteratorCatchesException() {
+    try {
+      final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+      final StateDecoratingIterator iterator = new StateDecoratingIterator(
+          exceptionIterator,
+          stateManager,
+          NAME_NAMESPACE_PAIR,
+          UUID_FIELD_NAME,
+          RECORD_VALUE_1,
+          JsonSchemaPrimitive.STRING,
+          0);
+      assertEquals(RECORD_MESSAGE_1, iterator.next());
+      assertEquals(RECORD_MESSAGE_2, iterator.next());
+      assertThrows(RuntimeException.class, () -> iterator.next());
+    } catch (final Exception e){
+      assertEquals(e.getMessage(), "Message iterator failed to read next record. java.sql.SQLException: Connection marked broken because of SQLSTATE(080006)");
+    }
+  }
 
-      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-
-      @Override
-      public boolean hasNext() {
-        return true;
-      }
-
-      @Override
-      public AirbyteMessage next() {
-        if (internalMessageIterator.hasNext()) {
-          return internalMessageIterator.next();
-        } else {
-          throw new RuntimeException("Error with iterating through records");
-        }
-      }
-
-    };
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        0);
-    assertEquals(RECORD_MESSAGE_1, iterator.next());
-    assertEquals(RECORD_MESSAGE_2, iterator.next());
-    assertThrows(RuntimeException.class, () -> iterator.next());
+  @Test
+  void testIteratorCatchesUnderlyingSQLException() {
+    try {
+      final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+      final StateDecoratingIterator iterator = new StateDecoratingIterator(
+          exceptionIterator,
+          stateManager,
+          NAME_NAMESPACE_PAIR,
+          UUID_FIELD_NAME,
+          RECORD_VALUE_1,
+          JsonSchemaPrimitive.STRING,
+          0);
+      assertEquals(RECORD_MESSAGE_1, iterator.next());
+      assertEquals(RECORD_MESSAGE_2, iterator.next());
+    } catch (final Exception e) {
+      assertEquals(((SQLException) e.getCause()).getSQLState(), "08006");
+    }
   }
 
   @Test
