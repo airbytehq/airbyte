@@ -28,7 +28,7 @@ Each stream will be output into its own table in TiDB. Each table will contain 3
 
 To use the TiDB destination, you'll need:
 
-* To sync data to TiDB **with** normalization TiDB database v5.4.0 or above.
+* To sync data to TiDB **with normalization** you should have a TiDB database v5.4.0 or above.
 
 #### Network Access
 
