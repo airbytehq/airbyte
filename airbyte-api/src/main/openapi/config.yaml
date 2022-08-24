@@ -61,6 +61,8 @@ tags:
     description: Healthchecks
   - name: deployment
     description: Export/Import Airbyte Configuration and Database resources.
+  - name: attempt
+    description: Interactions with attempt related resources.
 
 paths:
   /v1/workspaces/create:
@@ -2304,17 +2306,18 @@ paths:
                 $ref: "#/components/schemas/ImportRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-  /v1/internal/set_temporal_workflow_in_attempt:
+  /v1/attempt/set_workflow_in_attempt:
     post:
       tags:
+        - attempt
         - internal
-      summary: For worker to register the temporal workflow id in attempt.
-      operationId: setTemporalWorkflowInAttempt
+      summary: For worker to register the workflow id in attempt.
+      operationId: setWorkflowInAttempt
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SetTemporalWorkflowInAttemptRequestBody"
+              $ref: "#/components/schemas/SetWorkflowInAttemptRequestBody"
         required: true
       responses:
         "200":
@@ -4762,25 +4765,25 @@ components:
     AttemptId:
       type: integer
       format: int32
-    TemporalWorkflowId:
+    WorkflowId:
       type: string
-    SetTemporalWorkflowInAttemptRequestBody:
+    SetWorkflowInAttemptRequestBody:
       type: object
       required:
         - jobId
         - attemptId
-        - temporalWorkflowId
+        - workflowId
       properties:
         jobId:
           $ref: "#/components/schemas/JobId"
         attemptId:
           $ref: "#/components/schemas/AttemptId"
-        temporalWorkflowId:
-          $ref: "#/components/schemas/TemporalWorkflowId"
+        workflowId:
+          $ref: "#/components/schemas/WorkflowId"
     InternalOperationResult:
       type: object
       required:
-        - done
+        - succeeded
       properties:
         done:
           type: boolean
