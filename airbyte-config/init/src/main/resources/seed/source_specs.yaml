@@ -87,7 +87,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.14"
+- dockerImage: "airbyte/source-amazon-ads:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -211,7 +211,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.24"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -688,7 +688,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-asana:0.1.3"
+- dockerImage: "airbyte/source-asana:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2291,7 +2291,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.19"
+- dockerImage: "airbyte/source-file:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -3661,7 +3661,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.2.8"
+- dockerImage: "airbyte/source-greenhouse:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/greenhouse"
     connectionSpecification:
@@ -5182,7 +5182,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.5"
+- dockerImage: "airbyte/source-marketo:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -5685,7 +5685,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.19"
+- dockerImage: "airbyte/source-mixpanel:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -7147,7 +7147,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.8"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -7159,54 +7159,21 @@
       - "is_sandbox"
       additionalProperties: true
       properties:
-        credentials:
-          title: "Authenticate using"
-          type: "object"
-          oneOf:
-          - type: "object"
-            title: "OAuth2.0"
-            required:
-            - "auth_type"
-            - "refresh_token"
-            properties:
-              auth_type:
-                type: "string"
-                const: "oauth2.0"
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "The Client ID of your Paypal developer application."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client secret"
-                description: "The Client Secret of your Paypal developer application."
-                airbyte_secret: true
-              refresh_token:
-                type: "string"
-                title: "Refresh token"
-                description: "The key to refresh the expired access token."
-                airbyte_secret: true
-          - title: "Private OAuth Creds"
-            type: "object"
-            required:
-            - "auth_type"
-            - "client_id"
-            - "client_secret"
-            properties:
-              auth_type:
-                type: "string"
-                const: "private_oauth"
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "The Client ID of your Paypal developer application."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client secret"
-                description: "The Client Secret of your Paypal developer application."
-                airbyte_secret: true
+        client_id:
+          type: "string"
+          title: "Client ID"
+          description: "The Client ID of your Paypal developer application."
+          airbyte_secret: true
+        client_secret:
+          type: "string"
+          title: "Client secret"
+          description: "The Client Secret of your Paypal developer application."
+          airbyte_secret: true
+        refresh_token:
+          type: "string"
+          title: "Refresh token (Optional)"
+          description: "The key to refresh the expired access token."
+          airbyte_secret: true
         start_date:
           type: "string"
           title: "Start Date"
@@ -7224,17 +7191,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject:
-        - "credentials"
-        - "0"
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "refresh_token"
 - dockerImage: "airbyte/source-paystack:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paystack"
@@ -7545,7 +7501,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.3"
+- dockerImage: "airbyte/source-postgres:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8677,7 +8633,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.12"
+- dockerImage: "airbyte/source-salesforce:1.0.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -8880,7 +8836,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.10"
+- dockerImage: "airbyte/source-sendgrid:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -10432,7 +10388,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-youtube-analytics:0.1.0"
+- dockerImage: "airbyte/source-youtube-analytics:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/youtube-analytics"
     connectionSpecification:
@@ -10441,7 +10397,7 @@
       type: "object"
       required:
       - "credentials"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         credentials:
           title: "Authenticate via OAuth 2.0"
@@ -10450,7 +10406,7 @@
           - "client_id"
           - "client_secret"
           - "refresh_token"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               title: "Client ID"
@@ -10594,7 +10550,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.8"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -10680,7 +10636,6 @@
       oauth_config_specification:
         oauth_user_input_from_connector_config_specification:
           type: "object"
-          additionalProperties: false
           properties:
             subdomain:
               type: "string"
@@ -10688,7 +10643,6 @@
               - "subdomain"
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             access_token:
               type: "string"
@@ -10702,7 +10656,6 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
@@ -10710,7 +10663,6 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
@@ -11053,7 +11005,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.3"
+- dockerImage: "airbyte/source-sentry:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sentry"
     connectionSpecification:

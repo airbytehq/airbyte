@@ -362,30 +362,6 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-
-    ConnectionRead connectionRead;
-    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-
-    if (needReset) {
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
-          // streams, instead of all
-          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
-      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-    }
-    return buildWebBackendConnectionRead(connectionRead);
-  }
-
-  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
-    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);

@@ -204,7 +204,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
           .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted())
           .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
-          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage());
+          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
+          .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null));
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -285,6 +287,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         output.withState(syncInput.getState());
       } else {
         LOGGER.warn("State capture: No state retained.");
+      }
+
+      if (messageTracker.getUnreliableStateTimingMetrics()) {
+        metricReporter.trackStateMetricTrackerError();
       }
 
       return output;
