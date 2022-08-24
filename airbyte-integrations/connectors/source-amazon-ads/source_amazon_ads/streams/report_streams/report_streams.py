@@ -77,10 +77,6 @@ class ReportInitFailure(RetryableException):
     pass
 
 
-class ReportInitFatal(Exception):
-    pass
-
-
 class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
@@ -368,7 +364,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             if response.status_code != HTTPStatus.ACCEPTED:
                 error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
                 if self._check_report_date_error(response):
-                    raise ReportInitFatal(error_msg)
+                    self.logger.warning(error_msg)
+                    break
                 raise ReportInitFailure(error_msg)
 
             response = ReportInitResponse.parse_raw(response.text)
@@ -410,8 +407,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         In theory, it does not have to get such an error because the connector correctly calculates the start date,
         but from practice, we can still catch such errors from time to time.
-
-        Anyway connector self recovers in subsequent sync because it will re-evaluate the start date and will succeed.
         """
 
         if response.status_code == 406:
