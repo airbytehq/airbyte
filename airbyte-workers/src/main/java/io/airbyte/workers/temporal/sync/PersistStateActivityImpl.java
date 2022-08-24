@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static io.airbyte.config.helpers.StateConverter.convertClientStateTypeToInternal;
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
+import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.AirbyteApiClient;
@@ -18,11 +18,11 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
-import io.airbyte.config.helpers.StateConverter;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.workers.helper.StateConverter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
