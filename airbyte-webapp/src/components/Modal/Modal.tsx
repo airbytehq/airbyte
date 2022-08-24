@@ -1,6 +1,6 @@
+import { Dialog } from "@headlessui/react";
 import classNames from "classnames";
-import React, { useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
 
 import ContentCard from "components/ContentCard";
 
@@ -22,43 +22,32 @@ const cardStyleBySize = {
   xl: styles.xl,
 };
 
-const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground, size, testId }) => {
-  const handleUserKeyPress = useCallback((event: KeyboardEvent, closeModal: () => void) => {
-    const { key } = event;
-    // Escape key
-    if (key === "Escape") {
-      closeModal();
+const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, clear, testId }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const onModalClose = () => {
+    setIsOpen(false);
+
+    if (onClose) {
+      onClose();
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    if (!onClose) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => handleUserKeyPress(event, onClose);
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [handleUserKeyPress, onClose]);
-
-  return createPortal(
-    <div
-      className={styles.modal}
-      onClick={() => (closeOnBackground && onClose ? onClose() : null)}
-      data-testid={testId}
-    >
-      {clear ? (
-        children
-      ) : (
-        <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
-          {children}
-        </ContentCard>
-      )}
-    </div>,
-    document.body
+  return (
+    <Dialog open={isOpen} onClose={() => onModalClose} data-testid={testId} className={styles.modalPageContainer}>
+      <div className={styles.backdrop} />
+      <div className={styles.modalContainer}>
+        <Dialog.Panel className={styles.modalPanel}>
+          {clear ? (
+            children
+          ) : (
+            <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
+              {children}
+            </ContentCard>
+          )}
+        </Dialog.Panel>
+      </div>
+    </Dialog>
   );
 };
 

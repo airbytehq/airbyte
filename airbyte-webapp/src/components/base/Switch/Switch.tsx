@@ -19,7 +19,7 @@ export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, 
   });
 
   return (
-    <label onFocus={(event: React.SyntheticEvent) => event.stopPropagation()} className={labelStyle}>
+    <label className={labelStyle}>
       <input
         {...props}
         className={styles.switchInput}

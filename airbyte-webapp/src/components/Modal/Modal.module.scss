@@ -7,23 +7,43 @@
   }
 }
 
-.modal {
-  animation: fade-in 0.2s ease-out;
-  position: absolute;
+.backdrop {
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
   background: rgba(colors.$black, 0.5);
+}
+
+.modalPageContainer {
+  z-index: 50;
+}
+
+.modalContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  animation: fadeIn 0.2s ease-out;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+}
+
+.modalPanel {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card {
   margin-left: variables.$width-size-menu;
+<<<<<<< HEAD
   max-width: calc(100% - (#{variables.$width-size-menu} - #{variables.$spacing-lg}) * 2);
+=======
+  max-width: calc(100vw - variables.$width-size-menu - variables.$spacing-lg * 2);
+>>>>>>> 10bbd86ef5 (modal and switch)
 
   &.sm {
     width: variables.$width-modal-sm;
