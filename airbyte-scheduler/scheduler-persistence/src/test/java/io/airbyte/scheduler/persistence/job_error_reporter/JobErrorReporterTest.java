@@ -197,10 +197,11 @@ class JobErrorReporterTest {
 
   @Test
   void testReportSourceCheckJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String connectorCommand = "check";
     final FailureReason failureReason = new FailureReason()
         .withMetadata(new Metadata()
             .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
-            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "check"))
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, connectorCommand))
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -230,7 +231,7 @@ class JobErrorReporterTest {
         Map.entry(CONNECTOR_REPOSITORY_KEY, SOURCE_DOCKER_REPOSITORY),
         Map.entry(CONNECTOR_NAME_KEY, SOURCE_DEFINITION_NAME),
         Map.entry(CONNECTOR_RELEASE_STAGE_KEY, SOURCE_RELEASE_STAGE.toString()),
-        Map.entry(CONNECTOR_COMMAND_KEY, "check"));
+        Map.entry(CONNECTOR_COMMAND_KEY, connectorCommand));
 
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, failureReason, SOURCE_DOCKER_IMAGE, expectedMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
@@ -238,10 +239,11 @@ class JobErrorReporterTest {
 
   @Test
   void testReportDestinationCheckJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String connectorCommand = "check";
     final FailureReason failureReason = new FailureReason()
         .withMetadata(new Metadata()
             .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
-            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "check"))
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, connectorCommand))
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
@@ -271,7 +273,7 @@ class JobErrorReporterTest {
         Map.entry(CONNECTOR_REPOSITORY_KEY, DESTINATION_DOCKER_REPOSITORY),
         Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
         Map.entry(CONNECTOR_RELEASE_STAGE_KEY, DESTINATION_RELEASE_STAGE.toString()),
-        Map.entry(CONNECTOR_COMMAND_KEY, "check"));
+        Map.entry(CONNECTOR_COMMAND_KEY, connectorCommand));
 
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, failureReason, DESTINATION_DOCKER_IMAGE, expectedMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);

@@ -22,31 +22,41 @@ import org.junit.jupiter.api.Test;
 
 class FailureHelperTest {
 
+  private static final String FROM_TRACE_MESSAGE_KEY = "from_trace_message";
+  private static final String CONNECTOR_COMMAND_KEY = "connector_command";
+  private static final String JOB_ID_KEY = "jobId";
+  private static final String ATTEMPT_NUMBER_KEY = "attemptNumber";
+
   private static final FailureReason TRACE_FAILURE_REASON = new FailureReason()
       .withInternalMessage("internal message")
       .withStacktrace("stack trace")
       .withTimestamp(Long.valueOf(1111112))
       .withMetadata(new Metadata()
-          .withAdditionalProperty("jobId", 12345)
-          .withAdditionalProperty("attempt", 1)
-          .withAdditionalProperty("from_trace_message", true));
+          .withAdditionalProperty(JOB_ID_KEY, 12345)
+          .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1)
+          .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true));
 
   private static final FailureReason TRACE_FAILURE_REASON_2 = new FailureReason()
       .withInternalMessage("internal message")
       .withStacktrace("stack trace")
       .withTimestamp(Long.valueOf(1111113))
       .withMetadata(new Metadata()
-          .withAdditionalProperty("jobId", 12345)
-          .withAdditionalProperty("attempt", 1)
-          .withAdditionalProperty("from_trace_message", true));
+          .withAdditionalProperty(JOB_ID_KEY, 12345)
+          .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1)
+          .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true));
 
   private static final FailureReason EXCEPTION_FAILURE_REASON = new FailureReason()
       .withInternalMessage("internal message")
       .withStacktrace("stack trace")
       .withTimestamp(Long.valueOf(1111111))
       .withMetadata(new Metadata()
-          .withAdditionalProperty("jobId", 12345)
-          .withAdditionalProperty("attempt", 1));
+          .withAdditionalProperty(JOB_ID_KEY, 12345)
+          .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1));
+
+  private static final AirbyteTraceMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorTraceMessage(
+      "trace message error",
+      Double.valueOf(123),
+      AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
 
   @Test
   void testGenericFailureFromTrace() throws Exception {
@@ -58,8 +68,7 @@ class FailureHelperTest {
 
   @Test
   void testGenericFailureFromTraceNoFailureType() throws Exception {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123));
-    final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
+    final FailureReason failureReason = FailureHelper.genericFailure(TRACE_MESSAGE, Long.valueOf(12345), 1);
     assertEquals(failureReason.getFailureType(), FailureType.SYSTEM_ERROR);
   }
 
@@ -71,25 +80,23 @@ class FailureHelperTest {
     final FailureReason failureReason = FailureHelper.connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK);
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("check", metadata.get("connector_command"));
-    assertNull(metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("check", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertNull(metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
   void testConnectorCommandFailureFromTrace() {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
-        AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage, jobId, attemptNumber, ConnectorCommand.DISCOVER);
+    final FailureReason failureReason = FailureHelper.connectorCommandFailure(TRACE_MESSAGE, jobId, attemptNumber, ConnectorCommand.DISCOVER);
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("discover", metadata.get("connector_command"));
-    assertEquals(true, metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("discover", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertEquals(true, metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
@@ -101,26 +108,24 @@ class FailureHelperTest {
     assertEquals(FailureOrigin.SOURCE, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("read", metadata.get("connector_command"));
-    assertNull(metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("read", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertNull(metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
   void testSourceFailureFromTrace() {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
-        AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.sourceFailure(traceMessage, jobId, attemptNumber);
+    final FailureReason failureReason = FailureHelper.sourceFailure(TRACE_MESSAGE, jobId, attemptNumber);
     assertEquals(FailureOrigin.SOURCE, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("read", metadata.get("connector_command"));
-    assertEquals(true, metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("read", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertEquals(true, metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
@@ -132,26 +137,24 @@ class FailureHelperTest {
     assertEquals(FailureOrigin.DESTINATION, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("write", metadata.get("connector_command"));
-    assertNull(metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("write", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertNull(metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
   void testDestinationFailureFromTrace() {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
-        AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR);
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;
-    final FailureReason failureReason = FailureHelper.destinationFailure(traceMessage, jobId, attemptNumber);
+    final FailureReason failureReason = FailureHelper.destinationFailure(TRACE_MESSAGE, jobId, attemptNumber);
     assertEquals(FailureOrigin.DESTINATION, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("write", metadata.get("connector_command"));
-    assertEquals(true, metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("write", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertEquals(true, metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
@@ -163,10 +166,10 @@ class FailureHelperTest {
     assertEquals(FailureOrigin.DESTINATION, failureReason.getFailureOrigin());
 
     final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
-    assertEquals("check", metadata.get("connector_command"));
-    assertNull(metadata.get("from_trace_message"));
-    assertEquals(jobId, metadata.get("jobId"));
-    assertEquals(attemptNumber, metadata.get("attemptNumber"));
+    assertEquals("check", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertNull(metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
   }
 
   @Test
