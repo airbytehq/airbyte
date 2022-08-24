@@ -92,7 +92,7 @@ public class FailureHelper {
                                                       final Integer attemptNumber,
                                                       final ConnectorCommand connectorCommand) {
     final Metadata metadata = traceMessageMetadata(jobId, attemptNumber);
-    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
     return genericFailure(m, jobId, attemptNumber)
         .withMetadata(metadata);
   }
@@ -102,7 +102,7 @@ public class FailureHelper {
                                                       final Integer attemptNumber,
                                                       final ConnectorCommand connectorCommand) {
     final Metadata metadata = jobAndAttemptMetadata(jobId, attemptNumber);
-    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
     return genericFailure(t, jobId, attemptNumber)
         .withMetadata(metadata);
   }
