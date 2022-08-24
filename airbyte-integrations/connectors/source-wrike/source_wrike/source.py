@@ -71,6 +71,10 @@ class Contacts(WrikeStream):
     pass
 
 
+class Workflows(WrikeStream):
+    pass
+
+
 def to_utc_z(date: DateTime):
     return date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -145,6 +149,7 @@ class SourceWrike(AbstractSource):
             Tasks(authenticator=auth, wrike_instance=config["wrike_instance"]),
             Customfields(authenticator=auth, wrike_instance=config["wrike_instance"]),
             Contacts(authenticator=auth, wrike_instance=config["wrike_instance"]),
+            Workflows(authenticator=auth, wrike_instance=config["wrike_instance"]),
             Folders(authenticator=auth, wrike_instance=config["wrike_instance"]),
             Comments(authenticator=auth, wrike_instance=config["wrike_instance"], start_date=start_date),
         ]

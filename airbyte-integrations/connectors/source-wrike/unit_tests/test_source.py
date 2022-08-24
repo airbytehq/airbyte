@@ -26,7 +26,7 @@ def test_check_connection(mocker, config):
 def test_streams_without_date(mocker, config):
     source = SourceWrike()
     streams = source.streams(config)
-    expected_streams_number = 5
+    expected_streams_number = 6
     assert len(streams) == expected_streams_number
     assert streams[-1]._start_date is not None
 
@@ -34,6 +34,6 @@ def test_streams_without_date(mocker, config):
 def test_streams_with_date(mocker, config):
     source = SourceWrike()
     streams = source.streams(config | {"start_date": "2022-05-01T00:00:00Z"})
-    expected_streams_number = 5
+    expected_streams_number = 6
     assert len(streams) == expected_streams_number
     assert streams[-1]._start_date == pendulum.parse("2022-05-01T00:00:00Z")
