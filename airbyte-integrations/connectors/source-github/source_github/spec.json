@@ -23,14 +23,14 @@
           "estuary/connectors"
         ],
         "title": "GitHub Repositories",
-        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*` for get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
+        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*`to get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
         "order": 1
       },
       "branch": {
         "type": "string",
         "title": "Branch (Optional)",
         "examples": ["estuary/flow/examples estuary/flow/scripts"],
-        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow`. If no branches are specified for a repository, the default branch will be pulled.",
+        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow/your-branch`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 2
       },
       "page_size_for_large_streams": {
