@@ -80,6 +80,10 @@ class ReportInitFailure(RetryableException):
     pass
 
 
+class ReportInitFatal(Exception):
+    pass
+
+
 class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
@@ -365,9 +369,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 report_init_body,
             )
             if response.status_code != HTTPStatus.ACCEPTED:
-                raise ReportInitFailure(
-                    f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                )
+                error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                if self._check_report_date_error(response):
+                    raise ReportInitFatal(error_msg)
+                raise ReportInitFailure(error_msg)
 
             response = ReportInitResponse.parse_raw(response.text)
             report_infos.append(
@@ -401,3 +406,21 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if isinstance(exception, ReportGenerationInProgress):
             return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
         return super().get_error_display_message(exception)
+
+    def _check_report_date_error(self, response):
+        """
+        Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
+
+        The connector has to correctly calculate the start date of the report and in theory,
+        it does not have to get such an error. But from practice, we can still catch such errors from time to time.
+
+        Connector self recovers in subsequent sync because it will re-evaluate start date and will succeed.
+        """
+
+        if response.status_code == 406:
+            try:
+                response_json = response.json()
+            except ValueError:
+                return False
+            return response_json.get("details", "").startswith("Report date is too far in the past.")
+        return False
