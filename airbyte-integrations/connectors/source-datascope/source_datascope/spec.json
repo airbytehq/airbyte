@@ -15,7 +15,7 @@
       "start_date": {
         "type": "string",
         "description": "Start date",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+	"pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"]
       },
       "form_id": {
@@ -25,8 +25,8 @@
       "schema_type": {
         "type": "string",
         "description": "Please select type of schema 'fixed' or 'dynamic'. Fixed will use same schema for all forms and dynamic will change schema depending on the questions of the form",
-        "enum": ["fixed", "dynamic"],
-        "examples": ["Fixed or Dynamic"]
+	"enum": ["fixed", "dynamic", "dynamic_updates"],
+	"examples": ["Fixed or Dynamic, Dynamic with updates"]
       }
     }
   }
