@@ -4,6 +4,8 @@ connector_image: airbyte/source-google-sheets:dev
 tests:
   spec:
     - spec_path: "google_sheets_source/spec.yaml"
+      backward_compatibility_tests_config:
+        disable_for_version: 0.2.16
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -11,9 +13,9 @@ tests:
       status: "succeed"
     - config_path: "secrets/service_config.json"
       status: "succeed"
-#      was commented because when old config format used google_sheets_source.get_authenticated_google_credentials raises error
-#    - config_path: "secrets/old_config.json"
-#      status: "succeed"
+    #      was commented because when old config format used google_sheets_source.get_authenticated_google_credentials raises error
+    #    - config_path: "secrets/old_config.json"
+    #      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "exception"
   discovery:
@@ -24,5 +26,3 @@ tests:
   full_refresh:
     - config_path: "secrets/service_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-
-
