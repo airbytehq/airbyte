@@ -90,6 +90,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.17 | 2022-08-24 | [15921](https://github.com/airbytehq/airbyte/pull/15921)    | Skip API error "Report date is too far in the past."                                                              |
 | 0.1.16 | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822)    | Set default value for 'region' if needed                                                                          |
 | 0.1.15 | 2022-08-20 | [15816](https://github.com/airbytehq/airbyte/pull/15816)    | Update STATE of incremental sync if no records                                                                    |
 | 0.1.14 | 2022-08-15 | [15637](https://github.com/airbytehq/airbyte/pull/15637)    | Generate slices by lazy evaluation                                                                                |
