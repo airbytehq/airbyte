@@ -29,9 +29,7 @@ spec:
       serviceAccountName: {{ .Values.global.serviceAccountName }}
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- range .Values.global.imagePullSecrets }}
           {{- printf "- name: %s" . | nindent 2 }}
-        {{- end }}
       {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
@@ -197,11 +195,16 @@ spec:
         {{- end }}
 
         # Values from env
-        {{- if .Values.extraEnv }}
-        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
         - name: {{ $k }}
           value: {{ $v | quote }}
         {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
         {{- end }}
         
         {{- if .Values.livenessProbe.enabled }}
@@ -252,6 +255,7 @@ spec:
       {{- if .Values.global.extraContainers }}
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
+
       volumes:
       {{- if eq .Values.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
