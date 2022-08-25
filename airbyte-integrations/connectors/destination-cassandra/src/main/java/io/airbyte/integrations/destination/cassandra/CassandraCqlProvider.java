@@ -152,10 +152,7 @@ class CassandraCqlProvider implements Closeable {
       var resultSetCompletionStage = cqlSession.executeAsync(boundStatement);
       resultSetCompletionStage.whenCompleteAsync((res, err) -> {
         if (err != null) {
-          LOGGER.error("Something went wrong: " + err.getMessage());
-        } else {
-          // It will not be merged. Just to show that query is completed
-          LOGGER.info("Insert complete.");
+          LOGGER.error("Something went wrong during async insertion: " + err.getMessage());
         }
       });
     });
