@@ -17,12 +17,13 @@ In order to get an `Client ID` and `Secret` please go to [this](https://develope
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Paypal Transaction connector and select **Paypal Transaction** from the Source type dropdown.
-4. For Airbyte Cloud, click **Authenticate your Paypal Transaction account** to sign in with Paypal and authorize your account.
-5. Choose if your account is sandbox
-6. Enter the date you want your sync to start from
-7. Click **Set up source**.
+4. Enter your client id
+5. Enter your secret
+6. Choose if your account is sandbox
+7. Enter the date you want your sync to start from
+8. Click **Set up source**.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter your client id
@@ -74,6 +75,7 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.9   | 2022-08-18 | [15741](https://github.com/airbytehq/airbyte/pull/15741) | Removed `OAuth2.0` option                                                                                                          |
 | 0.1.8   | 2022-07-25 | [15000](https://github.com/airbytehq/airbyte/pull/15000) | Added support of `OAuth2.0` authentication, fixed bug when normalization couldn't handle nested cursor field and primary key       |
 | 0.1.7   | 2022-07-18 | [14804](https://github.com/airbytehq/airbyte/pull/14804) | Added `RESULTSET_TOO_LARGE` error validation                                                                                       |
 | 0.1.6   | 2022-06-10 | [13682](https://github.com/airbytehq/airbyte/pull/13682) | Updated paypal transaction schema                                                                                                  |

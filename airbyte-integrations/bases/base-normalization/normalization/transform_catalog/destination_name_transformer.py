@@ -164,7 +164,11 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            if self.destination_type.value != DestinationType.MYSQL.value:
+            if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                result = result.replace('"', "_")
+                result = result.replace("`", "_")
+                result = result.replace("'", "_")
+            elif self.destination_type.value != DestinationType.MYSQL.value:
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")

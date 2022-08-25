@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
- * NoSql DB source.
+ * DB source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {

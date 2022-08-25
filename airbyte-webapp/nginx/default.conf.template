@@ -22,7 +22,6 @@ server {
                 window.FULLSTORY = "$FULLSTORY";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
-                window.IS_DEMO = "$IS_DEMO";
                 </script>';
         sub_filter_once on;
     }

@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceSendgrid(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "./source_sendgrid/sendgrid.yaml"})
+        super().__init__(**{"path_to_yaml": "sendgrid.yaml"})
