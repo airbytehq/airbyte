@@ -414,6 +414,22 @@ class configurations(ItGlueStream):
         configurations = response.json().get("data")
         return configurations
 
+class domains(ItGlueStream):
+    primary_key = None
+
+    def path(self, **kwargs) -> str:
+        return "/domains"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+
+        domains = response.json().get("data")
+        return domains
 
 class SourceItGlue(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -429,6 +445,7 @@ class SourceItGlue(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {"api_key": config["api_key"], "fatId": config["fatId"]}
         return [
+            domains(**args),
             flexible_assets(**args),
             configurations(**args),
             configuration_types(**args),
