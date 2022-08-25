@@ -657,6 +657,9 @@ class ConnectionSchedulerHelperTest {
     for (String expectedTimezone : timezoneStrings) {
       try {
         final StandardSync actual = new StandardSync();
+        // NOTE: this method call is the one that parses the given timezone string
+        // and will throw an exception if it isn't supported. This method is called
+        // on the API handler path.
         ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(actual,
             ConnectionScheduleType.CRON, new ConnectionScheduleData()
                 .cron(new ConnectionScheduleDataCron()
