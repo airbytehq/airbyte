@@ -173,6 +173,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
+    configBuilder.putAll(sslParameters);
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
