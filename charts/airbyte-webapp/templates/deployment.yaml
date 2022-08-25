@@ -35,7 +35,9 @@ spec:
       {{- end }}
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
-          {{- printf "- name: %s" . | nindent 2 }}
+        {{- range .Values.global.imagePullSecrets }}
+          {{- printf "- name: %s" .name | nindent 2 }}
+        {{- end }}
       {{- end }}
       containers:
       - name: airbyte-webapp-container
