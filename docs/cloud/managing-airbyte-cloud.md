@@ -197,6 +197,7 @@ To search for a stream:
 3. Streams matching your search are displayed in the list.
 
 To change individual stream configuration:
+![Single Stream Edits gif](https://user-images.githubusercontent.com/106352739/186750001-7e78d77e-9e24-450a-967e-a90812a76fdf.gif)
 1. In the **Sync** column of the stream, toggle the sync on or off. 
 
 2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply.
@@ -210,6 +211,7 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 3. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
 
 To change multiple stream configurations:
+![Batch Edit 1](https://user-images.githubusercontent.com/106352739/186749992-a35e3aa0-7b77-4b21-a487-7c490d5bc364.gif)
 1. Click the first checkbox in the table header to select all streams in the connection.
     
 2. Deselect the checkboxes of streams you do not want to apply these changes to.
