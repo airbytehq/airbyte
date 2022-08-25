@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
 
@@ -18,9 +19,11 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
   static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
@@ -43,11 +46,13 @@ public class PostgresCdcProperties {
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
-//        props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(
-//                SslMode.valueOf(sourceConfig.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText())));
-        props.setProperty("database.sslmode", "verify-ca"); // TEMP
-        props.setProperty("database.history.producer.security.protocol", "SSL");
-        props.setProperty("database.history.consumer.security.protocol", "SSL");
+        LOGGER.info("dbConfig: {}", dbConfig);
+        LOGGER.info("sslMode: {}", dbConfig.get(SSL_MODE));
+        if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
+          props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
+          props.setProperty("database.history.producer.security.protocol", "SSL");
+          props.setProperty("database.history.consumer.security.protocol", "SSL");
+        }
 
         if (dbConfig.has("ca_certificate_path") && !dbConfig.get("ca_certificate_path").asText().isEmpty()) {
           props.setProperty("database.sslrootcert", dbConfig.get("ca_certificate_path").asText());
