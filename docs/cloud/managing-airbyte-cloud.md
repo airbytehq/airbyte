@@ -164,7 +164,7 @@ The sync log summary displays **Running** when the sync is actively running.
 
 ## Change Streams in a Connection
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection in the list you want to change.  
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.  
 
     The **Connection** page displays.  
 
