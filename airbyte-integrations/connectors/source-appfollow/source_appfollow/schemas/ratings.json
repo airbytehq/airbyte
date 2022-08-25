@@ -4,10 +4,7 @@
   "properties": {
     "ratings": {
       "list": {
-        "type": [
-          "null",
-          "array"
-        ],
+        "type": ["null", "array"],
         "items": {
           "properties": {
             "stars2": {
@@ -41,23 +38,14 @@
               "type": "number"
             }
           },
-          "type": [
-            "null",
-            "object"
-          ]
+          "type": ["null", "object"]
         }
       },
       "ext_id": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "store": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       }
     }
   }

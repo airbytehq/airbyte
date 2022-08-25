@@ -876,7 +876,6 @@ public class AirbyteAcceptanceTestHarness {
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
         .prefix(connection.getPrefix())
-        .withRefreshedCatalog(true)
         .skipReset(false);
   }
 
