@@ -62,18 +62,18 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
 
       switch (fieldType.toUpperCase(Locale.ROOT)) {
         case "DATETIME":
-          if (x instanceof Long) {
+          if (x instanceof final Long l) {
             if (getTimePrecision(field) <= 3) {
-              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis((Long) x));
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis(l));
             }
             if (getTimePrecision(field) <= 6) {
-              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros((Long) x));
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros(l));
             }
           }
           return DateTimeConverter.convertToTimestamp(x);
         case "DATE":
-          if (x instanceof Integer) {
-            return DateTimeConverter.convertToDate(LocalDate.ofEpochDay((Integer) x));
+          if (x instanceof final Integer i) {
+            return DateTimeConverter.convertToDate(LocalDate.ofEpochDay(i));
           }
           return DateTimeConverter.convertToDate(x);
         case "TIME":
