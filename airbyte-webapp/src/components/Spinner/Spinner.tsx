@@ -3,9 +3,8 @@ import React from "react";
 
 import styles from "./Spinner.module.scss";
 
-interface SpinnerProps {
+interface SpinnerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   small?: boolean;
-  className?: string;
 }
 
 const Spinner: React.FC<SpinnerProps> = ({ small, className }) => (
