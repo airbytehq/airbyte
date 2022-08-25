@@ -29,9 +29,7 @@ spec:
       serviceAccountName: {{ .Values.global.serviceAccountName }}
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- range .Values.global.imagePullSecrets }}
           {{- printf "- name: %s" . | nindent 2 }}
-        {{- end }}
       {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
