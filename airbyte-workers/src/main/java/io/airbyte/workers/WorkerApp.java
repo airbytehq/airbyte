@@ -149,6 +149,8 @@ public class WorkerApp {
   private static StreamResetPersistence streamResetPersistence;
   private static FeatureFlags featureFlags;
   private static DefaultJobCreator jobCreator;
+  // TODO (pmossman) the API client should be scoped down to only the clients necessary for the worker.
+  //  can be done after the Config API is broken down into multiple smaller classes.
   private static AirbyteApiClient airbyteApiClient;
 
   private static void registerConnectionManager(final WorkerFactory factory) {
