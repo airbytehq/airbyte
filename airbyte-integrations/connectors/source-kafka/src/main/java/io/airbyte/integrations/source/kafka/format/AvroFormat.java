@@ -15,6 +15,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -134,6 +135,7 @@ public class AvroFormat extends AbstractFormat{
         int pollCount = 0;
         final int polling_time = config.has("polling_time") ? config.get("polling_time").intValue() : 100;
         while (true) {
+            consumer.assignment()
             final ConsumerRecords<String, GenericRecord> consumerRecords = consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
             if (consumerRecords.count() == 0) {
                 pollCount++;
@@ -143,6 +145,7 @@ public class AvroFormat extends AbstractFormat{
             }
 
             consumerRecords.forEach(record -> {
+                record.
                 recordsList.add(record);
             });
             consumer.commitAsync();
@@ -157,13 +160,18 @@ public class AvroFormat extends AbstractFormat{
                     GenericRecord avro_data = record.value();
                     ObjectMapper mapper = new ObjectMapper();
                     String namespace=avro_data.getSchema().getNamespace();
+                    String name= avro_data.getSchema().getName();
                     JsonNode output;
                     try {
                         //Todo dynamic namespace is not supported now hence, adding avro schema name in the message
-                        String newString = String.format("{\"avro_schema\": \"%s\"}", namespace);
-                        JsonNode newNode = mapper.readTree(newString);
-                        output = mapper.readTree(avro_data.toString());
-                        ((ObjectNode) output).set("_namespace_", newNode);
+                        if(StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
+                            String newString = String.format("{\"avro_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
+                            JsonNode newNode = mapper.readTree(newString);
+                            output = mapper.readTree(avro_data.toString());
+                            ((ObjectNode) output).set("_namespace_", newNode);
+                        }else{
+                            output = mapper.readTree(avro_data.toString());
+                        }
                     } catch (JsonProcessingException e) {
                         LOGGER.error("Exception whilst reading avro data from stream", e);
                         throw new RuntimeException(e);
