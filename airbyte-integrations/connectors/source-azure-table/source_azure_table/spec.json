@@ -5,7 +5,6 @@
     "title": "Azure Data Table Spec",
     "type": "object",
     "required": ["storage_account_name", "storage_access_key"],
-    "additionalProperties": false,
     "properties": {
       "storage_account_name": {
         "title": "Account Name",
