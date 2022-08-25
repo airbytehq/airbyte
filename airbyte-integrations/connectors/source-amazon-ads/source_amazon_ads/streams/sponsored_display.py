@@ -15,9 +15,6 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
     def __init__(self, *args, **kvargs):
         state = kvargs.get("config", {}).get("stateFilter")
         self.state_filter = ",".join(state) if state else ""
-        # print(args, kvargs)
-        # print("we are here!", end="\n\n\n\n\n")
-        # print(self.state_filter)
         super().__init__(*args, **kvargs)
 
     primary_key = "campaignId"

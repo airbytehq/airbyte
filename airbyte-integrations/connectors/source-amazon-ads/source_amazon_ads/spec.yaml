@@ -89,7 +89,7 @@ connectionSpecification:
     stateFilter:
       title: State Filter
       description:
-        Reflects the state of the selected data stream as enabled, paused, or archived.
+        Reflects the state of the Display Campaign stream as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.
       items:
         type: string
         enum:
