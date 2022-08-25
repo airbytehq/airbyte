@@ -710,8 +710,7 @@ public interface Configs {
 
   enum WorkerPlane {
     CONTROL_PLANE,
-    DATA_PLANE,
-    COMBINED
+    DATA_PLANE
   }
 
 }
