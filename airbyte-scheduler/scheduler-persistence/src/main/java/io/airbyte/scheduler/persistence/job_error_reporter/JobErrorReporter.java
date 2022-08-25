@@ -230,7 +230,7 @@ public class JobErrorReporter {
   }
 
   private Map<String, String> prefixConnectorMetadataKeys(final Map<String, String> connectorMetadata, final String prefix) {
-    Map<String, String> prefixedMetadata = new HashMap<>();
+    final Map<String, String> prefixedMetadata = new HashMap<>();
     for (final Map.Entry<String, String> entry : connectorMetadata.entrySet()) {
       prefixedMetadata.put(String.format("%s_%s", prefix, entry.getKey()), entry.getValue());
     }
@@ -239,8 +239,12 @@ public class JobErrorReporter {
 
   private Map<String, String> getFailureReasonMetadata(final FailureReason failureReason) {
     final Map<String, Object> failureReasonAdditionalProps = failureReason.getMetadata().getAdditionalProperties();
-    final Map<String, String> outMetadata = new HashMap<>(Map.ofEntries(
-        Map.entry(CONNECTOR_COMMAND_META_KEY, failureReasonAdditionalProps.getOrDefault(CONNECTOR_COMMAND_META_KEY, "").toString())));
+    final Map<String, String> outMetadata = new HashMap<>();
+
+    if (failureReasonAdditionalProps.containsKey(CONNECTOR_COMMAND_META_KEY)
+        && failureReasonAdditionalProps.get(CONNECTOR_COMMAND_META_KEY) != null) {
+      outMetadata.put(CONNECTOR_COMMAND_META_KEY, failureReasonAdditionalProps.get(CONNECTOR_COMMAND_META_KEY).toString());
+    }
 
     if (failureReason.getFailureOrigin() != null) {
       outMetadata.put(FAILURE_ORIGIN_META_KEY, failureReason.getFailureOrigin().value());

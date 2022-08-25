@@ -176,8 +176,9 @@ class JobErrorReporterTest {
     final Map<String, String> expectedNormalizationMetadata = Map.ofEntries(
         Map.entry(JOB_ID_KEY, String.valueOf(syncJobId)),
         Map.entry(WORKSPACE_ID_KEY, WORKSPACE_ID.toString()),
-        Map.entry("connection_id", CONNECTION_ID.toString()),
-        Map.entry("connection_url", CONNECTION_URL),
+        Map.entry(WORKSPACE_URL_KEY, WORKSPACE_URL),
+        Map.entry(CONNECTION_ID_KEY, CONNECTION_ID.toString()),
+        Map.entry(CONNECTION_URL_KEY, CONNECTION_URL),
         Map.entry(DEPLOYMENT_MODE_KEY, DEPLOYMENT_MODE.name()),
         Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
         Map.entry(FAILURE_ORIGIN_KEY, "normalization"),
