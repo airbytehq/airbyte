@@ -7,13 +7,15 @@ package io.airbyte.workers.temporal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.generated.InternalApi;
+import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -28,9 +30,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+@ExtendWith(MockitoExtension.class)
 class TemporalAttemptExecutionTest {
 
   private static final String JOB_ID = "11";
@@ -49,6 +55,9 @@ class TemporalAttemptExecutionTest {
 
   private TemporalAttemptExecution<String, String> attemptExecution;
 
+  @Mock
+  private AttemptApi attemptApi;
+
   @BeforeAll
   static void setUpAll() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
@@ -62,8 +71,7 @@ class TemporalAttemptExecutionTest {
   @BeforeEach
   void setup() throws IOException, DatabaseInitializationException {
     final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
-    final InternalApi internalApi = mock(InternalApi.class);
-    when(airbyteApiClient.getInternalApi()).thenReturn(internalApi);
+    when(airbyteApiClient.getAttemptApi()).thenReturn(attemptApi);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
@@ -102,6 +110,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter, atLeast(2)).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -113,6 +123,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -123,6 +135,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
 }
