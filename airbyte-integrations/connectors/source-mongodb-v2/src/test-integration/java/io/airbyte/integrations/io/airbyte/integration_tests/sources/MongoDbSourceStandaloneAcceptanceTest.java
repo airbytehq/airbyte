@@ -123,7 +123,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .build());
     var airbyteConnectionStatus = new MongoDbSource().check(conf);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3"));
   }
 
   @Test
@@ -142,7 +142,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .build());
     var airbyteConnectionStatus = new MongoDbSource().check(conf);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3"));
   }
 
 }

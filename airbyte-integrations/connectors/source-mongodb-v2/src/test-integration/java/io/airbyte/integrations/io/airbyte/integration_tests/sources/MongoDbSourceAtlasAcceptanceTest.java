@@ -121,7 +121,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     ((ObjectNode) config).put("user", "fake");
     var airbyteConnectionStatus = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -129,7 +129,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     ((ObjectNode) config).put("password", "fake");
     var airbyteConnectionStatus = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -138,7 +138,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
         .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
     var airbyteConnectionStatus = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -4."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -4"));
   }
 
   @Test
@@ -147,7 +147,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
         .put("password", "test12321");
     var airbyteConnectionStatus = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 13."));
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 13"));
   }
 
 }
