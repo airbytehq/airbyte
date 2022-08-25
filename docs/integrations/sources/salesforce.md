@@ -48,7 +48,7 @@ To set up Salesforce as a source in Airbyte Cloud:
 8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
 9. Click **Set up source**.
 
-### For Airbyte OSS
+### For Airbyte Open Source
 
 To set up Salesforce as a source in Airbyte Open Source:
 
@@ -119,6 +119,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.13   | 2022-08-23 | [15901](https://github.com/airbytehq/airbyte/pull/15901)     | Exclude `KnowledgeArticle` from using bulk API |  
 | 1.0.12   | 2022-08-09 | [15444](https://github.com/airbytehq/airbyte/pull/15444)     | Fixed bug when `Bulk Job` was timeout by the connector, but remained running on the server   |
 | 1.0.11   | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)     | Improve configuration field descriptions   |
 | 1.0.10   | 2022-06-09 | [13658](https://github.com/airbytehq/airbyte/pull/13658)     | Correct logic to sync stream larger than page size   |
