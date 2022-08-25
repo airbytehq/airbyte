@@ -162,7 +162,7 @@ The log summary for a failed sync may show the following data.
 ### Running
 The sync log summary displays **Running** when the sync is actively running.
 
-## Change Streams in a Connection
+## Edit stream configuration
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.  
 
