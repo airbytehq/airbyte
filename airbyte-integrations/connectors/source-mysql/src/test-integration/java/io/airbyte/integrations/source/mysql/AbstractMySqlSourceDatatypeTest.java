@@ -232,31 +232,66 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues("1700000.01")
             .build());
 
+    for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("date")
+              .fullSourceDataType(type)
+              .airbyteType(JsonSchemaType.STRING_DATE)
+              .addInsertValues("'1999-01-08'", "'2021-01-01'")
+              .addExpectedValues("1999-01-08", "2021-01-01")
+              .build());
+    }
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("null", "'2021-01-01'")
-            .addExpectedValues(null, "2021-01-01")
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
             .build());
+
+    for (final String fullSourceType : Set.of("datetime", "datetime not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("datetime")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues("'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
+              .addExpectedValues("2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-            .addInsertValues("null", "'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
-            .addExpectedValues(null, "2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
             .build());
 
     addTimestampDataTypeTest();
+
+    for (final String fullSourceType : Set.of("time", "time not null default '00:00:00'")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("time")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+              // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
+              .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
+              .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+              .build());
+
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
-            .addInsertValues("null", "'-22:59:59'", "'23:59:59'", "'00:00:00'")
-            .addExpectedValues(null, "22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
             .build());
 
     addDataTypeTestData(
