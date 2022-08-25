@@ -4,21 +4,16 @@ kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "airbyte.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    helm.sh/chart: {{ include "airbyte.chart" . }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+    {{- include "airbyte.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      airbyte: worker
+      {{- include "airbyte.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        airbyte: worker
+      {{- include "airbyte.selectorLabels" . | nindent 8 }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}

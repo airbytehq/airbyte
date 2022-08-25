@@ -7,8 +7,8 @@ global:
   serviceAccountName: &service-account-name "airbyte-admin"
   deploymentMode: "oss"
 
-  secretName: "airbyte-secrets"
   database:
+    secretName: "{{ .Release.Name }}-airbyte-secrets"
     secretValue: ""
     host: "test"
     port: "5432"
