@@ -17,7 +17,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -76,7 +76,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/asana
   icon: asana.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Azure Table Storage
   sourceDefinitionId: 798ae795-5189-42b6-b64e-3cb91db93338
   dockerRepository: airbyte/source-azure-table
@@ -140,7 +140,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Chargify
   sourceDefinitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
   dockerRepository: airbyte/source-chargify
@@ -473,7 +473,7 @@
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
@@ -587,7 +587,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/marketo
   icon: marketo.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
@@ -647,7 +647,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.4
+  dockerImageTag: 0.6.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -900,7 +900,7 @@
 - name: Sendgrid
   sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/sendgrid
   icon: sendgrid.svg
   sourceType: api
@@ -1064,7 +1064,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/youtube-analytics
   icon: youtube.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
@@ -1096,7 +1096,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-chat
   icon: zendesk.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Zendesk Sunshine
   sourceDefinitionId: 325e0640-e7b3-4e24-b823-3361008f603f
   dockerRepository: airbyte/source-zendesk-sunshine
@@ -1131,7 +1131,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
