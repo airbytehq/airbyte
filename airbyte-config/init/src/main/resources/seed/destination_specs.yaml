@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.14"
+- dockerImage: "airbyte/destination-bigquery:1.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -4118,7 +4118,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.13"
+- dockerImage: "airbyte/destination-s3:0.3.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:

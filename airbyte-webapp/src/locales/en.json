@@ -161,9 +161,10 @@
   "form.repositoryUrl": "Git repository URL of the custom transformation project *",
   "form.entrypoint": "Entrypoint arguments for dbt cli to run the project *",
   "form.entrypoint.docs": "Learn more",
+  "form.entrypoint.linked": "Entrypoint arguments for dbt cli to run the project. <a>Learn more</a> *",
   "form.gitBranch": "Git branch name (leave blank for default branch)",
   "form.selectType": "Select a type",
-  "form.repositoryUrl.placeholder": "https://github.com/<organisation>/<git_repo>.git",
+  "form.repositoryUrl.placeholder": "https://github.com/<angle>organisation</angle>/<angle>git_repo</angle>.git",
 
   "form.sourceNamespace": "Source namespace",
   "form.sourceStreamName": "Source stream name",
@@ -500,9 +501,6 @@
   "credits.remainingCredits": "Remaining credits",
   "credits.creditUsage": "Credit Usage",
   "credits.totalUsage": "Total usage",
-
-  "demo.message.title": "This Airbyte demo is read-only",
-  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
 
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",

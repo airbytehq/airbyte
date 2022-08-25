@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -674,9 +675,27 @@ public class KubePodProcess extends Process implements KubePod {
     return new KubePodProcessInfo(podDefinition.getMetadata().getName());
   }
 
+  private Container getMainContainerFromPodDefinition() {
+    final Optional<Container> containerOptional = podDefinition.getSpec()
+        .getContainers()
+        .stream()
+        .filter(c -> MAIN_CONTAINER_NAME.equals(c.getName()))
+        .findFirst();
+    if (containerOptional.isEmpty()) {
+      LOGGER.warn(String.format("Could not find main container definition for pod: %s", podDefinition.getMetadata().getName()));
+      return null;
+    } else {
+      return containerOptional.get();
+    }
+  }
+
   @Override
   public KubePodInfo getInfo() {
-    return new KubePodInfo(podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName());
+    final Container mainContainer = getMainContainerFromPodDefinition();
+    final KubeContainerInfo mainContainerInfo = new KubeContainerInfo(mainContainer.getImage(), mainContainer.getImagePullPolicy());
+    return new KubePodInfo(podDefinition.getMetadata().getNamespace(),
+        podDefinition.getMetadata().getName(),
+        mainContainerInfo);
   }
 
   /**
