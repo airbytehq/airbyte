@@ -49,12 +49,12 @@ public class PostgresCdcProperties {
         props.setProperty("database.history.producer.security.protocol", "SSL");
         props.setProperty("database.history.consumer.security.protocol", "SSL");
 
-        if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+        if (dbConfig.has("ca_certificate_path") && !dbConfig.get("ca_certificate_path").asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore", dbConfig.get("ca_certificate_path").asText());
           props.setProperty("database.history.producer.ssl.truststore.location",
-              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+              dbConfig.get("ca_certificate_path").asText());
           props.setProperty("database.history.consumer.ssl.truststore.location",
-              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+              dbConfig.get("ca_certificate_path").asText());
           props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
           props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
 
