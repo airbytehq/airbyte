@@ -246,16 +246,6 @@ public interface Configs {
   int getAirbyteApiPort();
 
   /**
-   * Define the header name used to authenticate with the Airbyte API
-   */
-  String getAirbyteApiAuthHeaderName();
-
-  /**
-   * Define the header value used to authenticate with the Airbyte API
-   */
-  String getAirbyteApiAuthHeaderValue();
-
-  /**
    * Define the url the Airbyte Webapp is hosted at. Airbyte services use this information.
    */
   String getWebappUrl();
@@ -528,6 +518,16 @@ public interface Configs {
   // Worker
 
   /**
+   * Define the header name used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderName();
+
+  /**
+   * Define the header value used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderValue();
+
+  /**
    * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
    */
@@ -560,48 +560,37 @@ public interface Configs {
   boolean shouldRunConnectionManagerWorkflows();
 
   /**
-   * Define if the worker is operating as a Control Plane worker, a Data Plane worker, or as a
-   * combined worker. - Control plane workers process tasks related to control-flow, like scheduling
-   * and routing. - Data plane workers process tasks related to data syncing, and are typically
-   * deployed outside of Airbyte's internal network. - Combined workers process all tasks, and are the
-   * default for OSS deployments. - Internal-use only.
+   * Define if the worker is operating within Airbyte's Control Plane, or within an external Data
+   * Plane. - Workers in the Control Plane process tasks related to control-flow, like scheduling and
+   * routing, as well as data syncing tasks that are enqueued for the Control Plane's default task
+   * queue. - Workers in a Data Plane process only tasks related to data syncing that are specifically
+   * enqueued for that worker's particular Data Plane.
    */
   WorkerPlane getWorkerPlane();
 
   // Worker - Control Plane configs
 
   /**
-   * Return true if the WorkerPlane is CONTROL_PLANE or COMBINED. Derived from the result of
-   * {@link Configs#getWorkerPlane()}. Internal-use only.
-   */
-  boolean isControlPlaneWorker();
-
-  /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's AWS Data Plane. - This
+   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
    * should only be set on Control-plane workers, since those workers decide which Data Plane task
    * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
    * future. Internal-use only.
    */
-  Set<String> connectionIdsForDataPlane();
+  Set<String> connectionIdsForMvpDataPlane();
 
   // Worker - Data Plane configs
 
   /**
-   * Return true if the WorkerPlane is DATA_PLANE or COMBINED. Derived from the result of
-   * {@link Configs#getWorkerPlane()}. Internal-use only.
+   * Define a set of Temporal Task Queue names for which the worker should register handlers for to
+   * process tasks related to syncing data. - For workers within Airbyte's Control Plane, this returns
+   * the Control Plane's default task queue. - For workers within a Data Plane, this returns only task
+   * queue names specific to that Data Plane. Internal-use only.
    */
-  boolean isDataPlaneWorker();
+  Set<String> getDataSyncTaskQueues();
 
   /**
-   * Define a set of Temporal Task Queue names for which the Data Plane worker should register
-   * handlers for. Entries should correspond with the Data Plane where the worker is deployed.
-   * Internal-use only.
-   */
-  Set<String> getDataPlaneTaskQueues();
-
-  /**
-   * Return the control plane endpoint a data plane will hit for authentication. This is separate from
-   * the actual endpoint being hit for application logic. Internal-use only.
+   * Return the Control Plane endpoint that workers in a Data Plane will hit for authentication. This
+   * is separate from the actual endpoint being hit for application logic. Internal-use only.
    */
   String getControlPlaneAuthEndpoint();
 
