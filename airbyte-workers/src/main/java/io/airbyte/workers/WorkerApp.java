@@ -227,8 +227,8 @@ public class WorkerApp {
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-      final RouteToTaskQueueActivityImpl decideTaskQueueActivity = getDecideTaskQueueActivityImpl();
-      syncWorker.registerActivitiesImplementations(decideTaskQueueActivity);
+      final RouteToTaskQueueActivityImpl routeToTaskQueueActivity = getDecideTaskQueueActivityImpl();
+      syncWorker.registerActivitiesImplementations(routeToTaskQueueActivity);
     }
   }
 
