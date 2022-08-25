@@ -58,8 +58,6 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 * [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices)
 * [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items)
 
-## <Connector-specific features & highlights, if any>
-
 ## Performance considerations
 
 The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. 

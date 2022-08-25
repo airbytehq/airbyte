@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,9 +37,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -48,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
 
@@ -165,7 +165,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
         additionalParameters.putAll(obtainConnection(config.get(JdbcUtils.SSL_MODE_KEY)));
         jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                .append(JdbcUtils.AMPERSAND);
+            .append(JdbcUtils.AMPERSAND);
         if (additionalParameters.isEmpty()) {
           jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
         } else {
@@ -173,7 +173,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         }
       } else {
         jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+            .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
       }
     }
 
