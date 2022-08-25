@@ -140,6 +140,10 @@ spec:
       {{- if .Values.global.extraConrainers }}
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
+      {{- if .Values.gke_node_pool_selector }}
+      nodeSelector:
+        cloud.google.com/gke-nodepool: {{ .Values.gke_node_pool_selector }}
+      {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}

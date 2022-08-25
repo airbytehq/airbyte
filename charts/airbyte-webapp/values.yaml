@@ -177,3 +177,5 @@ extraContainers: []
 secrets: {}
 
 env_vars: []
+
+gke_node_pool_selector: ""
