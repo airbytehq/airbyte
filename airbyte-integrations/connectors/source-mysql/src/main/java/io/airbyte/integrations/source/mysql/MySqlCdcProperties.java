@@ -4,17 +4,30 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.checkOrCreatePassword;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlCdcProperties {
 
-  static Properties getDebeziumProperties(final JsonNode config) {
-    final Properties props = new Properties();
+  final static private Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
 
+  static Properties getDebeziumProperties(final JdbcDatabase database) {
+    final Properties props = new Properties();
+    final JsonNode sourceConfig = database.getSourceConfig();
+    final JsonNode dbConfig = database.getDatabaseConfig();
     // debezium engine configuration
     props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
 
@@ -29,10 +42,10 @@ public class MySqlCdcProperties {
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
 
     // snapshot config
-    if (config.has("snapshot_mode")) {
+    if (sourceConfig.has("snapshot_mode")) {
       // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip
       // initial snapshot
-      props.setProperty("snapshot.mode", config.get("snapshot_mode").asText());
+      props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
       // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-snapshot-mode
       props.setProperty("snapshot.mode", "when_needed");
@@ -47,31 +60,47 @@ public class MySqlCdcProperties {
     // This to make sure that binary data represented as a base64-encoded String.
     // https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
-    props.setProperty("database.include.list", config.get("database").asText());
+    props.setProperty("database.include.list", sourceConfig.get("database").asText());
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (config.has(JdbcUtils.SSL_MODE_KEY) && config.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
-        props.setProperty("database.ssl.mode", config.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText());
-        final var method = config.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText();
-        if (method.equals("verify_ca") || method.equals("verify_identity")) {
-          var sslPassword = checkOrCreatePassword(config.get(JdbcUtils.SSL_MODE_KEY));
-          props.setProperty("database.history.producer.security.protocol", "SSL");
-          props.setProperty("database.history.producer.ssl.truststore.location", "customtruststore.jks");
-          props.setProperty("database.history.producer.ssl.truststore.password", sslPassword);
-          props.setProperty("database.history.producer.ssl.key.password", sslPassword);
+    if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
+        props.setProperty("database.sslmode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
+        props.setProperty("database.history.producer.security.protocol", "SSL");
+        props.setProperty("database.history.consumer.security.protocol", "SSL");
 
-          props.setProperty("database.history.consumer.security.protocol", "SSL");
-          props.setProperty("database.history.consumer.ssl.truststore.location", "customtruststore.jks");
-          props.setProperty("database.history.consumer.ssl.truststore.password", sslPassword);
-          props.setProperty("database.history.consumer.ssl.key.password", sslPassword);
-          if (method.equals("verify_identity")) {
-            props.setProperty("database.history.producer.ssl.keystore.location", "customkeystore.jks");
-            props.setProperty("database.history.producer.ssl.keystore.password", sslPassword);
+        if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.truststore.location",
+              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
+          props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
 
-            props.setProperty("database.history.consumer.ssl.keystore.location", "customkeystore.jks");
-            props.setProperty("database.history.consumer.ssl.keystore.password", sslPassword);
-          }
+        }
+        if (dbConfig.has(TRUST_KEY_STORE_PASS) && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
+
+        }
+        if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
+          props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.consumer.ssl.keystore.location",
+              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.history.producer.ssl.keystore.type", "PKCS12");
+          props.setProperty("database.history.consumer.ssl.keystore.type", "PKCS12");
+
+        }
+        if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
+          props.setProperty("database.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.producer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+          props.setProperty("database.history.consumer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
         }
       } else {
         props.setProperty("database.ssl.mode", "required");
