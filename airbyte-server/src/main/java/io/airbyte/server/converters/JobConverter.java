@@ -46,7 +46,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;
@@ -202,8 +204,10 @@ public class JobConverter {
 
   public LogRead getLogRead(final Path logPath) {
     try {
+      log.info("Logs: {}", LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath).toString());
+      Thread.sleep(30000);
       return new LogRead().logLines(LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath));
-    } catch (final IOException e) {
+    } catch (final IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }

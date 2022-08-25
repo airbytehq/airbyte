@@ -110,6 +110,7 @@ public class LogClientSingleton {
     }
 
     final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    LOGGER.info("cloudlogPath: {}", cloudLogPath);
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
