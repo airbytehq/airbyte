@@ -86,7 +86,7 @@ public class StatePersistence {
       throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
     final StateType currentStateType = state.getStateType();
-    final boolean isMigration = isMigration(currentStateType, previousState);
+    final boolean isMigration = StateMessageHelper.isMigration(currentStateType, previousState);
 
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
@@ -106,10 +106,6 @@ public class StatePersistence {
       }
       return null;
     });
-  }
-
-  private Boolean isMigration(final StateType currentStateType, final Optional<StateWrapper> previousState) {
-    return previousState.isPresent() && StateMessageHelper.isMigration(currentStateType, previousState.get().getStateType());
   }
 
   private static void clearLegacyState(final DSLContext ctx, final UUID connectionId) {

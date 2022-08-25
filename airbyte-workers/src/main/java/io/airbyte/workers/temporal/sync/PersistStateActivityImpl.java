@@ -38,6 +38,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
     final State state = syncOutput.getState();
     if (state != null) {
+      // todo: these validation logic should happen on server side.
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {

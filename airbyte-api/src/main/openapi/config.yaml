@@ -4785,7 +4785,7 @@ components:
       required:
         - succeeded
       properties:
-        done:
+        succeeded:
           type: boolean
     InvalidInputProperty:
       type: object
