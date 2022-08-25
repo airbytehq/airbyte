@@ -137,12 +137,15 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.System.Logger;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
+@Slf4j
 public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   private final WorkspacesHandler workspacesHandler;
@@ -739,6 +742,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   // SCHEDULER
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
+    log.info("===executing check connection");
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
   }
 
