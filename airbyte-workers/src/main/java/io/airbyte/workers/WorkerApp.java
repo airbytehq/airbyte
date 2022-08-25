@@ -493,7 +493,7 @@ public class WorkerApp {
     factory.start();
   }
 
-  private static void initializeCommonDependencies() {
+  private static void initializeCommonDependencies() throws IOException {
     LOGGER.info("Initializing common worker dependencies.");
     configs = new EnvConfigs();
     LOGGER.info("workspaceRoot = " + configs.getWorkspaceRoot());
@@ -514,14 +514,24 @@ public class WorkerApp {
     temporalService = TemporalUtils.createTemporalService();
     workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
     TemporalUtils.configureTemporalNamespace(temporalService);
-    airbyteApiClient = getApiClient(configs);
+    airbyteApiClient = new WorkerApiClientFactoryImpl(configs).create();
+
+    replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
+
+    defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
+    replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
+
+    containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
   }
 
+  /**
+   * These dependencies are only initialized by workers in the Control Plane, as they require database
+   * access. Workers in an external Data Plane
+   *
+   * @throws IOException
+   * @throws DatabaseCheckException
+   */
   private static void initializeControlPlaneDependencies() throws IOException, DatabaseCheckException {
-    if (!configs.isControlPlaneWorker()) {
-      LOGGER.info("Skipping Control Plane dependency initialization.");
-      return;
-    }
     LOGGER.info("Initializing control plane worker dependencies.");
 
     final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
@@ -629,54 +639,27 @@ public class WorkerApp {
           webUrlHelper,
           jobErrorReportingClient);
 
-      initializeSecretsHydrator(configsDslContext);
-    }
-  }
-
-  private static void initializeDataPlaneDependencies() throws IOException {
-    if (!configs.isDataPlaneWorker()) {
-      LOGGER.info("Skipping Data Plane dependency initialization.");
-      return;
-    }
-    LOGGER.info("Initializing data plane worker dependencies.");
-
-    replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
-
-    defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
-    replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
-
-    containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
-    initializeSecretsHydrator(null);
-  }
-
-  /**
-   * The secretsHydrator is a common dependency for both Control Plane and Data Plane workers. In some
-   * cases, it uses a database as its backing persistence, so a configsDslContext is passed in.
-   * However, Data Plane workers don't support using a database as a backing store, and the
-   * configsDslContext doesn't exist in that case. So, this method can be called multiple times, with
-   * or without a configsDslContext, to initialize the secretsHydrator correctly based on the type of
-   * worker.
-   */
-  private static void initializeSecretsHydrator(final @Nullable DSLContext configsDslContext) {
-    if (secretsHydrator != null) {
-      LOGGER.info("secretsHydrator was already initialized!");
-      return;
-    }
-
-    if (configs.isControlPlaneWorker()) {
+      // TODO (pmossman) refactor secretsHydrator instantiation to work better with Dependency Injection
+      // framework
       secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
-    } else {
-      // Data Plane-only workers call a dedicated method to get a secretsHydrator without a
-      // configsDslContext
-      secretsHydrator = SecretPersistence.getDataPlaneSecretsHydrator(configs);
+      routerService = new RouterService(configs);
     }
   }
 
   public static void main(final String[] args) {
     try {
       initializeCommonDependencies();
-      initializeControlPlaneDependencies();
-      initializeDataPlaneDependencies();
+
+      if (configs.getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE)) {
+        initializeControlPlaneDependencies();
+      } else {
+        LOGGER.info("Skipping Control Plane dependency initialization.");
+
+        // The SecretsHydrator is initialized with a database context for Control Plane workers.
+        // If the worker isn't in the Control Plane, we need to initialize the SecretsHydrator
+        // without a database context.
+        secretsHydrator = SecretPersistence.getSecretsHydrator(null, configs);
+      }
       start();
     } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
