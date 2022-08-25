@@ -162,7 +162,7 @@ The log summary for a failed sync may show the following data.
 ### Running
 The sync log summary displays **Running** when the sync is actively running.
 
-### Change Streams in a Connection
+## Change Streams in a Connection
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection in the list you want to change.  
 
@@ -182,7 +182,7 @@ The **Transfer** and **Streams** settings include the following parameters:
 
 :::note 
     
-Changes to these parameters apply to all streams in the connection.
+These parameters apply to all streams in the connection.
 
 :::
 
@@ -201,7 +201,13 @@ To change individual stream configuration:
 
 2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply.
 
-3. Depending on the sync mode you select, you may need to choose a cursor or primary key. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
+:::note 
+    
+Depending on the sync mode you select, you may need to choose a cursor or primary key.
+
+:::
+
+3. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
 
 To change multiple stream configurations:
 1. Click the first checkbox in the table header to select all streams in the connection.
@@ -212,20 +218,14 @@ To change multiple stream configurations:
 
 4. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply to these streams.
 
-:::note 
-    
-Depending on the sync mode you select, you may need to choose a cursor or primary key.
-
-:::
-
-5. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and and choose the cursor or primary key.
+5. If there is a dropdown arrow in the **Cursor** or **Primary key** fields of the highlighted table header, click the dropdown arrow and choose the cursor or primary key.
 
 6. Click **Apply** to apply these changes to the streams you selected, or click **Cancel** to discard the changes.
 
 To save the changes:
-1. After you make changes to the streams, click **Save changes**, or click **Cancel** to discard the changes.
+1. Click **Save changes**, or click **Cancel** to discard the changes.
 
-2. The **Stream configuration changed** dialog displays. This gives you the option to reset the streams when you save the changes.
+2. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
 
 :::caution
 
