@@ -95,18 +95,13 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
 
   const authErrors = useMemo(() => {
     //key of field path, value of error code
-    const authErrors: Record<string, string> = {};
-    authFieldsToHide.map((fieldString) => {
-      const meta = getFieldMeta(fieldString);
-      const { error } = meta;
-
+    return authFieldsToHide.reduce<Record<string, string>>((authErrors, fieldName) => {
+      const { error } = getFieldMeta(fieldName);
       if (submitCount > 0 && error) {
-        authErrors[fieldString] = error;
+        authErrors[fieldName] = error;
       }
-
       return authErrors;
-    });
-    return authErrors;
+    }, {});
   }, [authFieldsToHide, getFieldMeta, submitCount]);
   const ctx = useMemo<ServiceFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};

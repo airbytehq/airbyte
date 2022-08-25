@@ -3,6 +3,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
+import { Text } from "components/base/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
@@ -66,14 +67,14 @@ export const AuthButton: React.FC = () => {
         )}
       </Component>
       {done && (
-        <div className={messageStyle}>
+        <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
-        </div>
+        </Text>
       )}
       {hasAuthError && (
-        <div className={messageStyle}>
+        <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.required" />
-        </div>
+        </Text>
       )}
     </div>
   );
