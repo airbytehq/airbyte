@@ -86,6 +86,19 @@ connectionSpecification:
       type: array
       items:
         type: integer
+    stateFilter:
+      title: State Filter
+      description:
+        Reflects the state of the selected data stream as enabled, paused, or archived.
+      items:
+        type: string
+        enum:
+          - enabled
+          - paused
+          - archived
+      type: array
+      uniqueItems: true
+      order: 9
   required:
     - client_id
     - client_secret

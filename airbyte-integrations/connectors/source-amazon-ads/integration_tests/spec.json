@@ -69,6 +69,15 @@
         "items": {
           "type": "integer"
         }
+      },
+      "stateFilter": {
+        "title": "State Filter (Optional)",
+        "description": "Description here",
+        "order": 9,
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
