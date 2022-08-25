@@ -30,10 +30,13 @@ const mockWorkspace = {
   notifications: [],
 };
 
-jest.mock("../../../services/workspaces/WorkspacesService", () => ({
-  useCurrentWorkspaceId: () => mockWorkspace.workspaceId,
-  useCurrentWorkspace: () => mockWorkspace,
-}));
+["../../../services/workspaces/WorkspacesService", "services/workspaces/WorkspacesService"].forEach((s) =>
+  jest.mock(s, () => ({
+    useCurrentWorkspaceId: () => mockWorkspace.workspaceId,
+    useCurrentWorkspace: () => mockWorkspace,
+  }))
+);
+
 jest.mock("../FormChangeTracker", () => ({
   useFormChangeTrackerService: () => ({ clearFormChange: () => null }),
   useUniqueFormId: () => "blah",
