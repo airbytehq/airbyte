@@ -131,18 +131,15 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, ...props }) => {
       inputSelectionStartRef.current = inputRef.current.selectionStart;
     }
 
-    window.setTimeout(() => {
-      if (document.activeElement === inputRef.current || document.activeElement === buttonRef.current) {
-        // Still focused on one of the children elements
-        return;
-      }
+    setFocused(false);
 
-      setFocused(false);
-
-      if (isPassword) {
-        toggleIsContentVisible(false);
-      }
-    }, 0);
+    if (isPassword) {
+      window.setTimeout(() => {
+        if (document.activeElement !== inputRef.current && document.activeElement !== buttonRef.current) {
+          toggleIsContentVisible(false);
+        }
+      }, 0);
+    }
   };
 
   return (
