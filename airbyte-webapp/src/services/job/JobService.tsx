@@ -27,6 +27,7 @@ export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
   return useSuspenseQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
     refetchInterval: 2500, // every 2,5 seconds,
+    keepPreviousData: true,
   }).jobs;
 };
 
