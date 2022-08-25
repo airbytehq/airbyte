@@ -95,6 +95,10 @@ public class StateMessageHelper {
     };
   }
 
+  public static Boolean isMigration(final StateType currentStateType, final Optional<StateWrapper> previousState) {
+    return previousState.isPresent() && isMigration(currentStateType, previousState.get().getStateType());
+  }
+
   public static Boolean isMigration(final StateType currentStateType, final @Nullable StateType previousStateType) {
     return previousStateType == StateType.LEGACY && currentStateType != StateType.LEGACY;
   }

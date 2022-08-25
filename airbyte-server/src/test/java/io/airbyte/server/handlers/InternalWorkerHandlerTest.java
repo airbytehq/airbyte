@@ -24,7 +24,7 @@ import org.mockito.Mockito;
 class InternalWorkerHandlerTest {
 
   JobPersistence jobPersistence;
-  InternalWorkerHandler handler;
+  AttemptHandler handler;
 
   private static final long JOB_ID = 10002L;
   private static final int ATTEMPT_ID = 1;
@@ -32,7 +32,7 @@ class InternalWorkerHandlerTest {
   @BeforeEach
   public void init() {
     jobPersistence = Mockito.mock(JobPersistence.class);
-    handler = new InternalWorkerHandler(jobPersistence);
+    handler = new AttemptHandler(jobPersistence);
   }
 
   @Test

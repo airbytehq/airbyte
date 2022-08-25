@@ -66,7 +66,7 @@ import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
-import io.airbyte.api.model.generated.SetTemporalWorkflowInAttemptRequestBody;
+import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.api.model.generated.SlugRequestBody;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCoreConfig;
@@ -102,6 +102,8 @@ import io.airbyte.api.model.generated.WorkspaceRead;
 import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -120,12 +122,12 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
+import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
-import io.airbyte.server.handlers.InternalWorkerHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
@@ -166,7 +168,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
-  private final InternalWorkerHandler internalWorkerHandler;
+  private final AttemptHandler attemptHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
@@ -208,7 +210,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         logConfigs,
         eventRunner);
 
-    stateHandler = new StateHandler(statePersistence);
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
+    stateHandler = new StateHandler(statePersistence, featureFlags);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
@@ -257,7 +261,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
-    internalWorkerHandler = new InternalWorkerHandler(jobPersistence);
+    attemptHandler = new AttemptHandler(jobPersistence);
   }
 
   // WORKSPACE
@@ -871,8 +875,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public InternalOperationResult setTemporalWorkflowInAttempt(final SetTemporalWorkflowInAttemptRequestBody requestBody) {
-    return execute(() -> internalWorkerHandler.setTemporalWorkflowInAttempt(requestBody));
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
+    return execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
   }
 
   public boolean canImportDefinitions() {
