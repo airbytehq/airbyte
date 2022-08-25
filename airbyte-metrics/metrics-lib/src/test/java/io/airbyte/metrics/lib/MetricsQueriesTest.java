@@ -613,7 +613,7 @@ public class MetricsQueriesTest {
               .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(5, ChronoUnit.HOURS), updateAt, syncConfigType)
               .execute());
 
-      final var totalConnectionResult = configDb.query(MetricQueries::totalActiveConnectionsSinceLastDay);
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
       assertEquals(1, totalConnectionResult);
 
       final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
@@ -659,7 +659,7 @@ public class MetricsQueriesTest {
                   syncConfigType)
               .execute());
 
-      final var totalConnectionResult = configDb.query(MetricQueries::totalActiveConnectionsSinceLastDay);
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
       assertEquals(1, totalConnectionResult);
 
       final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
