@@ -30,7 +30,21 @@
       "name": "properties",
       "supported_sync_modes": ["full_refresh"],
       "source_defined_cursor": true,
-      "json_schema": {}
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   ]
 }
