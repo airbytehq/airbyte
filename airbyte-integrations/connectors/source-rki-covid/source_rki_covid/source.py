@@ -109,7 +109,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -128,7 +128,9 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -158,7 +160,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -179,7 +181,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json().get("data"):
             return response.json().get("data")
-        pass
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -209,7 +211,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -228,7 +230,9 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -258,7 +262,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -277,7 +281,9 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -307,7 +313,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -326,7 +332,9 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data").get("history")
+        if response.json().get("data"):
+            return response.json().get("data").get("history")
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -356,7 +364,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days == 0:
+        if diff.days <= 0:
             return 1
         return diff.days
 
@@ -375,7 +383,9 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
