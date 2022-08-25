@@ -257,11 +257,6 @@ spec:
       {{- if .Values.global.extraContainers }}
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
-
-<<<<<<< HEAD
-
-=======
->>>>>>> edc689191700e0f70fd4dc51dfa93992d1ce472c
       volumes:
       {{- if eq .Values.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
