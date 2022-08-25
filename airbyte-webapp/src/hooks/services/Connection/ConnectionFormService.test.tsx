@@ -30,7 +30,7 @@ const mockWorkspace = {
   notifications: [],
 };
 
-["../../../services/workspaces/WorkspacesService", "services/workspaces/WorkspacesService"].forEach((s) =>
+["packages/cloud/services/workspaces/WorkspacesService", "services/workspaces/WorkspacesService"].forEach((s) =>
   jest.mock(s, () => ({
     useCurrentWorkspaceId: () => mockWorkspace.workspaceId,
     useCurrentWorkspace: () => mockWorkspace,
