@@ -50,7 +50,7 @@ public class PostgresCdcProperties {
         props.setProperty("database.history.consumer.security.protocol", "SSL");
 
         if (dbConfig.has("ca_certificate_path") && !dbConfig.get("ca_certificate_path").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", dbConfig.get("ca_certificate_path").asText());
+          props.setProperty("database.sslrootcert", dbConfig.get("ca_certificate_path").asText());
           props.setProperty("database.history.producer.ssl.truststore.location",
               dbConfig.get("ca_certificate_path").asText());
           props.setProperty("database.history.consumer.ssl.truststore.location",
@@ -68,7 +68,7 @@ public class PostgresCdcProperties {
 
         }
         if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
-          props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
+          props.setProperty("database.sslkey", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
           props.setProperty("database.history.producer.ssl.keystore.location",
               Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
           props.setProperty("database.history.consumer.ssl.keystore.location",
@@ -78,7 +78,7 @@ public class PostgresCdcProperties {
 
         }
         if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
-          props.setProperty("database.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
+          props.setProperty("database.sslpassword", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
           props.setProperty("database.history.producer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
           props.setProperty("database.history.consumer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
         }
