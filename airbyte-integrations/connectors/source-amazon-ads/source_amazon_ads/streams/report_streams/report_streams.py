@@ -363,7 +363,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             )
             if response.status_code != HTTPStatus.ACCEPTED:
                 error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                if self._check_report_date_error(response):
+                if self._check_report_date_error(response) or self._check_report_tactic_error(response):
                     self.logger.warning(error_msg)
                     break
                 raise ReportInitFailure(error_msg)
@@ -415,4 +415,20 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             except ValueError:
                 return False
             return response_json.get("details", "").startswith("Report date is too far in the past.")
+        return False
+
+    def _check_report_tactic_error(self, response) -> bool:
+        """
+        Check if the connector received an error: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
+
+        A1C3SOZRARQ6R3 - Poland Marketplace
+        https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
+        """
+
+        if response.status_code == 400:
+            try:
+                response_json = response.json()
+            except ValueError:
+                return False
+            return response_json.get("details", "") == "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."
         return False
