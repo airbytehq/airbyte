@@ -214,14 +214,14 @@ public class MetricQueries {
 
   public static Long numScheduledActiveConnectionsInLastDay(final DSLContext ctx) {
     final var countField = "cnt";
-    final var queryForTotalConnections = """
-                                         select count(1) as cnt
+    final var queryForTotalConnections = String.format("""
+                                         select count(1) as %s
                                            from connection c
                                            where
                                              c.updated_at < now() - interval '24 hours 1 minutes'
                                                and cast(c.schedule::jsonb->'timeUnit' as text) IN ('"hours"', '"minutes"')
                                                and c.status = 'active'
-                                         """;
+                                         """, countField);
 
     return ctx.fetch(queryForTotalConnections).getValues(countField, long.class).get(0);
   }
