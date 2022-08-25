@@ -23,7 +23,6 @@ node {
 npm_run_build {
     inputs.files commonConfigs
     inputs.file '.eslintrc'
-    inputs.file '.stylelintrc'
     inputs.dir 'public'
     inputs.dir 'src'
 
@@ -109,6 +108,7 @@ task stylelint(type: NpmTask) {
     dependsOn npmInstall
     args = ['run', 'stylelint']
     inputs.files commonConfigs
+    inputs.file '.stylelintrc'
     inputs.dir 'src'
 }
 
