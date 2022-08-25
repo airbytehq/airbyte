@@ -133,11 +133,11 @@ public class EnvConfigs implements Configs {
   private static final String WORKER_PLANE = "WORKER_PLANE";
 
   // Worker - Control plane configs
-  private static final String DEFAULT_DATA_PLANE_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
-  private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
+  private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
+  private static final String CONNECTION_IDS_FOR_MVP_DATA_PLANE = "CONNECTION_IDS_FOR_MVP_DATA_PLANE";
 
   // Worker - Data Plane configs
-  private static final String DATA_PLANE_TASK_QUEUES = "DATA_PLANE_TASK_QUEUES";
+  private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
   private static final String CONTROL_PLANE_AUTH_ENDPOINT = "CONTROL_PLANE_AUTH_ENDPOINT";
   private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
   private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
@@ -920,19 +920,14 @@ public class EnvConfigs implements Configs {
 
   @Override
   public WorkerPlane getWorkerPlane() {
-    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.COMBINED, s -> WorkerPlane.valueOf(s.toUpperCase()));
+    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.CONTROL_PLANE, s -> WorkerPlane.valueOf(s.toUpperCase()));
   }
 
   // Worker - Control plane
 
   @Override
-  public boolean isControlPlaneWorker() {
-    return getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE) || getWorkerPlane().equals(WorkerPlane.COMBINED);
-  }
-
-  @Override
-  public Set<String> connectionIdsForDataPlane() {
-    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_AWS_DATA_PLANE, "");
+  public Set<String> connectionIdsForMvpDataPlane() {
+    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_MVP_DATA_PLANE, "");
     if (connectionIds.isEmpty()) {
       return new HashSet<>();
     }
@@ -942,13 +937,8 @@ public class EnvConfigs implements Configs {
   // Worker - Data plane
 
   @Override
-  public boolean isDataPlaneWorker() {
-    return getWorkerPlane().equals(WorkerPlane.DATA_PLANE) || getWorkerPlane().equals(WorkerPlane.COMBINED);
-  }
-
-  @Override
-  public Set<String> getDataPlaneTaskQueues() {
-    final var taskQueues = getEnvOrDefault(DATA_PLANE_TASK_QUEUES, DEFAULT_DATA_PLANE_TASK_QUEUES);
+  public Set<String> getDataSyncTaskQueues() {
+    final var taskQueues = getEnvOrDefault(DATA_SYNC_TASK_QUEUES, DEFAULT_DATA_SYNC_TASK_QUEUES);
     if (taskQueues.isEmpty()) {
       return new HashSet<>();
     }
@@ -977,11 +967,11 @@ public class EnvConfigs implements Configs {
    */
   private void validateSyncWorkflowConfigs() {
     if (shouldRunSyncWorkflows()) {
-      if (!isControlPlaneWorker() && getDataPlaneTaskQueues().isEmpty()) {
+      if (getWorkerPlane().equals(WorkerPlane.DATA_PLANE) && getDataSyncTaskQueues().isEmpty()) {
         throw new IllegalArgumentException(String.format(
             "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
             SHOULD_RUN_SYNC_WORKFLOWS,
-            DATA_PLANE_TASK_QUEUES));
+            DATA_SYNC_TASK_QUEUES));
       }
     }
   }
