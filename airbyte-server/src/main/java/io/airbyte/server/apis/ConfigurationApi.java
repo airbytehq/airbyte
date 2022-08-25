@@ -102,8 +102,6 @@ import io.airbyte.api.model.generated.WorkspaceRead;
 import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -210,9 +208,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         logConfigs,
         eventRunner);
 
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-
-    stateHandler = new StateHandler(statePersistence, featureFlags);
+    stateHandler = new StateHandler(statePersistence);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
