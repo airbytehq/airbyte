@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard, Spinner } from "components";
+import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -174,10 +174,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       </ContentCard>
       <footer className={styles.footer}>
         {(moreJobPagesAvailable || isJobPageLoading) && (
-          <Button className={styles.loadMoreJobsButton} onClick={onLoadMoreJobs}>
-            {!isJobPageLoading && <FormattedMessage id="connection.loadMoreJobs" />}
-            {isJobPageLoading && <Spinner className={styles.loadMoreJobsSpinner} />}
-          </Button>
+          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+            <FormattedMessage id="connection.loadMoreJobs" />
+          </LoadingButton>
         )}
       </footer>
     </div>
