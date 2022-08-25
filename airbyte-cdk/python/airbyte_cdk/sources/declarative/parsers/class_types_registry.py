@@ -4,6 +4,7 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -56,6 +57,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "LimitPaginator": LimitPaginator,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
+    "NoAuth": NoAuth,
     "NoPagination": NoPagination,
     "OAuthAuthenticator": DeclarativeOauth2Authenticator,
     "OffsetIncrement": OffsetIncrement,
