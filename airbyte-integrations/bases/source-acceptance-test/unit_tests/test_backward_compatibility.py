@@ -944,7 +944,7 @@ VALID_SPEC_TRANSITIONS = [
 # Checking that all transitions in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
 assert all([transition.should_fail for transition in FAILING_SPEC_TRANSITIONS])
 # Checking that all transitions in VALID_SPEC_TRANSITIONS have should_fail = False to prevent typos
-assert not all([transition.should_fail for transition in VALID_SPEC_TRANSITIONS])
+assert all([not transition.should_fail for transition in VALID_SPEC_TRANSITIONS])
 
 ALL_SPEC_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_SPEC_TRANSITIONS + VALID_SPEC_TRANSITIONS]
 
@@ -1103,9 +1103,63 @@ FAILING_CATALOG_TRANSITIONS = [
             ),
         },
     ),
+    Transition(
+        name="Adding a stream but changing cursor should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "default_cursor_field": ["b"],
+                }
+            ),
+            "other_test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "other_test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            ),
+        },
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
+    Transition(
+        name="Adding a stream to a catalog should not fail.",
+        should_fail=False,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            ),
+            "other_test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "other_test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                }
+            ),
+        },
+    ),
     Transition(
         name="Making a field nullable should not fail.",
         should_fail=False,
@@ -1197,7 +1251,7 @@ VALID_CATALOG_TRANSITIONS = [
 # Checking that all transitions in FAILING_CATALOG_TRANSITIONS have should_fail == True to prevent typos
 assert all([transition.should_fail for transition in FAILING_CATALOG_TRANSITIONS])
 # Checking that all transitions in VALID_CATALOG_TRANSITIONS have should_fail = False to prevent typos
-assert not all([transition.should_fail for transition in VALID_CATALOG_TRANSITIONS])
+assert all([not transition.should_fail for transition in VALID_CATALOG_TRANSITIONS])
 
 ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
 

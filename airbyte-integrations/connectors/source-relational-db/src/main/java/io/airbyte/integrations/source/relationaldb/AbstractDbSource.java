@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
- * NoSql DB source.
+ * DB source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
@@ -99,7 +99,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
                   tableInfo.getFields())
               .withSupportedSyncModes(
-                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                  tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty() ? Lists.newArrayList(SyncMode.FULL_REFRESH)
+                      : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
@@ -351,8 +352,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(), t.getName());
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections
               .emptyList());
-
           return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName()).fields(fields).primaryKeys(primaryKeys)
+              .cursorFields(t.getCursorFields())
               .build();
         })
         .collect(Collectors.toList());
@@ -514,6 +515,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected int getStateEmissionFrequency() {
     return 0;
   }
+
+  /**
+   *
+   * @return list of fields that could be used as cursors
+   */
+  public abstract boolean isCursorType(DataType type);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);

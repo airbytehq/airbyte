@@ -35,7 +35,7 @@ This page guides you through the process of setting up the Bing Ads source conne
 7. Choose required Start date
 8. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

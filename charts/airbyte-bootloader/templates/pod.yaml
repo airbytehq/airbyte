@@ -71,8 +71,29 @@ spec:
               name: {{ .Values.global.configMapName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
         {{- end }}
-        {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: bootloader-secrets
+              key: {{ $k }}
         {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+
 
       resources: {{- toYaml .Values.resources | nindent 8 }}

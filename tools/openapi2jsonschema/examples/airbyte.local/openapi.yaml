@@ -1260,27 +1260,6 @@ paths:
       summary: Update a connection
       tags:
         - web_backend
-  /v1/web_backend/connections/updateNew:
-    post:
-      operationId: webBackendUpdateConnectionNew
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebBackendConnectionUpdate"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionRead"
-          description: Successful operation
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-      summary: Update a connection
-      tags:
-        - web_backend
   /v1/web_backend/destinations/recreate:
     post:
       operationId: webBackendRecreateDestination
@@ -2760,8 +2739,6 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
-        withRefreshedCatalog:
-          type: boolean
         skipReset:
           type: boolean
       required:

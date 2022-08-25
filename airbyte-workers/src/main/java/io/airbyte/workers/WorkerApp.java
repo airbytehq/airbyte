@@ -52,6 +52,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -351,14 +352,17 @@ public class WorkerApp {
         .build();
   }
 
-  public record ContainerOrchestratorConfig(
-                                            String namespace,
-                                            DocumentStoreClient documentStoreClient,
-                                            KubernetesClient kubernetesClient,
-                                            String secretName,
-                                            String secretMountPath,
-                                            String containerOrchestratorImage,
-                                            String googleApplicationCredentials) {}
+  public static record ContainerOrchestratorConfig(
+                                                   String namespace,
+                                                   DocumentStoreClient documentStoreClient,
+                                                   KubernetesClient kubernetesClient,
+                                                   String secretName,
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage,
+                                                   String containerOrchestratorImagePullPolicy,
+                                                   String googleApplicationCredentials) {
+
+  }
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -375,6 +379,7 @@ public class WorkerApp {
           configs.getContainerOrchestratorSecretName(),
           configs.getContainerOrchestratorSecretMountPath(),
           configs.getContainerOrchestratorImage(),
+          configs.getJobKubeMainContainerImagePullPolicy(),
           configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
@@ -477,6 +482,8 @@ public class WorkerApp {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 

@@ -56,4 +56,12 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    */
   String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName) throws SQLException;
 
+  /**
+   * This method will verify that filed could be used as cursor for incremental sync
+   *
+   * @param type - table field type that should be checked
+   * @return true is field type can be used as cursor field for incremental sync
+   */
+  boolean isCursorType(final SourceType type);
+
 }
