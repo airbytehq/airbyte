@@ -55,6 +55,7 @@ public class JdbcUtils {
   public static final String EQUALS = "=";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
+  public static final String EQUALS = "=";
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
