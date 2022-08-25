@@ -17,6 +17,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -72,6 +73,42 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+  public static final String SSL_MODE = "sslMode";
+
+  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
+  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
+  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
+  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
+  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
+  public static final String PARAM_MODE = "mode";
+  Pair<URI, String> caCertKeyStorePair;
+  Pair<URI, String> clientCertKeyStorePair;
+
+  public enum SslMode {
+
+    DISABLED("disable"),
+    ALLOWED("allow"),
+    PREFERRED("preferred", "prefer"),
+    REQUIRED("required", "require"),
+    VERIFY_CA("verify_ca", "verify-ca"),
+    VERIFY_IDENTITY("verify_identity", "verify-full");
+
+    public final List<String> spec;
+
+    SslMode(final String... spec) {
+      this.spec = Arrays.asList(spec);
+    }
+
+    public static Optional<SslMode> bySpec(final String spec) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.spec.contains(spec))
+          .findFirst();
+    }
+
+  }
+
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -385,42 +422,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     dataSources.clear();
   }
 
-  public static final String SSL_MODE = "sslMode";
-
-  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
-  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
-  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
-  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
-  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
-  public static final String PARAM_MODE = "mode";
-  Pair<URI, String> caCertKeyStorePair;
-  Pair<URI, String> clientCertKeyStorePair;
-
-  public enum SslMode {
-
-    DISABLED("disable"),
-    ALLOWED("allow"),
-    PREFERRED("preferred", "prefer"),
-    REQUIRED("required", "require"),
-    VERIFY_CA("verify_ca", "verify-ca"),
-    VERIFY_IDENTITY("verify_identity", "verify-full");
-
-    public final List<String> spec;
-
-    SslMode(final String... spec) {
-      this.spec = Arrays.asList(spec);
-    }
-
-    public static Optional<SslMode> bySpec(final String spec) {
-      return Arrays.stream(SslMode.values())
-          .filter(sslMode -> sslMode.spec.contains(spec))
-          .findFirst();
-    }
-
-  }
-
   /**
    * Parses SSL related configuration and generates keystores to be used by connector
    *
@@ -428,7 +429,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
   public Map<String, String> parseSSLConfig(final JsonNode config) {
-    LOGGER.info("*** config: {}", config);
+    LOGGER.debug("source config: {}", config);
     final Map<String, String> additionalParameters = new HashMap<>();
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
@@ -442,7 +443,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         }
 
         if (Objects.nonNull(caCertKeyStorePair)) {
-          LOGGER.info("*** uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
+          LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
           try {
             additionalParameters.putAll(Map.of(
                 TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
@@ -459,7 +460,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         }
 
         if (Objects.nonNull(clientCertKeyStorePair)) {
-          LOGGER.info("*** uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
+          LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
           try {
             additionalParameters.putAll(Map.of(
                 CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
@@ -473,7 +474,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
       }
     }
-    LOGGER.info("*** additional params: {}", additionalParameters);
+    LOGGER.debug("additional params: {}", additionalParameters);
     return additionalParameters;
   }
 
@@ -490,9 +491,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
             .stream()
             .map((entry) -> {
               if (entry.getKey().equals(SSL_MODE)) {
-                return entry.getKey() + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
+                return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
               } else {
-                return entry.getKey() + "=" + entry.getValue();
+                return entry.getKey() + EQUALS + entry.getValue();
               }
             })
             .collect(Collectors.joining(JdbcUtils.AMPERSAND));

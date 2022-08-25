@@ -17,9 +17,8 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
-public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
+public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
@@ -41,7 +40,6 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-//        .put("logical_decoding", "on")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
@@ -83,12 +81,5 @@ public class CdcPostgresSslSourceAcceptanceTest extends CdcPostgresSourceAccepta
     }
   }
 
-  public ImmutableMap getCertificateConfiguration() {
-    return ImmutableMap.builder()
-        .put("mode", "verify-ca")
-        .put("ca_certificate", certs.getCaCertificate())
-        .put("client_key_password", PASSWORD)
-        .build();
-  }
-
+  public abstract ImmutableMap getCertificateConfiguration();
 }

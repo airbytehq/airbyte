@@ -4,11 +4,12 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -72,8 +73,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.postgresql.ssl.DefaultJavaSSLFactory;
-import org.postgresql.ssl.LibPQFactory;
+import org.postgresql.jdbc.SslMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,16 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
+  public static final String PARAM_SSLMODE = "sslmode";
+  public static final String PARAM_SSL = "ssl";
+  public static final String PARAM_SSL_TRUE = "true";
+  public static final String PARAM_SSL_FALSE = "false";
+  public static final String SSL_ROOT_CERT = "sslrootcert";
+
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
+  public static final String SSL_KEY = "sslkey";
+  public static final String SSL_PASSWORD = "sslpassword";
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
       "sslmode", "require");
@@ -117,37 +126,14 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append("&");
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
     }
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
-      LOGGER.info("*** saving CA cert to file");
-      sslParameters.put("ca_certificate_path", JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
-      LOGGER.info("*** crt file: {}", sslParameters.get("ca_certificate_path"));
+      sslParameters.put(CA_CERTIFICATE_PATH, JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
+      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(CA_CERTIFICATE_PATH));
     }
-
-//    System.setProperty("javax.net.ssl.trustStore", sslParameters.get(TRUST_KEY_STORE_URL));
-//    System.setProperty("javax.net.ssl.trustStorePassword", sslParameters.get(TRUST_KEY_STORE_PASS));
-
-//     // assume ssl if not explicitly mentioned.
-//     if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
-//     if (config.has(PARAM_SSL_MODE)) {
-//     if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
-//     additionalParameters.add("sslmode=disable");
-//     } else {
-//     final var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
-//     .entrySet()
-//     .stream()
-//     .map(e -> e.getKey() + "=" + e.getValue())
-//     .toList();
-//     additionalParameters.addAll(parametersList);
-//     }
-//     } else {
-//     additionalParameters.add("ssl=true");
-//     additionalParameters.add("sslmode=require");
-//     }
-//     }
 
     if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
@@ -163,8 +149,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
-//    jdbcUrl.append("&sslfactory=" + DefaultJavaSSLFactory.class.getCanonicalName());
-    LOGGER.info("jdbc url: {}", jdbcUrl.toString());
+    LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
     final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
@@ -178,11 +163,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static final String PARAM_SSLMODE = "sslmode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_TRUE = "true";
-  public static final String PARAM_SSL_FALSE = "false";
-
   @Override
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
@@ -191,11 +171,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case SSL_MODE -> PARAM_SSLMODE + "=" + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
-                      + JdbcUtils.AMPERSAND + PARAM_SSL + "=" + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
-                  case "ca_certificate_path" -> "sslrootcert" + "=" + entry.getValue();
-                  case CLIENT_KEY_STORE_URL -> "sslkey" + "=" + Path.of(new URI(entry.getValue()));
-                  case CLIENT_KEY_STORE_PASS -> "sslpassword" + "=" + entry.getValue();
+                  case SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
+                      + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
+                  case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
+                  case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
+                  case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
                   default -> "";
                 };
                 return result;
@@ -344,7 +324,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    LOGGER.info("*** getIncrementalIterators");
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
@@ -511,12 +490,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   protected static String toSslJdbcParamInternal(final SslMode sslMode) {
     final var result = switch (sslMode) {
-      case DISABLED -> "disable";
-      case ALLOWED -> "allow";
-      case PREFERRED -> "prefer";
-      case REQUIRED -> "require";
-      case VERIFY_CA -> "verify-ca";
-      case VERIFY_IDENTITY -> "verify-full";
+      case DISABLED -> org.postgresql.jdbc.SslMode.DISABLE.value;
+      case ALLOWED -> org.postgresql.jdbc.SslMode.ALLOW.value;
+      case PREFERRED -> org.postgresql.jdbc.SslMode.PREFER.value;
+      case REQUIRED -> org.postgresql.jdbc.SslMode.REQUIRE.value;
+      case VERIFY_CA -> org.postgresql.jdbc.SslMode.VERIFY_CA.value;
+      case VERIFY_IDENTITY -> org.postgresql.jdbc.SslMode.VERIFY_FULL.value;
       default -> throw new IllegalArgumentException("unexpected ssl mode");
     };
     LOGGER.info("{} toSslJdbcParam {}", sslMode.name(), result);

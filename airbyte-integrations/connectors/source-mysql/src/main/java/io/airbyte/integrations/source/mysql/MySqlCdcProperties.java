@@ -6,12 +6,14 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -62,8 +64,9 @@ public class MySqlCdcProperties {
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
-        props.setProperty("database.ssl.mode", sourceConfig.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText());
+//      if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
+      if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
+        props.setProperty("database.sslmode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
         props.setProperty("database.history.producer.security.protocol", "SSL");
         props.setProperty("database.history.consumer.security.protocol", "SSL");
 

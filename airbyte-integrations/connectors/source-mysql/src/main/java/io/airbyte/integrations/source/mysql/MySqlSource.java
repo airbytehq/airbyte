@@ -208,6 +208,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected String toSslJdbcParam(final SslMode sslMode) {
+    return toSslJdbcParamInternal(sslMode);
+  }
+
+  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED, PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY -> sslMode.name();
       default -> throw new IllegalArgumentException("unexpected ssl mode");

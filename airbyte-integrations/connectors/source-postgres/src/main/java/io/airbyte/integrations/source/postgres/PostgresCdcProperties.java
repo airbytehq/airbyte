@@ -49,18 +49,18 @@ public class PostgresCdcProperties {
         LOGGER.info("dbConfig: {}", dbConfig);
 
         if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
-          LOGGER.info("sslMode: {}", dbConfig.get(SSL_MODE).asText());
+          LOGGER.debug("sslMode: {}", dbConfig.get(SSL_MODE).asText());
           props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
           props.setProperty("database.history.producer.security.protocol", "SSL");
           props.setProperty("database.history.consumer.security.protocol", "SSL");
         }
 
-        if (dbConfig.has("ca_certificate_path") && !dbConfig.get("ca_certificate_path").asText().isEmpty()) {
-          props.setProperty("database.sslrootcert", dbConfig.get("ca_certificate_path").asText());
+        if (dbConfig.has(PostgresSource.CA_CERTIFICATE_PATH) && !dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText().isEmpty()) {
+          props.setProperty("database.sslrootcert", dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.producer.ssl.truststore.location",
-              dbConfig.get("ca_certificate_path").asText());
+              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.consumer.ssl.truststore.location",
-              dbConfig.get("ca_certificate_path").asText());
+              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
           props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
 
