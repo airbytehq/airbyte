@@ -65,7 +65,7 @@ Optional parameters:
 4. Fill in all the required fields to use the INSERT or COPY strategy
 5. Click `Set up destination`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.

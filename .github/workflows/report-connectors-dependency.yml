@@ -1,0 +1,42 @@
+name: Report connectors dependency
+
+on:
+  pull_request:
+
+jobs:
+  report-affected-connectors:
+    name: "Report affected connectors"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+
+      - name: Extract current branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${{ github.head_ref }})"
+        id: extract_branch
+      - name: Extract git-dif change file
+        run: |
+          git diff --name-only remotes/origin/master...origin/${{ steps.extract_branch.outputs.branch }} -- airbyte-integrations/ > ./changed_files.txt
+        id: extract_changed_files
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+      - name: Create dependency report
+        run: |
+          output=$(python ./tools/bin/ci_check_dependency.py ./changed_files.txt)
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
+          echo "::set-output name=changed_files_report::$output"
+        id: dependency_report
+      - name: Comment report in PR
+        if: steps.dependency_report.outputs.changed_files_report != ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **NOTE** :warning: Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
+            ${{steps.dependency_report.outputs.changed_files_report}}
+
