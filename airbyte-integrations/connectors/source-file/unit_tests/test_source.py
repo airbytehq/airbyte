@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
 from source_file.source import SourceFile
 
 HERE = Path(__file__).parent.absolute()
@@ -102,7 +103,6 @@ def test_nan_to_null():
         {"col1": "key3", "col2": None, "col3": None},
         {"col1": "key4", "col2": 3.33, "col3": None},
     ]
-
 
 def test_spec(source):
     spec = source.spec(None)

@@ -37,6 +37,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -111,6 +112,12 @@ class JobTrackerTest {
       .put("duration", SYNC_DURATION)
       .put("volume_rows", SYNC_RECORDS_SYNC)
       .put("volume_mb", SYNC_BYTES_SYNC)
+      .put("count_state_messages_from_source", 3L)
+      .put("count_state_messages_from_destination", 1L)
+      .put("max_seconds_before_source_state_message_emitted", 5L)
+      .put("mean_seconds_before_source_state_message_emitted", 4L)
+      .put("max_seconds_between_state_message_emit_and_commit", 7L)
+      .put("mean_seconds_between_state_message_emit_and_commit", 6L)
       .build();
   private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
       .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
@@ -481,14 +488,22 @@ class JobTrackerTest {
     final JobOutput jobOutput = mock(JobOutput.class);
     final StandardSyncOutput syncOutput = mock(StandardSyncOutput.class);
     final StandardSyncSummary syncSummary = mock(StandardSyncSummary.class);
+    final SyncStats syncStats = mock(SyncStats.class);
 
     when(syncSummary.getStartTime()).thenReturn(SYNC_START_TIME);
     when(syncSummary.getEndTime()).thenReturn(SYNC_END_TIME);
     when(syncSummary.getBytesSynced()).thenReturn(SYNC_BYTES_SYNC);
     when(syncSummary.getRecordsSynced()).thenReturn(SYNC_RECORDS_SYNC);
     when(syncOutput.getStandardSyncSummary()).thenReturn(syncSummary);
+    when(syncSummary.getTotalStats()).thenReturn(syncStats);
     when(jobOutput.getSync()).thenReturn(syncOutput);
     when(attempt.getOutput()).thenReturn(java.util.Optional.of(jobOutput));
+    when(syncStats.getSourceStateMessagesEmitted()).thenReturn(3L);
+    when(syncStats.getDestinationStateMessagesEmitted()).thenReturn(1L);
+    when(syncStats.getMaxSecondsBeforeSourceStateMessageEmitted()).thenReturn(5L);
+    when(syncStats.getMeanSecondsBeforeSourceStateMessageEmitted()).thenReturn(4L);
+    when(syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(7L);
+    when(syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
     return attempt;
   }
 

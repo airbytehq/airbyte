@@ -137,6 +137,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "DeclinedEventRelation",
     "EventWhoRelation",
     "FieldSecurityClassification",
+    "KnowledgeArticle",
     "OrderStatus",
     "PartnerRole",
     "QuoteTemplateRichTextData",

@@ -4,13 +4,13 @@ This page guides you through the process of setting up the Intercom source conne
 
 ## Set up the Intercom connector 
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. For Airbyte Cloud, click **Authenticate your Intercom account** to sign in with Intercom and authorize your account. 
-   For Airbyte OSS, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
+   For Airbyte Open Source, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -47,15 +47,16 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
+| Version | Date       | Pull Request | Subject |
+|:--------|:-----------| :--- | :--- |
+| 0.1.25  | 2022-08-18 | [15681](https://github.com/airbytehq/airbyte/pull/15681)  | Update Intercom API to v 2.5    |
 | 0.1.24  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924)  | Remove `additionalProperties` field from schemas    |
 | 0.1.23  | 2022-07-19 | [14830](https://github.com/airbytehq/airbyte/pull/14830)  | Added `checkpoint_interval` for Incremental streams |
 | 0.1.22  | 2022-07-09 | [14554](https://github.com/airbytehq/airbyte/pull/14554)  | Fixed `conversation_parts` stream schema definition |
 | 0.1.21  | 2022-07-05 | [14403](https://github.com/airbytehq/airbyte/pull/14403)  | Refactored  `Conversations`, `Conversation Parts`, `Company Segments` to increase performance |
 | 0.1.20  | 2022-06-24 | [14099](https://github.com/airbytehq/airbyte/pull/14099)  | Extended `Contacts` stream schema with `sms_consent`,`unsubscribe_from_sms` properties  |
 | 0.1.19  | 2022-05-25 | [13204](https://github.com/airbytehq/airbyte/pull/13204)  | Fixed `conversation_parts` stream schema definition                       |
-| 0.1.18   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| 0.1.18  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.17  | 2022-04-29 | [12374](https://github.com/airbytehq/airbyte/pull/12374)  | Fixed filtering of conversation_parts |
 | 0.1.16  | 2022-03-23 | [11206](https://github.com/airbytehq/airbyte/pull/11206)  | Added conversation_id field to conversation_part records |
 | 0.1.15  | 2022-03-22 | [11176](https://github.com/airbytehq/airbyte/pull/11176)  | Correct `check_connection` URL |

@@ -293,6 +293,7 @@ public class AirbyteAcceptanceTestHarness {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
+      destinationPsql.stop();
     } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
@@ -875,7 +876,6 @@ public class AirbyteAcceptanceTestHarness {
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
         .prefix(connection.getPrefix())
-        .withRefreshedCatalog(true)
         .skipReset(false);
   }
 

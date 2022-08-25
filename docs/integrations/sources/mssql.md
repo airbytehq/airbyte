@@ -306,6 +306,9 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
+| 0.4.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.4.15  | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
+| 0.4.14  | 2022-08-10 | [15430](https://github.com/airbytehq/airbyte/pull/15430) | fixed a bug on handling special character on database name  
 | 0.4.13  | 2022-08-04 | [15268](https://github.com/airbytehq/airbyte/pull/15268) | Added [] enclosing to escape special character in the database name                                    |
 | 0.4.12  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                              |
 | 0.4.11  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                            |
