@@ -110,7 +110,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18."));
+    assertTrue(actual.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -121,7 +121,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18."));
+    assertTrue(actual.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -131,7 +131,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18."));
+    assertTrue(actual.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -141,7 +141,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: -3."));
+    assertTrue(actual.getMessage().contains("State code: -3"));
   }
 
   @Test
@@ -151,7 +151,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: -3."));
+    assertTrue(actual.getMessage().contains("State code: -3"));
   }
 
   @Override
