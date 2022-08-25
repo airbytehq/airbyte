@@ -4,10 +4,6 @@
 
 package io.airbyte.workers;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -17,6 +13,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -84,6 +81,7 @@ import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.airbyte.workers.temporal.sync.RouteToTaskQueueActivityImpl;
+import io.airbyte.workers.temporal.sync.RouterService;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -92,18 +90,13 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
-import java.security.interfaces.RSAPrivateKey;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
@@ -122,7 +115,6 @@ public class WorkerApp {
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
-  private static final int JWT_TTL_MINUTES = 5;
 
   private static Configs configs;
   private static ProcessFactory defaultProcessFactory;
@@ -150,9 +142,11 @@ public class WorkerApp {
   private static StreamResetPersistence streamResetPersistence;
   private static FeatureFlags featureFlags;
   private static DefaultJobCreator jobCreator;
-  // TODO (pmossman) the API client should be scoped down to only the clients necessary for the worker.
-  //  can be done after the Config API is broken down into multiple smaller classes.
+  // TODO (pmossman) the API client should be scoped down to only the clients necessary for the
+  // worker.
+  // can be done after the Config API is broken down into multiple smaller classes.
   private static AirbyteApiClient airbyteApiClient;
+  private static RouterService routerService;
 
   private static void registerConnectionManager(final WorkerFactory factory) {
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
@@ -191,16 +185,17 @@ public class WorkerApp {
   }
 
   private static void registerSync(final WorkerFactory factory) {
-    registerSyncDataPlaneWorkers(factory);
+    registerWorkersForDataSyncTasks(factory);
     registerSyncControlPlaneWorkers(factory);
   }
 
   /**
-   * Data Plane workers handle the subset of SyncWorkflow activity tasks that should run within a Data
-   * Plane.
+   * These workers process tasks related to the actual syncing and processing of data. Depending on
+   * configuration, these tasks can be handled by workers in the Control Plane, and/or workers in a
+   * Data Plane.
    */
-  private static void registerSyncDataPlaneWorkers(final WorkerFactory factory) {
-    if (configs.isDataPlaneWorker() && !configs.getDataPlaneTaskQueues().isEmpty()) {
+  private static void registerWorkersForDataSyncTasks(final WorkerFactory factory) {
+    if (!configs.getDataSyncTaskQueues().isEmpty()) {
       final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
       // Note that the configuration injected here is for the normalization orchestrator, and not the
       // normalization pod itself.
@@ -211,7 +206,7 @@ public class WorkerApp {
           defaultProcessFactory);
       final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(airbyteApiClient, featureFlags);
 
-      for (final String taskQueue : configs.getDataPlaneTaskQueues()) {
+      for (final String taskQueue : configs.getDataSyncTaskQueues()) {
         final Worker worker = factory.newWorker(taskQueue, getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
         worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
       }
@@ -223,11 +218,11 @@ public class WorkerApp {
    * task to decide which task queue to use for Data Plane tasks.
    */
   private static void registerSyncControlPlaneWorkers(final WorkerFactory factory) {
-    if (configs.isControlPlaneWorker()) {
+    if (configs.getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE)) {
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(configs.getMaxWorkers().getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-      final RouteToTaskQueueActivityImpl routeToTaskQueueActivity = getDecideTaskQueueActivityImpl();
+      final RouteToTaskQueueActivityImpl routeToTaskQueueActivity = getRouteToTaskQueueActivityImpl();
       syncWorker.registerActivitiesImplementations(routeToTaskQueueActivity);
     }
   }
@@ -312,8 +307,8 @@ public class WorkerApp {
         configs.getAirbyteVersionOrWarning());
   }
 
-  private static RouteToTaskQueueActivityImpl getDecideTaskQueueActivityImpl() {
-    return new RouteToTaskQueueActivityImpl(configs);
+  private static RouteToTaskQueueActivityImpl getRouteToTaskQueueActivityImpl() {
+    return new RouteToTaskQueueActivityImpl(routerService);
   }
 
   /**
@@ -383,76 +378,6 @@ public class WorkerApp {
           configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
-    }
-  }
-
-  private static AirbyteApiClient getApiClient(final Configs configs) {
-    final var authHeader = configs.getAirbyteApiAuthHeaderName();
-
-    // control plane workers communicate with the Airbyte API within their internal network, so https
-    // isn't needed
-    final var scheme = configs.isControlPlaneWorker() ? "http" : "https";
-
-    LOGGER.debug("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
-        scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader);
-
-    final AirbyteApiClient airbyteApiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme(scheme)
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api")
-            .setRequestInterceptor(builder -> {
-              builder.setHeader("User-Agent", "WorkerApp");
-              if (!authHeader.isBlank()) {
-                builder.setHeader(authHeader, generateAuthToken());
-              }
-            }));
-    return airbyteApiClient;
-  }
-
-  /**
-   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request.
-   *
-   * For Data Plane workers, generate a signed JWT as described here:
-   * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
-   *
-   * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
-   */
-  private static String generateAuthToken() {
-    if (configs.isControlPlaneWorker()) {
-      // control plane workers communicate with the Airbyte API within their internal network, so a signed
-      // JWT isn't needed
-      return configs.getAirbyteApiAuthHeaderValue();
-    } else if (configs.isDataPlaneWorker()) {
-      try {
-        final Date now = new Date();
-        final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));
-        final String saEmail = configs.getDataPlaneServiceAccountEmail();
-        // Build the JWT payload
-        final JWTCreator.Builder token = JWT.create()
-            .withIssuedAt(now)
-            .withExpiresAt(expTime)
-            .withIssuer(saEmail)
-            .withAudience(configs.getControlPlaneAuthEndpoint())
-            .withSubject(saEmail)
-            .withClaim("email", saEmail);
-
-        // TODO multi-cloud phase 2: check performance of on-demand token generation in load testing. might
-        // need to pull some of this outside of this method which is called for every API request
-        final FileInputStream stream = new FileInputStream(configs.getDataPlaneServiceAccountCredentialsPath());
-        final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
-        final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
-        final Algorithm algorithm = Algorithm.RSA256(null, key);
-        return "Bearer " + token.sign(algorithm);
-      } catch (final Throwable t) {
-        LOGGER.warn("An issue occurred while generating a data plane auth token. Defaulting to empty string.", t);
-        return "";
-      }
-    } else {
-      LOGGER.warn("Worker somehow wasn't a control plane or a data plane worker!");
-      return "";
     }
   }
 
@@ -546,6 +471,8 @@ public class WorkerApp {
       // Ensure that the database resources are closed on application shutdown
       CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
+      // TODO (pmossman) abstract all migration code here into a separate function. It's confusing to
+      // have migration code interwoven with dependency initialization as-is
       final Flyway configsFlyway = FlywayFactory.create(configsDataSource, WorkerApp.class.getSimpleName(),
           ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
       final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, WorkerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
