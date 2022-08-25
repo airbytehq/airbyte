@@ -52,6 +52,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -481,6 +482,8 @@ public class WorkerApp {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 
