@@ -21,6 +21,24 @@
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "creator": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "prospects": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "updater": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }

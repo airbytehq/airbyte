@@ -289,6 +289,36 @@
         "null",
         "string"
       ]
+    },
+    "creator": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "mailAliases": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "mailings": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "updater": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "user": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }

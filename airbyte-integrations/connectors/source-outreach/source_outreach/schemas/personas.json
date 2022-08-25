@@ -18,6 +18,12 @@
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "prospects": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }
