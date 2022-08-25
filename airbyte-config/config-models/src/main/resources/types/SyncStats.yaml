@@ -21,3 +21,11 @@ properties:
     type: integer
   recordsCommitted:
     type: integer # if unset, committed records could not be computed
+  meanSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  meanSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer

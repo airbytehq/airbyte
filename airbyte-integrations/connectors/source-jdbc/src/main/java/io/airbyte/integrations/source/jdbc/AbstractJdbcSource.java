@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,6 +18,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -93,7 +95,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
+      database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -124,7 +126,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
         // retrieve column metadata from the database
-        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
         // store essential column metadata to a Json object from the result set about each column
         this::getColumnMetadata)
         .stream()
@@ -147,11 +149,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields(extractCursorFields(fields))
             .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractCursorFields(final List<JsonNode> fields) {
+    return fields.stream()
+        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
+        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
 
@@ -190,6 +202,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
         .build());
   }
 
@@ -220,7 +233,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
+          connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -244,7 +257,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                   .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
+                    connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (final SQLException e) {
@@ -257,6 +270,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   @Override
   protected String getQuoteString() {
     return quoteString;
+  }
+
+  @Override
+  public boolean isCursorType(final Datatype type) {
+    return sourceOperations.isCursorType(type);
   }
 
   @Override

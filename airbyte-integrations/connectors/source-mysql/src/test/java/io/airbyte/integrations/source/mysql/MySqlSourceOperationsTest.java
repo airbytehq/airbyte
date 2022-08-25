@@ -99,7 +99,8 @@ public class MySqlSourceOperationsTest {
     }
     assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
 
-    // Test to check backward compatibility for connectors created before PR https://github.com/airbytehq/airbyte/pull/15504
+    // Test to check backward compatibility for connectors created before PR
+    // https://github.com/airbytehq/airbyte/pull/15504
     actualRecords.clear();
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
@@ -155,7 +156,8 @@ public class MySqlSourceOperationsTest {
     }
     assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
 
-    // Test to check backward compatibility for connectors created before PR https://github.com/airbytehq/airbyte/pull/15504
+    // Test to check backward compatibility for connectors created before PR
+    // https://github.com/airbytehq/airbyte/pull/15504
     actualRecords.clear();
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
@@ -211,7 +213,8 @@ public class MySqlSourceOperationsTest {
     }
     assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
 
-    // Test to check backward compatibility for connectors created before PR https://github.com/airbytehq/airbyte/pull/15504
+    // Test to check backward compatibility for connectors created before PR
+    // https://github.com/airbytehq/airbyte/pull/15504
     actualRecords.clear();
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
@@ -269,7 +272,8 @@ public class MySqlSourceOperationsTest {
 
     Assertions.assertEquals(3, actualRecords.size());
 
-    // Test to check backward compatibility for connectors created before PR https://github.com/airbytehq/airbyte/pull/15504
+    // Test to check backward compatibility for connectors created before PR
+    // https://github.com/airbytehq/airbyte/pull/15504
     actualRecords.clear();
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(

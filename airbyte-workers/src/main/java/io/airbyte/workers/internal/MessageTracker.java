@@ -106,10 +106,20 @@ public interface MessageTracker {
 
   Long getTotalDestinationStateMessagesEmitted();
 
+  Long getMaxSecondsToReceiveSourceStateMessage();
+
+  Long getMeanSecondsToReceiveSourceStateMessage();
+
+  Optional<Long> getMaxSecondsBetweenStateMessageEmittedAndCommitted();
+
+  Optional<Long> getMeanSecondsBetweenStateMessageEmittedAndCommitted();
+
   AirbyteTraceMessage getFirstDestinationErrorTraceMessage();
 
   AirbyteTraceMessage getFirstSourceErrorTraceMessage();
 
   FailureReason errorTraceMessageFailure(Long jobId, Integer attempt);
+
+  Boolean getUnreliableStateTimingMetrics();
 
 }

@@ -1,3 +1,4 @@
+version: "0.1.0"
 definitions:
   page_size: 50
   step: "30d"
@@ -66,7 +67,7 @@ definitions:
       datetime: "{{ config['start_time'] }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc() }}}"
+      datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
@@ -247,7 +248,7 @@ streams:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            limit: 1000
+            limit: "1000"
             query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
       stream_slicer:
         $ref: "*ref(definitions.messages_stream_slicer)"

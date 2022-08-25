@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.db.PostgresUtils.getCertificate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -29,6 +32,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   private PostgreSQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
+  protected static final String PASSWORD = "Passw0rd";
+  protected static PostgresUtils.Certificate certs;
+
   @Override
   protected String getImageName() {
     return "airbyte/destination-postgres-strict-encrypt:dev";
@@ -43,6 +49,13 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build());
   }
 
@@ -131,10 +144,11 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
-    db = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
-        .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+    db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
+        .asCompatibleSubstituteFor("postgres"));
     db.start();
+    certs = getCertificate(db);
   }
 
   @Override
