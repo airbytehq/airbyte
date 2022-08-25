@@ -17,7 +17,6 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.util.HashMap;
@@ -88,11 +87,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return ConnectorName.POSTGRES;
   }
 
 }

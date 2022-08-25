@@ -5,10 +5,8 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CLUSTER;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,8 +15,10 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
@@ -119,27 +119,35 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   @Test
   public void testCheckIncorrectUsername() throws Exception {
     ((ObjectNode) config).put("user", "fake");
-    testIncorrectParams(config, INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE);
+    var airbyteConnectionStatus = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18."));
   }
 
   @Test
   public void testCheckIncorrectPassword() throws Exception {
     ((ObjectNode) config).put("password", "fake");
-    testIncorrectParams(config, INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE);
+    var airbyteConnectionStatus = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18."));
   }
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
     ((ObjectNode) config).with("instance_type")
         .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
-    testIncorrectParams(config, INCORRECT_CLUSTER);
+    var airbyteConnectionStatus = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -4."));
   }
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
     ((ObjectNode) config).put("user", "test_user_without_access")
         .put("password", "test12321");
-    testIncorrectParams(config, INCORRECT_ACCESS_PERMISSION);
+    var airbyteConnectionStatus = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 13."));
   }
 
 }

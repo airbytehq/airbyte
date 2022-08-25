@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectorName.POSTGRES;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
@@ -32,7 +31,6 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
@@ -452,11 +450,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return POSTGRES;
   }
 
 }

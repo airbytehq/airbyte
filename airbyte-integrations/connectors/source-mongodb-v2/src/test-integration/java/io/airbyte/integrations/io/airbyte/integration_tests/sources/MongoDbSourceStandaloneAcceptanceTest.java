@@ -5,8 +5,8 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -14,8 +14,10 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
@@ -119,7 +121,9 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
+    var airbyteConnectionStatus = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3."));
   }
 
   @Test
@@ -136,7 +140,9 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
+    var airbyteConnectionStatus = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3."));
   }
 
 }

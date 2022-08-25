@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
@@ -19,8 +20,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -81,8 +80,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      var messages = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -149,11 +147,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   private boolean isPurgeStagingData(final JsonNode config) {
     return !config.has("purge_staging_data") || config.get("purge_staging_data").asBoolean();
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return ConnectorName.REDSHIFT;
   }
 
 }

@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getDefaultErrorMessage;
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -24,8 +26,6 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -78,14 +78,13 @@ public class MongodbDestination extends BaseConnector implements Destination {
     try {
       final var database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
+      final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      var messages = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -193,11 +192,6 @@ public class MongodbDestination extends BaseConnector implements Destination {
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
     return connectionStrBuilder.toString();
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return ConnectorName.MONGO;
   }
 
 }

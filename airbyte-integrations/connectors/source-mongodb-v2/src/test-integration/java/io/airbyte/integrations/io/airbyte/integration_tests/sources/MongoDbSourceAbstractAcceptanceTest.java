@@ -4,17 +4,12 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.integrations.base.errors.utils.ConnectionErrorType;
-import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -23,6 +18,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -75,12 +71,6 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  protected void testIncorrectParams(JsonNode conf, ConnectionErrorType type) throws Exception {
-    var airbyteConnectionStatus = new MongoDbSource().check(conf);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals(type.getValue(), airbyteConnectionStatus.getMessage());
   }
 
 }

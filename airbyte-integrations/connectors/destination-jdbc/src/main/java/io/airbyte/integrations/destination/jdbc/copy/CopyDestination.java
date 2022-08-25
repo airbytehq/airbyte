@@ -11,7 +11,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -19,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public abstract class CopyDestination extends BaseConnector implements Destination {
 
@@ -72,8 +73,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      var messages = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

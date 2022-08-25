@@ -5,9 +5,8 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -111,7 +110,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 18."));
   }
 
   @Test
@@ -122,7 +121,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 18."));
   }
 
   @Test
@@ -132,7 +131,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: 18."));
   }
 
   @Test
@@ -142,7 +141,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: -3."));
   }
 
   @Test
@@ -152,7 +151,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    assertTrue(actual.getMessage().contains("State code: -3."));
   }
 
   @Override

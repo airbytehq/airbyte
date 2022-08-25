@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectorName.MYSQL;
-import static com.mysql.cj.MysqlType.*;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
@@ -25,7 +23,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -52,11 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
-import static java.util.stream.Collectors.toList;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
@@ -247,11 +240,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return MYSQL;
   }
 
 }

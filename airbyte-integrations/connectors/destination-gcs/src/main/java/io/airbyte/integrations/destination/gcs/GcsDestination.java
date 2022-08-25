@@ -12,8 +12,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.S3ConsumerFactory;
@@ -26,6 +24,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getDefaultErrorMessage;
 
 public class GcsDestination extends BaseConnector implements Destination {
 
@@ -58,8 +58,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
-          .getErrorMessage(e.getErrorCode(), 0, e.getErrorMessage(), e);
+      var messages = getDefaultErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -88,11 +87,6 @@ public class GcsDestination extends BaseConnector implements Destination {
         SerializedBufferFactory.getCreateFunction(gcsConfig, FileBuffer::new),
         gcsConfig,
         configuredCatalog);
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return ConnectorName.GCS;
   }
 
 }

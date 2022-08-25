@@ -32,7 +32,6 @@ import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -268,10 +267,5 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public void close() throws Exception {}
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return ConnectorName.MONGO;
-  }
 
 }
