@@ -1,0 +1,49 @@
+@use "../../../../../scss/colors";
+
+.statusView {
+  margin: 0 10px;
+
+  .title {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+
+    .actions {
+      display: flex;
+
+      .resetButton,
+      .cancelButton,
+      .syncButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .resetButton {
+        margin-right: 10px;
+      }
+
+      .cancelButton {
+        border-color: transparent;
+        background-color: colors.$red;
+
+        .iconXmark {
+          margin-right: 12px;
+          font-size: 18px;
+        }
+      }
+
+      .syncButton {
+        .iconRotate {
+          display: flex;
+          margin-right: 12px;
+        }
+      }
+    }
+  }
+
+  .contentCard {
+    margin-bottom: 20px;
+  }
+}

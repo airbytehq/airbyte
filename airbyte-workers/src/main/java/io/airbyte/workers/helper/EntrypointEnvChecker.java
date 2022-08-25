@@ -51,11 +51,12 @@ public class EntrypointEnvChecker {
 
     String outputLine = null;
 
-    String line;
-    while (((line = stdout.readLine()) != null) && outputLine == null) {
+    String line = stdout.readLine();
+    while ((line != null) && outputLine == null) {
       if (line.contains("AIRBYTE_ENTRYPOINT")) {
         outputLine = line;
       }
+      line = stdout.readLine();
     }
 
     process.waitFor();

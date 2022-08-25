@@ -15,6 +15,7 @@ class AirbyteProtocolPredicateTest {
 
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
+  private static final String GREEN = "green";
 
   private AirbyteProtocolPredicate predicate;
 
@@ -25,7 +26,7 @@ class AirbyteProtocolPredicateTest {
 
   @Test
   void testValid() {
-    assertTrue(predicate.test(Jsons.jsonNode(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))));
+    assertTrue(predicate.test(Jsons.jsonNode(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, GREEN))));
   }
 
   @Test
@@ -36,7 +37,7 @@ class AirbyteProtocolPredicateTest {
   @Test
   void testConcatenatedValid() {
     final String concatenated =
-        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
+        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, GREEN))
             + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
@@ -45,7 +46,7 @@ class AirbyteProtocolPredicateTest {
   @Test
   void testMissingNewLineAndLineStartsWithValidRecord() {
     final String concatenated =
-        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
+        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, GREEN))
             + "{ \"fish\": \"tuna\"}";
 
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
@@ -55,7 +56,7 @@ class AirbyteProtocolPredicateTest {
   void testMissingNewLineAndLineStartsWithInvalidRecord() {
     final String concatenated =
         "{ \"fish\": \"tuna\"}"
-            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"));
+            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, GREEN));
 
     assertFalse(predicate.test(Jsons.deserialize(concatenated)));
   }

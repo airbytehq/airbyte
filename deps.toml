@@ -9,6 +9,8 @@ slf4j = "1.7.30"
 lombok = "1.18.22"
 jooq = "3.13.4"
 junit-jupiter = "5.8.2"
+micronaut = "3.6.0"
+micronaut-test = "3.5.0"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
@@ -40,6 +42,7 @@ log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
@@ -90,9 +93,36 @@ micrometer-statsd = {module = "io.micrometer:micrometer-registry-statsd", versio
 
 quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
 
+# Micronaut-related dependencies
+h2-database = { module = "com.h2database:h2", version = "2.1.214" }
+hibernate-types = { module = "com.vladmihalcea:hibernate-types-52", version = "2.16.3" }
+javax-inject = { module = "javax.inject:javax.inject", version = "1" }
+javax-transaction = { module = "javax.transaction:javax.transaction-api", version = "1.3" }
+micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
+micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version = "3.7.2" }
+micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.0" }
+micronaut-inject = { module = "io.micronaut:micronaut-inject" }
+micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
+micronaut-http-server-netty = { module = "io.micronaut:micronaut-http-server-netty" }
+micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java" }
+micronaut-jaxrs-processor = { module = "io.micronaut.jaxrs:micronaut-jaxrs-processor", version = "3.4.0" }
+micronaut-jaxrs-server = { module = "io.micronaut.jaxrs:micronaut-jaxrs-server", version = "3.4.0" }
+micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
+micronaut-jooq = { module = "io.micronaut.sql:micronaut-jooq" }
+micronaut-management = { module = "io.micronaut:micronaut-management" }
+micronaut-runtime = { module = "io.micronaut:micronaut-runtime" }
+micronaut-security = { module = "io.micronaut.security:micronaut-security", version = "3.6.3" }
+micronaut-test-core = { module = "io.micronaut.test:micronaut-test-core", version.ref = "micronaut-test" }
+micronaut-test-junit5 = { module = "io.micronaut.test:micronaut-test-junit5", version.ref = "micronaut-test" }
+micronaut-validation = { module = "io.micronaut:micronaut-validation" }
+
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 apache = ["apache-commons", "apache-commons-lang"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
+micronaut = ["javax-inject", "javax-transaction", "micronaut-http-server-netty", "micronaut-http-client", "micronaut-inject", "micronaut-validation", "micronaut-runtime", "micronaut-management", "micronaut-security", "micronaut-jaxrs-server", "micronaut-flyway", "micronaut-jdbc-hikari", "micronaut-jooq"]
+micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor"]
+micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
+micronaut-test-annotation-processor = ["micronaut-inject-java"]

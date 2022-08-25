@@ -21,6 +21,20 @@
   &.darkBlue {
     background: colors.$dark-blue-100;
   }
+  &.green {
+    background: colors.$green;
+    color: colors.$white;
+  }
+
+  &.red {
+    background: colors.$red;
+    color: colors.$white;
+  }
+
+  &.blue {
+    background: colors.$blue;
+    color: colors.$white;
+  }
 }
 
 .small {
@@ -39,4 +53,8 @@
   font-size: 10px;
   color: colors.$white;
   padding: 3px 0 3px;
+
+  &.light {
+    font-weight: 500;
+  }
 }
