@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard } from "components";
+import { Button, ContentCard, Spinner } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -21,7 +21,7 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
-const JOB_PAGE_SIZE_INCREMENT = 25;
+const JOB_PAGE_SIZE_INCREMENT = 2;
 
 enum ActionType {
   RESET = "reset_connection",
@@ -39,8 +39,8 @@ interface StatusViewProps {
   isStatusUpdating?: boolean;
 }
 
-const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
-  return jobs.find((jobWithAttempts) => {
+const getJobRunningOrPending = (jobs: JobWithAttemptsRead[] | undefined) => {
+  return jobs?.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
     return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
   });
@@ -51,13 +51,15 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
 
-  const jobs = useListJobs({
+  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
     pagination: {
       pageSize: jobPageSize,
     },
   });
+
+  const moreJobPagesAvailable = jobs && jobs.length === jobPageSize;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -168,12 +170,15 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </div>
         }
       >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+        {jobs?.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </ContentCard>
       <footer className={styles.footer}>
-        <Button onClick={onLoadMoreJobs} disabled={jobs.length < jobPageSize}>
-          <FormattedMessage id="connection.loadMoreJobs" />
-        </Button>
+        {(moreJobPagesAvailable || isJobPageLoading) && (
+          <Button className={styles.loadMoreJobsButton} onClick={onLoadMoreJobs}>
+            {!isJobPageLoading && <FormattedMessage id="connection.loadMoreJobs" />}
+            {isJobPageLoading && <Spinner className={styles.loadMoreJobsSpinner} />}
+          </Button>
+        )}
       </footer>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
 import { JobsService } from "core/domain/job/JobsService";
@@ -25,10 +25,11 @@ function useGetJobService() {
 
 export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
-  return useSuspenseQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
+  const result = useQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
     refetchInterval: 2500, // every 2,5 seconds,
     keepPreviousData: true,
-  }).jobs;
+  });
+  return { jobs: result.data?.jobs, isPreviousData: result.isPreviousData };
 };
 
 export const useGetJob = (id: number, enabled = true) => {
