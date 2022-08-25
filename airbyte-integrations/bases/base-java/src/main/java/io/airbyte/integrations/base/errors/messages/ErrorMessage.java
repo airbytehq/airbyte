@@ -8,10 +8,8 @@ import java.util.Objects;
 
 public class ErrorMessage {
 
-  private static final String DEFAULT_ERROR_MESSAGE = "State code: %s. Error Message: %s.";
-
-  public static String getDefaultErrorMessage(String errorCode, Exception exception) {
-    return String.format(DEFAULT_ERROR_MESSAGE, errorCode, exception.getMessage());
+  public static String getDefaultErrorMessage(String stateCode, Exception exception) {
+    return configMessage(stateCode, 0, exception.getLocalizedMessage());
   }
 
   public static String getErrorMessage(String stateCode, int errorCode, String message, Exception exception) {
