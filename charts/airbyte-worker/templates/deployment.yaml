@@ -401,10 +401,6 @@ spec:
       {{- if .Values.global.extraContainers }}
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
-      {{- if .Values.gke_node_pool_selector }}
-      nodeSelector:
-        cloud.google.com/gke-nodepool: {{ .Values.gke_node_pool_selector }}
-      {{- end }}
       volumes:
       {{- if eq .Values.global.deploymentMode "oss" }}
       - name: gcs-log-creds-volume

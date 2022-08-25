@@ -92,9 +92,5 @@ spec:
         {{- if .Values.extraEnv }}
         {{- toYaml .Values.extraEnv | nindent 8 }}
         {{- end }}
-      {{- if .Values.gke_node_pool_selector }}
-      nodeSelector:
-        cloud.google.com/gke-nodepool: {{ .Values.gke_node_pool_selector }}
-      {{- end }}
 
       resources: {{- toYaml .Values.resources | nindent 8 }}
