@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 from urllib import parse
 
 import requests
@@ -60,7 +60,19 @@ class OutreachStream(HttpStream, ABC):
         if not data:
             return
         for element in data:
-            yield {**element.get("attributes"), **{self.primary_key: element[self.primary_key]}}
+            relationships: Dict[str, List[int]] = dict()
+            for r_type, relations in element.get("relationships").items():
+                relationships[f"rel_{r_type}"] = []
+                if relations.get("data"):  # Manage None and pass empty data. Some relationships only have links we do not handle these.
+                    data = relations.get("data", [])
+
+                    if isinstance(data, dict):  # Manage some relationships that only have one element and are set as dict.
+                        # instead of having [{'type': 'sequenceState', 'id': 1}] we have {'type': 'sequenceState', 'id': 1}
+                        data = [data]
+
+                    relationships[f"rel_{r_type}"] = [e.get("id") for e in data]
+
+            yield {**element.get("attributes"), **{self.primary_key: element[self.primary_key], **relationships}}
 
 
 # Basic incremental stream
