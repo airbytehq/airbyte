@@ -83,12 +83,19 @@ spec:
         {{- end }}
 
         # Values from env
-        {{- if .Values.extraEnv }}
-        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
         - name: {{ $k }}
           value: {{ $v | quote }}
         {{- end }}
         {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+
+
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           tcpSocket:
