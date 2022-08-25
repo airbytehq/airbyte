@@ -171,11 +171,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .findFirst()
           .orElseThrow();
 
-      if (isValidCursorType(cursorType)) {
-        continue;
+      if (!isValidCursorType(cursorType)) {
+        tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
       }
-
-      tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
