@@ -43,23 +43,30 @@ public class JobErrorReporter {
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
   private static final String CONNECTOR_RELEASE_STAGE_META_KEY = "connector_release_stage";
   private static final String CONNECTOR_COMMAND_META_KEY = "connector_command";
+  private static final String NORMALIZATION_REPOSITORY_META_KEY = "normalization_repository";
   private static final String JOB_ID_KEY = "job_id";
 
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
   private final String airbyteVersion;
+  private final String normalizationImage;
+  private final String normalizationVersion;
   private final WebUrlHelper webUrlHelper;
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
                           final DeploymentMode deploymentMode,
                           final String airbyteVersion,
+                          final String normalizationImage,
+                          final String normalizationVersion,
                           final WebUrlHelper webUrlHelper,
                           final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
     this.airbyteVersion = airbyteVersion;
+    this.normalizationImage = normalizationImage;
+    this.normalizationVersion = normalizationVersion;
     this.webUrlHelper = webUrlHelper;
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
@@ -95,6 +102,21 @@ public class JobErrorReporter {
           final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
           final String dockerImage = jobContext.destinationDockerImage();
           final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getDestinationMetadata(destinationDefinition));
+
+          reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        } else if (failureOrigin == FailureOrigin.NORMALIZATION) {
+          final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+          final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+          // since error could be arising from source or destination or normalization itself, we want all the
+          // metadata
+          // prefixing source keys so we don't overlap (destination as 'true' keys since normalization runs on
+          // the destination)
+          final Map<String, String> metadata = MoreMaps.merge(
+              commonMetadata,
+              getNormalizationMetadata(),
+              prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
+              getDestinationMetadata(destinationDefinition));
+          final String dockerImage = String.format("%s:%s", normalizationImage, normalizationVersion);
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
@@ -206,6 +228,19 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
         Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
+  }
+
+  private Map<String, String> getNormalizationMetadata() {
+    return Map.ofEntries(
+        Map.entry(NORMALIZATION_REPOSITORY_META_KEY, normalizationImage));
+  }
+
+  private Map<String, String> prefixConnectorMetadataKeys(final Map<String, String> connectorMetadata, final String prefix) {
+    Map<String, String> prefixedMetadata = new HashMap<>();
+    for (final Map.Entry<String, String> entry : connectorMetadata.entrySet()) {
+      prefixedMetadata.put(String.format("%s_%s", prefix, entry.getKey()), entry.getValue());
+    }
+    return prefixedMetadata;
   }
 
   private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,

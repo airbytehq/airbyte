@@ -96,19 +96,19 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
             case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            default -> logger.info(jsonLine.asText()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(jsonLine.toPrettyString()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
       } catch (final Exception e) {
-        logger.info(jsonLine.asText());
+        logger.info(jsonLine.toPrettyString());
       }
     }
     return m.stream();
   }
 
-  private void logAndCollectErrorMessage(String logMessage) {
-    logger.error(logMessage);
-    dbtErrors.add(logMessage);
+  private void logAndCollectErrorMessage(String logMsg) {
+    logger.error(logMsg);
+    dbtErrors.add(logMsg);
   }
 
   public List<String> getDbtErrors() {
