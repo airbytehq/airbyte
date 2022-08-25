@@ -75,8 +75,8 @@ class StateDecoratingIteratorTest {
 
   private Iterator<AirbyteMessage> createExceptionIterator() {
     return new Iterator<AirbyteMessage>() {
-
-      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
+      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
+          RECORD_MESSAGE_2, RECORD_MESSAGE_3);
 
       @Override
       public boolean hasNext() {
@@ -88,6 +88,8 @@ class StateDecoratingIteratorTest {
         if (internalMessageIterator.hasNext()) {
           return internalMessageIterator.next();
         } else {
+          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a SQLException is thrown and wrapped in
+          // StreamingJdbcDatabase#tryAdvance
           throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
         }
       }
@@ -172,43 +174,45 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  void testIteratorCatchesException() {
-    try {
-      final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
-      final StateDecoratingIterator iterator = new StateDecoratingIterator(
-          exceptionIterator,
-          stateManager,
-          NAME_NAMESPACE_PAIR,
-          UUID_FIELD_NAME,
-          RECORD_VALUE_1,
-          JsonSchemaPrimitive.STRING,
-          0);
-      assertEquals(RECORD_MESSAGE_1, iterator.next());
-      assertEquals(RECORD_MESSAGE_2, iterator.next());
-      assertThrows(RuntimeException.class, () -> iterator.next());
-    } catch (final Exception e) {
-      assertEquals(e.getMessage(),
-          "Message iterator failed to read next record. java.sql.SQLException: Connection marked broken because of SQLSTATE(080006)");
-    }
+  void testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        1);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the condition of "ready"
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the frequency minimum of 1 record
+    assertEquals(STATE_MESSAGE_2, iterator.next());
+    // no further records to read since Exception was caught above and marked iterator as endOfData()
+    assertFalse(iterator.hasNext());
   }
 
   @Test
-  void testIteratorCatchesUnderlyingSQLException() {
-    try {
-      final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
-      final StateDecoratingIterator iterator = new StateDecoratingIterator(
-          exceptionIterator,
-          stateManager,
-          NAME_NAMESPACE_PAIR,
-          UUID_FIELD_NAME,
-          RECORD_VALUE_1,
-          JsonSchemaPrimitive.STRING,
-          0);
-      assertEquals(RECORD_MESSAGE_1, iterator.next());
-      assertEquals(RECORD_MESSAGE_2, iterator.next());
-    } catch (final Exception e) {
-      assertEquals(((SQLException) e.getCause()).getSQLState(), "08006");
-    }
+  void testIteratorCatchesExceptionWhenEmissionFrequencyZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        0);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // since stateEmission is not set to emit frequently, this will catch the error but not emit state message since it wasn't in a ready state
+    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by marking iterator as endOfData()
+    assertFalse(iterator.hasNext());
   }
 
   @Test
