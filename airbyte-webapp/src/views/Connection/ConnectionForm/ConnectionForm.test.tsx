@@ -66,6 +66,9 @@ jest.mock("services/workspaces/WorkspacesService", () => {
     useCurrentWorkspace: () => {
       return "currentWorkspace";
     },
+    useCurrentWorkspaceId: () => {
+      return "currentWorkspace";
+    },
   };
 });
 
