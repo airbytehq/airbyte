@@ -94,7 +94,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   );
 
   const authErrors = useMemo(() => {
-    //key of field path, value of error code
+    // key of field path, value of error code
     return authFieldsToHide.reduce<Record<string, string>>((authErrors, fieldName) => {
       const { error } = getFieldMeta(fieldName);
       if (submitCount > 0 && error) {
