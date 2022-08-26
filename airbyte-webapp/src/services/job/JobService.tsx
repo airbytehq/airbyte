@@ -5,7 +5,13 @@ import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { JobDebugInfoRead, JobInfoRead, JobListRequestBody, Pagination } from "../../core/request/AirbyteClient";
+import {
+  JobDebugInfoRead,
+  JobInfoRead,
+  JobListRequestBody,
+  JobWithAttemptsRead,
+  Pagination,
+} from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {
@@ -28,8 +34,10 @@ export const useListJobs = (listParams: JobListRequestBody) => {
   const result = useQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
     refetchInterval: 2500, // every 2,5 seconds,
     keepPreviousData: true,
+    suspense: true,
   });
-  return { jobs: result.data?.jobs, isPreviousData: result.isPreviousData };
+  // cast to JobWithAttemptsRead[] because (suspense: true) means we will never get undefined
+  return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
 };
 
 export const useGetJob = (id: number, enabled = true) => {

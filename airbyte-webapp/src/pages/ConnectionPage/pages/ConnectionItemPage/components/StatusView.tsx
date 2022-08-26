@@ -59,7 +59,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     },
   });
 
-  const moreJobPagesAvailable = jobs && jobs.length === jobPageSize;
+  const moreJobPagesAvailable = jobs.length === jobPageSize;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -170,7 +170,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </div>
         }
       >
-        {jobs?.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </ContentCard>
       <footer className={styles.footer}>
         {(moreJobPagesAvailable || isJobPageLoading) && (
