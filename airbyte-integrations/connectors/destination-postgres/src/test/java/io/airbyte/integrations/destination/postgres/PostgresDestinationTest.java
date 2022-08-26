@@ -144,24 +144,27 @@ public class PostgresDestinationTest {
   void testCheckIncorrectPasswordFailure() {
     var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
     var destination = new PostgresDestination();
     var actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 28P01;"));
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() {
     var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 28P01;"));
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() {
     var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertTrue(actual.getMessage().contains("State code: 08001;"));
@@ -171,6 +174,7 @@ public class PostgresDestinationTest {
   public void testCheckIncorrectPortFailure() {
     var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertTrue(actual.getMessage().contains("State code: 08001;"));
@@ -180,9 +184,10 @@ public class PostgresDestinationTest {
   public void testCheckIncorrectDataBaseFailure() {
     var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 3D000;"));
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -201,7 +206,7 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE);
 
-    var destination = new PostgresDestination();
+    final Destination destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
   }
