@@ -10,14 +10,14 @@ public class ConnectionErrorException extends RuntimeException {
   private int errorCode;
   private String exceptionMessage;
 
-  public ConnectionErrorException(String errorMessage) {
-    super(errorMessage);
+  public ConnectionErrorException(String exceptionMessage) {
+    super(exceptionMessage);
   }
 
-  public ConnectionErrorException(String stateCode, String errorMessage) {
-    super(errorMessage);
+  public ConnectionErrorException(String stateCode, String exceptionMessage) {
+    super(exceptionMessage);
     this.stateCode = stateCode;
-    this.exceptionMessage = errorMessage;
+    this.exceptionMessage = exceptionMessage;
   }
 
   public ConnectionErrorException(String stateCode, Throwable exception) {
