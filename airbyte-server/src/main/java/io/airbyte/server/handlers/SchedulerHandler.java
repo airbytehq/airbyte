@@ -137,7 +137,6 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    log.info("==== Checking connection..");
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
@@ -334,9 +333,6 @@ public class SchedulerHandler {
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
-
-    log.info("response: {}", response.getMetadata());
-    log.info("response: {}", response.getMetadata().getLogPath());
 
     if (response.isSuccess()) {
       checkConnectionRead

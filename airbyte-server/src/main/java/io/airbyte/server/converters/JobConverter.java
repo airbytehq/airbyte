@@ -204,7 +204,6 @@ public class JobConverter {
 
   public LogRead getLogRead(final Path logPath) {
     try {
-      log.info("Logs: {}", LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath).toString());
       return new LogRead().logLines(LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath));
     } catch (final IOException e) {
       throw new RuntimeException(e);
