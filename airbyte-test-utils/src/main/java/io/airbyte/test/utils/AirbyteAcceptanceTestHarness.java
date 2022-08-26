@@ -145,6 +145,7 @@ public class AirbyteAcceptanceTestHarness {
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
   private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
+  private static final String IS_TEST = "is_test";
 
   private static boolean isKube;
   private static boolean isMinikube;
@@ -496,14 +497,6 @@ public class AirbyteAcceptanceTestHarness {
         getDestinationDbConfig());
   }
 
-  public DestinationRead createPostgresStrictEnforceDestination() throws ApiException {
-    return createDestination(
-        "AccTestDestination-" + UUID.randomUUID(),
-        defaultWorkspaceId,
-        getPostgresDestinationDefinitionId(),
-        getDestinationDbStrictEnforceConfig());
-  }
-
   public DestinationRead createDestination(final String name,
                                            final UUID workspaceId,
                                            final UUID destinationDefId,
@@ -565,33 +558,24 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, false, Type.SOURCE);
-  }
-
-  public JsonNode getSourceDbStrictEnforceConfig() {
-    return getDbConfig(sourcePsql, false, false, true, Type.SOURCE);
+    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
   }
 
   public JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, false, Type.DESTINATION);
-  }
-
-  public JsonNode getDestinationDbStrictEnforceConfig() {
-    return getDbConfig(destinationPsql, false, true, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
   }
 
   public JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, false, Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
   }
 
   public JsonNode getDbConfig(final PostgreSQLContainer psql,
                               final boolean hiddenPassword,
                               final boolean withSchema,
-                              final boolean forCloudTests,
                               final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema, forCloudTests);
+          : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -600,8 +584,7 @@ public class AirbyteAcceptanceTestHarness {
 
   private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
                                           final boolean hiddenPassword,
-                                          final boolean withSchema,
-                                          final boolean forCloudTests)
+                                          final boolean withSchema)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -629,11 +612,8 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
-    dbConfig.put("is_test", true);
+    dbConfig.put(IS_TEST, true);
     dbConfig.put(JdbcUtils.SSL_KEY, false);
-    if (forCloudTests) {
-      dbConfig.put("only add to pass build, to cleanup", true);
-    }
 
     if (withSchema) {
       dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
@@ -663,14 +643,6 @@ public class AirbyteAcceptanceTestHarness {
         defaultWorkspaceId,
         getPostgresSourceDefinitionId(),
         getSourceDbConfig());
-  }
-
-  public SourceRead createPostgresStrictEnforceSource() throws ApiException {
-    return createSource(
-        "acceptanceTestDb-" + UUID.randomUUID(),
-        defaultWorkspaceId,
-        getPostgresSourceDefinitionId(),
-        getSourceDbStrictEnforceConfig());
   }
 
   public SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)
