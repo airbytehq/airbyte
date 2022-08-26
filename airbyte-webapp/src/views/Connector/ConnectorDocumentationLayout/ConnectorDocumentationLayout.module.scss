@@ -34,6 +34,7 @@
 .rightPanelContainer {
   background-color: colors.$white;
   height: 100%;
+  overflow-y: scroll;
 }
 
 .lightOverlay {
