@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.helper;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -20,6 +21,29 @@ public class FailureHelper {
   private static final String JOB_ID_METADATA_KEY = "jobId";
   private static final String ATTEMPT_NUMBER_METADATA_KEY = "attemptNumber";
   private static final String TRACE_MESSAGE_METADATA_KEY = "from_trace_message";
+  private static final String CONNECTOR_COMMAND_METADATA_KEY = "connector_command";
+
+  public enum ConnectorCommand {
+
+    SPEC("spec"),
+    CHECK("check"),
+    DISCOVER("discover"),
+    WRITE("write"),
+    READ("read");
+
+    private final String value;
+
+    ConnectorCommand(final String value) {
+      this.value = value;
+    }
+
+    @Override
+    @JsonValue
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+  }
 
   private static final String WORKFLOW_TYPE_SYNC = "SyncWorkflow";
   private static final String ACTIVITY_TYPE_REPLICATE = "Replicate";
@@ -63,25 +87,45 @@ public class FailureHelper {
         .withMetadata(traceMessageMetadata(jobId, attemptNumber));
   }
 
-  public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+  public static FailureReason connectorCommandFailure(final AirbyteTraceMessage m,
+                                                      final Long jobId,
+                                                      final Integer attemptNumber,
+                                                      final ConnectorCommand connectorCommand) {
+    final Metadata metadata = traceMessageMetadata(jobId, attemptNumber);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
+    return genericFailure(m, jobId, attemptNumber)
+        .withMetadata(metadata);
+  }
+
+  public static FailureReason connectorCommandFailure(final Throwable t,
+                                                      final Long jobId,
+                                                      final Integer attemptNumber,
+                                                      final ConnectorCommand connectorCommand) {
+    final Metadata metadata = jobAndAttemptMetadata(jobId, attemptNumber);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
     return genericFailure(t, jobId, attemptNumber)
+        .withMetadata(metadata);
+  }
+
+  public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withExternalMessage("Something went wrong within the source connector");
   }
 
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(m, jobId, attemptNumber)
+    return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.READ)
         .withFailureOrigin(FailureOrigin.SOURCE);
   }
 
   public static FailureReason destinationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(t, jobId, attemptNumber)
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.WRITE)
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage("Something went wrong within the destination connector");
   }
 
   public static FailureReason destinationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(m, jobId, attemptNumber)
+    return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.WRITE)
         .withFailureOrigin(FailureOrigin.DESTINATION);
   }
 
@@ -89,7 +133,7 @@ public class FailureHelper {
                                            final Long jobId,
                                            final Integer attemptNumber,
                                            final FailureReason.FailureOrigin origin) {
-    return genericFailure(t, jobId, attemptNumber)
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK)
         .withFailureOrigin(origin)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
         .withRetryable(false)
