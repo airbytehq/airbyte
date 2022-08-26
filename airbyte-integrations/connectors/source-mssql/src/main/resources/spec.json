@@ -28,6 +28,18 @@
         "examples": ["master"],
         "order": 2
       },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "default": ["dbo"],
+        "order": 3
+      },
       "username": {
         "description": "The username which is used to access the database.",
         "title": "Username",
