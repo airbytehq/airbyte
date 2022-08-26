@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // the sync."
     // from the spec:
     // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
-    LOGGER.error(logMessage, e);
+    LOGGER.error(logMessage + ExceptionUtils.getStackTrace(e));
     AirbyteTraceMessageUtility.emitSystemErrorTrace(e, logMessage);
     terminate();
   }
