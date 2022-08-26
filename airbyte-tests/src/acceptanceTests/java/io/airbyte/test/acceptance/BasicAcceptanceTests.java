@@ -125,7 +125,6 @@ class BasicAcceptanceTests {
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
   private static final Boolean WITH_SCD_TABLE = true;
-
   private static final Boolean WITHOUT_SCD_TABLE = false;
 
   private static AirbyteAcceptanceTestHarness testHarness;
@@ -577,7 +576,6 @@ class BasicAcceptanceTests {
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
-
   }
 
   @Test
