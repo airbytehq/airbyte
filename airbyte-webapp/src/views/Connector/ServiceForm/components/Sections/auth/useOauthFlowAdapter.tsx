@@ -6,11 +6,16 @@ import pick from "lodash/pick";
 import { useState } from "react";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { AuthSpecification } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
 import { useServiceForm } from "../../../serviceFormContext";
 import { ServiceFormValues } from "../../../types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
+
+interface Credentials {
+  credentials: AuthSpecification;
+}
 
 function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   loading: boolean;
@@ -18,13 +23,13 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   hasRun: boolean;
   run: () => Promise<void>;
 } {
-  const { values, setValues, errors, setFieldTouched } = useFormikContext<ServiceFormValues>();
+  const { values, setValues, errors, setFieldTouched } = useFormikContext<ServiceFormValues<Credentials>>();
   const [hasRun, setHasRun] = useState(false);
 
   const { getValues } = useServiceForm();
 
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
-    let newValues: ServiceFormValues;
+    let newValues: ServiceFormValues<Credentials>;
 
     if (connector.advancedAuth) {
       const oauthPaths = serverProvidedOauthPaths(connector);
@@ -45,7 +50,10 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   };
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
-  const connectionObjectEmpty = !!Object.keys((values?.connectionConfiguration as object) ?? {}).length;
+  const connectionObjectEmpty =
+    values?.connectionConfiguration?.credentials ?? values?.connectionConfiguration
+      ? Object.keys(values.connectionConfiguration?.credentials ?? values.connectionConfiguration).length <= 1
+      : true;
 
   return {
     loading,
