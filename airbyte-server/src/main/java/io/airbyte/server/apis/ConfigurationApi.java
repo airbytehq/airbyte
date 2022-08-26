@@ -741,7 +741,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   // SCHEDULER
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
-    log.info("===executing check connection");
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
   }
 
