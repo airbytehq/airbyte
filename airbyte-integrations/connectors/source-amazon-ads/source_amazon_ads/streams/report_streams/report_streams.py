@@ -15,7 +15,6 @@ from urllib.parse import urljoin
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import Date
@@ -23,8 +22,6 @@ from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import iterate_one_by_one
-
-logger = AirbyteLogger()
 
 
 class RecordType(str, Enum):
@@ -176,14 +173,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff_max_tries
     def _init_and_try_read_records(self, profile: Profile, report_date):
         report_infos = self._init_reports(profile, report_date)
-        logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
+        self.logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
         return report_infos
 
     @backoff_max_time
     def _try_read_records(self, report_infos):
         incomplete_report_infos = self._incomplete_report_infos(report_infos)
-        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
+        self.logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
@@ -358,16 +355,18 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             # subtypes have mutualy excluded parameters so we requesting
             # different metric list for each record.
             record_type = record_type.split("_")[0]
-            logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
+            self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
             response = self._send_http_request(
                 urljoin(self._url, self.report_init_endpoint(record_type)),
                 profile.profileId,
                 report_init_body,
             )
             if response.status_code != HTTPStatus.ACCEPTED:
-                raise ReportInitFailure(
-                    f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                )
+                error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                if self._check_report_date_error(response) or self._check_report_tactic_error(response):
+                    self.logger.warning(error_msg)
+                    break
+                raise ReportInitFailure(error_msg)
 
             response = ReportInitResponse.parse_raw(response.text)
             report_infos.append(
@@ -379,7 +378,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     metric_objects=[],
                 )
             )
-            logger.info("Initiated successfully")
+            self.logger.info("Initiated successfully")
 
         return report_infos
 
@@ -401,3 +400,35 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if isinstance(exception, ReportGenerationInProgress):
             return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
         return super().get_error_display_message(exception)
+
+    def _check_report_date_error(self, response) -> bool:
+        """
+        Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
+
+        In theory, it does not have to get such an error because the connector correctly calculates the start date,
+        but from practice, we can still catch such errors from time to time.
+        """
+
+        if response.status_code == 406:
+            try:
+                response_json = response.json()
+            except ValueError:
+                return False
+            return response_json.get("details", "").startswith("Report date is too far in the past.")
+        return False
+
+    def _check_report_tactic_error(self, response) -> bool:
+        """
+        Check if the connector received an error: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
+
+        A1C3SOZRARQ6R3 - Poland Marketplace
+        https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
+        """
+
+        if response.status_code == 400:
+            try:
+                response_json = response.json()
+            except ValueError:
+                return False
+            return response_json.get("details", "") == "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."
+        return False

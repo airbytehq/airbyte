@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
@@ -52,6 +53,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private final String normalizationImageName;
   private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
   private Map<Type, List<AirbyteMessage>> airbyteMessagesByType;
+  private String dbtErrorStack;
 
   private Process process = null;
 
@@ -154,7 +156,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // picks up error logs from dbt
-        String dbtErrorStack = String.join("\n\t", streamFactory.getDbtErrors());
+        dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
 
         if (!"".equals(dbtErrorStack)) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
@@ -165,8 +167,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                   .withError(new AirbyteErrorTraceMessage()
                       .withFailureType(FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
                       .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
-                      .withInternalMessage(dbtErrorStack)
-                      .withStackTrace(dbtErrorStack)));
+                      .withInternalMessage(buildInternalErrorMessageFromDbtStackTrace())
+                      // due to the lack of consistent defining features in dbt errors we're injecting a breadcrumb to the
+                      // stacktrace so we can confidently identify all dbt errors when parsing and sending to Sentry
+                      // see dbt error examples: https://docs.getdbt.com/guides/legacy/debugging-errors for more context
+                      .withStackTrace("AirbyteDbtError: \n".concat(dbtErrorStack))));
 
           airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
         }
@@ -204,6 +209,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return airbyteMessagesByType.get(Type.TRACE).stream().map(AirbyteMessage::getTrace);
     }
     return Stream.empty();
+  }
+
+  private String buildInternalErrorMessageFromDbtStackTrace() {
+    Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+    return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
   }
 
   @VisibleForTesting
