@@ -423,6 +423,9 @@ public class WebBackendConnectionsHandler {
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    if (webBackendConnectionCreate.getOperations() == null) {
+      return Collections.emptyList();
+    }
     final List<UUID> operationIds = new ArrayList<>();
     for (final var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
