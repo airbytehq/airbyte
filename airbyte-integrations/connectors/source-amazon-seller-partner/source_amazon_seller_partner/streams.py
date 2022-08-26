@@ -319,7 +319,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         )
 
         document_records = self.parse_document(document)
-        print(type(document_records))
         results = []
         for item in document_records:
             item["source_name"] = self.source_name
