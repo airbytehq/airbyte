@@ -164,7 +164,7 @@ The following are fields that still exist in the specification but are slated to
     properties:
       # General Properties (Common to all connectors)
       protocol_version:
-        description: "the Airbyte Protocol version supported by the connector"
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer."
         type: string
       documentationUrl:
         type: string
