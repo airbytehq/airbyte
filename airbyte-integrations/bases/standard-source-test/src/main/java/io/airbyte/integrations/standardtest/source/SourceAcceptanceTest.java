@@ -299,10 +299,6 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
         .collect(Collectors.toList());
   }
 
-  protected void testCheckErrorMessageConnection(JsonNode config, String errorMessage) throws Exception {
-    assertEquals(Status.FAILED, runCheck(config).getStatus(), errorMessage);
-  }
-
   protected ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {

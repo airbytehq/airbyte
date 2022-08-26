@@ -21,9 +21,9 @@ public class ErrorMessage {
   }
 
   private static String configMessage(String stateCode, int errorCode, String message) {
-    var stateCodePart = Objects.isNull(stateCode) ? "" : "State code: " + stateCode + "; ";
-    var errorCodePart = errorCode == 0 ? "" : "Error code: " + errorCode + "; ";
-    return stateCodePart + errorCodePart + "Message: " + message;
+    String stateCodePart = Objects.isNull(stateCode) ? "" : String.format("State code: %s; ", stateCode);
+    String errorCodePart = errorCode == 0 ? "" : String.format("Error code: %s; ", errorCode);
+    return String.format("%s %s Message: %s", stateCodePart, errorCodePart, message);
   }
 
 }
