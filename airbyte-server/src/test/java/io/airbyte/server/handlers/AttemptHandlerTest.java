@@ -4,15 +4,15 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 
-import io.airbyte.api.model.generated.SetTemporalWorkflowInAttemptRequestBody;
+import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-class InternalWorkerHandlerTest {
+class AttemptHandlerTest {
 
   JobPersistence jobPersistence;
   AttemptHandler handler;
 
   private static final long JOB_ID = 10002L;
-  private static final int ATTEMPT_ID = 1;
+  private static final int ATTEMPT_NUMBER = 1;
 
   @BeforeEach
   public void init() {
@@ -39,18 +39,18 @@ class InternalWorkerHandlerTest {
   void testInternalWorkerHandlerSetsTemporalWorkflowId() throws Exception {
     String workflowId = UUID.randomUUID().toString();
 
-    final ArgumentCaptor<Integer> attemptIdCapture = ArgumentCaptor.forClass(Integer.class);
+    final ArgumentCaptor<Integer> attemptNumberCapture = ArgumentCaptor.forClass(Integer.class);
     final ArgumentCaptor<Long> jobIdCapture = ArgumentCaptor.forClass(Long.class);
     final ArgumentCaptor<String> workflowIdCapture = ArgumentCaptor.forClass(String.class);
 
-    SetTemporalWorkflowInAttemptRequestBody requestBody =
-        new SetTemporalWorkflowInAttemptRequestBody().attemptId(ATTEMPT_ID).jobId(JOB_ID).temporalWorkflowId(workflowId);
+    SetWorkflowInAttemptRequestBody requestBody =
+        new SetWorkflowInAttemptRequestBody().attemptNumber(ATTEMPT_NUMBER).jobId(JOB_ID).workflowId(workflowId);
 
-    assertTrue(handler.setTemporalWorkflowInAttempt(requestBody).getDone());
+    assertTrue(handler.setWorkflowInAttempt(requestBody).getSucceeded());
 
-    Mockito.verify(jobPersistence).setAttemptTemporalWorkflowId(jobIdCapture.capture(), attemptIdCapture.capture(), workflowIdCapture.capture());
+    Mockito.verify(jobPersistence).setAttemptTemporalWorkflowId(jobIdCapture.capture(), attemptNumberCapture.capture(), workflowIdCapture.capture());
 
-    assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
+    assertEquals(ATTEMPT_NUMBER, attemptNumberCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
     assertEquals(workflowId, workflowIdCapture.getValue());
   }
@@ -62,18 +62,18 @@ class InternalWorkerHandlerTest {
     doThrow(IOException.class).when(jobPersistence).setAttemptTemporalWorkflowId(anyLong(), anyInt(),
         any());
 
-    final ArgumentCaptor<Integer> attemptIdCapture = ArgumentCaptor.forClass(Integer.class);
+    final ArgumentCaptor<Integer> attemptNumberCapture = ArgumentCaptor.forClass(Integer.class);
     final ArgumentCaptor<Long> jobIdCapture = ArgumentCaptor.forClass(Long.class);
     final ArgumentCaptor<String> workflowIdCapture = ArgumentCaptor.forClass(String.class);
 
-    SetTemporalWorkflowInAttemptRequestBody requestBody =
-        new SetTemporalWorkflowInAttemptRequestBody().attemptId(ATTEMPT_ID).jobId(JOB_ID).temporalWorkflowId(workflowId);
+    SetWorkflowInAttemptRequestBody requestBody =
+        new SetWorkflowInAttemptRequestBody().attemptNumber(ATTEMPT_NUMBER).jobId(JOB_ID).workflowId(workflowId);
 
-    assertFalse(handler.setTemporalWorkflowInAttempt(requestBody).getDone());
+    assertFalse(handler.setWorkflowInAttempt(requestBody).getSucceeded());
 
-    Mockito.verify(jobPersistence).setAttemptTemporalWorkflowId(jobIdCapture.capture(), attemptIdCapture.capture(), workflowIdCapture.capture());
+    Mockito.verify(jobPersistence).setAttemptTemporalWorkflowId(jobIdCapture.capture(), attemptNumberCapture.capture(), workflowIdCapture.capture());
 
-    assertEquals(ATTEMPT_ID, attemptIdCapture.getValue());
+    assertEquals(ATTEMPT_NUMBER, attemptNumberCapture.getValue());
     assertEquals(JOB_ID, jobIdCapture.getValue());
     assertEquals(workflowId, workflowIdCapture.getValue());
   }

@@ -4762,7 +4762,7 @@ components:
           $ref: "#/components/schemas/ResourceId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-    AttemptId:
+    AttemptNumber:
       type: integer
       format: int32
     WorkflowId:
@@ -4771,13 +4771,13 @@ components:
       type: object
       required:
         - jobId
-        - attemptId
+        - attemptNumber
         - workflowId
       properties:
         jobId:
           $ref: "#/components/schemas/JobId"
-        attemptId:
-          $ref: "#/components/schemas/AttemptId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
         workflowId:
           $ref: "#/components/schemas/WorkflowId"
     InternalOperationResult:

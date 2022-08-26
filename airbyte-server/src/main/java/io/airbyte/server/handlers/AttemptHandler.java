@@ -25,7 +25,7 @@ public class AttemptHandler {
                                                       SetWorkflowInAttemptRequestBody requestBody) {
     try {
       jobPersistence.setAttemptTemporalWorkflowId(requestBody.getJobId(),
-          requestBody.getAttemptId(), requestBody.getWorkflowId().toString());
+          requestBody.getAttemptNumber(), requestBody.getWorkflowId().toString());
     } catch (IOException ioe) {
       LOGGER.error("IOException when setting temporal workflow in attempt;", ioe);
       return new InternalOperationResult().succeeded(false);

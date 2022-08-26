@@ -145,7 +145,9 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
       final String workflowId = workflowIdProvider.get();
       airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
-          .jobId(Long.parseLong(jobRunConfig.getJobId())).attemptId(jobRunConfig.getAttemptId().intValue()).workflowId(workflowId));
+          .jobId(Long.parseLong(jobRunConfig.getJobId()))
+          .attemptNumber(jobRunConfig.getAttemptId().intValue())
+          .workflowId(workflowId));
     }
   }
 
