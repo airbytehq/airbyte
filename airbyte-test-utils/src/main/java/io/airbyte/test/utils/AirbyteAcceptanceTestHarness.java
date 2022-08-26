@@ -144,6 +144,13 @@ public class AirbyteAcceptanceTestHarness {
   public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
+  public static final String TYPE = "type";
+  public static final String PUBLIC = "public";
+  public static final String TEST_CONNECTION = "test-connection";
+  public static final String STATE_AFTER_SYNC_ONE = "state after sync 1: {}";
+  public static final String STATE_AFTER_SYNC_TWO = "state after sync 2: {}";
+  public static final String GERALT = "geralt";
+
   private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
   private static final String IS_TEST = "is_test";
 

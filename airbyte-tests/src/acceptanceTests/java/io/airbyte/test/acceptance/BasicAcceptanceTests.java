@@ -9,9 +9,15 @@ import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.AWESOME_PEOPLE_
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COOL_EMPLOYEES_TABLE_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.GERALT;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.PUBLIC;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.PUBLIC_SCHEMA_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STAGING_SCHEMA_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STATE_AFTER_SYNC_ONE;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STATE_AFTER_SYNC_TWO;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STREAM_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.TEST_CONNECTION;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.TYPE;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
 import static java.lang.Thread.sleep;
@@ -133,16 +139,10 @@ class BasicAcceptanceTests {
   private static UUID workspaceId;
   private static PostgreSQLContainer sourcePsql;
 
-  private static final String TYPE = "type";
-  private static final String PUBLIC = "public";
   private static final String E2E_TEST_SOURCE = "E2E Test Source -";
   private static final String INFINITE_FEED = "INFINITE_FEED";
   private static final String MESSAGE_INTERVAL = "message_interval";
   private static final String MAX_RECORDS = "max_records";
-  private static final String TEST_CONNECTION = "test-connection";
-  private static final String STATE_AFTER_SYNC_ONE = "state after sync 1: {}";
-  private static final String STATE_AFTER_SYNC_TWO = "state after sync 2: {}";
-  private static final String GERALT = "geralt";
   private static final String NAME = "name";
   private static final String VALUE = "value";
   private static final String LOCATION = "location";
