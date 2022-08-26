@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getDefaultErrorMessage;
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public class GcsDestination extends BaseConnector implements Destination {
 
@@ -58,7 +58,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
       LOGGER.error("Exception attempting to access the AWS bucket: {}", e.getMessage());
-      var messages = getDefaultErrorMessage(e.getErrorCode(), e);
+      String messages = getErrorMessage(e.getErrorCode(), 0, e.getLocalizedMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

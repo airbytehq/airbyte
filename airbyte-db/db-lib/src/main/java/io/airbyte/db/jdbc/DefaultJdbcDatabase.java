@@ -84,7 +84,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       if (Objects.isNull(e.getCause())) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
       } else {
-        var cause = (SQLException) e.getCause();
+        SQLException cause = (SQLException) e.getCause();
         throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getLocalizedMessage(), cause);
       }
     }

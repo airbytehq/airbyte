@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getDefaultErrorMessage;
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
