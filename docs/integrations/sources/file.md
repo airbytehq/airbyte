@@ -86,7 +86,7 @@ In case you select `JSON` format, then options from the [read\_json](https://pan
 
 For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded (if data is `[{column -> value}, … , {column -> value}]`)
 
-If you need to read Excel Binary Workbook, please specify `excel_binary` format in your `config.json` file.
+If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
 
 #### Changing data types of source columns
 

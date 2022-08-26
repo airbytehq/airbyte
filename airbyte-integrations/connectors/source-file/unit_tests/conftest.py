@@ -14,6 +14,7 @@ def read_file():
         parent_location = Path(__file__).absolute().parent
         file = open(parent_location / file_name).read()
         return file
+
     return _read_file
 
 
@@ -24,7 +25,13 @@ def config():
 
 @pytest.fixture
 def invalid_config(read_file):
-    return {"dataset_name": "test", "format": "jsonl", "url": "https://airbyte.com", "reader_options":'{"encoding": "encoding"}', "provider": {"storage": "HTTPS"}}
+    return {
+        "dataset_name": "test",
+        "format": "jsonl",
+        "url": "https://airbyte.com",
+        "reader_options": '{"encoding": "encoding"}',
+        "provider": {"storage": "HTTPS"},
+    }
 
 
 @pytest.fixture

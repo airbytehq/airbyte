@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from calendar import c
 
 import pytest
 from pandas import read_csv, read_excel
@@ -15,7 +14,7 @@ def wrong_format_client():
         dataset_name="test_dataset",
         url="scp://test_dataset",
         provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-        format="wrong"
+        format="wrong",
     )
 
 
@@ -60,10 +59,9 @@ def test_load_dataframes_xlsb(config, absolute_path, test_files):
     assert read_file.equals(expected)
 
 
-
 def test_load_nested_json(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/formats/json/demo.json"
-    with open(f, mode='rb') as file:
+    with open(f, mode="rb") as file:
         assert client.load_nested_json(fp=file)
 
 
@@ -83,7 +81,7 @@ def test_dtype_to_json_type(client, current_type, dtype, expected):
 
 def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
-    with open(f, mode='rb') as file:
+    with open(f, mode="rb") as file:
         assert client._cache_stream(file)
 
 
