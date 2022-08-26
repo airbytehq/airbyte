@@ -30,7 +30,7 @@ spec:
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
-          {{- printf "- name: %s" . | nindent 2 }}
+          {{- printf "- name: %s" .name | nindent 2 }}
         {{- end }}
       {{- end }}
       {{- if .Values.nodeSelector }}
@@ -130,26 +130,24 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: S3_LOG_BUCKET_REGION
-        {{- if and .Values.global.logs.accessKey.existingSecret .Values.global.logs.accessKey.existingSecretKey }}
+        {{- if and .Values.global.logs.accessKey.existingSecret .Values.global.logs.secretKey.existingSecretKey }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
               name: {{ .Values.global.logs.accessKey.existingSecret }}
               key: {{ .Values.global.logs.accessKey.existingSecretKey }}
-        {{- else }}
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-minio
-              key: root-user
-        {{- end }}
-        {{- if and .Values.global.logs.secretKey.existingSecret .Values.global.logs.secretKey.existingSecretKey }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Values.global.logs.secretKey.existingSecret }}
               key: {{ .Values.global.logs.secretKey.existingSecretKey }}
-        {{- else }}
+        {{- end }}
+        {{- if or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled }}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-minio
+              key: root-user
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
@@ -187,9 +185,30 @@ spec:
               name: {{ .Release.Name }}-airbyte-env
               key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
         {{- end }}
-        {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: server-secrets
+              key: {{ $k }}
         {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+        
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -223,9 +242,12 @@ spec:
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
         volumeMounts:
+        {{- if eq .Values.deploymentMode "oss" }}
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+        {{- end }}
+
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
@@ -236,9 +258,11 @@ spec:
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
+      {{- if eq .Values.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}
+      {{- end }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}

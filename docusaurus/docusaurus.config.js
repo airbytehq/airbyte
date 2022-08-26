@@ -61,7 +61,7 @@ const config = {
                     sidebarCollapsible: true,
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
-                    path: '../docs'
+                    path: '../docs',
                 },
                 blog: false,
                 theme: {

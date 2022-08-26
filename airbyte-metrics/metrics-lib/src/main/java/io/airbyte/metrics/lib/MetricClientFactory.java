@@ -57,11 +57,16 @@ public class MetricClientFactory {
    */
   public static synchronized void initialize(final MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
-      throw new RuntimeException("You cannot initialize configuration more than once.");
+      LOGGER.warn("Metric client is already initialized to " + configs.getMetricClient());
+      return;
     }
 
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
-      initializeDatadogMetricClient(metricEmittingApp);
+      if (configs.getDDAgentHost() == null || configs.getDDDogStatsDPort() == null) {
+        throw new RuntimeException("DD_AGENT_HOST is null or DD_DOGSTATSD_PORT is null. Both are required to use the DataDog Metric Client");
+      } else {
+        initializeDatadogMetricClient(metricEmittingApp);
+      }
     } else if (OTEL_METRIC_CLIENT.equals(configs.getMetricClient())) {
       initializeOpenTelemetryMetricClient(metricEmittingApp);
     } else {
@@ -90,7 +95,7 @@ public class MetricClientFactory {
        * Returning null for default get function because the host has been overridden above.
        */
       @Override
-      public String get(String key) {
+      public String get(final String key) {
         return null;
       }
 
@@ -105,7 +110,7 @@ public class MetricClientFactory {
   public static MeterRegistry getMeterRegistry() {
 
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
-      StatsdConfig config = getDatadogStatsDConfig();
+      final StatsdConfig config = getDatadogStatsDConfig();
       return new StatsdMeterRegistry(config, Clock.SYSTEM);
     }
 

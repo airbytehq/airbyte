@@ -33,7 +33,7 @@ const FormikPatch: React.FC = () => {
   return null;
 };
 
-/***
+/**
  * This function sets all initial const values in the form to current values
  * @param schema
  * @constructor
