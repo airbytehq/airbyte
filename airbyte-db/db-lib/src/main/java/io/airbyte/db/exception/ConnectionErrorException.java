@@ -17,11 +17,13 @@ public class ConnectionErrorException extends RuntimeException {
   public ConnectionErrorException(String stateCode, String errorMessage) {
     super(errorMessage);
     this.stateCode = stateCode;
+    this.exceptionMessage = errorMessage;
   }
 
   public ConnectionErrorException(String stateCode, Throwable exception) {
     super(exception);
     this.stateCode = stateCode;
+    this.exceptionMessage = exception.getLocalizedMessage();
   }
 
   public ConnectionErrorException(String stateCode,
