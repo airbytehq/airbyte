@@ -70,6 +70,11 @@ public interface Configs {
    */
   Path getWorkspaceRoot();
 
+  /**
+   * Defines the URL to pull the remote connector catalog from.
+   */
+  String getRemoteConnectorCatalogUrl();
+
   // Docker Only
   /**
    * Defines the name of the Airbyte docker volume.

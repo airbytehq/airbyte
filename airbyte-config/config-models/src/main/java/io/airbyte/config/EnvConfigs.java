@@ -135,6 +135,8 @@ public class EnvConfigs implements Configs {
   public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
 
+  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
+
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
@@ -308,6 +310,12 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public String getRemoteConnectorCatalogUrl() {
+    // Default to reuse the job database
+    return getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL);
   }
 
   // Docker Only
