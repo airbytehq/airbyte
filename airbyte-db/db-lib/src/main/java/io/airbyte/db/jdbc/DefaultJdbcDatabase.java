@@ -81,7 +81,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     } catch (final SQLException e) {
       // Some databases like Redshift will have null cause
       if (Objects.isNull(e.getCause())) {
-        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
+        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
         throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), cause);
