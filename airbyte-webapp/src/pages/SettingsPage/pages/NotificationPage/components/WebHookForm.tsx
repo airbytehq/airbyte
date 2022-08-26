@@ -51,16 +51,16 @@ const webhookValidationSchema = yup.object().shape({
   sendOnFailure: yup.boolean(),
 });
 
-type WebHookFormProps = {
+interface WebHookFormProps {
   webhook: WebhookPayload;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: WebhookPayload) => void;
   onTest: (data: WebhookPayload) => void;
-};
+}
 
 const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {
@@ -93,8 +93,8 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
   return (
     <Formik
       initialValues={webhook}
-      enableReinitialize={true}
-      validateOnBlur={true}
+      enableReinitialize
+      validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
       onSubmit={async (values: WebhookPayload) => {

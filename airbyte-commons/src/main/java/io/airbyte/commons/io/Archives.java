@@ -18,12 +18,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Archives {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(Archives.class);
 
   /**
    * Compress a @param sourceFolder into a Gzip Tarball @param archiveFile

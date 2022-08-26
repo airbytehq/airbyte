@@ -32,6 +32,24 @@ NOT_AUDIENCE_METRICS = [
     "secondary_goal_result_rate",
     "cash_spend",
     "voucher_spend",
+    "video_play_actions",
+    "video_watched_2s",
+    "video_watched_6s",
+    "average_video_play",
+    "average_video_play_per_user",
+    "video_views_p25",
+    "video_views_p50",
+    "video_views_p75",
+    "video_views_p100",
+    "profile_visits",
+    "likes",
+    "comments",
+    "shares",
+    "follows",
+    "clicks_on_music_disc",
+    "real_time_app_install",
+    "real_time_app_install_cost",
+    "app_install",
 ]
 
 T = TypeVar("T")
@@ -102,6 +120,18 @@ class ReportGranularity(str, Enum):
     @classmethod
     def default(cls):
         return cls.DAY
+
+
+class Hourly:
+    report_granularity = ReportGranularity.HOUR
+
+
+class Daily:
+    report_granularity = ReportGranularity.DAY
+
+
+class Lifetime:
+    report_granularity = ReportGranularity.LIFETIME
 
 
 class TiktokException(Exception):
@@ -405,6 +435,17 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     primary_key = None
     schema_name = "basic_reports"
+    report_granularity = None
+
+    def __init__(self, **kwargs):
+        report_granularity = kwargs.pop("report_granularity", None)
+        super().__init__(**kwargs)
+
+        # Important:
+        # for >= 0.1.13 - granularity is set via inheritance
+        # for < 0.1.13 - granularity is set via init param
+        if report_granularity:
+            self.report_granularity = report_granularity
 
     @property
     @abstractmethod
@@ -412,10 +453,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """
         Returns a necessary level value
         """
-
-    def __init__(self, report_granularity: ReportGranularity, **kwargs):
-        super().__init__(**kwargs)
-        self.report_granularity = report_granularity
 
     @property
     def cursor_field(self):
@@ -448,7 +485,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         elif granularity == ReportGranularity.LIFETIME:
             max_interval = 364
         else:
-            raise ValueError("Unsupported reporting granularity, must be one of DAY, HOUR, LIFETIME")
+            raise ValueError(f"Unsupported reporting granularity: {granularity}, must be one of DAY, HOUR, LIFETIME")
 
         # for incremental sync with abnormal state produce at least one state message
         # by producing at least one stream slice from today
@@ -486,7 +523,35 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def _get_metrics(self):
         # common metrics for all reporting levels
-        result = ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency"]
+        result = [
+            "spend",
+            "cpc",
+            "cpm",
+            "impressions",
+            "clicks",
+            "ctr",
+            "reach",
+            "cost_per_1000_reached",
+            "frequency",
+            "video_play_actions",
+            "video_watched_2s",
+            "video_watched_6s",
+            "average_video_play",
+            "average_video_play_per_user",
+            "video_views_p25",
+            "video_views_p50",
+            "video_views_p75",
+            "video_views_p100",
+            "profile_visits",
+            "likes",
+            "comments",
+            "shares",
+            "follows",
+            "clicks_on_music_disc",
+            "real_time_app_install",
+            "real_time_app_install_cost",
+            "app_install",
+        ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
             # https://ads.tiktok.com/marketing_api/docs?id=1707957200780290
@@ -574,7 +639,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.schema_name)
+        return ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if stream_slice:
@@ -631,6 +696,7 @@ class AudienceReport(BasicReports):
 
 
 class AdGroupAudienceReports(AudienceReport):
+
     report_level = ReportLevel.ADGROUP
 
 

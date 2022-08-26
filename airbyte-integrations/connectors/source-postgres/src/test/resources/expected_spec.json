@@ -1,0 +1,263 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Postgres Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 5432,
+        "examples": ["5432"],
+        "order": 1
+      },
+      "database": {
+        "title": "DB Name",
+        "description": "Name of the database.",
+        "type": "string",
+        "order": 2
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "default": ["public"],
+        "order": 3
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#jdbc-url-params\">additional JDBC URL parameters</a>.",
+        "title": "JDBC URL Parameters (Advanced)",
+        "type": "string",
+        "order": 6
+      },
+      "ssl_mode": {
+        "title": "SSL modes",
+        "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and source database\n <b>allow</b> - Chose this mode to enable encryption only when required by the source database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the source database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "allow",
+            "additionalProperties": false,
+            "description": "Allow SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "allow",
+                "enum": ["allow"],
+                "default": "allow",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "prefer",
+            "additionalProperties": false,
+            "description": "Prefer SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "prefer",
+                "enum": ["prefer"],
+                "default": "prefer",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "require",
+            "additionalProperties": false,
+            "description": "Require SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "require",
+                "enum": ["require"],
+                "default": "require",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "verify-ca",
+            "additionalProperties": false,
+            "description": "Verify-ca SSL mode.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-ca",
+                "enum": ["verify-ca"],
+                "default": "verify-ca",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "verify-full",
+            "additionalProperties": false,
+            "description": "Verify-full SSL mode.",
+            "required": [
+              "mode",
+              "ca_certificate",
+              "client_certificate",
+              "client_key"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-full",
+                "enum": ["verify-full"],
+                "default": "verify-full",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      },
+      "replication_method": {
+        "type": "object",
+        "title": "Replication Method",
+        "description": "Replication method to use for extracting data from the database.",
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "enum": ["Standard"],
+                "default": "Standard",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">Postgres Source</a> docs for more information.",
+            "required": ["method", "replication_slot", "publication"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              },
+              "plugin": {
+                "type": "string",
+                "title": "Plugin",
+                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-plugin\">Select replication plugin</a>.",
+                "enum": ["pgoutput", "wal2json"],
+                "default": "pgoutput",
+                "order": 1
+              },
+              "replication_slot": {
+                "type": "string",
+                "title": "Replication Slot",
+                "description": "A plug-in logical replication slot. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-slot\">replication slots</a>.",
+                "order": 2
+              },
+              "publication": {
+                "type": "string",
+                "title": "Publication",
+                "description": "A Postgres publication used for consuming changes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#publications-replication\">publications and replication identities</a>.",
+                "order": 3
+              },
+              "initial_waiting_seconds": {
+                "type": "integer",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "description": "The amount of time the connector will wait when it launches to figure out whether there is new data to sync or not. Default to 300 seconds. Valid range: 120 seconds to 1200 seconds. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
+                "default": 300,
+                "order": 4,
+                "min": 120,
+                "max": 1200
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

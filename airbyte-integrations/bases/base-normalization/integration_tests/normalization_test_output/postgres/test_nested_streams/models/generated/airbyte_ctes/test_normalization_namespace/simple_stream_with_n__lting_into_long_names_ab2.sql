@@ -15,5 +15,5 @@ select
 from {{ ref('simple_stream_with_n__lting_into_long_names_ab1') }}
 -- simple_stream_with_n__lting_into_long_names
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

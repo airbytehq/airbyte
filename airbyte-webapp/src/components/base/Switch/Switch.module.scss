@@ -28,7 +28,7 @@
     height: 0;
 
     &:checked + .slider {
-      background-color: colors.$primaryColor;
+      background-color: colors.$blue;
 
       &:before {
         @include knobTransform(right, false);
@@ -86,10 +86,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: colors.$greyColor20;
+    background: colors.$grey-100;
     transition: variables.$transition;
     border-radius: 20px;
-    border: 1px solid colors.$greyColor30;
+    border: 1px solid colors.$grey-200;
 
     &.small:before {
       height: 16px;
@@ -104,10 +104,10 @@
       width: 24px;
       left: -1px;
       top: -1px;
-      background: colors.$whiteColor;
+      background: colors.$white;
       transition: variables.$transition;
       border-radius: 50%;
-      border: 1px solid colors.$greyColor30;
+      border: 1px solid colors.$grey-200;
     }
   }
 }

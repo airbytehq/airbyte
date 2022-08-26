@@ -6,10 +6,10 @@ import styled from "styled-components";
 import { Button } from "components/base";
 import Modal from "components/Modal";
 
-type ShowVideoProps = {
+interface ShowVideoProps {
   videoId?: string;
   onClose: () => void;
-};
+}
 
 const CloseButton = styled(Button)`
   position: absolute;

@@ -13,10 +13,12 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
@@ -52,8 +54,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     return config;
   }
 
-  public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  public JsonNode getStaticConfig() throws IOException {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
 
   @Override
@@ -152,13 +154,13 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   protected Database getDatabase() {
     return new Database(
         DSLContextFactory.create(
-            baseConfig.get("username").asText(),
-            baseConfig.get("password").asText(),
+            baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                baseConfig.get("host").asText(),
-                baseConfig.get("port").asInt(),
-                baseConfig.get("database").asText()),
+                baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+                baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
+                baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
             null,
             RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
   }

@@ -10,13 +10,31 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from source_freshdesk.streams import (
     Agents,
+    BusinessHours,
+    CannedResponseFolders,
+    CannedResponses,
     Companies,
     Contacts,
     Conversations,
+    DiscussionCategories,
+    DiscussionComments,
+    DiscussionForums,
+    DiscussionTopics,
+    EmailConfigs,
+    EmailMailboxes,
     Groups,
+    Products,
     Roles,
     SatisfactionRatings,
+    ScenarioAutomations,
+    Settings,
     Skills,
+    SlaPolicies,
+    SolutionArticles,
+    SolutionCategories,
+    SolutionFolders,
+    Surveys,
+    TicketFields,
     Tickets,
     TimeEntries,
 )
@@ -51,6 +69,17 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
         (Skills, "skills"),
         (TimeEntries, "time_entries"),
         (SatisfactionRatings, "surveys/satisfaction_ratings"),
+        (BusinessHours, "business_hours"),
+        (CannedResponseFolders, "canned_response_folders"),
+        (DiscussionCategories, "discussions/categories"),
+        (EmailConfigs, "email_configs"),
+        (EmailMailboxes, "email/mailboxes"),
+        (Products, "products"),
+        (ScenarioAutomations, "scenario_automations"),
+        (SlaPolicies, "sla_policies"),
+        (SolutionCategories, "solutions/categories"),
+        (TicketFields, "ticket_fields"),
+        (Surveys, "surveys"),
     ],
 )
 def test_full_refresh(stream, resource, authenticator, config, requests_mock):
@@ -73,6 +102,17 @@ def test_full_refresh_conversations(authenticator, config, requests_mock):
     assert len(records) == 50
 
 
+def test_full_refresh_settings(authenticator, config, requests_mock):
+    json_resp = {"primary_language": "en", "supported_languages": [], "portal_languages": []}
+    requests_mock.register_uri("GET", "/api/settings/helpdesk", json=json_resp)
+
+    stream = Settings(authenticator=authenticator, config=config)
+    records = _read_full_refresh(stream)
+
+    assert len(records) == 1
+    assert records[0] == json_resp
+
+
 @pytest.mark.parametrize(
     "stream, resource",
     [
@@ -84,7 +124,7 @@ def test_full_refresh_conversations(authenticator, config, requests_mock):
 def test_incremental(stream, resource, authenticator, config, requests_mock):
     highest_updated_at = "2022-04-25T22:00:00Z"
     other_updated_at = "2022-04-01T00:00:00Z"
-    highest_index = random.randint(0, 25)
+    highest_index = random.randint(0, 24)
     requests_mock.register_uri(
         "GET",
         f"/api/{resource}",
@@ -97,3 +137,68 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     assert len(records) == 25
     assert "updated_at" in state
     assert state["updated_at"] == highest_updated_at
+
+
+@pytest.mark.parametrize(
+    "stream_class, parent_path, sub_paths",
+    [
+        (CannedResponses, "canned_response_folders", [f"canned_response_folders/{x}/responses" for x in range(5)]),
+        (Conversations, "tickets", [f"tickets/{x}/conversations" for x in range(5)]),
+        (DiscussionForums, "discussions/categories", [f"discussions/categories/{x}/forums" for x in range(5)]),
+        (SolutionFolders, "solutions/categories", [f"solutions/categories/{x}/folders" for x in range(5)]),
+    ],
+)
+def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_paths, authenticator, config):
+    requests_mock.register_uri("GET", "/api/" + parent_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
+    for sub_path in sub_paths:
+        requests_mock.register_uri("GET", "/api/" + sub_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(10)])
+
+    stream = stream_class(authenticator=authenticator, config=config)
+    records = _read_full_refresh(stream)
+
+    assert len(records) == 50
+
+
+@pytest.mark.parametrize(
+    "stream_class, parent_path, sub_paths, sub_sub_paths",
+    [
+        (
+            DiscussionTopics,
+            "discussions/categories",
+            [f"discussions/categories/{x}/forums" for x in range(5)],
+            [f"discussions/forums/{x}/topics" for x in range(5)],
+        ),
+        (
+            SolutionArticles,
+            "solutions/categories",
+            [f"solutions/categories/{x}/folders" for x in range(5)],
+            [f"solutions/folders/{x}/articles" for x in range(5)],
+        ),
+    ],
+)
+def test_full_refresh_with_two_sub_levels(requests_mock, stream_class, parent_path, sub_paths, sub_sub_paths, authenticator, config):
+    requests_mock.register_uri("GET", f"/api/{parent_path}", json=[{"id": x} for x in range(5)])
+    for sub_path in sub_paths:
+        requests_mock.register_uri("GET", f"/api/{sub_path}", json=[{"id": x} for x in range(5)])
+        for sub_sub_path in sub_sub_paths:
+            requests_mock.register_uri("GET", f"/api/{sub_sub_path}", json=[{"id": x} for x in range(10)])
+
+    stream = stream_class(authenticator=authenticator, config=config)
+    records = _read_full_refresh(stream)
+
+    assert len(records) == 250
+
+
+def test_full_refresh_discussion_comments(requests_mock, authenticator, config):
+    requests_mock.register_uri("GET", "/api/discussions/categories", json=[{"id": x} for x in range(2)])
+    for i in range(2):
+        requests_mock.register_uri("GET", f"/api/discussions/categories/{i}/forums", json=[{"id": x} for x in range(3)])
+        for j in range(3):
+            requests_mock.register_uri("GET", f"/api/discussions/forums/{j}/topics", json=[{"id": x} for x in range(4)])
+            for k in range(4):
+                requests_mock.register_uri("GET", f"/api/discussions/topics/{k}/comments", json=[{"id": x} for x in range(5)])
+
+    stream = DiscussionComments(authenticator=authenticator, config=config)
+    records = _read_full_refresh(stream)
+
+    assert len(records) == 120

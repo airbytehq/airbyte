@@ -6,7 +6,7 @@ import calculateInitialCatalog from "./calculateInitialCatalog";
 const mockSyncSchemaStream: SyncSchemaStream = {
   id: "1",
   stream: {
-    sourceDefinedCursor: null,
+    sourceDefinedCursor: undefined,
     defaultCursorField: [],
     sourceDefinedPrimaryKey: [],
     jsonSchema: {},

@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 import Table from "components/Table";
 
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import useRouter from "hooks/useRouter";
 
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
@@ -22,18 +22,17 @@ const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
 
-type IProps = {
+interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
-};
+}
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
   const { query, push } = useRouter();
-  const { hasFeature } = useFeatureService();
-  const allowSync = hasFeature(FeatureItem.AllowSync);
+  const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
   const sortOrder = query.order || SortOrderEnum.ASC;
@@ -46,7 +45,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),

@@ -1,0 +1,225 @@
+global:
+  imageRegistry: ""
+  serviceAccountName: &service-account-name "airbyte-admin"
+  credVolumeOverride: ""
+  secretName: ""
+  extraContainers: []
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+  logs:
+    ## @param logs.accessKey.password Logs Access Key
+    ## @param logs.accessKey.existingSecret
+    ## @param logs.accessKey.existingSecretKey
+    accessKey:
+      password: minio
+      existingSecret: ""
+      existingSecretKey: ""
+    ## @param logs.secretKey.password Logs Secret Key
+    ## @param logs.secretKey.existingSecret
+    ## @param logs.secretKey.existingSecretKey
+    secretKey:
+      password: minio123
+      existingSecret: ""
+      existingSecretKey: ""
+
+    ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+    minio:
+      enabled: true
+
+    ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ## @param logs.externalMinio.host External Minio Host
+    ## @param logs.externalMinio.port External Minio Port
+    externalMinio:
+      enabled: false
+      host: localhost
+      port: 9000
+
+    ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ## @param logs.s3.bucket Bucket name where logs should be stored
+    ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    s3:
+      enabled: false
+      bucket: airbyte-dev-logs
+      bucketRegion: ""
+
+    ## Google Cloud Storage (GCS) Log Location Configuration
+    ## @param logs.gcs.bucket GCS bucket name
+    ## @param logs.gcs.credentials The path the GCS creds are written to
+    ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    gcs:
+      bucket: ""
+      # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+      # deployments, then set credentials to the path of the mounted JSON file
+      credentials: ""
+      # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+      credentialsJson: ""
+  jobs:
+    ## Jobs resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    ## We usually recommend not to specify default resources and to leave this as a conscious
+    ## choice for the user. This also increases chances charts run on environments with little
+    ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+    ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    ## @param jobs.resources.limits [object] The resources limits for jobs
+    ## @param jobs.resources.requests [object] The requested resources for jobs
+    resources:
+      ## Example:
+      ## requests:
+      ##    memory: 256Mi
+      ##    cpu: 250m
+      requests: {}
+      ## Example:
+      ## limits:
+      ##    cpu: 200m
+      ##    memory: 1Gi
+      limits: {}
+
+    kube:
+      ## JOB_KUBE_ANNOTATIONS
+      ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+      ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
+      annotations: {}
+
+      ## JOB_KUBE_NODE_SELECTORS
+      ## pod node selector of the sync job and the default pod node selector fallback for others jobs
+      ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
+      nodeSelector: {}
+
+      ## JOB_KUBE_TOLERATIONS
+      ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
+      ## - key: airbyte-server
+      ##   operator: Equal
+      ##   value: "true"
+      ##   effect: NoSchedule
+      tolerations: []
+
+      ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+      ## image pull secret to use for job pod
+      ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+      main_container_image_pull_secret: ""
+
+
+enabled: true
+## @param worker.replicaCount Number of worker replicas
+replicaCount: 1
+
+## @param worker.image.repository The repository to use for the airbyte worker image.
+## @param worker.image.pullPolicy the pull policy to use for the airbyte worker image
+## @param worker.image.tag The airbyte worker image tag. Defaults to the chart's AppVersion
+image:
+  repository: airbyte/worker
+  pullPolicy: IfNotPresent
+
+## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
+##
+podAnnotations: {}
+
+## @param worker.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## Configure extra options for the worker containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param worker.livenessProbe.enabled Enable livenessProbe on the worker
+## @param worker.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param worker.livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param worker.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param worker.livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param worker.livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param worker.readinessProbe.enabled Enable readinessProbe on the worker
+## @param worker.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param worker.readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param worker.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param worker.readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param worker.readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## worker resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param worker.resources.limits [object] The resources limits for the worker container
+## @param worker.resources.requests [object] The requested resources for the worker container
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## Examples:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
+## @param worker.nodeSelector [object] Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## @param worker.tolerations [array] Tolerations for worker pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## @param worker.affinity [object] Affinity and anti-affinity for worker pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## @param worker.log.level The log level to log at.
+log:
+  level: "INFO"
+
+## @param worker.extraEnv [array] Additional env vars for worker pod(s).
+## Example:
+##
+## extraEnv:
+## - name: JOB_KUBE_TOLERATIONS
+##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
+extraEnv: []
+
+## @param worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
+## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##
+extraVolumeMounts: []
+
+## @param worker.extraVolumes [array] Additional volumes for worker pod(s).
+## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##
+extraVolumes: []
+
+extraContainers: []

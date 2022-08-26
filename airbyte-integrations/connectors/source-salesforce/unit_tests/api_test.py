@@ -5,12 +5,12 @@
 
 import csv
 import io
+import logging
 import re
 from unittest.mock import Mock
 
 import pytest
 import requests_mock
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import generate_stream
 from requests.exceptions import HTTPError
@@ -215,12 +215,12 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
         res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
-        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": False})]
+        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
 
 
 def test_check_connection_rate_limit(stream_config):
     source = SourceSalesforce()
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     url = "https://login.salesforce.com/services/oauth2/token"
@@ -257,7 +257,7 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
     source = SourceSalesforce()
     source.streams = Mock()
     source.streams.return_value = streams
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
@@ -313,7 +313,7 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     next_page_url = "/services/data/v52.0/query/012345"
     response_1 = {
@@ -427,7 +427,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [dict(i[1]) for i in stream.read_with_chunks(stream.download_data(url))]
+        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
         assert result == data
 
 

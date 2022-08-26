@@ -11,20 +11,31 @@
         "title": "Account ID",
         "description": "Twilio account SID",
         "airbyte_secret": true,
-        "type": "string"
+        "type": "string",
+        "order": 1
       },
       "auth_token": {
         "title": "Auth Token",
         "description": "Twilio Auth Token.",
         "airbyte_secret": true,
-        "type": "string"
+        "type": "string",
+        "order": 2
       },
       "start_date": {
         "title": "Replication Start Date",
         "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2020-10-01T00:00:00Z"],
-        "type": "string"
+        "type": "string",
+        "order": 3
+      },
+      "lookback_window": {
+        "title": "Lookback window",
+        "description": "How far into the past to look for records. (in minutes)",
+        "examples": [60],
+        "default": 0,
+        "type": "integer",
+        "order": 4
       }
     }
   },

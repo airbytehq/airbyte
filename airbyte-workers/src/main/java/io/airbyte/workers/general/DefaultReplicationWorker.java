@@ -62,6 +62,7 @@ import org.slf4j.MDC;
  * next replication can pick up where it left off instead of starting from the beginning)</li>
  * </ul>
  */
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
@@ -307,31 +308,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           } catch (final Exception e) {
             throw new SourceException("Source process read attempt failed", e);
           }
+
           if (messageOptional.isPresent()) {
-            if (messageOptional.get().getRecord() != null) {
-              final AirbyteRecordMessage message = messageOptional.get().getRecord();
-              final String messageStream = WorkerUtils.streamNameWithNamespace(message.getNamespace(), message.getStream());
-              // validate a record's schema if there are less than 10 records with validation errors
-              if (validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10) {
-                try {
-                  recordSchemaValidator.validateSchema(messageOptional.get().getRecord(), messageStream);
-                } catch (final RecordSchemaValidationException e) {
-                  final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
-                  if (exceptionWithCount == null) {
-                    validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
-                  } else {
-                    final Integer currentCount = exceptionWithCount.getRight();
-                    final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
-                    final Set<String> updatedErrorMessages =
-                        Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
-                    validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
-                  }
-                }
-
-              }
-            }
-
-            final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
+            final AirbyteMessage airbyteMessage = messageOptional.get();
+            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+            final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
             try {
@@ -385,6 +366,36 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final AirbyteMessage message) {
+    if (message.getRecord() == null) {
+      return;
+    }
+
+    final AirbyteRecordMessage record = message.getRecord();
+    final String messageStream = WorkerUtils.streamNameWithNamespace(record.getNamespace(), record.getStream());
+    // avoid noise by validating only if the stream has less than 10 records with validation errors
+    final boolean streamHasLessThenTenErrs =
+        validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
+    if (streamHasLessThenTenErrs) {
+      try {
+        recordSchemaValidator.validateSchema(record, messageStream);
+      } catch (final RecordSchemaValidationException e) {
+        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
+        if (exceptionWithCount == null) {
+          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
+        } else {
+          final Integer currentCount = exceptionWithCount.getRight();
+          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
+          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
+          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
+        }
+      }
+
+    }
   }
 
   private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,

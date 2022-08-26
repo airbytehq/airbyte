@@ -20,15 +20,17 @@ interface FormCardProps<T> extends CollapsibleCardProps {
   bottomSeparator?: boolean;
   form: FormikConfig<T>;
   mode?: ConnectionFormMode;
+  submitDisabled?: boolean;
 }
 
-export function FormCard<T>({
+export const FormCard = <T extends object>({
   children,
   form,
   bottomSeparator = true,
   mode,
+  submitDisabled,
   ...props
-}: React.PropsWithChildren<FormCardProps<T>>) {
+}: React.PropsWithChildren<FormCardProps<T>>) => {
   const { formatMessage } = useIntl();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<
@@ -54,6 +56,7 @@ export function FormCard<T>({
                   withLine={bottomSeparator}
                   isSubmitting={isSubmitting}
                   dirty={dirty}
+                  submitDisabled={!isValid || submitDisabled}
                   resetForm={() => {
                     resetForm();
                     reset();
@@ -70,4 +73,4 @@ export function FormCard<T>({
       )}
     </Formik>
   );
-}
+};

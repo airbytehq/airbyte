@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
@@ -44,22 +45,22 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
-        .put("port", 5432)
-        .put("database", dbName)
-        .put("username", "your_username")
-        .put("password", "your_pass")
+        .put(JdbcUtils.HOST_KEY, "your_host")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, "your_username")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication_method", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 

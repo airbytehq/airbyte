@@ -23,8 +23,9 @@ from airbyte_cdk.models import (
     Type,
 )
 from docker import errors
+from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import Config
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config, load_yaml_or_json_path
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
 
 
 @pytest.fixture(name="base_path")
@@ -126,6 +127,30 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
     return ConnectorRunner(image_tag, volume=tmp_path)
 
 
+@pytest.fixture(name="previous_connector_image_name")
+def previous_connector_image_name_fixture(image_tag, inputs) -> str:
+    """Fixture with previous connector image name to use for backward compatibility tests"""
+    return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
+
+
+@pytest.fixture(name="previous_connector_docker_runner")
+def previous_connector_docker_runner_fixture(previous_connector_image_name, tmp_path) -> ConnectorRunner:
+    """Fixture to create a connector runner with the previous connector docker image.
+    Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
+    Raise not found error if the previous connector image is not latest and expected to be published.
+    """
+    try:
+        return ConnectorRunner(previous_connector_image_name, volume=tmp_path / "previous_connector")
+    except (errors.NotFound, errors.ImageNotFound) as e:
+        if previous_connector_image_name.endswith("latest"):
+            logging.warning(
+                f"\n We did not find the {previous_connector_image_name} image for this connector. This probably means this version has not yet been published to an accessible docker registry like DockerHub."
+            )
+            return None
+        else:
+            raise e
+
+
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
@@ -184,6 +209,35 @@ def detailed_logger() -> Logger:
     logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
     logger.handlers = [fh]
     return logger
+
+
+@pytest.fixture(name="actual_connector_spec")
+def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner) -> ConnectorSpecification:
+    if not request.instance.spec_cache:
+        output = docker_runner.call_spec()
+        spec_messages = filter_output(output, Type.SPEC)
+        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+        spec = spec_messages[0].spec
+        request.instance.spec_cache = spec
+    return request.instance.spec_cache
+
+
+@pytest.fixture(name="previous_connector_spec")
+def previous_connector_spec_fixture(
+    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
+) -> Optional[ConnectorSpecification]:
+    if previous_connector_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
+        )
+        return None
+    if not request.instance.previous_spec_cache:
+        output = previous_connector_docker_runner.call_spec()
+        spec_messages = filter_output(output, Type.SPEC)
+        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+        spec = spec_messages[0].spec
+        request.instance.previous_spec_cache = spec
+    return request.instance.previous_spec_cache
 
 
 def pytest_sessionfinish(session, exitstatus):

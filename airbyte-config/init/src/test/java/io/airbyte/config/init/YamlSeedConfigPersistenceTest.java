@@ -29,7 +29,7 @@ class YamlSeedConfigPersistenceTest {
 
   @BeforeAll
   static void setup() throws IOException {
-    persistence = YamlSeedConfigPersistence.getDefault();
+    persistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   @Test

@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -24,6 +27,11 @@ import org.slf4j.LoggerFactory;
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
+  private static final String METHOD = "method";
+
+  private static final Map<DestinationType, Destination> destinationMap = Map.of(
+      DestinationType.STANDARD, new RedshiftInsertDestination(),
+      DestinationType.COPY_S3, new RedshiftStagingS3Destination());
 
   enum DestinationType {
     STANDARD,
@@ -31,35 +39,21 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public RedshiftDestination() {
-    super(DestinationType.class, RedshiftDestination::getTypeFromConfig, getTypeToDestination());
+    super(DestinationType.class, RedshiftDestination::getTypeFromConfig, destinationMap);
   }
 
-  public static DestinationType getTypeFromConfig(final JsonNode config) {
+  private static DestinationType getTypeFromConfig(final JsonNode config) {
     return determineUploadMode(config);
   }
 
-  public static Map<DestinationType, Destination> getTypeToDestination() {
-    return Map.of(
-        DestinationType.STANDARD, new RedshiftInsertDestination(),
-        DestinationType.COPY_S3, new RedshiftStagingS3Destination());
-  }
-
   public static DestinationType determineUploadMode(final JsonNode config) {
-    final var bucketNode = config.get("s3_bucket_name");
-    final var regionNode = config.get("s3_bucket_region");
-    final var accessKeyIdNode = config.get("access_key_id");
-    final var secretAccessKeyNode = config.get("secret_access_key");
 
-    if (isNullOrEmpty(bucketNode) && isNullOrEmpty(regionNode) && isNullOrEmpty(accessKeyIdNode)
-        && isNullOrEmpty(secretAccessKeyNode)) {
+    final JsonNode jsonNode = findS3Options(config);
+
+    if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.STANDARD;
-    }
-
-    if (isNullOrEmpty(bucketNode) && isNullOrEmpty(regionNode) && isNullOrEmpty(accessKeyIdNode)
-        && isNullOrEmpty(secretAccessKeyNode)) {
-      throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
     return DestinationType.COPY_S3;
   }
@@ -69,10 +63,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
-  }
-
-  private static boolean isNullOrEmpty(JsonNode jsonNode) {
-    return jsonNode == null || jsonNode.asText().equals("");
   }
 
 }

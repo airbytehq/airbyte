@@ -1,6 +1,6 @@
 # Connector Specification Reference
 
-The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
+The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
 
 ## Demoing your specification
 
@@ -127,7 +127,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {

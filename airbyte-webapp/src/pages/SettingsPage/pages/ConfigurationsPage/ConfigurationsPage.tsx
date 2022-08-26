@@ -100,7 +100,7 @@ const ConfigurationsPage: React.FC = () => {
               id="admin.exportConfigurationText"
               values={{
                 lnk: (lnk: React.ReactNode) => (
-                  <DocLink target="_blank" href={config.ui.configurationArchiveLink} as="a">
+                  <DocLink target="_blank" href={config.links.configurationArchiveLink} as="a">
                     {lnk}
                   </DocLink>
                 ),

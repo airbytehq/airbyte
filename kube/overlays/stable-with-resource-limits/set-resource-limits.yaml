@@ -15,26 +15,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: airbyte-scheduler
-spec:
-  template:
-    spec:
-      containers:
-        - name: airbyte-scheduler-container
-          env:
-            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
-          resources:
-            limits:
-              cpu: 2
-              memory: 512Mi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: airbyte-worker
 spec:
   template:

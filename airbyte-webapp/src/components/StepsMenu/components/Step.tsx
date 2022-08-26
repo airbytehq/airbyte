@@ -6,7 +6,7 @@ import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import Status from "core/statuses";
 
-type IProps = {
+interface IProps {
   id: string;
   lightMode?: boolean;
   name: string | React.ReactNode;
@@ -15,7 +15,7 @@ type IProps = {
   isPartialSuccess?: boolean;
   num: number;
   status?: string;
-};
+}
 
 const StepView = styled.div<{
   isActive?: boolean;

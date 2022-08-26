@@ -20,10 +20,10 @@ export const workspaceKeys = {
   state: (workspaceId: string) => [...workspaceKeys.all, "state", workspaceId] as const,
 };
 
-type Context = {
+interface Context {
   selectWorkspace: (workspaceId?: string | null | Workspace) => void;
   exitWorkspace: () => void;
-};
+}
 
 export const WorkspaceServiceContext = React.createContext<Context | null>(null);
 

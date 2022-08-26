@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "rpaId": {
+      "type": ["null", "number"]
+    },
+    "taskId": {
+      "type": ["null", "number"]
+    },
+    "planId": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "rpaName": {
+      "type": ["null", "string"]
+    },
+    "storeName": {
+      "type": ["null", "string"]
+    },
+    "storeNameRegister": {
+      "type": ["null", "string"]
+    },
+    "siteName": {
+      "type": ["null", "string"]
+    },
+    "siteNameEn": {
+      "type": ["null", "string"]
+    },
+    "platformType": {
+      "type": ["null", "number"]
+    },
+    "startTime": {
+      "type": ["null", "string"]
+    },
+    "endTime": {
+      "type": ["null", "string"]
+    },
+    "finishTime": {
+      "type": ["null", "string"]
+    },
+    "sellerId": {
+      "type": ["null", "string"]
+    },
+    "marketplaceId": {
+      "type": ["null", "string"]
+    },
+    "errorMessage": {
+      "type": ["null", "string"]
+    },
+    "creatorName": {
+      "type": ["null", "string"]
+    },
+    "data": {
+      "type": ["null", "object"]
+    }
+  }
+}

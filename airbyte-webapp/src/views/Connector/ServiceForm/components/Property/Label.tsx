@@ -6,11 +6,11 @@ import { FormBaseItem } from "core/form/types";
 
 import { LabelMessage } from "./LabelMessage";
 
-type LabelMessageProps = {
+interface LabelMessageProps {
   property: FormBaseItem;
   error: string | undefined;
   touched: boolean;
-};
+}
 
 const Label: React.FC<LabelMessageProps> = ({ property, error, touched, children }) => {
   const labelText = property.title || property.fieldKey;

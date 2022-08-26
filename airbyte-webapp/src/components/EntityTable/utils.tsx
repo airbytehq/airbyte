@@ -46,7 +46,7 @@ export function getEntityTableData<
 
     const connectEntities = entityConnections.map((connection) => ({
       name: connection[connectType]?.name || "",
-      // @ts-ignore ts is not that clever to infer such types
+      // @ts-expect-error ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
       status: connection.status,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
@@ -64,7 +64,7 @@ export function getEntityTableData<
       enabled: true,
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
-      connectEntities: connectEntities,
+      connectEntities,
       connectorIcon: definition?.icon,
     };
   });

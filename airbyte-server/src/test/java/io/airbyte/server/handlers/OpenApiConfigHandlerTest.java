@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class OpenApiConfigHandlerTest {
 
   @Test
-  public void testGetFile() throws IOException {
+  void testGetFile() throws IOException {
     final List<String> lines = Files.readLines(new OpenApiConfigHandler().getFile(), Charset.defaultCharset());
     assertTrue(lines.get(0).contains("openapi"));
   }

@@ -50,7 +50,7 @@
 
     {
       "stream": {
-        "name": "ads_reports",
+        "name": "ads_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -61,7 +61,7 @@
     },
     {
       "stream": {
-        "name": "advertisers_reports",
+        "name": "advertisers_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -72,7 +72,7 @@
     },
     {
       "stream": {
-        "name": "ad_groups_reports",
+        "name": "ad_groups_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -83,7 +83,7 @@
     },
     {
       "stream": {
-        "name": "campaigns_reports",
+        "name": "campaigns_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

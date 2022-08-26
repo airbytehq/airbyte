@@ -11,13 +11,13 @@ export const actions = {
 
 type Actions = ActionType<typeof actions>;
 
-export type AuthServiceState = {
+export interface AuthServiceState {
   inited: boolean;
   currentUser: User | null;
   emailVerified: boolean;
   loading: boolean;
   loggedOut: boolean;
-};
+}
 
 export const initialState: AuthServiceState = {
   inited: false,

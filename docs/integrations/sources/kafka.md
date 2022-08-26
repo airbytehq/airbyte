@@ -44,6 +44,7 @@ The Kafka source connector supports the following[sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                           | Subject                                   |
 | :------ | :--------  | :------------------------------------------------------| :---------------------------------------- |
+| 0.1.7 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.6   | 2022-05-29 | [12903](https://github.com/airbytehq/airbyte/pull/12903) | Add Polling Time to Specification (default 100 ms) |
 | 0.1.5   | 2022-04-19 | [12134](https://github.com/airbytehq/airbyte/pull/12134) | Add PLAIN Auth |
 | 0.1.4   | 2022-02-15 | [10186](https://github.com/airbytehq/airbyte/pull/10186) | Add SCRAM-SHA-512 Auth |

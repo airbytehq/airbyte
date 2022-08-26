@@ -32,7 +32,7 @@ const Buttons = styled.div`
 `;
 
 export const WorkspaceSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();

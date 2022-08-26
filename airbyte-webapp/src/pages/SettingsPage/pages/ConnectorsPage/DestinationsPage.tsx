@@ -14,7 +14,7 @@ import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { destinations } = useDestinationList();
 

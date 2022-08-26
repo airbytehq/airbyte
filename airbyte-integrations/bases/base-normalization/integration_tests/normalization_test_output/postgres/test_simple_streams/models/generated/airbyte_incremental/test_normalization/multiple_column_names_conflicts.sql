@@ -23,5 +23,5 @@ from {{ ref('multiple_column_names_conflicts_scd') }}
 -- multiple_column_names_conflicts from {{ source('test_normalization', '_airbyte_raw_multiple_column_names_conflicts') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

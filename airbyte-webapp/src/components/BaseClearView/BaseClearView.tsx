@@ -28,21 +28,14 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-interface BaseClearViewProps {
-  onBackClick?: React.MouseEventHandler;
-  hideHeader?: boolean;
-}
-
-const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onBackClick, hideHeader }) => {
+const BaseClearView: React.FC = ({ children }) => {
   const { formatMessage } = useIntl();
   return (
     <Content>
       <MainInfo>
-        {!hideHeader && (
-          <Link to=".." onClick={onBackClick}>
-            <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
-          </Link>
-        )}
+        <Link to="..">
+          <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
+        </Link>
         {children}
       </MainInfo>
       <Version />

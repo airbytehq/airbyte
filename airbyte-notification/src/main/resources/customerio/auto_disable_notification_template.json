@@ -8,8 +8,8 @@
     "source": "%s",
     "destination": "%s",
     "job_description": "%s",
-    "connection_id": "%s",
-    "workspace_id": "%s"
+    "workspace_id": "%s",
+    "connection_id": "%s"
   },
 
   "disable_message_retention": false,

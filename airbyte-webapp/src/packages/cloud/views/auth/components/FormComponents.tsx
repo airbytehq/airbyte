@@ -1,15 +1,15 @@
 import { Form as FormikForm } from "formik";
 import styled from "styled-components";
 
-const Form = styled(FormikForm)`
+export const Form = styled(FormikForm)`
   margin-top: 42px;
 `;
 
-const FieldItem = styled.div`
+export const FieldItem = styled.div`
   margin-bottom: 21px;
 `;
 
-const RowFieldItem = styled(FieldItem)`
+export const RowFieldItem = styled(FieldItem)`
   display: flex;
   flex-direction: row;
 
@@ -23,7 +23,7 @@ const RowFieldItem = styled(FieldItem)`
   }
 `;
 
-const BottomBlock = styled.div`
+export const BottomBlock = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -32,4 +32,7 @@ const BottomBlock = styled.div`
   font-size: 11px;
 `;
 
-export { Form, FieldItem, BottomBlock, RowFieldItem };
+export const BottomBlockStatusMessage = styled.div`
+  max-width: calc(100% - 100px);
+  color: ${(props) => props.theme.dangerColor};
+`;

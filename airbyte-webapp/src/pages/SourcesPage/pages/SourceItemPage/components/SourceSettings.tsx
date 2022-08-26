@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
@@ -12,11 +11,7 @@ import { useGetSourceDefinitionSpecification } from "services/connector/SourceDe
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-const Content = styled.div`
-  max-width: 813px;
-  width: 80%;
-  margin: 18px auto;
-`;
+import styles from "./SourceSettings.module.scss";
 
 interface SourceSettingsProps {
   currentSource: SourceRead;
@@ -52,7 +47,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
-    <Content>
+    <div className={styles.content}>
       <ConnectorCard
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
@@ -67,7 +62,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
-    </Content>
+    </div>
   );
 };
 

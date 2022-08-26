@@ -13,10 +13,10 @@ import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
 import Tabs, { TabsData } from "./Tabs";
 
-type JobLogsProps = {
+interface JobLogsProps {
   jobIsFailed?: boolean;
   job: SynchronousJobReadWithStatus | JobsWithJobs;
-};
+}
 
 const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;
@@ -33,7 +33,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
 
   const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobReadWithStatus).id;
 
-  const debugInfo = useGetDebugInfoJob(id, typeof id === "number");
+  const debugInfo = useGetDebugInfoJob(id, typeof id === "number", true);
 
   const { hash } = useLocation();
   const [attemptNumber, setAttemptNumber] = useState<number>(() => {

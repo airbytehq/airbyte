@@ -14,7 +14,7 @@
       },
       "format": {
         "type": "string",
-        "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet"],
+        "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet", "yaml"],
         "default": "csv",
         "title": "File Format",
         "description": "The Format of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs)."
@@ -23,7 +23,7 @@
         "type": "string",
         "title": "Reader Options",
         "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-        "examples": ["{}", "{'sep': ' '}"]
+        "examples": ["{}", "{\"sep\": \" \"}"]
       },
       "url": {
         "type": "string",
@@ -40,9 +40,12 @@
             "title": "HTTPS: Public Web",
             "required": ["storage"],
             "properties": {
-              "storage": {
-                "type": "string",
-                "const": "HTTPS"
+              "storage": { "type": "string", "const": "HTTPS" },
+              "user_agent": {
+                "type": "boolean",
+                "title": "User-Agent",
+                "default": false,
+                "description": "Add User-Agent to request"
               }
             }
           },
@@ -121,23 +124,19 @@
                 "title": "Storage",
                 "const": "SSH"
               },
-              "user": {
-                "type": "string",
-                "title": "User"
-              },
+              "user": { "type": "string", "title": "User", "description": "" },
               "password": {
                 "type": "string",
                 "title": "Password",
+                "description": "",
                 "airbyte_secret": true
               },
-              "host": {
-                "type": "string",
-                "title": "Host"
-              },
+              "host": { "type": "string", "title": "Host", "description": "" },
               "port": {
                 "type": "string",
                 "title": "Port",
-                "default": "22"
+                "default": "22",
+                "description": ""
               }
             }
           },
@@ -150,23 +149,19 @@
                 "title": "Storage",
                 "const": "SCP"
               },
-              "user": {
-                "type": "string",
-                "title": "User"
-              },
+              "user": { "type": "string", "title": "User", "description": "" },
               "password": {
                 "type": "string",
                 "title": "Password",
+                "description": "",
                 "airbyte_secret": true
               },
-              "host": {
-                "type": "string",
-                "title": "Host"
-              },
+              "host": { "type": "string", "title": "Host", "description": "" },
               "port": {
                 "type": "string",
                 "title": "Port",
-                "default": "22"
+                "default": "22",
+                "description": ""
               }
             }
           },
@@ -179,23 +174,19 @@
                 "title": "Storage",
                 "const": "SFTP"
               },
-              "user": {
-                "type": "string",
-                "title": "User"
-              },
+              "user": { "type": "string", "title": "User", "description": "" },
               "password": {
                 "type": "string",
                 "title": "Password",
+                "description": "",
                 "airbyte_secret": true
               },
-              "host": {
-                "type": "string",
-                "title": "Host"
-              },
+              "host": { "type": "string", "title": "Host", "description": "" },
               "port": {
                 "type": "string",
                 "title": "Port",
-                "default": "22"
+                "default": "22",
+                "description": ""
               }
             }
           }

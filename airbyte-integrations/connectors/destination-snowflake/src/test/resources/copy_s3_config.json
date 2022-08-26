@@ -13,7 +13,6 @@
     "s3_bucket_name": "airbyte-snowflake-integration-tests",
     "s3_bucket_region": "us-east-2",
     "access_key_id": "test",
-    "secret_access_key": "test",
-    "part_size": 5
+    "secret_access_key": "test"
   }
 }

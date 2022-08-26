@@ -89,12 +89,13 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateTimeValues(expectedValue.asText(), actualValue.asText());
     } else if (isDateValue(expectedValue.asText())) {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
-    } else if (expectedValue.isArray() && actualValue.isArray()) {
+    } else if (expectedValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
-    } else if (expectedValue.isObject() && actualValue.isObject()) {
+    } else if (expectedValue.isObject()) {
       compareObjects(expectedValue, actualValue);
       return true;
     } else {
+      LOGGER.warn("Default comparison method!");
       return compareString(expectedValue, actualValue);
     }
   }

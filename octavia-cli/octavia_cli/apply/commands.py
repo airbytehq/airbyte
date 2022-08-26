@@ -55,7 +55,10 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
     """
     if resource.was_created:
         click.echo(
-            click.style(f"🐙 - {resource.resource_name} exists on your Airbyte instance, let's check if we need to update it!", fg="yellow")
+            click.style(
+                f"🐙 - {resource.resource_name} exists on your Airbyte instance according to your state file, let's check if we need to update it!",
+                fg="yellow",
+            )
         )
         messages = update_resource(resource, force)
     else:

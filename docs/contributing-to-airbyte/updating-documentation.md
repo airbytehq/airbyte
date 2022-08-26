@@ -53,11 +53,11 @@ yarn serve
 You can now navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes.  You can stop the running server in OSX/Linux by pressing `control-c` in the terminal running the server
 
 ### Deploying the docs website
-We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.  An [internal guide for deployment lives here](https://github.com/airbytehq/runbooks/blob/master/deploying_and_reverting_docs.md).
+We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.  An [internal guide for deployment lives here](../docusaurus/deploying_and_reverting_docs.md).
 
 The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. Locally run `./tools/bin/deploy_docusaurus` from the `airbyte` monorepo project root to deploy this docs website.
 
-Automating this process via CI is currently not easy because we push to a [dedicated repo hosting the Github pages](https://github.com/airbytehq/airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet.
+Automating this process via CI is currently not easy because we push to a [dedicated repo hosting the Github pages](https://airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet.
 
 ## Documentation Best Practices
 
@@ -105,7 +105,7 @@ It's hard to pin down exactly what to do around source code comments, but there 
 **If something is not obvious, write it down**. Examples include:
 
 * non-trivial class definitions should have docstrings
-* magic variables should have comments explaining why those values are used \(e.g: if using a page size of 10 in a connector, describe why if possible. If there is no reason, that's also fine, just mention in a comment\). 
+* magic variables should have comments explaining why those values are used \(e.g: if using a page size of 10 in a connector, describe why if possible. If there is no reason, that's also fine, just mention in a comment\).
 * Complicated subroutines/logic which cannot be refactored should have comments explaining what they are doing and why
 
 **If something is obvious, don't write it down** since it's probably more likely to go out of date. For example, a comment like `x = 42; // sets x to 42` is not adding any new information and is therefore better omitted.
@@ -147,7 +147,7 @@ The emojis help us identify which commits should be included in the product rele
 2. A description of the problem itself
 3. Good places to start reading and file changes that can be skipped
 
-   Some examples: 
+   Some examples:
 
 _insufficient context_: `Create an OpenAPI to JSON schema generator`. Unclear what the value or problem being solved here is.
 

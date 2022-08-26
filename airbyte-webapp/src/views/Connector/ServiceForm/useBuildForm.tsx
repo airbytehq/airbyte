@@ -11,7 +11,7 @@ import { buildPathInitialState } from "core/form/uiWidget";
 import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
@@ -24,7 +24,7 @@ function upgradeSchemaLegacyAuth(
   const spec = connectorSpecification.authSpecification.oauth2Specification;
   return applyFuncAt(
     connectorSpecification.connectionSpecification as JSONSchema7Definition,
-    (spec?.rootObject ?? []) as (string | number)[],
+    (spec?.rootObject ?? []) as Array<string | number>,
     (schema) => {
       // Very hacky way to allow placing button within section
       // @ts-expect-error json schema
@@ -42,13 +42,13 @@ function upgradeSchemaLegacyAuth(
   );
 }
 
-function useBuildInitialSchema(
+export function useBuildInitialSchema(
   connectorSpecification?: ConnectorDefinitionSpecification
 ): JSONSchema7Definition | undefined {
-  const { hasFeature } = useFeatureService();
+  const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
   return useMemo(() => {
-    if (hasFeature(FeatureItem.AllowOAuthConnector)) {
+    if (allowOAuthConnector) {
       if (connectorSpecification?.authSpecification && !connectorSpecification?.advancedAuth) {
         return upgradeSchemaLegacyAuth({
           connectionSpecification: connectorSpecification?.connectionSpecification,
@@ -58,16 +58,15 @@ function useBuildInitialSchema(
     }
 
     return connectorSpecification?.connectionSpecification as JSONSchema7Definition | undefined;
-  }, [hasFeature, connectorSpecification]);
+  }, [allowOAuthConnector, connectorSpecification]);
 }
 
-function useBuildForm(
-  jsonSchema: JSONSchema7,
-  initialValues?: Partial<ServiceFormValues>
-): {
+export interface BuildFormHook {
   initialValues: ServiceFormValues;
   formFields: FormBlock;
-} {
+}
+
+export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<ServiceFormValues>): BuildFormHook {
   const startValues = useMemo<ServiceFormValues>(
     () => ({
       name: "",
@@ -86,14 +85,17 @@ function useBuildForm(
   };
 }
 
-const useBuildUiWidgetsContext = (
+interface BuildUiWidgetsContextHook {
+  uiWidgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
+  resetUiWidgetsInfo: () => void;
+}
+
+export const useBuildUiWidgetsContext = (
   formFields: FormBlock[] | FormBlock,
   formValues: ServiceFormValues,
   uiOverrides?: WidgetConfigMap
-): {
-  uiWidgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
-} => {
+): BuildUiWidgetsContextHook => {
   const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(uiOverrides ?? {});
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
@@ -111,22 +113,23 @@ const useBuildUiWidgetsContext = (
     [mergedState, setUiWidgetsInfo]
   );
 
+  const resetUiWidgetsInfo = useCallback(() => {
+    setUiWidgetsInfo(uiOverrides ?? {});
+  }, [uiOverrides]);
+
   return {
     uiWidgetsInfo: mergedState,
     setUiWidgetsInfo: setUiWidgetsInfoSubState,
+    resetUiWidgetsInfo,
   };
 };
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
-const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
+export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
 
-const usePatchFormik = (): void => {
-  const { setFieldTouched, isSubmitting, isValidating, validationSchema, validateForm, errors } = useFormikContext();
-  // Formik doesn't validate values again, when validationSchema was changed on the fly.
-  useEffect(() => {
-    validateForm();
-  }, [validateForm, validationSchema]);
+export const usePatchFormik = (): void => {
+  const { setFieldTouched, isSubmitting, isValidating, errors } = useFormikContext();
 
   /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445
@@ -148,5 +151,3 @@ const usePatchFormik = (): void => {
     }
   }, [errors, isSubmitting, isValidating, setFieldTouched]);
 };
-
-export { useBuildForm, useBuildInitialSchema, useBuildUiWidgetsContext, useConstructValidationSchema, usePatchFormik };

@@ -4,7 +4,10 @@
 
 package io.airbyte.server.handlers.helpers;
 
+import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,6 +86,29 @@ public class CatalogConverter {
     return new io.airbyte.api.model.generated.AirbyteCatalog().streams(streams);
   }
 
+  /**
+   * Converts the API catalog model into a protocol catalog. Note: returns all streams, regardless of
+   * selected status. See {@link CatalogConverter#toProtocol(AirbyteStream)} for context.
+   *
+   * @param catalog api catalog
+   * @return protocol catalog
+   */
+  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocolKeepAllStreams(final io.airbyte.api.model.generated.AirbyteCatalog catalog) {
+    final AirbyteCatalog clone = Jsons.clone(catalog);
+    clone.getStreams().forEach(stream -> stream.getConfig().setSelected(true));
+    return toProtocol(clone);
+  }
+
+  /**
+   * Converts the API catalog model into a protocol catalog. Note: only streams marked as selected
+   * will be returned. This is included in this converter as the API model always carries all the
+   * streams it has access to and then marks the ones that should not be used as not selected, while
+   * the protocol version just uses the presence of the streams as evidence that it should be
+   * included.
+   *
+   * @param catalog api catalog
+   * @return protocol catalog
+   */
   public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocol(final io.airbyte.api.model.generated.AirbyteCatalog catalog) {
     final List<io.airbyte.protocol.models.ConfiguredAirbyteStream> streams = catalog.getStreams()
         .stream()

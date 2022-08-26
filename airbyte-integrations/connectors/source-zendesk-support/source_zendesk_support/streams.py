@@ -3,6 +3,7 @@
 #
 
 import calendar
+import re
 import time
 from abc import ABC
 from collections import deque
@@ -31,13 +32,22 @@ LAST_END_TIME_KEY: str = "_last_end_time"
 END_OF_STREAM_KEY: str = "end_of_stream"
 
 
+def to_int(s):
+    "https://github.com/airbytehq/airbyte/issues/13673"
+    if isinstance(s, str):
+        res = re.findall(r"[-+]?\d+", s)
+        if res:
+            return res[0]
+    return s
+
+
 class SourceZendeskException(Exception):
     """default exception of custom SourceZendesk logic"""
 
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
     """
-    Check the docs at https://github.com/ross/requests-futures.
+    Check the docs at https://github.com/ross/requests-futures
     Used to async execute a set of requests.
     """
 
@@ -78,7 +88,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
 
-        retry_after = int(response.headers.get("Retry-After", 0))
+        retry_after = int(to_int(response.headers.get("Retry-After", 0)))
         if retry_after > 0:
             return retry_after
 
@@ -336,6 +346,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     Endpoints provide a cursor pagination and sorting mechanism
     """
 
+    cursor_field = "updated_at"
     next_page_field = "next_page"
     prev_start_time = None
 
@@ -379,7 +390,6 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
 
-    cursor_field = "updated_at"
     response_list_name: str = None
     sideload_param: str = None
 
@@ -464,6 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -483,30 +494,38 @@ class Groups(SourceZendeskSupportStream):
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
-    cursor_field = "updated_at"
-
-
-class SatisfactionRatings(SourceZendeskSupportStream):
-    """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
-
-    The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
-    """
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        """Adds the filtering field 'start_time'"""
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        if next_page_token:
+            params["page"] = next_page_token
+        return params
 
-        if not start_time:
-            start_time = self.str2unixtime(self._start_date)
-        params.update(
-            {
-                "start_time": start_time,
-                "sort_by": "asc",
-            }
-        )
+
+class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
+    """
+    SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
+    """
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        if next_page_token:
+            params["page"] = next_page_token
         return params
 
 
@@ -515,17 +534,33 @@ class TicketFields(SourceZendeskSupportStream):
 
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
-
-    cursor_field = "updated_at"
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
-class TicketMetrics(SourceZendeskSupportStream):
+class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page": 1,
+            "per_page": self.page_size,
+        }
+        if next_page_token:
+            params["page"] = next_page_token
+        return params
 
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
-    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
+    """
+    TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
+    """
 
     cursor_field = "time"
 
@@ -547,6 +582,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -609,3 +646,23 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+
+class UserSubscriptionStream(SourceZendeskSupportFullRefreshStream):
+    """Stream for checking read permissions for streams"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "/api/v2/account/subscription.json"
+
+    def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        subscription_plan = response.json().get("subscription").get("plan_name")
+        if subscription_plan:
+            yield subscription_plan
+
+    def get_subscription_plan(self) -> Mapping[str, Any]:
+        for result in self.read_records(SyncMode.full_refresh):
+            return result
+        raise SourceZendeskException("Could not read User's Subscription Plan.")

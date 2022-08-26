@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { LoadingButton, Switch } from "components";
 
-type IProps = {
+interface IProps {
   allowSync?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
@@ -13,7 +13,7 @@ type IProps = {
   id: string;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
-};
+}
 
 const SmallButton = styled(LoadingButton)`
   padding: 6px 8px 7px;

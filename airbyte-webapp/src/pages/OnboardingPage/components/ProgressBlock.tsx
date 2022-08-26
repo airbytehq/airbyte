@@ -57,10 +57,10 @@ const PaddedButton = styled(Button)`
   margin-left: 10px;
 `;
 
-type ProgressBlockProps = {
+interface ProgressBlockProps {
   connection: WebBackendConnectionRead;
   onSync: () => void;
-};
+}
 
 const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => {
   const showMessage = (status: JobStatus | undefined) => {
@@ -86,7 +86,7 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
       <ControlBlock>
         <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
         <PaddedButton onClick={onSync}>
-          <FormattedMessage id={"sources.syncNow"} />
+          <FormattedMessage id="sources.syncNow" />
         </PaddedButton>
       </ControlBlock>
     );
@@ -94,7 +94,7 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
 
   return (
     <Bar>
-      <Img src={"/process-arrow.svg"} width={20} />
+      <Img src="/process-arrow.svg" width={20} />
       <FormattedMessage
         id="onboarding.synchronizationProgress"
         values={{

@@ -223,7 +223,7 @@ export const CreationFormPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
+      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectorDocumentationWrapper>
         <PageTitle
           title={<FormattedMessage id={titleId} />}

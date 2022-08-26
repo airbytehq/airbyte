@@ -1,12 +1,11 @@
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { getFrequencyConfig } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
-import { equal } from "utils/objects";
 
 import { useConfig } from "../../config";
 import {
@@ -22,6 +21,7 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
@@ -29,28 +29,31 @@ export const connectionsKeys = {
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
+  getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
 
-export type ValuesProps = {
+export interface ValuesProps {
   name?: string;
-  schedule: ConnectionSchedule | null;
+  schedule?: ConnectionSchedule;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat?: string;
   operations?: OperationCreate[];
-};
+}
 
-type CreateConnectionProps = {
+interface CreateConnectionProps {
   values: ValuesProps;
   source: SourceRead;
   destination: DestinationRead;
   sourceDefinition?: Pick<SourceDefinitionRead, "sourceDefinitionId">;
   destinationDefinition?: { name: string; destinationDefinitionId: string };
   sourceCatalogId: string | undefined;
-};
+}
 
-export type ListConnection = { connections: WebBackendConnectionRead[] };
+export interface ListConnection {
+  connections: WebBackendConnectionRead[];
+}
 
 function useWebConnectionService() {
   const config = useConfig();
@@ -61,7 +64,7 @@ function useWebConnectionService() {
   );
 }
 
-function useConnectionService() {
+export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
@@ -89,15 +92,15 @@ export const useSyncConnection = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation((connection: WebBackendConnectionRead) => {
-    const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
+    const frequency = getFrequencyConfig(connection.schedule);
 
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
+    analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
+      actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
+      frequency: frequency?.type,
     });
 
     return service.sync(connection.connectionId);
@@ -140,11 +143,11 @@ const useCreateConnection = () => {
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
-      const frequencyData = FrequencyConfig.find((item) => equal(item.config, values.schedule));
+      const frequencyData = getFrequencyConfig(values.schedule);
 
-      analyticsService.track("New Connection - Action", {
-        action: "Set up connection",
-        frequency: frequencyData?.text,
+      analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
+        actionDescription: "New connection created",
+        frequency: frequencyData?.type || "",
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -187,20 +190,11 @@ const useUpdateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (conn: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = conn.withRefreshedCatalog
-        ? { withRefreshedCatalog: conn.withRefreshedCatalog }
-        : null;
-
-      return service.update({ ...conn, ...withRefreshedCatalogCleaned });
+  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
+    onSuccess: (connection) => {
+      queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },
-    {
-      onSuccess: (data) => {
-        queryClient.setQueryData(connectionsKeys.detail(data.connectionId), data);
-      },
-    }
-  );
+  });
 };
 
 const useConnectionList = (): ListConnection => {
@@ -214,6 +208,12 @@ const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
 
+const useGetConnectionState = (connectionId: string) => {
+  const service = useConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.getState(connectionId), () => service.getState(connectionId));
+};
+
 export {
   useConnectionList,
   useGetConnection,
@@ -221,4 +221,5 @@ export {
   useCreateConnection,
   useDeleteConnection,
   invalidateConnectionsList,
+  useGetConnectionState,
 };

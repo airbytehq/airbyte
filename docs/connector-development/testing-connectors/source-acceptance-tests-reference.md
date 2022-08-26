@@ -1,6 +1,6 @@
 # Source Acceptance Tests Reference
 
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 _Note: If you are looking for reference documentation for the deprecated first version of test suites, see_ [_Standard Tests \(Legacy\)_](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/legacy-standard-source-tests.md)_._
 
@@ -98,6 +98,8 @@ Verify that a spec operation issued to the connector returns a valid spec.
 | Input | Type | Default | Note                                                                                             |
 | :--- | :--- | :--- |:-------------------------------------------------------------------------------------------------|
 | `spec_path` | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version` | string | None | Disable the backward compatibility test for a specific version (expects a version following semantic versioning). |
 | `timeout_seconds` | int | 10 | Test execution timeout in seconds                                                                |
 
 ## Test Connection

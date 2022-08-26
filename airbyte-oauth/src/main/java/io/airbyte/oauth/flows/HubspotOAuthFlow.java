@@ -36,10 +36,11 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
       throws IOException {
     try {
       /*
-        Not all accounts have access to all scopes so we're requesting them as optional.
-        Hubspot still expects scopes to be defined, so the contacts scope is left as required
-        as it is accessible by any marketing or CRM account according to https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes
-     */
+       * Not all accounts have access to all scopes so we're requesting them as optional. Hubspot still
+       * expects scopes to be defined, so the contacts scope is left as required as it is accessible by
+       * any marketing or CRM account according to
+       * https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes
+       */
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)

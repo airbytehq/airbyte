@@ -13,6 +13,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,13 +35,16 @@ class AirbyteMessageTrackerTest {
   @Mock
   private StateDeltaTracker mStateDeltaTracker;
 
+  @Mock
+  private StateAggregator mStateAggregator;
+
   @BeforeEach
-  public void setup() {
-    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker);
+  void setup() {
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator);
   }
 
   @Test
-  public void testGetTotalRecordsStatesAndBytesEmitted() {
+  void testGetTotalRecordsStatesAndBytesEmitted() {
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 123);
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(1);
     final AirbyteMessage s2 = AirbyteMessageUtils.createStateMessage(2);
@@ -57,13 +61,16 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testRetainsLatestSourceAndDestinationState() {
+  void testRetainsLatestSourceAndDestinationState() {
     final int s1Value = 111;
     final int s2Value = 222;
     final int s3Value = 333;
     final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(s1Value);
     final AirbyteMessage s2 = AirbyteMessageUtils.createStateMessage(s2Value);
     final AirbyteMessage s3 = AirbyteMessageUtils.createStateMessage(s3Value);
+
+    final State expectedState = new State().withState(Jsons.jsonNode(s2Value));
+    Mockito.when(mStateAggregator.getAggregated()).thenReturn(expectedState);
 
     messageTracker.acceptFromSource(s1);
     messageTracker.acceptFromSource(s2);
@@ -75,17 +82,17 @@ class AirbyteMessageTrackerTest {
     assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
 
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
-    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
+    assertEquals(expectedState, messageTracker.getDestinationOutputState().get());
   }
 
   @Test
-  public void testReturnEmptyStateIfNoneEverAccepted() {
+  void testReturnEmptyStateIfNoneEverAccepted() {
     assertTrue(messageTracker.getSourceOutputState().isEmpty());
     assertTrue(messageTracker.getDestinationOutputState().isEmpty());
   }
 
   @Test
-  public void testEmittedRecordsByStream() {
+  void testEmittedRecordsByStream() {
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
@@ -106,7 +113,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testEmittedBytesByStream() {
+  void testEmittedBytesByStream() {
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
@@ -131,7 +138,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetCommittedRecordsByStream() {
+  void testGetCommittedRecordsByStream() {
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
@@ -174,7 +181,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetCommittedRecordsByStream_emptyWhenAddStateThrowsException() throws Exception {
+  void testGetCommittedRecordsByStream_emptyWhenAddStateThrowsException() throws Exception {
     Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
@@ -188,7 +195,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetCommittedRecordsByStream_emptyWhenCommitStateHashThrowsException() throws Exception {
+  void testGetCommittedRecordsByStream_emptyWhenCommitStateHashThrowsException() throws Exception {
     Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
@@ -202,7 +209,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testTotalRecordsCommitted() {
+  void testTotalRecordsCommitted() {
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
@@ -238,7 +245,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetTotalRecordsCommitted_emptyWhenAddStateThrowsException() throws Exception {
+  void testGetTotalRecordsCommitted_emptyWhenAddStateThrowsException() throws Exception {
     Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
@@ -252,7 +259,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetTotalRecordsCommitted_emptyWhenCommitStateHashThrowsException() throws Exception {
+  void testGetTotalRecordsCommitted_emptyWhenCommitStateHashThrowsException() throws Exception {
     Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = AirbyteMessageUtils.createRecordMessage(STREAM_1, 1);
@@ -266,7 +273,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetFirstDestinationAndSourceMessages() throws Exception {
+  void testGetFirstDestinationAndSourceMessages() throws Exception {
     final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
     final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
     final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
@@ -281,13 +288,13 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
+  void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
     assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), null);
     assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), null);
   }
 
   @Test
-  public void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
+  void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
     final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
     final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
     final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
@@ -303,7 +310,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
+  void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
     final AirbyteMessage destMessage = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
     messageTracker.acceptFromDestination(destMessage);
 
@@ -312,7 +319,7 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
+  void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
     assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
   }
 

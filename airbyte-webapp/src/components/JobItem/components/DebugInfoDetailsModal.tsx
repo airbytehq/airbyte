@@ -7,10 +7,10 @@ import Modal from "components/Modal";
 
 import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 
-export type IProps = {
+export interface IProps {
   onClose: () => void;
   jobDebugInfo: JobDebugInfoRead;
-};
+}
 
 const Content = styled.div`
   padding: 18px 37px 28px;

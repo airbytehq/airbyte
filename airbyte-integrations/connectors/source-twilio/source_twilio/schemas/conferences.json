@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date",
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "api_version": {

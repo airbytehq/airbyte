@@ -25,11 +25,11 @@ def prepare_config(config: Dict):
     return SourceZendeskSupport().convert_config2stream_args(config)
 
 
-def test_backoff(requests_mock, config):
+@pytest.mark.parametrize("retry_after, expected", [("5", 5), ("5, 4", 5)])
+def test_backoff(requests_mock, config, retry_after, expected):
     """ """
-    test_response_header = {"Retry-After": "5", "X-Rate-Limit": "0"}
+    test_response_header = {"Retry-After": retry_after, "X-Rate-Limit": "0"}
     test_response_json = {"count": {"value": 1, "refreshed_at": "2022-03-29T10:10:51+00:00"}}
-    expected = int(test_response_header.get("Retry-After"))
 
     # create client
     config = prepare_config(config)

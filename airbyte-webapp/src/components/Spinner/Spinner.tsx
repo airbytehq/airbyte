@@ -1,10 +1,10 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 
-type IProps = {
+interface IProps {
   backgroundColor?: string;
   small?: boolean;
-};
+}
 
 export const SpinAnimation = keyframes`
   0% {

@@ -60,15 +60,13 @@ export const useTestConnector = (
             signal: controller.signal,
           };
         }
-      } else {
+      } else if (values) {
         // creating new connection
-        if (values) {
-          payload = {
-            connectionConfiguration: values.connectionConfiguration,
-            signal: controller.signal,
-            selectedConnectorDefinitionId: values.serviceType,
-          };
-        }
+        payload = {
+          connectionConfiguration: values.connectionConfiguration,
+          signal: controller.signal,
+          selectedConnectorDefinitionId: values.serviceType,
+        };
       }
 
       if (!payload) {

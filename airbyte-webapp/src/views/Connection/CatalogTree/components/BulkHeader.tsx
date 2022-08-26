@@ -32,9 +32,9 @@ const ActionButton = styled(Button).attrs({
   white-space: nowrap;
 `;
 
-type BulkHeaderProps = {
+interface BulkHeaderProps {
   destinationSupportedSyncModes: DestinationSyncMode[];
-};
+}
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
@@ -125,7 +125,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell>
         {pkType && (
           <PathPopout
-            isMulti={true}
+            isMulti
             onPathChange={(path) => onChangeOption({ primaryKey: path })}
             pathType={pkType}
             paths={paths}

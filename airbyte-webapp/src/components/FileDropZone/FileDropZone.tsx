@@ -51,11 +51,11 @@ const FileIcon = styled(FontAwesomeIcon)`
   margin-right: 8px;
 `;
 
-type IProps = {
+interface IProps {
   className?: string;
   mainText?: React.ReactNode;
   options?: DropzoneOptions;
-};
+}
 
 const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone(options);

@@ -1,39 +1,38 @@
+import classnames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
 import { getIcon } from "utils/imageUtils";
 
-type IProps = {
+import styles from "./ImageBlock.module.scss";
+
+interface ImageBlockProps {
   img?: string;
-  className?: string;
   num?: number;
   small?: boolean;
+  color?: string;
+  light?: boolean;
+  ariaLabel?: string;
+}
+
+export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color, light, ariaLabel }) => {
+  const imageCircleClassnames = classnames({
+    [styles.circle]: num,
+    [styles.iconContainer]: !num || num === undefined,
+    [styles.small]: small && !num,
+    [styles.darkBlue]: !small && num && !color,
+    [styles.green]: color === "green",
+    [styles.red]: color === "red",
+    [styles.blue]: color === "blue",
+    [styles.light]: light,
+  });
+
+  const numberStyles = classnames(styles.number, { [styles.light]: light });
+
+  return (
+    <div className={imageCircleClassnames} aria-label={ariaLabel}>
+      {num ? <div className={numberStyles}>{num}</div> : <div className={styles.icon}>{getIcon(img)}</div>}
+    </div>
+  );
 };
 
-export const Content = styled.div<{ small?: boolean }>`
-  height: 25px;
-  width: 25px;
-  min-width: 25px;
-  background: ${({ theme, small }) => (small ? "none" : theme.brightColor)};
-  box-shadow: ${({ theme, small }) => (small ? "none" : `0 1px 2px 0 ${theme.shadowColor}`)};
-  border-radius: ${({ small }) => (small ? 0 : 50)}%;
-  text-align: center;
-
-  overflow: hidden;
-`;
-
-export const Number = styled.div`
-  font-weight: 500;
-  font-size: 14px;
-  color: ${({ theme }) => theme.primaryColor};
-  padding: 4px 0 3px;
-`;
-
-const ImageBlock: React.FC<IProps> = ({ img, className, num, small }) => (
-  <Content className={className} small={small && !num}>
-    {num ? <Number>{num}</Number> : <>{getIcon(img)}</>}
-  </Content>
-);
-
 export default ImageBlock;
-export { ImageBlock };

@@ -38,17 +38,17 @@ const Delete = styled.button`
   }
 `;
 
-type IProps = {
+interface IProps {
   item: IItemProps;
   isSelected?: boolean;
   disabled?: boolean;
   onDeleteTag: (id: string) => void;
-};
+}
 
-export type IItemProps = {
+export interface IItemProps {
   value: string;
   id: string;
-};
+}
 
 const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) => {
   const clickOnDeleteButton = () => onDeleteTag(item.id);
@@ -56,7 +56,7 @@ const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) 
   return (
     <Tag isSelected={isSelected}>
       <Text>{item.value}</Text>
-      <Delete onClick={clickOnDeleteButton} disabled={disabled}></Delete>
+      <Delete onClick={clickOnDeleteButton} disabled={disabled} />
     </Tag>
   );
 };

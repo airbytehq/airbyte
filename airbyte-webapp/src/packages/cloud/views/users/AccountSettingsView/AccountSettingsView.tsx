@@ -1,6 +1,7 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useMutation } from "react-query";
 import styled from "styled-components";
 
 import { LabeledInput, LoadingButton } from "components";
@@ -17,8 +18,9 @@ const Header = styled.div`
 `;
 
 const AccountSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
-  const { logout } = useAuthService();
+  const { formatMessage } = useIntl();
+  const authService = useAuthService();
+  const { mutateAsync: logout, isLoading: isLoggingOut } = useMutation(() => authService.logout());
   const user = useCurrentUser();
 
   return (
@@ -41,7 +43,7 @@ const AccountSettingsView: React.FC = () => {
                       <LabeledInput
                         {...field}
                         label={<FormattedMessage id="settings.accountSettings.fullName" />}
-                        disabled={true}
+                        disabled
                         placeholder={formatMessage({
                           id: "settings.accountSettings.fullName.placeholder",
                         })}
@@ -63,7 +65,7 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <LoadingButton danger onClick={() => logout()} data-testid="button.signout">
+            <LoadingButton danger onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
               <FormattedMessage id="settings.accountSettings.logoutText" />
             </LoadingButton>
           </Header>

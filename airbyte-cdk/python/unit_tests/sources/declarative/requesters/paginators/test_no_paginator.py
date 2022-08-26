@@ -9,4 +9,4 @@ from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import 
 def test():
     paginator = NoPagination()
     next_page_token = paginator.next_page_token(requests.Response(), [])
-    assert next_page_token is None
+    assert next_page_token == {}

@@ -10,8 +10,6 @@ public interface S3FormatConfig {
 
   S3Format getFormat();
 
-  Long getPartSize();
-
   String getFileExtension();
 
   static String withDefault(final JsonNode config, final String property, final String defaultValue) {

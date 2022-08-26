@@ -34,6 +34,9 @@
     "workspace": {
       "type": ["null", "string"]
     },
+    "headStart": {
+      "type": ["null", "boolean"]
+    },
     "folder": {
       "type": ["object", "null"],
       "properties": {
