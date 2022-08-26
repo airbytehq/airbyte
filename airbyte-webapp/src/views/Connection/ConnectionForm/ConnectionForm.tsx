@@ -140,7 +140,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
           {formDirty.next(dirty)}
-          {mode !== "create" && (
+          {mode === "create" && (
             <Section>
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
@@ -162,7 +162,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     <RightFieldCol>
                       <Input
                         {...field}
-                        disabled={mode === "readonly"}
                         error={!!meta.error}
                         data-testid="connectionName"
                         placeholder={formatMessage({
