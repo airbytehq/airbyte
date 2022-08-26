@@ -69,12 +69,4 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static SecretsHydrator getDataPlaneSecretsHydrator(final Configs configs) {
-    if (!configs.getSecretPersistenceType().equals(SecretPersistenceType.GOOGLE_SECRET_MANAGER)) {
-      throw new IllegalArgumentException("Data Plane workers currently only support Google Secret Manager as a backing store for secrets.");
-    }
-    return new RealSecretsHydrator(
-        GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
-  }
-
 }
