@@ -34,6 +34,7 @@
 .rightPanelContainer {
   background-color: colors.$white;
   height: 100%;
+  // Prevent the flickering described in https://github.com/airbytehq/airbyte/issues/15819
   overflow-y: scroll;
 }
 
