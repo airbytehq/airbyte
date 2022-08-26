@@ -269,6 +269,12 @@
         "description": "The number of repeated calls to poll() if no messages were received.",
         "type": "integer",
         "default": 3
+      },
+      "max_records_process": {
+        "title": "Maximum Records",
+        "description": "The Maximum records needs to be processed per execution",
+        "type": "integer",
+        "default": 100000
       }
     }
   }

@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -132,20 +133,35 @@ public class AvroFormat extends AbstractFormat{
         final KafkaConsumer<String, GenericRecord> consumer = getConsumer();
         final List<ConsumerRecord<String, GenericRecord>> recordsList = new ArrayList<>();
         final int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
-        int pollCount = 0;
         final int polling_time = config.has("polling_time") ? config.get("polling_time").intValue() : 100;
+        final int max_records = config.has("max_records_process") ? config.get("max_records_process").intValue() : 100000;
+        AtomicInteger record_count= new AtomicInteger();
+        final Map<String,Integer> poll_lookup=new HashMap<>();
+        getTopicsToSubscribe().forEach( topic ->
+                        poll_lookup.put(topic,0)
+                );
         while (true) {
-            consumer.assignment()
             final ConsumerRecords<String, GenericRecord> consumerRecords = consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
             if (consumerRecords.count() == 0) {
-                pollCount++;
-                if (pollCount > retry) {
+                consumer.assignment().stream().map( record -> record.topic()).distinct().forEach(
+                        topic -> {
+                            poll_lookup.put(topic,poll_lookup.get(topic)+1);
+                        }
+                );
+               boolean is_complete=poll_lookup.entrySet().stream().allMatch(
+                        e ->e.getValue() > retry
+                );
+                if (is_complete) {
+                    LOGGER.info("There is no new data in the queue!!");
                     break;
                 }
+            }else if(record_count.get() > max_records){
+                LOGGER.info("Max record count is reached !!");
+                break;
             }
 
             consumerRecords.forEach(record -> {
-                record.
+                record_count.getAndIncrement();
                 recordsList.add(record);
             });
             consumer.commitAsync();
