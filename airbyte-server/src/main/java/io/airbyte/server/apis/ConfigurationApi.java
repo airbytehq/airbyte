@@ -144,9 +144,11 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
+@Slf4j
 public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   private final WorkspacesHandler workspacesHandler;
