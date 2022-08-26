@@ -1,13 +1,10 @@
-from tempfile import TemporaryFile
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
 import pytest
-from pandas import read_excel
-from source_file.client import Client, URLFile
-
-
-@pytest.fixture
-def urlfile():
-    return URLFile()
+from pandas import read_csv
+from source_file.client import Client, URLFile, ConfigurationError
 
 
 @pytest.fixture
@@ -20,13 +17,13 @@ def client():
 
 
 @pytest.fixture
-def expected_excel_reader():
-    return read_excel(engine="pyxlsb")
-
-
-@pytest.fixture
-def temp_excel_file(tmp_path_factory):
-    return tmp_path_factory.mktemp("data") / "df.xls"
+def wrong_format_client():
+    return Client(
+        dataset_name="test_dataset",
+        url="scp://test_dataset",
+        provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
+        format="wrong"
+    )
 
 
 @pytest.mark.parametrize(
@@ -48,26 +45,84 @@ def test_storage_scheme(storage, expected_scheme):
     assert urlfile.storage_scheme == expected_scheme
 
 
-# @pytest.mark.parametrize(
-#     "storage, url",
-#     [
-#         ("GCS", "gs://fileurl"),
-#         ("S3", "s3://fileurl"),
-#         ("AZBLOB", "azure://fileurl"),
-#         ("HTTPS", "https://fileurl"),
-#         ("SSH", "scp://fileurl"),
-#         ("SCP", "scp://fileurl"),
-#         ("SFTP", "sftp://fileurl"),
-#         ("WEBHDFS", "webhdfs://fileurl"),
-#         ("LOCAL", "file://fileurl"),
-#     ],
-# )
-# def test_urlfile_open(storage, url):
-#     urlfile = URLFile(provider={"storage": storage}, url=url)
-#     tmp_file = TemporaryFile()
-#     urlfile._open(tmp_file)
+def test_load_dataframes(client, wrong_format_client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/test.csv"
+    read_file = next(client.load_dataframes(fp=f))
+    expected = read_csv(f)
+    assert read_file.equals(expected)
+
+    with pytest.raises(ConfigurationError):
+        next(wrong_format_client.load_dataframes(fp=f))
+
+    with pytest.raises(StopIteration):
+        next(client.load_dataframes(fp=f, skip_data=True))
 
 
-#  def test_load_dataframes(mocker, client, temp_excel_file):
-#     reader = next(client.load_dataframes(fp=temp_excel_file))
-#     assert reader == read_excel(temp_excel_file, engine="pyxlsb")
+def test_load_nested_json(client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/formats/json/demo.json"
+    with open(f, mode='rb') as file:
+        assert client.load_nested_json(fp=file)
+
+
+@pytest.mark.parametrize(
+    "current_type, dtype, expected",
+    [
+        ("string", "string", "string"),
+        ("", object, "string"),
+        ("", "int64", "number"),
+        ("boolean", "bool", "boolean"),
+        ("integer", "int64", "string"),
+    ],
+)
+def test_dtype_to_json_type(client, current_type, dtype, expected):
+    assert client.dtype_to_json_type(current_type, dtype) == expected
+
+
+def test_cache_stream(client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/test.csv"
+    with open(f, mode='rb') as file:
+        assert client._cache_stream(file)
+
+
+def test_open_aws_url():
+    provider = {"storage": "S3"}
+    with pytest.raises(OSError):
+        assert URLFile(url="s3://my_bucket/my_key", provider=provider)._open_aws_url()
+
+    provider.update({"aws_access_key_id": "aws_access_key_id", "aws_secret_access_key": "aws_secret_access_key"})
+    with pytest.raises(OSError):
+        assert URLFile(url="s3://my_bucket/my_key", provider=provider)._open_aws_url()
+
+
+def test_open_azblob_url():
+    provider = {"storage": "AZBLOB"}
+    with pytest.raises(ValueError):
+        assert URLFile(url="", provider=provider)._open_azblob_url()
+
+    provider.update({"storage_account": "storage_account", "sas_token": "sas_token", "shared_key": "shared_key"})
+    with pytest.raises(ValueError):
+        assert URLFile(url="", provider=provider)._open_azblob_url()
+
+
+def test_open_gcs_url():
+    provider = {"storage": "GCS"}
+    with pytest.raises(IndexError):
+        assert URLFile(url="", provider=provider)._open_gcs_url()
+
+    provider.update({"service_account_json": '{"service_account_json": "service_account_json"}'})
+    with pytest.raises(ValueError):
+        assert URLFile(url="", provider=provider)._open_gcs_url()
+
+    provider.update({"service_account_json": '{service_account_json": "service_account_json"}'})
+    with pytest.raises(ConfigurationError):
+        assert URLFile(url="", provider=provider)._open_gcs_url()
+
+
+def test_client_wrong_reader_options():
+    with pytest.raises(ConfigurationError):
+        Client(
+            dataset_name="test_dataset",
+            url="scp://test_dataset",
+            provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
+            reader_options='{encoding":"utf_16"}',
+        )
