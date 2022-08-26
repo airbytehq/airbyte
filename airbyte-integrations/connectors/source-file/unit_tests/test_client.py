@@ -2,18 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 import pytest
-from pandas import read_csv
-from source_file.client import Client, URLFile, ConfigurationError
-
-
-@pytest.fixture
-def client():
-    return Client(
-        dataset_name="test_dataset",
-        url="scp://test_dataset",
-        provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-    )
+from pandas import read_csv, read_excel
+from source_file.client import Client, ConfigurationError, URLFile
 
 
 @pytest.fixture
@@ -22,7 +14,7 @@ def wrong_format_client():
         dataset_name="test_dataset",
         url="scp://test_dataset",
         provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-        format="wrong"
+        format="wrong",
     )
 
 
@@ -58,9 +50,18 @@ def test_load_dataframes(client, wrong_format_client, absolute_path, test_files)
         next(client.load_dataframes(fp=f, skip_data=True))
 
 
+def test_load_dataframes_xlsb(config, absolute_path, test_files):
+    config["format"] = "excel_binary"
+    client = Client(**config)
+    f = f"{absolute_path}/{test_files}/test.xlsb"
+    read_file = next(client.load_dataframes(fp=f))
+    expected = read_excel(f, engine="pyxlsb")
+    assert read_file.equals(expected)
+
+
 def test_load_nested_json(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/formats/json/demo.json"
-    with open(f, mode='rb') as file:
+    with open(f, mode="rb") as file:
         assert client.load_nested_json(fp=file)
 
 
@@ -80,7 +81,7 @@ def test_dtype_to_json_type(client, current_type, dtype, expected):
 
 def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
-    with open(f, mode='rb') as file:
+    with open(f, mode="rb") as file:
         assert client._cache_stream(file)
 
 
