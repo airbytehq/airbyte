@@ -104,7 +104,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), cause);
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
       }
     } catch (final Exception e) {
       throw new Exception(e);

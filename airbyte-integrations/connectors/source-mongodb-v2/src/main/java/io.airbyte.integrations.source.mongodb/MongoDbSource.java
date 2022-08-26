@@ -162,7 +162,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
     } catch (final MongoSecurityException e) {
       final MongoCommandException exception = (MongoCommandException) e.getCause();
-      throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
     } catch (final MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
