@@ -188,7 +188,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| 0.6.6   | 2022-08-25 | [15993](https://github.com/airbytehq/airbyte/pull/15993)   | Add support for connection over SSL in CDC mode                                                                  |
+| 0.6.6   | 2022-08-25 | [15993](https://github.com/airbytehq/airbyte/pull/15993)   | Improved support for connecting over SSL                                                                         |
 | 0.6.5   | 2022-08-25 | [15917](https://github.com/airbytehq/airbyte/pull/15917)   | Fix temporal data type default value bug                                                                         |
 | 0.6.4   | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)   | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field        |
 | 0.6.3   | 2022-08-12 | [15044](https://github.com/airbytehq/airbyte/pull/15044)   | Added the ability to connect using different SSL modes and SSL certificates                                      |
