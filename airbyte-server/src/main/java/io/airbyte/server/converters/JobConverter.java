@@ -169,7 +169,11 @@ public class JobConverter {
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
         .map(StandardSyncSummary::getStreamStats)
-        .orElse(Collections.emptyList());
+        .orElse(null);
+
+    if (streamStats == null) {
+      return null;
+    }
 
     return streamStats.stream()
         .map(streamStat -> new AttemptStreamStats()
