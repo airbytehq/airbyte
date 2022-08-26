@@ -435,8 +435,9 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connectionRead = connectionsHandler
         .getConnection(webBackendConnectionUpdate.getConnectionId());
 
+    // wrap operationIds in a new ArrayList so that it is modifiable below, when calling .removeAll
     final List<UUID> originalOperationIds =
-        connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds()); // wrap to make modifiable
+        connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds());
 
     final List<WebBackendOperationCreateOrUpdate> updatedOperations =
         webBackendConnectionUpdate.getOperations() == null ? new ArrayList<>() : webBackendConnectionUpdate.getOperations();
