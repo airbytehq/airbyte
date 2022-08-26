@@ -33,20 +33,12 @@
               "order": 2,
               "airbyte_secret": false,
             },
-          "table_name_prefix":
-            {
-              "title": "Table Name Prefix",
-              "type": "string",
-              "description": "Prefix of the tables that should be available in the Airbyte Catalog",
-              "order": 3,
-              "airbyte_secret": false,
-            },
           "endpoint_url":
             {
               "title": "DynamoDB Endpoint",
               "type": "string",
               "description": "Not sure",
-              "order": 4,
+              "order": 3,
               "airbyte_secret": false,
             },
         },

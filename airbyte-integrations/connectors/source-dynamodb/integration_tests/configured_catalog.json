@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Music",
+        "name": "ProductCatalog",
         "json_schema": {
           "properties": {
             "data": {

@@ -1,6 +1,5 @@
 {
-  "aws_access_key_id": "dummy_access_key",
-  "aws_secret_access_key": "dummy_secret_key",
-  "region_name": "dummy_region",
-  "endpoint_url": "http://localhost:8111"
+  "aws_access_key_id": "AWS ACCESS KEY ID",
+  "aws_secret_access_key": "AWS SECRET ACCESS KEY",
+  "region_name": "AWS REGION"
 }
