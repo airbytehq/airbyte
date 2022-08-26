@@ -305,8 +305,8 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
   }
 
   @Test
@@ -333,7 +333,7 @@ public abstract class JdbcSourceAcceptanceTest {
           getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-    AirbyteStream stream =
+    final AirbyteStream stream =
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_TYPE)).findFirst().orElse(null);
     assertNotNull(stream);
     assertEquals(TABLE_NAME_WITHOUT_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
@@ -351,7 +351,7 @@ public abstract class JdbcSourceAcceptanceTest {
           getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
     });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-    AirbyteStream stream =
+    final AirbyteStream stream =
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)).findFirst().orElse(null);
     assertNotNull(stream);
     assertEquals(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());

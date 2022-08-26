@@ -138,44 +138,49 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
+  /**
+   * MySQL Error Codes:
+   * <p>https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-error-sqlstates.html</p>
+   * @throws Exception
+   */
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08S01;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08S01;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1049;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1049;"));
   }
 
   @Test
@@ -185,9 +190,9 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .execute("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1044;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1044;"));
   }
 
   @Override
@@ -254,7 +259,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)

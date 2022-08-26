@@ -75,40 +75,40 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   void testCheckIncorrectPasswordFailure() throws Exception {
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("password", "fake");
-    var destination = new RedshiftDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 500310;"));
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("username", "");
-    var destination = new RedshiftDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 500310;"));
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("host", "localhost2");
-    var destination = new RedshiftDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: HY000; Error code: 500150;"));
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: HY000; Error code: 500150;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("database", "wrongdatabase");
-    var destination = new RedshiftDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 3D000; Error code: 500310;"));
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
   }
 
   @Override

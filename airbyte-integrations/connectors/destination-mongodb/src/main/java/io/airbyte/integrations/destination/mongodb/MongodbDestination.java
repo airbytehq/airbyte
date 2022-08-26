@@ -75,7 +75,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final var database = getDatabase(config);
+      final MongoDatabase database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
@@ -83,11 +83,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage(messages);
+          .withMessage(message);
     } catch (final RuntimeException e) {
       LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -98,10 +98,10 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private Set<String> getDatabaseNames(final MongoDatabase mongoDatabase) {
     try {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
-    } catch (MongoSecurityException e) {
-      MongoCommandException exception = (MongoCommandException) e.getCause();
+    } catch (final MongoSecurityException e) {
+      final MongoCommandException exception = (MongoCommandException) e.getCause();
       throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
-    } catch (MongoException e) {
+    } catch (final MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }
@@ -110,7 +110,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final var database = getDatabase(config);
+    final MongoDatabase database = getDatabase(config);
 
     final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {

@@ -119,35 +119,35 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   @Test
   public void testCheckIncorrectUsername() throws Exception {
     ((ObjectNode) config).put("user", "fake");
-    var airbyteConnectionStatus = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectPassword() throws Exception {
     ((ObjectNode) config).put("password", "fake");
-    var airbyteConnectionStatus = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 18"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(tatus.getMessage().contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
     ((ObjectNode) config).with("instance_type")
         .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
-    var airbyteConnectionStatus = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -4"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -4"));
   }
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
     ((ObjectNode) config).put("user", "test_user_without_access")
         .put("password", "test12321");
-    var airbyteConnectionStatus = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: 13"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 13"));
   }
 
 }

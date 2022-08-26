@@ -90,7 +90,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema) {
-    final var database = getMongoDatabase(container.getHost(),
+    final MongoDatabase database = getMongoDatabase(container.getHost(),
         container.getFirstMappedPort(), DATABASE_NAME);
     final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
     final List<JsonNode> result = new ArrayList<>();
@@ -102,15 +102,19 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     return result;
   }
 
+  /**
+   * For each of the state codes reference MongoDb's base error code yaml
+   * <p>https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml</p>
+   */
   @Test
   void testCheckIncorrectPasswordFailure() {
     final JsonNode invalidConfig = getFailCheckConfig();
     ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
     ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put(JdbcUtils.PASSWORD_KEY, "fake");
-    var destination = new MongodbDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18"));
+    final MongodbDestination destination = new MongodbDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 18"));
   }
 
   @Test
@@ -118,40 +122,40 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     final JsonNode invalidConfig = getFailCheckConfig();
     ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
     ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put(JdbcUtils.USERNAME_KEY, "fakeusername");
-    var destination = new MongodbDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18"));
+    final MongodbDestination destination = new MongodbDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
     final JsonNode invalidConfig = getFailCheckConfig();
     ((ObjectNode) invalidConfig).put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME);
-    var destination = new MongodbDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 18"));
+    final MongodbDestination destination = new MongodbDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectHost() {
     final JsonNode invalidConfig = getConfig();
     ((ObjectNode) invalidConfig).put(JdbcUtils.HOST_KEY, "localhost2");
-    var destination = new MongodbDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: -3"));
+    final MongodbDestination destination = new MongodbDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
   }
 
   @Test
   public void testCheckIncorrectPort() {
     final JsonNode invalidConfig = getConfig();
     ((ObjectNode) invalidConfig).put(JdbcUtils.PORT_KEY, 1234);
-    var destination = new MongodbDestination();
-    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: -3"));
+    final MongodbDestination destination = new MongodbDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
   }
 
   @Override
@@ -176,7 +180,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   private MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
     try {
-      final var connectionString = String.format("mongodb://%s:%s/", host, port);
+      final String connectionString = String.format("mongodb://%s:%s/", host, port);
       return new MongoDatabase(connectionString, databaseName);
     } catch (final RuntimeException e) {
       throw new RuntimeException(e);

@@ -116,14 +116,14 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("tls", false)
         .build());
 
-    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    var airbyteConnectionStatus = new MongoDbSource().check(conf);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
   }
 
   @Test
@@ -135,14 +135,14 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("tls", false)
         .build());
 
-    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    var airbyteConnectionStatus = new MongoDbSource().check(conf);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertTrue(airbyteConnectionStatus.getMessage().contains("State code: -3"));
+    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
   }
 
 }

@@ -8,21 +8,18 @@ import java.util.Objects;
 
 public class ErrorMessage {
 
-  public static String getErrorMessage(String stateCode, int errorCode, String message, Exception exception) {
+  // TODO: this could be built using a Builder design pattern instead of passing in 0 to indicate no errorCode exists
+  public static String getErrorMessage(final String stateCode, final int errorCode, final String message, final Exception exception) {
     if (Objects.isNull(message)) {
-      return getDefaultErrorMessage(stateCode, exception);
+      return configMessage(stateCode, 0, exception.getMessage());
     } else {
       return configMessage(stateCode, errorCode, message);
     }
   }
 
-  private static String getDefaultErrorMessage(String stateCode, Exception exception) {
-    return configMessage(stateCode, 0, exception.getLocalizedMessage());
-  }
-
-  private static String configMessage(String stateCode, int errorCode, String message) {
-    String stateCodePart = Objects.isNull(stateCode) ? "" : String.format("State code: %s; ", stateCode);
-    String errorCodePart = errorCode == 0 ? "" : String.format("Error code: %s; ", errorCode);
+  private static String configMessage(final String stateCode, final int errorCode, final String message) {
+    final String stateCodePart = Objects.isNull(stateCode) ? "" : String.format("State code: %s; ", stateCode);
+    final String errorCodePart = errorCode == 0 ? "" : String.format("Error code: %s; ", errorCode);
     return String.format("%s%sMessage: %s", stateCodePart, errorCodePart, message);
   }
 

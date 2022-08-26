@@ -457,44 +457,50 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return true;
   }
 
+
+  /**
+   * Postgres Source Error Codes:
+   * <p>https://www.postgresql.org/docs/current/errcodes-appendix.html</p>
+   * @throws Exception
+   */
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28P01;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28P01;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 3D000;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
   @Test
@@ -509,9 +515,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("database", DATABASE);
-    final AirbyteConnectionStatus actual = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 42501;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42501;"));
   }
 
 }

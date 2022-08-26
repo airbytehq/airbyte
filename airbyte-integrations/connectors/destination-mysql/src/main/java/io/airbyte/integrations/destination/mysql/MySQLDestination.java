@@ -74,11 +74,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage(messages);
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

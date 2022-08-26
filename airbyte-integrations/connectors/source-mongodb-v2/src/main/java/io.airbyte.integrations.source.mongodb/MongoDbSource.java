@@ -149,7 +149,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * database.
      */
     try {
-      Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+      final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
           .append("authorizedCollections", true)
           .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
@@ -160,10 +160,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
           .collect(Collectors.toSet());
 
-    } catch (MongoSecurityException e) {
-      MongoCommandException exception = (MongoCommandException) e.getCause();
+    } catch (final MongoSecurityException e) {
+      final MongoCommandException exception = (MongoCommandException) e.getCause();
       throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
-    } catch (MongoException e) {
+    } catch (final MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }
@@ -209,7 +209,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public boolean isCursorType(BsonType bsonType) {
+  public boolean isCursorType(final BsonType bsonType) {
     // while reading from mongo primary key "id" is always added, so there will be no situation
     // when we have no cursor field here, at least id could be used as cursor here.
     // This logic will be used feather when we will implement part which will show only list of possible

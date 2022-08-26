@@ -69,7 +69,7 @@ public class PostgresDestinationTest {
         JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
-        "ssl", true,
+        JdbcUtils.SSL_KEY, true,
         "ssl_mode", ImmutableMap.of("mode", "require")));
   }
 
@@ -142,52 +142,52 @@ public class PostgresDestinationTest {
 
   @Test
   void testCheckIncorrectPasswordFailure() {
-    var config = buildConfigNoJdbcParameters();
+    final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    var destination = new PostgresDestination();
-    var actual = destination.check(config);
+    final PostgresDestination destination = new PostgresDestination();
+    final var actual = destination.check(config);
     assertTrue(actual.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() {
-    var config = buildConfigNoJdbcParameters();
+    final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    var destination = new PostgresDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() {
-    var config = buildConfigNoJdbcParameters();
+    final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    var destination = new PostgresDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() {
-    var config = buildConfigNoJdbcParameters();
+    final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    var destination = new PostgresDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
-    var config = buildConfigNoJdbcParameters();
+    final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
-    var destination = new PostgresDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertTrue(actual.getMessage().contains("State code: 08001;"));
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -207,8 +207,8 @@ public class PostgresDestinationTest {
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE);
 
     final Destination destination = new PostgresDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    final AirbyteConnectionStatus status = destination.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the

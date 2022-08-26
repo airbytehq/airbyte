@@ -80,11 +80,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage(messages);
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

@@ -65,11 +65,11 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
-      var messages = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage(messages);
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
@@ -90,7 +90,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             final SqlOperations sqlOps)
       throws Exception {
     try {
-      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
+      // Get metadata from the database to see whether connection is possible
       database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
       // verify we have write permissions on the target schema by creating a table with a random name,
@@ -99,14 +99,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.createSchemaIfNotExists(database, outputSchema);
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (Objects.isNull(e.getCause())) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
       } else {
-        SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getLocalizedMessage(), cause);
+        final SQLException cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), cause);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new Exception(e);
     }
   }

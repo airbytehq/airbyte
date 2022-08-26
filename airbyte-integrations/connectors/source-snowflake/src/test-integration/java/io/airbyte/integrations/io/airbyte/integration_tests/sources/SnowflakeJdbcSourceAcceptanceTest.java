@@ -99,33 +99,33 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08001; Error code: 390100;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08001; Error code: 390100;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
   public void testCheckEmptyUsernameFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 200011;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 200028;"));
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200028;"));
   }
 
   @Override

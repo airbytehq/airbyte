@@ -233,10 +233,10 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     ((ObjectNode) baseJson).put("credential", credential);
     ((ObjectNode) baseJson).set("format", getFormatConfig());
 
-    var destination = new GcsDestination();
-    final AirbyteConnectionStatus actual = destination.check(baseJson);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: SignatureDoesNotMatch;"));
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
   }
 
   @Test
@@ -251,10 +251,10 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     ((ObjectNode) baseJson).put("credential", credential);
     ((ObjectNode) baseJson).set("format", getFormatConfig());
 
-    var destination = new GcsDestination();
-    final AirbyteConnectionStatus actual = destination.check(baseJson);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: SignatureDoesNotMatch;"));
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
   }
 
   @Test
@@ -263,10 +263,10 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     ((ObjectNode) baseJson).put("gcs_bucket_name", "fake_bucket");
     ((ObjectNode) baseJson).set("format", getFormatConfig());
 
-    var destination = new GcsDestination();
-    final AirbyteConnectionStatus actual = destination.check(baseJson);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: NoSuchKey;"));
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: NoSuchKey;"));
   }
 
 }

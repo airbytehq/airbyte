@@ -92,9 +92,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkGcsPermission(config);
-        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
-          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
+        final AirbyteConnectionStatus status = checkGcsPermission(config);
+        if (Status.FAILED == status.getStatus()) {
+          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(status.getMessage());
         }
       }
 

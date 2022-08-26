@@ -269,58 +269,58 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   void testCheckIncorrectPasswordFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PASSWORD_KEY, "fake");
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PASSWORD_KEY, "fake");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, "fake");
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 28000; Error code: 1045;"));
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, "fake");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.HOST_KEY, "localhost2");
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08S01;"));
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.HOST_KEY, "localhost2");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PORT_KEY, "0000");
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 08S01;"));
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PORT_KEY, "0000");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1049;"));
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1049;"));
   }
 
   @Test
   public void testUserHasNoPermissionToDataBase() {
     executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
-    MySQLDestination destination = new MySQLDestination();
-    final AirbyteConnectionStatus actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("State code: 42000; Error code: 1044;"));
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1044;"));
   }
 
 }

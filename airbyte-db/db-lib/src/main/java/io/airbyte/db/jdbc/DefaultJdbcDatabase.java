@@ -78,14 +78,13 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     try (final Connection connection = dataSource.getConnection()) {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
-    } catch (SQLException e) {
-      // For almost all connectors cause != null but, for some connectors, for example redshift cause == null and
-      // in this case we will take the necessary parameters from the exception itself
+    } catch (final SQLException e) {
+      // Some databases like Redshift will have null cause
       if (Objects.isNull(e.getCause())) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getLocalizedMessage(), e);
       } else {
-        SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getLocalizedMessage(), cause);
+        final SQLException cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), cause);
       }
     }
   }
