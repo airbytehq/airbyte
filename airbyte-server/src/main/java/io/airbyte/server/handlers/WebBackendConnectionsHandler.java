@@ -399,6 +399,19 @@ public class WebBackendConnectionsHandler {
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }
+
+    /*
+     * This catalog represents the full catalog that was used to create the configured catalog. It will
+     * have all streams that were present at the time. It will have no configuration set.
+     */
+    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+        .getConnectionAirbyteCatalog(connectionId);
+    if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+      // Update the Catalog returned to include all streams, including disabled ones
+      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
+      connectionRead.setSyncCatalog(syncCatalog);
+    }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 
