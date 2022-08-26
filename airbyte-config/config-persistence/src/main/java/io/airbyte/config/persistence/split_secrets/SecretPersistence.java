@@ -5,7 +5,6 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.db.Database;
 import java.util.Optional;
 import javax.annotation.Nullable;
