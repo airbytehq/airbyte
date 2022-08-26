@@ -172,13 +172,14 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       >
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </ContentCard>
-      <footer className={styles.footer}>
-        {(moreJobPagesAvailable || isJobPageLoading) && (
+
+      {(moreJobPagesAvailable || isJobPageLoading) && (
+        <footer className={styles.footer}>
           <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
           </LoadingButton>
-        )}
-      </footer>
+        </footer>
+      )}
     </div>
   );
 };
