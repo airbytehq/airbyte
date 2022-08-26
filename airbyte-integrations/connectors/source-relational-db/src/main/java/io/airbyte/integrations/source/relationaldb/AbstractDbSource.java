@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.relationaldb;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -62,11 +64,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
-
 /**
- * This class contains helper functions and boilerplate for implementing a source connector for a
- * DB source of both non-relational and relational type
+ * This class contains helper functions and boilerplate for implementing a source connector for a DB
+ * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {

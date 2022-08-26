@@ -104,7 +104,9 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   /**
    * For each of the state codes reference MongoDb's base error code yaml
-   * <p>https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml</p>
+   * <p>
+   * https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
+   * </p>
    */
   @Test
   void testCheckIncorrectPasswordFailure() {

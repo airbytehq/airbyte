@@ -20,9 +20,9 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -140,7 +140,10 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   /**
    * MySQL Error Codes:
-   * <p>https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-error-sqlstates.html</p>
+   * <p>
+   * https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-error-sqlstates.html
+   * </p>
+   *
    * @throws Exception
    */
   @Test

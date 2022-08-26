@@ -41,7 +41,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000");
 
-
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }

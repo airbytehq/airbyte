@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,8 +26,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public class GcsDestination extends BaseConnector implements Destination {
 

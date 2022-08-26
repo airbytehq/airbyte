@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -18,8 +20,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public abstract class CopyDestination extends BaseConnector implements Destination {
 

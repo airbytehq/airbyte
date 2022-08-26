@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -25,8 +27,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 

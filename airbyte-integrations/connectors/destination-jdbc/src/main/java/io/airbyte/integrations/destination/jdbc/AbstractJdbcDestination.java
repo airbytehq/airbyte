@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.exception.ConnectionErrorException;
@@ -28,8 +30,6 @@ import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 

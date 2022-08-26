@@ -457,10 +457,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return true;
   }
 
-
   /**
    * Postgres Source Error Codes:
-   * <p>https://www.postgresql.org/docs/current/errcodes-appendix.html</p>
+   * <p>
+   * https://www.postgresql.org/docs/current/errcodes-appendix.html
+   * </p>
+   *
    * @throws Exception
    */
   @Test

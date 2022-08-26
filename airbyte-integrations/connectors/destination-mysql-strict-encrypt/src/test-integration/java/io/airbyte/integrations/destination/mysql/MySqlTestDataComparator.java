@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mysql;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
       return super.compareBooleanValues(firstBooleanValue, secondBooleanValue);
     } else {
       return super.compareBooleanValues(firstBooleanValue,
-              String.valueOf(secondBooleanValue.equals("1")));
+          String.valueOf(secondBooleanValue.equals("1")));
     }
   }
 
@@ -42,14 +41,14 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseLocalDateTime(actualValue);
     var expectedDate = LocalDate.parse(expectedValue,
-            DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+        DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   private LocalDate parseLocalDateTime(String dateTimeValue) {
     if (dateTimeValue != null) {
       return LocalDate.parse(dateTimeValue,
-              DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
     } else {
       return null;
     }
