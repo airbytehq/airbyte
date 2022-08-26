@@ -208,7 +208,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (!featureFlags.useStreamCapableState()) {
       return AirbyteStateType.LEGACY;
     }
-    LOGGER.info("USING_PER_STREAM_STATE");
+
     return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -220,7 +220,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           .withData(Jsons.jsonNode(new DbState())));
     }
 
-    LOGGER.info("USING_PER_STREAM_STATE");
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
