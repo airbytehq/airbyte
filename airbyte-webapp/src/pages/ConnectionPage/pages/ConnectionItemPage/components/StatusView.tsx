@@ -39,8 +39,8 @@ interface StatusViewProps {
   isStatusUpdating?: boolean;
 }
 
-const getJobRunningOrPending = (jobs: JobWithAttemptsRead[] | undefined) => {
-  return jobs?.find((jobWithAttempts) => {
+const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
+  return jobs.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
     return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
   });
