@@ -1,4 +1,5 @@
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, waitFor } from "@testing-library/react";
+import { act } from "react-dom/test-utils";
 
 import { render } from "utils/testutils";
 
@@ -42,6 +43,23 @@ describe("<Input />", () => {
     expect(getByTestId("input")).toHaveAttribute("type", "text");
     expect(getByTestId("input")).toHaveValue(value);
     expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye-slash");
+  });
+
+  test("hides password on blur", async () => {
+    const value = "eight888";
+    const { getByTestId, getByRole } = await render(<Input type="password" defaultValue={value} />);
+
+    getByTestId("toggle-password-visibility-button").click();
+
+    const inputEl = getByTestId("input");
+
+    expect(inputEl).toHaveFocus();
+    act(() => inputEl.blur());
+
+    await waitFor(() => {
+      expect(inputEl).toHaveAttribute("type", "password");
+      expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye");
+    });
   });
 
   test("should trigger onChange once", async () => {
