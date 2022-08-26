@@ -80,8 +80,7 @@ public class JdbcSSLConnectionUtils {
           try {
             final URI clientCertKeyStoreUri = SSLCertificateUtils.keyStoreFromClientCertificate(encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
                 encryption.get(PARAM_CLIENT_KEY).asText(),
-                clientKeyPassword,
-                null, null);
+                clientKeyPassword, null);
             clientCertKeyStorePair = new ImmutablePair<>(clientCertKeyStoreUri, clientKeyPassword);
           } catch (final CertificateException | IOException
               | KeyStoreException | NoSuchAlgorithmException
