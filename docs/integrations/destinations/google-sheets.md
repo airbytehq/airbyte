@@ -34,7 +34,7 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 4. Select `Sign in with Google`.
 5. Log in and Authorize to the Instagram account and click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 At this moment the `Google Sheets Destination` works only with Airbyte Cloud.
 

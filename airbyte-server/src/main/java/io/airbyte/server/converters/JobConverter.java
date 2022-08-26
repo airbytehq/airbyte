@@ -40,13 +40,16 @@ import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;

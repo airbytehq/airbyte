@@ -5,7 +5,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 ## Prerequisites
 * Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to you'r domain received after complete registration)
 
-## Airbyte OSS
+## Airbyte Open Source
 * Name
 * Okta-Domain
 * Start Date
@@ -39,7 +39,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
 10. Click `Set up source`.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 1. Go to local Airbyte page.
 2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/). 
