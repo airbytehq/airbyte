@@ -10,7 +10,7 @@ public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractC
   @Override
   public ImmutableMap getCertificateConfiguration() {
     return ImmutableMap.builder()
-        .put("mode", "verify-full")
+        .put("mode", "verify-ca")
         .put("ca_certificate", certs.getCaCertificate())
         .put("client_certificate", certs.getClientCertificate())
         .put("client_key", certs.getClientKey())
