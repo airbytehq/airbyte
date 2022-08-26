@@ -137,7 +137,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
-import java.lang.System.Logger;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
