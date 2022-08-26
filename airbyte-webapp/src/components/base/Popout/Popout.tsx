@@ -18,7 +18,7 @@ const OutsideClickListener = styled.div`
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Value = any;
 
-const ControlComponent = (props: ControlProps<Value, false>) => (
+const ControlComponent = (props: ControlProps & { selectProps: Value }) => (
   <div ref={props.innerRef}>
     {props.selectProps.selectProps.targetComponent({
       onOpen: props.selectProps.selectProps.onOpen,
@@ -30,6 +30,7 @@ const ControlComponent = (props: ControlProps<Value, false>) => (
 
 interface PopoutProps extends DropdownProps {
   targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
+  title?: string;
 }
 
 const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {

@@ -24,7 +24,8 @@ const Separator = styled.div`
   padding: 0 5px;
 `;
 
-const SingleValue: React.FC<IProps> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SingleValue: React.FC<IProps<any>> = (props) => {
   const { syncMode, destinationSyncMode } = props.data.value;
   return (
     <Text>

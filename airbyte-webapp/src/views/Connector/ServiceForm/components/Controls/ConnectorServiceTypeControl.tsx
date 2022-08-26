@@ -2,7 +2,7 @@ import { useField } from "formik";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
-import { MenuListComponentProps } from "react-select/src/components/Menu";
+import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
@@ -79,7 +79,8 @@ const SingleValueContent = styled(components.SingleValue)`
   align-items: center;
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -139,7 +140,8 @@ const Option: React.FC<OptionProps> = (props) => {
   );
 };
 
-const SingleValue: React.FC<SingleValueProps> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
   return (
     <SingleValueView>
       {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}

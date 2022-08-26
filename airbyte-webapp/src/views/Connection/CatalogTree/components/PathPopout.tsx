@@ -61,7 +61,6 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
     <Popout
       options={options}
       value={props.path}
-      // @ts-expect-error need to solve issue with typings
       isMulti={props.isMulti}
       isSearchable
       onChange={(options: PathPopoutProps["isMulti"] extends true ? Array<{ value: Path }> : { value: Path }) => {

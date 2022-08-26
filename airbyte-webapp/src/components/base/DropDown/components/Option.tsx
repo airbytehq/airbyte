@@ -1,14 +1,15 @@
 import React from "react";
-import { components, OptionProps, OptionTypeBase } from "react-select";
+import { components, OptionProps } from "react-select";
 import styled from "styled-components";
 
 import CheckBox from "components/base/CheckBox";
 
+import { OptionType } from "../DropDown";
 import Text from "./Text";
 
 export type IProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
-} & OptionProps<OptionTypeBase, false>;
+} & OptionProps<OptionType, boolean>;
 
 export interface IDataItem {
   label?: string;
