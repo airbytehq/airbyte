@@ -49,8 +49,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnection;
-
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
@@ -159,7 +157,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
-    Map<String, String> additionalParameters = new HashMap<>();
+    final Map<String, String> additionalParameters = new HashMap<>();
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {

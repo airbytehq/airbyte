@@ -227,12 +227,12 @@ class BigQueryDestinationTest {
   void testCheckFailure(final DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
-    final AirbyteConnectionStatus status = new BigQueryDestination().check(config);
-    final String actualMessage = status.getMessage();
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
     assertTrue(actualMessage.contains("Access Denied:"));
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
-    assertEquals(expected, status.withMessage(""));
+    assertEquals(expected, actual.withMessage(""));
   }
 
   @ParameterizedTest

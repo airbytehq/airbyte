@@ -305,8 +305,8 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
   }
 
   @Test
