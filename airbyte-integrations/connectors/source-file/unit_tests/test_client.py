@@ -85,13 +85,14 @@ def test_cache_stream(client, absolute_path, test_files):
 
 
 def test_open_aws_url():
+    url = "s3://my_bucket/my_key"
     provider = {"storage": "S3"}
     with pytest.raises(OSError):
-        assert URLFile(url="s3://my_bucket/my_key", provider=provider)._open_aws_url()
+        assert URLFile(url=url, provider=provider)._open_aws_url()
 
     provider.update({"aws_access_key_id": "aws_access_key_id", "aws_secret_access_key": "aws_secret_access_key"})
     with pytest.raises(OSError):
-        assert URLFile(url="s3://my_bucket/my_key", provider=provider)._open_aws_url()
+        assert URLFile(url=url, provider=provider)._open_aws_url()
 
 
 def test_open_azblob_url():
