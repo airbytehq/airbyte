@@ -6,6 +6,17 @@
   position: relative;
 }
 
+/*
+* This eliminates flickering scrollbars when resizing using the reflex splitter.
+* See more details in https://github.com/airbytehq/airbyte/pull/15996
+*/
+.leftPanelStyle.leftPanelStyle {
+  overflow: hidden;
+}
+.rightPanelStyle.rightPanelStyle {
+  overflow: hidden;
+}
+
 .darkOverlay {
   display: flex;
   justify-content: center;
@@ -34,8 +45,7 @@
 .rightPanelContainer {
   background-color: colors.$white;
   height: 100%;
-  // Prevent the flickering described in https://github.com/airbytehq/airbyte/issues/15819
-  overflow-y: scroll;
+  overflow: auto;
 }
 
 .lightOverlay {

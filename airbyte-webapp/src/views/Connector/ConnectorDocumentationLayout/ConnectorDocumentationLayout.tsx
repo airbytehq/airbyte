@@ -74,7 +74,12 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
         </ReflexSplitter>
       )}
       {screenWidth > 500 && documentationPanelOpen && (
-        <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
+        <ReflexElement
+          className={classNames("right-pane", styles.rightPanelStyle)}
+          size={1000}
+          propagateDimensions
+          minSize={60}
+        >
           <RightPanelContainer>
             <Suspense fallback={<LoadingPage />}>
               <LazyDocumentationPanel />
