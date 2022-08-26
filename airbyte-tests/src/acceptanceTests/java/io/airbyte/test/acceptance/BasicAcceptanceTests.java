@@ -411,6 +411,7 @@ class BasicAcceptanceTests {
       final var listSyncJobsRequest = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
           .configId(connection.getConnectionId().toString());
       final var resp = apiClient.getJobsApi().listJobsFor(listSyncJobsRequest);
+      LOGGER.info("Parker: listJobsFor resp: {}", resp);
       jobs = resp.getJobs();
       sleep(Duration.ofSeconds(30).toMillis());
     }
