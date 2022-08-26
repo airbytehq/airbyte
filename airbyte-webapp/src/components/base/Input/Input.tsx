@@ -103,7 +103,7 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, ...props }) => {
     }
 
     const { current: element } = inputRef;
-    const { current: selectionStart } = inputSelectionStartRef;
+    const selectionStart = inputSelectionStartRef.current ?? inputRef.current?.value.length;
 
     element.focus();
 
@@ -137,6 +137,7 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, ...props }) => {
       window.setTimeout(() => {
         if (document.activeElement !== inputRef.current && document.activeElement !== buttonRef.current) {
           toggleIsContentVisible(false);
+          inputSelectionStartRef.current = null;
         }
       }, 0);
     }

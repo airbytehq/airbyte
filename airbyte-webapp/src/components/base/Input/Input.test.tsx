@@ -40,9 +40,28 @@ describe("<Input />", () => {
 
     getByTestId("toggle-password-visibility-button")?.click();
 
-    expect(getByTestId("input")).toHaveAttribute("type", "text");
-    expect(getByTestId("input")).toHaveValue(value);
+    const inputEl = getByTestId("input") as HTMLInputElement;
+
+    expect(inputEl).toHaveAttribute("type", "text");
+    expect(inputEl).toHaveValue(value);
+    expect(inputEl.selectionStart).toBe(value.length);
     expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye-slash");
+  });
+
+  test("showing password should remember cursor position", async () => {
+    const value = "eight888";
+    const selectionStart = Math.round(value.length / 2);
+
+    const { getByTestId } = await render(<Input type="password" defaultValue={value} />);
+    const inputEl = getByTestId("input") as HTMLInputElement;
+
+    act(() => {
+      inputEl.selectionStart = selectionStart;
+    });
+
+    getByTestId("toggle-password-visibility-button")?.click();
+
+    expect(inputEl.selectionStart).toBe(selectionStart);
   });
 
   test("hides password on blur", async () => {
@@ -60,6 +79,27 @@ describe("<Input />", () => {
       expect(inputEl).toHaveAttribute("type", "password");
       expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye");
     });
+  });
+
+  test("cursor position should be at the end after blur and and clicking on show password button", async () => {
+    const value = "eight888";
+    const { getByTestId } = await render(<Input type="password" defaultValue={value} />);
+    const inputEl = getByTestId("input") as HTMLInputElement;
+
+    getByTestId("toggle-password-visibility-button").click();
+    expect(inputEl).toHaveFocus();
+    act(() => {
+      inputEl.selectionStart = value.length / 2;
+      inputEl.blur();
+    });
+
+    await waitFor(() => {
+      expect(inputEl).toHaveAttribute("type", "password");
+    });
+
+    getByTestId("toggle-password-visibility-button").click();
+    expect(inputEl).toHaveFocus();
+    expect(inputEl.selectionStart).toBe(value.length);
   });
 
   test("should trigger onChange once", async () => {
