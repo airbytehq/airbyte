@@ -29,7 +29,7 @@ import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
@@ -136,7 +136,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
+  const { user, inited, providers } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -156,7 +156,7 @@ export const Routing: React.FC = () => {
     [user]
   );
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId);
+  useAnalyticsIdentifyUser(user?.userId, { providers });
   useTrackPageAnalytics();
 
   if (!inited) {

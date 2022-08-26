@@ -1,5 +1,3 @@
-import { faStar } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -32,6 +30,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 10px 0px;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -41,10 +40,6 @@ const Count = styled.div`
   font-weight: bold;
   font-size: 24px;
   line-height: 29px;
-`;
-const StarIcon = styled(FontAwesomeIcon)`
-  margin-right: 6px;
-  font-size: 22px;
 `;
 const Actions = styled.div`
   display: flex;
@@ -88,6 +83,8 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         }, 3000);
       }
     }
+
+    return () => clearInterval(retryIntervalId.current);
   });
 
   useEffect(() => {
@@ -122,21 +119,19 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       <CreditView>
         <FormattedMessage id="credits.remainingCredits" />
         <Count>
-          <StarIcon icon={faStar} />
           <FormattedNumber value={cloudWorkspace.remainingCredits} />
         </Count>
       </CreditView>
       <Actions>
         <LoadingButton
           disabled={!selfServiceCheckoutEnabled}
-          size="xl"
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
         >
           <FormattedMessage id="credits.buyCredits" />
         </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales} size="xl">
+        <Button as="a" target="_blank" href={config.links.contactSales}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

@@ -177,7 +177,7 @@ class TransformConfig:
 
         ssl = config.get("ssl")
         if ssl:
-            ssl_mode = config.get("ssl_mode", "allow")
+            ssl_mode = config.get("ssl_mode", {"mode": "allow"})
             dbt_config["sslmode"] = ssl_mode.get("mode")
             if ssl_mode["mode"] == "verify-ca":
                 TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
@@ -317,6 +317,7 @@ class TransformConfig:
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
+            "driver": "native",
             "host": config["host"],
             "port": config["port"],
             "schema": config["database"],

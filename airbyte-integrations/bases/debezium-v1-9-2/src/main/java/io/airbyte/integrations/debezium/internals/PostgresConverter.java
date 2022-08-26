@@ -4,13 +4,18 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
+import io.debezium.time.Conversions;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.postgresql.util.PGInterval;
@@ -21,7 +26,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresConverter.class);
 
-  private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ"};
+  private final String[] DATE_TYPES = {"DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ"};
   private final String[] BIT_TYPES = {"BIT", "VARBIT"};
   private final String[] MONEY_ITEM_TYPE = {"MONEY"};
   private final String[] GEOMETRICS_TYPES = {"BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH"};
@@ -101,6 +106,12 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
+  private int getTimePrecision(final RelationalColumn field) {
+    return field.scale().orElse(-1);
+  }
+
+  // Ref :
+  // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
 
@@ -108,15 +119,43 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
-      return switch (fieldType.toUpperCase(Locale.ROOT)) {
-        case "TIMETZ" -> DateTimeConverter.convertToTimeWithTimezone(x);
-        case "TIMESTAMPTZ" -> DateTimeConverter.convertToTimestampWithTimezone(x);
-        case "TIMESTAMP" -> DateTimeConverter.convertToTimestamp(x);
-        case "DATE" -> DateTimeConverter.convertToDate(x);
-        case "TIME" -> DateTimeConverter.convertToTime(x);
-        case "INTERVAL" -> convertInterval((PGInterval) x);
-        default -> DebeziumConverterUtils.convertDate(x);
-      };
+      switch (fieldType.toUpperCase(Locale.ROOT)) {
+        case "TIMETZ":
+          return DateTimeConverter.convertToTimeWithTimezone(x);
+        case "TIMESTAMPTZ":
+          return DateTimeConverter.convertToTimestampWithTimezone(x);
+        case "TIMESTAMP":
+          if (x instanceof final Long l) {
+            if (getTimePrecision(field) <= 3) {
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis(l));
+            }
+            if (getTimePrecision(field) <= 6) {
+              return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros(l));
+            }
+          }
+          return DateTimeConverter.convertToTimestamp(x);
+        case "DATE":
+          if (x instanceof Integer) {
+            return DateTimeConverter.convertToDate(LocalDate.ofEpochDay((Integer) x));
+          }
+          return DateTimeConverter.convertToDate(x);
+        case "TIME":
+          if (x instanceof Long) {
+            if (getTimePrecision(field) <= 3) {
+              long l = Math.multiplyExact((Long) x, TimeUnit.MILLISECONDS.toNanos(1));
+              return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
+            }
+            if (getTimePrecision(field) <= 6) {
+              long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
+              return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
+            }
+          }
+          return DateTimeConverter.convertToTime(x);
+        case "INTERVAL":
+          return convertInterval((PGInterval) x);
+        default:
+          throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
+      }
     });
   }
 

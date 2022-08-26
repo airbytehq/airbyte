@@ -52,6 +52,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -104,6 +105,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 @AllArgsConstructor
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
@@ -222,9 +224,10 @@ public class WorkerApp {
   private void registerSync(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
+    // Note that the configuration injected here is for the normalization orchestrator, and not the
+    // normalization pod itself.
+    // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
+    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
 
     final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
         defaultWorkerConfigs,
@@ -313,6 +316,15 @@ public class WorkerApp {
         airbyteVersion);
   }
 
+  /**
+   * Return either a docker or kubernetes process factory depending on the environment in
+   * {@link WorkerConfigs}
+   *
+   * @param configs used to determine which process factory to create.
+   * @param workerConfigs used to create the process factory.
+   * @return either a {@link DockerProcessFactory} or a {@link KubeProcessFactory}.
+   * @throws IOException
+   */
   private static ProcessFactory getJobProcessFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -347,7 +359,10 @@ public class WorkerApp {
                                                    String secretName,
                                                    String secretMountPath,
                                                    String containerOrchestratorImage,
-                                                   String googleApplicationCredentials) {}
+                                                   String containerOrchestratorImagePullPolicy,
+                                                   String googleApplicationCredentials) {
+
+  }
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -364,6 +379,7 @@ public class WorkerApp {
           configs.getContainerOrchestratorSecretName(),
           configs.getContainerOrchestratorSecretMountPath(),
           configs.getContainerOrchestratorImage(),
+          configs.getJobKubeMainContainerImagePullPolicy(),
           configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
@@ -466,6 +482,8 @@ public class WorkerApp {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 

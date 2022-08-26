@@ -61,7 +61,10 @@ spec:
                 name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
                 key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
           - name: POSTGRES_SEEDS
-            value: {{ .Release.Name }}-postgresql
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+                key: DATABASE_HOST
           - name: DYNAMIC_CONFIG_FILE_PATH
             value: "config/dynamicconfig/development.yaml"
         {{- end }}
