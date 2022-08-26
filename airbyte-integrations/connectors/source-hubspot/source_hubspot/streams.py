@@ -187,7 +187,7 @@ class API:
         return self._parse_and_handle_errors(response), response
 
     def get_custom_object_schemas(self) -> Mapping[str, Any]:
-        data, response = self.get('/crm/v3/schemas', {})
+        data, response = self.get("/crm/v3/schemas", {})
         schemas = {}
         if response.ok and "results" in data:
             for raw_schema in data["results"]:
@@ -196,9 +196,16 @@ class API:
         return schemas
 
     def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
-        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
+        properties = {
+            "id": {"type": ["null", "string"]},
+            "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+            "archived": {"type": ["null", "boolean"]},
+            "properties": {}
+        }
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": properties}
         for field in raw_schema["properties"]:
-            schema["properties"][field["name"]] = self._field_to_property_schema(field)
+            schema["properties"]["properties"][field["name"]] = self._field_to_property_schema(field)
         return schema
 
     @staticmethod
@@ -1199,7 +1206,7 @@ class DealPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    scopes = {"contacts", "tickets", "crm.objects.deals.read"}
 
 
 class TicketPipelines(Stream):

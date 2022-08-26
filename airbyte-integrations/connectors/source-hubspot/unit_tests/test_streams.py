@@ -10,6 +10,7 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    CustomObject,
     DealPipelines,
     Deals,
     EmailEvents,
@@ -216,3 +217,93 @@ def test_contact_lists_transform(requests_mock, common_params):
     assert records[1]["filters"][0][0]["value"] == "True"
     assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
     assert records[2]["filters"][0][0]["value"] == "1000"
+
+
+@pytest.fixture(name="custom_object_schema")
+def custom_object_schema_fixture():
+    return {
+        "labels": {"this": "that"},
+        "requiredProperties": ["name"],
+        "searchableProperties": ["name"],
+        "primaryDisplayProperty": "name",
+        "secondaryDisplayProperties": [],
+        "archived": False,
+        "restorable": True,
+        "metaType": "PORTAL_SPECIFIC",
+        "id": "7232155",
+        "fullyQualifiedName": "p19936848_Animal",
+        "createdAt": "2022-06-17T18:40:27.019Z",
+        "updatedAt": "2022-06-17T18:40:27.019Z",
+        "objectTypeId": "2-7232155",
+        "properties": [{
+            "name": "name",
+            "label": "Animal name",
+            "type": "string",
+            "fieldType": "text",
+            "description": "The animal name.",
+            "groupName": "animal_information",
+            "options": [],
+            "displayOrder": -1,
+            "calculated": False,
+            "externalOptions": False,
+            "hasUniqueValue": False,
+            "hidden": False,
+            "hubspotDefined": False,
+            "modificationMetadata": {
+                "archivable": True,
+                "readOnlyDefinition": True,
+                "readOnlyValue": False
+            },
+            "formField": True
+        }],
+        "associations": [],
+        "name": "animals"
+    }
+
+
+@pytest.fixture(name="expected_custom_object_json_schema")
+def expected_custom_object_json_schema():
+    return {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": True,
+        "properties": {
+            "id": {"type": ["null", "string"]},
+            "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+            "archived": {"type": ["null", "boolean"]},
+            "properties": {"name": {"type": ["null", "string"]}}
+        }
+    }
+
+
+def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params):
+    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
+
+    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
+    json_schema = stream.get_json_schema()
+
+    assert json_schema == expected_custom_object_json_schema
+    assert not adapter.called
+
+
+def test_custom_object_stream_calls_hubspot_to_get_json_schema(requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params):
+    expected_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": True,
+        "properties": {
+            "id": {"type": ["null", "string"]},
+            "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+            "archived": {"type": ["null", "boolean"]},
+            "properties": {"name": {"type": ["null", "string"]}}
+        }
+    }
+    stream = CustomObject(entity="animals", schema=None, **common_params)
+
+    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
+    json_schema = stream.get_json_schema()
+
+    assert json_schema == expected_custom_object_json_schema
+    assert adapter.called
