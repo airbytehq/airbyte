@@ -40,8 +40,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class TemporalAttemptExecutionTest {
 
   private static final String JOB_ID = "11";
-  private static final int ATTEMPT_ID = 21;
-  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
+  private static final int ATTEMPT_NUMBER = 1;
+
+  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_NUMBER);
   private static final String SOURCE_USERNAME = "sourceusername";
   private static final String SOURCE_PASSWORD = "hunter2";
 
@@ -74,7 +75,7 @@ class TemporalAttemptExecutionTest {
     when(airbyteApiClient.getAttemptApi()).thenReturn(attemptApi);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
-    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
+    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_NUMBER));
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(Consumer.class);
@@ -111,7 +112,7 @@ class TemporalAttemptExecutionTest {
     verify(execution).get();
     verify(mdcSetter, atLeast(2)).accept(jobRoot);
     verify(attemptApi, times(1)).setWorkflowInAttempt(
-        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -124,7 +125,7 @@ class TemporalAttemptExecutionTest {
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
     verify(attemptApi, times(1)).setWorkflowInAttempt(
-        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -136,7 +137,7 @@ class TemporalAttemptExecutionTest {
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
     verify(attemptApi, times(1)).setWorkflowInAttempt(
-        argThat(request -> request.getAttemptId().equals(ATTEMPT_ID) && request.getJobId().equals(Long.valueOf(JOB_ID))));
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
 }
