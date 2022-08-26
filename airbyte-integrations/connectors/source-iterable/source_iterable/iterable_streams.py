@@ -24,9 +24,9 @@ class IterableStream(HttpStream, ABC):
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
-    def __init__(self, api_key, **kwargs):
-        super().__init__(**kwargs)
-        self._api_key = api_key
+    def __init__(self, authenticator):
+        self._cred = authenticator
+        super().__init__(authenticator)
 
     @property
     @abstractmethod
@@ -43,9 +43,6 @@ class IterableStream(HttpStream, ABC):
         Iterable API does not support pagination
         """
         return None
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"api_key": self._api_key}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -70,7 +67,7 @@ class IterableExportStream(IterableStream, ABC):
     cursor_field = "createdAt"
     primary_key = None
 
-    def __init__(self, start_date, **kwargs):
+    def __init__(self, start_date=None, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
         self.stream_params = {"dataTypeName": self.data_field}
