@@ -51,12 +51,13 @@ class BalanceStream(PlaidStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        options = AccountsBalanceGetRequestOptions()
-        options.min_last_updated_datetime = datetime.datetime.strptime(
+        min_last_updated_datetime = datetime.datetime.strptime(
             datetime.datetime.strftime(self.start_date, "%y-%m-%dT%H:%M:%SZ"),
             "%y-%m-%dT%H:%M:%S%z",
         )
-        balance_response = self.client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token, options=options))
+        options = AccountsBalanceGetRequestOptions(min_last_updated_datetime = min_last_updated_datetime)
+        getRequest = AccountsBalanceGetRequest(access_token=self.access_token, options=options)
+        balance_response = self.client.accounts_balance_get(getRequest)
         for balance in balance_response["accounts"]:
             message_dict = balance["balances"].to_dict()
             message_dict["account_id"] = balance["account_id"]
