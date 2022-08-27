@@ -1,12 +1,11 @@
 /*
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
 
-public class PostgresSourceSSLFullCertificateAcceptanceTest extends AbstractPostgresSourceSSLCertificateAcceptanceTest {
+public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractCdcPostgresSourceSslAcceptanceTest {
 
   @Override
   public ImmutableMap getCertificateConfiguration() {
