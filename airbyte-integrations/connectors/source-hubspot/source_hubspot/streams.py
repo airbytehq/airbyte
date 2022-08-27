@@ -950,8 +950,17 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.set_sync(sync_mode)
+        self.set_sync(sync_mode, stream_state)
         return [None]
+
+    def set_sync(self, sync_mode: SyncMode, stream_state):
+        self._sync_mode = sync_mode
+        if self._sync_mode == SyncMode.incremental:
+            if stream_state:
+                if not self._state:
+                    self._state = self._start_date
+                else:
+                    self._state = self._start_date = max(self._state, self._start_date)
 
 
 class CRMObjectStream(Stream):

@@ -38,7 +38,7 @@ Follow the [Instagram documentation](https://www.facebook.com/business/help/1492
 4. Select `Authenticate your account`.
 5. Log in and Authorize to the Instagram account and click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. For using an Access Tokens, set up instagram (see step above). 
 2. Generate [Access Tokens](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) with the following permissions:

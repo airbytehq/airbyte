@@ -8,7 +8,7 @@ Throughout this tutorial, we'll walk you through the creation an Airbyte source 
 
 We'll build a connector reading data from the Exchange Rates API, but the steps will apply to other HTTP APIs you might be interested in integrating with.
 
-The API documentations can be found [here](https://exchangeratesapi.io/documentation/).
+The API documentations can be found [here](https://apilayer.com/marketplace/exchangerates_data-api).
 In this tutorial, we will read data from the following endpoints:
 
 - `Latest Rates Endpoint`

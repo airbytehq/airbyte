@@ -34,7 +34,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Bing Ads](sources/bing-ads.md)                                                             | Generally Available  | Yes                 |
 | [Braintree](sources/braintree.md)                                                           | Alpha                | Yes                 |
 | [Cart.com](sources/cart.md)                                                                 | Alpha                | No                  |
-| [Chargebee](sources/chargebee.md)                                                           | Alpha                | Yes                 |
+| [Chargebee](sources/chargebee.md)                                                           | Beta                 | Yes                 |
 | [Chargify](sources/chargify.md)                                                             | Alpha                | No                  |
 | [Chartmogul](sources/chartmogul.md)                                                         | Alpha                | Yes                 |
 | [ClickHouse](sources/clickhouse.md)                                                         | Alpha                | Yes                 |
@@ -58,7 +58,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [File](sources/file.md)                                                                     | Alpha                | Yes                 |
 | [Firebolt](sources/firebolt.md)                                                             | Alpha                | Yes                 |
 | [Flexport](sources/flexport.md)                                                             | Alpha                | No                  |
-| [Freshdesk](sources/freshdesk.md)                                                           | Alpha                | Yes                 |
+| [Freshdesk](sources/freshdesk.md)                                                           | Beta                 | Yes                 |
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
@@ -73,7 +73,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Alpha                | Yes                 |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
-| [Harvest](sources/harvest.md)                                                               | Alpha                | No                  |
+| [Harvest](sources/harvest.md)                                                               | Beta                 | No                  |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Generally Available  | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
@@ -93,7 +93,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
-| [Marketo](sources/marketo.md)                                                               | Alpha                | Yes                 |
+| [Marketo](sources/marketo.md)                                                               | Beta                 | Yes                 |
 | [Metabase](sources/metabase.md)                                                             | Alpha                | Yes                 |
 | [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
 | [Microsoft Dynamics Customer Engagement](sources/microsoft-dynamics-customer-engagement.md) | Alpha                | No                  |
@@ -117,7 +117,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Orbit](sources/orbit.md)                                                                   | Alpha                | No                  |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
-| [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | Yes                 |
+| [PayPal Transaction](sources/paypal-transaction.md)                                         | Beta                 | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
 | [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
 | [Pinterest](sources/pinterest.md)                                                           | Alpha                | No                  |
@@ -125,7 +125,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
 | [Plaid](sources/plaid.md)                                                                   | Alpha                | No                  |
 | [PokéAPI](sources/pokeapi.md)                                                               | Alpha                | Yes                 |
-| [Postgres](sources/postgres.md)                                                             | Beta                 | Yes                 |
+| [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
