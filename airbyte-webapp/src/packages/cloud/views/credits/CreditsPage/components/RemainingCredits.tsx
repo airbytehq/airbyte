@@ -30,6 +30,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 10px 0px;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -82,6 +83,8 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         }, 3000);
       }
     }
+
+    return () => clearInterval(retryIntervalId.current);
   });
 
   useEffect(() => {

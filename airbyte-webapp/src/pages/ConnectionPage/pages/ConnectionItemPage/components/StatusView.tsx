@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
+import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
-import ToolTip from "components/ToolTip";
 
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
@@ -134,9 +134,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
                 )}
                 {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
                 {activeJob?.action && activeJob.isCanceling && (
-                  <ToolTip control={cancelJobBtn} cursor="not-allowed">
+                  <Tooltip control={cancelJobBtn} cursor="not-allowed">
                     <FormattedMessage id="connection.canceling" />
-                  </ToolTip>
+                  </Tooltip>
                 )}
               </div>
             )}
