@@ -423,6 +423,9 @@ public class WebBackendConnectionsHandler {
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    if (webBackendConnectionCreate.getOperations() == null) {
+      return Collections.emptyList();
+    }
     final List<UUID> operationIds = new ArrayList<>();
     for (final var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
@@ -434,10 +437,17 @@ public class WebBackendConnectionsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = connectionsHandler
         .getConnection(webBackendConnectionUpdate.getConnectionId());
-    final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
+
+    // wrap operationIds in a new ArrayList so that it is modifiable below, when calling .removeAll
+    final List<UUID> originalOperationIds =
+        connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds());
+
+    final List<WebBackendOperationCreateOrUpdate> updatedOperations =
+        webBackendConnectionUpdate.getOperations() == null ? new ArrayList<>() : webBackendConnectionUpdate.getOperations();
+
     final List<UUID> operationIds = new ArrayList<>();
 
-    for (final var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
+    for (final var operationCreateOrUpdate : updatedOperations) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
         operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
@@ -446,6 +456,7 @@ public class WebBackendConnectionsHandler {
         operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
       }
     }
+
     originalOperationIds.removeAll(operationIds);
     operationsHandler.deleteOperationsForConnection(connectionRead.getConnectionId(), originalOperationIds);
     return operationIds;
