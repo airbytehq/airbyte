@@ -1,0 +1,13 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Queue It Spec
+  type: object
+  required:
+    - start_datetime
+    - company_id
+  properties:
+    start_datetime:
+      type: string
+    company_id:
+      type: string
