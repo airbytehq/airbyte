@@ -6,7 +6,7 @@ from typing import Any, Mapping, Iterable, Optional, MutableMapping
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class QueueWaitingRoomsStream(HttpStream):
+class EventsStream(HttpStream):
     primary_key = "id"
     cursor_field = "eventDate"
     url_base = "https://prod-main-net-dashboard-api.azurewebsites.net"
@@ -44,6 +44,6 @@ class QueueWaitingRoomsStream(HttpStream):
         self._cursor_value = value["eventDate"]
 
 
-class Events(QueueWaitingRoomsStream):
+class Events(EventsStream):
     def path(self, **_) -> str:
         return f"api/company/{self.company_id}/search"

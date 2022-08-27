@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
-}
+    "start_datetime": "not_valid",
+    "company_id": "not_valid"
+  }
+  
