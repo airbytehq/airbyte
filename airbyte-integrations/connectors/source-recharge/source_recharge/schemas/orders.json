@@ -391,7 +391,7 @@
       ]
     },
     "total_weight": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "type": {
       "type": ["null", "string"]
