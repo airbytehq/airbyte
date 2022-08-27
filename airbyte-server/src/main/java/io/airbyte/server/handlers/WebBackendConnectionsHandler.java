@@ -54,9 +54,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.server.converters.ProtocolConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ProtocolConverters;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -399,6 +399,19 @@ public class WebBackendConnectionsHandler {
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }
+
+    /*
+     * This catalog represents the full catalog that was used to create the configured catalog. It will
+     * have all streams that were present at the time. It will have no configuration set.
+     */
+    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+        .getConnectionAirbyteCatalog(connectionId);
+    if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+      // Update the Catalog returned to include all streams, including disabled ones
+      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
+      connectionRead.setSyncCatalog(syncCatalog);
+    }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 
