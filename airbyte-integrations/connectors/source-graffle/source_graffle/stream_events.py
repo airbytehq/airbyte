@@ -31,6 +31,10 @@ class QueueWaitingRoomsStream(HttpStream):
     def next_page_token(self, _: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def read_records(self, stream_state: Mapping[str, Any] = None, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            yield  {k.lower(): v for k, v in record.items()} # convert keys to lower case because redshift problem
+
     @property
     def state(self) -> Mapping[str, Any]:
         return {self.cursor_field: self._cursor_value}
