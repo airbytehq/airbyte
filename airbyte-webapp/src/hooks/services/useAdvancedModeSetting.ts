@@ -13,7 +13,7 @@ export const useAdvancedModeSetting = (): [boolean, (newSetting: boolean) => voi
 
   const isAdvancedMode = (advancedModeSettingsByWorkspace || {})[workspaceId] ?? false;
   const setAdvancedMode = (newSetting: boolean) =>
-    setAdvancedModeSettingsByWorkspace({ ...advancedModeSettingsByWorkspace, ...{ [workspaceId]: newSetting } });
+    setAdvancedModeSettingsByWorkspace({ ...advancedModeSettingsByWorkspace, [workspaceId]: newSetting });
 
   return [isAdvancedMode, setAdvancedMode];
 };
