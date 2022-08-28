@@ -9,6 +9,7 @@ import os
 import time
 from abc import ABC
 from contextlib import closing
+from operator import getitem
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pandas as pd
@@ -25,6 +26,7 @@ from requests import codes, exceptions
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
+from .utils import group_by_size
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -47,6 +49,7 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+        self.page_tokens = []
 
     def decode(self, chunk):
         """
@@ -79,17 +82,16 @@ class SalesforceStream(HttpStream, ABC):
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
-            """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`.
-            """
-            next_token: str = next_page_token["next_token"]
-            return next_token
+            return next_page_token["nextRecordsUrl"]
         return f"/services/data/{self.sf_api.version}/queryAll"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response_data = response.json()
-        next_token = response_data.get("nextRecordsUrl")
-        return {"next_token": next_token} if next_token else None
+        response_json = response.json()
+        nextRecordsUrl = response_json.get("nextRecordsUrl")
+        if nextRecordsUrl:
+            self.page_tokens.append({"nextRecordsUrl": nextRecordsUrl})
+        if self.page_tokens:
+            return self.page_tokens.pop(0)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -108,11 +110,31 @@ class SalesforceStream(HttpStream, ABC):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
-
         return {"q": query}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["records"]
+
+        if self.parts == 1:
+            yield from response.json()["records"]
+
+        else:
+            for record in response.json()["records"]:
+                pk = record[self.primary_key]
+                if pk not in self.pk_to_records:
+                    self.pk_to_records[pk] = {"parts": 0, "record": {}}
+                self.pk_to_records[pk]["parts"] += 1
+                self.pk_to_records[pk]["record"].update(record)
+
+            records = []
+            for pk in list(self.pk_to_records.keys()):
+                if self.pk_to_records[pk]["parts"] == self.parts:
+                    records.append(self.pk_to_records[pk]["record"])
+                    self.pk_to_records.pop(pk)
+
+            if records:
+                if self.cursor_field:
+                    sorted(records, key=lambda x: getitem(x, self.cursor_field))
+                yield from records
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
@@ -344,6 +366,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
 
         selected_properties = self.get_json_schema().get("properties", {})
+
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
             query += next_page_token["next_token"]
@@ -430,11 +453,28 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
     state_checkpoint_interval = 500
+    max_http_query_string_size = 16113
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
         self.start_date = self.format_start_date(start_date)
+
+        self.pk_to_records = {}
+        properties = self.get_json_schema().get("properties", {})
+        self.property_groups = group_by_size(properties, self.max_http_query_string_size - 2000)
+        self.parts = len(self.property_groups)
+
+        if len(self.property_groups) > 1 and not self.primary_key:
+            raise Exception("cannot process multiple groups without primary_key")
+
+        if self.primary_key:
+            for group in self.property_groups:
+                if self.primary_key not in group:
+                    group.append(self.primary_key)
+
+        for _ in range(0, len(self.property_groups) - 1):
+            self.page_tokens.append({"nextRecordsUrl": f"/services/data/{self.sf_api.version}/queryAll"})
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -446,18 +486,15 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        if next_page_token:
-            """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
-            """
-            return {}
 
-        selected_properties = self.get_json_schema().get("properties", {})
+        if not self.property_groups:
+            return {}
+        properties = self.property_groups.pop(0)
 
         stream_date = stream_state.get(self.cursor_field)
         start_date = stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        query = f"SELECT {','.join(properties)} FROM {self.name} "
         if start_date:
             query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
