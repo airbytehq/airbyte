@@ -619,6 +619,7 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
+    // bypasses the SSL modification for cloud acceptance tests
     dbConfig.put(IS_TEST, true);
     dbConfig.put(JdbcUtils.SSL_KEY, false);
 
