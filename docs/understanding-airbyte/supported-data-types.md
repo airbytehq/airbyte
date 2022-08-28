@@ -24,6 +24,9 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 | Object                                                         | `{"type": "object"}`; optionally `properties` and `additionalProperties`                 | `{"foo": "bar"}`                                                                |
 | Untyped (i.e. any value is valid)                              | `{}`                                                                                     |                                                                                 |
 | Union                                                          | `{"anyOf": [...]}` or `{"oneOf": [...]}`                                                 |                                                                                 |
+| Boolean                              | `{}`                                                                                     |                                                                                 |
+
+
 
 Note that some of these may be destination-dependent. For example, Snowflake `NUMERIC` columns can be at most 38 digits wide, but Postgres `NUMERIC` columns may have up to 131072 digits before the decimal point.
 
