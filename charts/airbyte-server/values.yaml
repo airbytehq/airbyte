@@ -165,7 +165,7 @@ log:
 ## extraEnv:
 ## - name: SAMPLE_ENV_VAR
 ##   value: "key=sample-value"
-extraEnv: {}
+extraEnv: []
 
 ## @param server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
 ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -188,3 +188,6 @@ extraContainers: []
 extraInitContainers: []
 
 secrets: {}
+
+env_vars: {}
+

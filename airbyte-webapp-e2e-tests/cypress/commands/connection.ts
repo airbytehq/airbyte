@@ -8,7 +8,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   createTestSource(sourceName);
   createTestDestination(destinationName);
-  cy.wait(3000);
+  cy.wait(5000);
 
   cy.get("div[data-testid='select-source']").click();
   cy.get("div").contains(sourceName).click();
