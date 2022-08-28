@@ -129,7 +129,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
-| 0.1.16  | 2022-08-28 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix SATs                                            |
+| 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                            |
 | 0.1.15  | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance |
 | 0.1.14  | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575)   | Correct schema                                      |
 | 0.1.13  | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                     |
