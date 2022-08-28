@@ -154,7 +154,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 | 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238)   | Updated spec and documentation                                                                  |
 | 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793)   | Fix namespace with invalid characters                                                           |
 | 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755)   | Make sure to kill children threads and stop JVM                                                 |
-| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                    |
+| 0.6.10  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                    |
 | 0.6.6   | 2022-02-01 | [9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                       |
 | 0.6.6   | 2022-01-29 | [9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                          |
 | 0.6.5   | 2022-01-18 | [9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                 |
