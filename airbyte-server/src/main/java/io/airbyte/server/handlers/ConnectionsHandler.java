@@ -111,10 +111,12 @@ public class ConnectionsHandler {
     // Set this as default name if connectionCreate doesn't have it
     final String defaultName = sourceConnection.getName() + " <> " + destinationConnection.getName();
 
+    final List<UUID> operationIds = connectionCreate.getOperationIds() != null ? connectionCreate.getOperationIds() : Collections.emptyList();
+
     ConnectionHelper.validateWorkspace(workspaceHelper,
         connectionCreate.getSourceId(),
         connectionCreate.getDestinationId(),
-        new HashSet<>(connectionCreate.getOperationIds()));
+        new HashSet<>(operationIds));
 
     final UUID connectionId = uuidGenerator.get();
 
@@ -127,7 +129,7 @@ public class ConnectionsHandler {
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
-        .withOperationIds(connectionCreate.getOperationIds())
+        .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId());
     if (connectionCreate.getResourceRequirements() != null) {
