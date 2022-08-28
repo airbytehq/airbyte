@@ -137,6 +137,9 @@ const useCreateConnection = () => {
         ...values,
         status: "active",
         sourceCatalogId,
+
+        // TODO(harshith): Remove this once backend starts accepting only scheduleData params
+        schedule: values.scheduleData?.basicSchedule,
       });
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
