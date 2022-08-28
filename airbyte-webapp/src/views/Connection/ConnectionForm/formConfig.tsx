@@ -239,13 +239,11 @@ const useInitialValues = (
     [connection.syncCatalog, destDefinition, isEditMode]
   );
 
-  const initialSchedule = useMemo(() => connection.scheduleData, [connection.scheduleData]);
-
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      scheduleData: connection.connectionId ? initialSchedule ?? null : DEFAULT_SCHEDULE,
+      scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -262,7 +260,7 @@ const useInitialValues = (
     }
 
     return initialValues;
-  }, [initialSchema, connection, isEditMode, destDefinition, initialSchedule]);
+  }, [initialSchema, connection, isEditMode, destDefinition]);
 };
 
 const useFrequencyDropdownData = (
