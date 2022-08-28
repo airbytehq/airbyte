@@ -32,7 +32,7 @@ class ListUsers(IterableStream):
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Lists(api_key=self._api_key)
+        lists = Lists(authenticator=self._cred)
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
             yield {"list_id": list_record["id"]}
 
@@ -62,11 +62,11 @@ class CampaignsMetrics(IterableStream):
     primary_key = None
     data_field = None
 
-    def __init__(self, api_key: str, start_date: str):
+    def __init__(self, start_date: str, **kwargs):
         """
         https://api.iterable.com/api/docs#campaigns_metrics
         """
-        super().__init__(api_key)
+        super().__init__(**kwargs)
         self.start_date = start_date
 
     def path(self, **kwargs) -> str:
@@ -80,7 +80,7 @@ class CampaignsMetrics(IterableStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Campaigns(api_key=self._api_key)
+        lists = Campaigns(authenticator=self._cred)
         campaign_ids = []
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
             campaign_ids.append(list_record["id"])
@@ -201,7 +201,7 @@ class Events(IterableStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = ListUsers(api_key=self._api_key)
+        lists = ListUsers(authenticator=self._cred)
         stream_slices = lists.stream_slices()
 
         for stream_slice in stream_slices:

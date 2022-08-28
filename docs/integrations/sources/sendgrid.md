@@ -78,6 +78,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://sen
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 |:--------| :--------- |:---------------------------------------------------------|:---------------------------------------------------|
+| 0.2.12  | 2022-08-24 | [15911](https://github.com/airbytehq/airbyte/pull/15911) | Bugfix to allowing reading schemas at runtime      |
 | 0.2.11  | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime     |
 | 0.2.10  | 2022-08-17 | [15734](https://github.com/airbytehq/airbyte/pull/15734) | Fix yaml based on the new schema validator         |
 | 0.2.9   | 2022-08-11 | [15257](https://github.com/airbytehq/airbyte/pull/15257) | Migrate to config-based framework                  |
