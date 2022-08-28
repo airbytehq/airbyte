@@ -24,7 +24,7 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 | Object                                                         | `{"type": "object"}`; optionally `properties` and `additionalProperties`                 | `{"foo": "bar"}`                                                                |
 | Untyped (i.e. any value is valid)                              | `{}`                                                                                     |                                                                                 |
 | Union                                                          | `{"anyOf": [...]}` or `{"oneOf": [...]}`                                                 |                                                                                 |
-| Boolean                              | `{}`                                                                                     |                                                                                 |
+| Boolean                              | `{"type": "boolean"}`                                                                                     |                                `True` or` False`                                                 |
 
 
 
@@ -169,3 +169,5 @@ In some cases, sources may want to use multiple types for the same field. For ex
 
 #### Untyped values
 In some unusual cases, a property may not have type information associated with it. This is represented by the empty schema `{}`. As many destinations do not allow untyped data, this will frequently trigger the [string-typed escape hatch](#unsupported-types).
+
+#### Boolean
