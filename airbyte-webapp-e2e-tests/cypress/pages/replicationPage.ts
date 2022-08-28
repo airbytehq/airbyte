@@ -6,8 +6,7 @@ const destinationNamespace = "div[data-testid='namespaceDefinition']";
 const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customformat']";
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
-const syncModeDropdown = "div.sc-lbxAil.hgSxej";
-const syncModeFullAppendValue = "div.sc-ftvSup.sc-jDDxOa.sEMqZ.kVUvAu";
+const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const successResult = "span[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
@@ -41,9 +40,12 @@ export const setupDestinationNamespaceSourceFormat = () => {
 }
 
 export const selectFullAppendSyncMode = () => {
-    cy.get(syncModeDropdown).click();
-    cy.get(syncModeFullAppendValue).click();
-}
+  cy.get(syncModeDropdown).first().click({ force: true });
+
+  cy.get(`.react-select__menu`)
+    .contains("Append") // it would be nice to select for "Full refresh" is there too
+    .click();
+};
 
 export const checkSuccessResult = () => {
     cy.get(successResult).should("exist");
