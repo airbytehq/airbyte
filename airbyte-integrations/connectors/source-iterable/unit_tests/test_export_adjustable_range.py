@@ -80,8 +80,8 @@ def test_email_stream(catalog, time_mock):
         # ("email_send", 10000, 200000),
         # ("email_click", 1000, 20),
         # ("email_open", 1000, 1),
-        ("email_open", 1, 1000),
-        ("email_open", 0, 1000000),
+        # ("email_open", 1, 1000),
+        # ("email_open", 0, 1000000),
     ],
     indirect=["catalog"],
 )
