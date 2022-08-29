@@ -36,7 +36,7 @@ class RoomStatisticsStream(HttpStream):
 
     def read_records(self, stream_state: Mapping[str, Any] = None, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            yield record
+            yield  {k.lower(): v for k, v in record.items()} # convert keys to lower case because redshift problem
 
 
 class RoomStatistics(RoomStatisticsStream):
