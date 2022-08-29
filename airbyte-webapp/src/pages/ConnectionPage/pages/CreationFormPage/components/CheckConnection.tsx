@@ -57,7 +57,7 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
           <LinkButton full as={Link} to={linkToSettings}>
             <FormattedMessage id={`connection.${type}CheckSettings`} />
           </LinkButton>
-          <Button variant="secondary" full onClick={retry}>
+          <Button secondary full onClick={retry}>
             <FormattedMessage id={`connection.${type}TestAgain`} />
           </Button>
         </ButtonBox>
