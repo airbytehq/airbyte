@@ -31,7 +31,7 @@ export const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cl
   };
 
   return (
-    <Dialog open={isOpen} onClose={() => onModalClose} data-testid={testId} className={styles.modalPageContainer}>
+    <Dialog open={isOpen} onClose={onModalClose} data-testid={testId} className={styles.modalPageContainer}>
       <div className={styles.backdrop} />
       <div className={styles.modalContainer}>
         <Dialog.Panel className={styles.modalPanel}>
