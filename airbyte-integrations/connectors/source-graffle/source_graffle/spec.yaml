@@ -9,5 +9,7 @@ connectionSpecification:
   properties:
     start_datetime:
       type: string
+      format: date-time
+      airbyte_type: timestamp_with_timezone
     company_id:
       type: string
