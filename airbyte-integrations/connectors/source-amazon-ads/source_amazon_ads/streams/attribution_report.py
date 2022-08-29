@@ -36,7 +36,9 @@ class AttributionReport(AmazonAdsStream):
     """
 
     model = AttributionReportModel
-    primary_key = "campaignId"
+    primary_key = None
+    data_field = "reports"
+    page_size = 300
 
     _next_page_token_field = "cursorId"
     _current_profile_id = ""
@@ -100,7 +102,7 @@ class AttributionReport(AmazonAdsStream):
 
         body = {
             "reportType": "PERFORMANCE",
-            "count": 10,
+            "count": self.page_size,
             "metrics": ",".join(METRICS_MAP["PERFORMANCE"]),
             "groupBy": "CAMPAIGN",
             "startDate": self._req_start_date,
@@ -111,25 +113,4 @@ class AttributionReport(AmazonAdsStream):
         if next_page_token:
             body["cursorId"] = next_page_token[self._next_page_token_field]
 
-        print("request body: ", body)
         return body
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an object representing single record in the response
-        """
-        if response.status_code == HTTPStatus.OK:
-            stream_data = response.json()
-            yield from stream_data.get("reports")
-            return
-
-        try:
-            resp = ErrorResponse.parse_raw(response.text)
-        except ValidationError:
-            response.raise_for_status()
-            raise Exception(response.text)
-
-        self.logger.warn(
-            f"Unexpected error {resp.code} when processing request {response.request.url} for "
-            f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
-        )
