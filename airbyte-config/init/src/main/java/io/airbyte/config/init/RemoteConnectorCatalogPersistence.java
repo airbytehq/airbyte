@@ -86,7 +86,8 @@ final public class RemoteConnectorCatalogPersistence implements ConfigPersistenc
     final HttpRequest request = HttpRequest.newBuilder(catalogUrl).timeout(timeout).header("accept", "application/json").build();
     final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     if (response.statusCode() >= 400) {
-      throw new IOException("getRemoteConnectorCatalog request ran into status code error: " + response.statusCode() + "with message: " + response.getClass());
+      throw new IOException(
+          "getRemoteConnectorCatalog request ran into status code error: " + response.statusCode() + "with message: " + response.getClass());
     }
     try {
       return Jsons.deserialize(response.body());
