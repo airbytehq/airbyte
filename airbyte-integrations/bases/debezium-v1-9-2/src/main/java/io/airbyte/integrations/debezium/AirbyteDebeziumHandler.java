@@ -41,7 +41,7 @@ public class AirbyteDebeziumHandler {
    * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE}is 2048
    * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
    */
-  private static final int QUEUE_CAPACITY = 10000;
+  private static final int QUEUE_CAPACITY = 10001;
 
   private final JsonNode config;
   private final CdcTargetPosition targetPosition;

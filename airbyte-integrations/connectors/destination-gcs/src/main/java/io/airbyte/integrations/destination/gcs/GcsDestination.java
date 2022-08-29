@@ -53,6 +53,7 @@ public class GcsDestination extends BaseConnector implements Destination {
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
+      LOGGER.error("New log");
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
