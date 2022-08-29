@@ -10,6 +10,8 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_iterable.iterable_streams import IterableExportStreamAdjustableRange, IterableExportStreamRanged, IterableStream
 
 EVENT_ROWS_LIMIT = 200
@@ -143,43 +145,144 @@ class Channels(IterableStream):
 
 
 class EmailBounce(IterableExportStreamAdjustableRange):
-    name = "email_bounce"
     data_field = "emailBounce"
 
 
 class EmailClick(IterableExportStreamAdjustableRange):
-    name = "email_click"
     data_field = "emailClick"
 
 
 class EmailComplaint(IterableExportStreamAdjustableRange):
-    name = "email_complaint"
     data_field = "emailComplaint"
 
 
 class EmailOpen(IterableExportStreamAdjustableRange):
-    name = "email_open"
     data_field = "emailOpen"
 
 
 class EmailSend(IterableExportStreamAdjustableRange):
-    name = "email_send"
     data_field = "emailSend"
 
 
 class EmailSendSkip(IterableExportStreamAdjustableRange):
-    name = "email_send_skip"
     data_field = "emailSendSkip"
 
 
 class EmailSubscribe(IterableExportStreamAdjustableRange):
-    name = "email_subscribe"
     data_field = "emailSubscribe"
 
 
 class EmailUnsubscribe(IterableExportStreamAdjustableRange):
-    name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
+
+
+class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All reports have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(EmailBounce)).get_schema("events")
+
+class PushSend(IterableExportEventsStreamAdjustableRange):
+    data_field = "pushSend"
+
+
+class PushSendSkip(IterableExportEventsStreamAdjustableRange):
+    data_field = "pushSendSkip"
+
+
+class PushOpen(IterableExportEventsStreamAdjustableRange):
+    data_field = "pushOpen"
+
+
+class PushUninstall(IterableExportEventsStreamAdjustableRange):
+    data_field = "pushUninstall"
+
+
+class PushBounce(IterableExportEventsStreamAdjustableRange):
+    data_field = "pushBounce"
+
+
+class WebPushSend(IterableExportEventsStreamAdjustableRange):
+    data_field = "webPushSend"
+
+
+class WebPushClick(IterableExportEventsStreamAdjustableRange):
+    data_field = "webPushClick"
+
+
+class WebPushSendSkip(IterableExportEventsStreamAdjustableRange):
+    data_field = "webPushSendSkip"
+
+
+class InAppSend(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppSend"
+
+
+class InAppOpen(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppOpen"
+
+
+class InAppClick(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppClick"
+
+
+class InAppClose(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppClose"
+
+
+class InAppDelete(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppDelete"
+
+
+class InAppDelivery(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppDelivery"
+
+
+class InAppSendSkip(IterableExportEventsStreamAdjustableRange):
+    data_field = "inAppSendSkip"
+
+
+class InboxSession(IterableExportEventsStreamAdjustableRange):
+    data_field = "inboxSession"
+
+
+class InboxMessageImpression(IterableExportEventsStreamAdjustableRange):
+    data_field = "inboxMessageImpression"
+
+
+class SmsSend(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsSend"
+
+
+class SmsBounce(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsBounce"
+
+
+class SmsClick(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsClick"
+
+
+class SmsReceived(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsReceived"
+
+
+class SmsSendSkip(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsSendSkip"
+
+
+class SmsUsageInfo(IterableExportEventsStreamAdjustableRange):
+    data_field = "smsUsageInfo"
+
+
+class Purchase(IterableExportEventsStreamAdjustableRange):
+    data_field = "purchase"
+
+
+class CustomEvent(IterableExportEventsStreamAdjustableRange):
+    data_field = "customEvent"
+
+
+class HostedUnsubscribeClick(IterableExportEventsStreamAdjustableRange):
+    data_field = "hostedUnsubscribeClick"
 
 
 class Events(IterableStream):
