@@ -15,7 +15,7 @@ import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { useAnalyticsService } from "./Analytics";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
@@ -100,6 +100,7 @@ const useDeleteSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
     (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
@@ -121,12 +122,8 @@ const useDeleteSource = () => {
             } as SourceList)
         );
 
-        // To delete connections with current source from local store
         const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
-
-        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
-          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
-        }));
+        removeConnectionsFromList(connectionIds);
       },
     }
   );
@@ -153,7 +150,8 @@ const useUpdateSource = () => {
 };
 
 const useDiscoverSchema = (
-  sourceId?: string
+  sourceId: string,
+  disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
@@ -174,7 +172,7 @@ const useDiscoverSchema = (
     setIsLoading(true);
     setSchemaErrorStatus(null);
     try {
-      const data = await service.discoverSchema(sourceId || "");
+      const data = await service.discoverSchema(sourceId || "", disableCache);
       setSchema(data.catalog);
       setCatalogId(data.catalogId);
     } catch (e) {

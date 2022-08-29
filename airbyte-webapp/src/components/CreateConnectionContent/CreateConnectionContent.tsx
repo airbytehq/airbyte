@@ -1,6 +1,9 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
+import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
+import { Button, ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
@@ -16,6 +19,7 @@ import { ConnectionForm } from "views/Connection/ConnectionForm";
 import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
+import styles from "./CreateConnectionContent.module.scss";
 
 interface CreateConnectionContentProps {
   source: SourceRead;
@@ -32,7 +36,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   const analyticsService = useAnalyticsService();
   const { push } = useRouter();
 
-  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
+    source.sourceId,
+    true
+  );
 
   const connection = {
     syncCatalog: schema,
@@ -97,7 +104,14 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         onAfterSubmit={afterSubmitConnection}
         onFrequencySelect={onFrequencySelect}
       >
-        <ConnectionForm />
+        <ConnectionForm
+          additionalSchemaControl={
+            <Button onClick={onDiscoverSchema} type="button">
+              <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+              <FormattedMessage id="connection.refreshSchema" />
+            </Button>
+          }
+        />
       </ConnectionFormServiceProvider>
     </Suspense>
   );
