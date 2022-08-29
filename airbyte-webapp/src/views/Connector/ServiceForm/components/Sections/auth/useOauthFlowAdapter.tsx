@@ -3,7 +3,7 @@ import get from "lodash/get";
 import isEmpty from "lodash/isEmpty";
 import merge from "lodash/merge";
 import pick from "lodash/pick";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { AuthSpecification } from "core/request/AirbyteClient";
@@ -50,10 +50,10 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   };
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
-  const connectionObjectEmpty =
-    values?.connectionConfiguration?.credentials ?? values?.connectionConfiguration
-      ? Object.keys(values.connectionConfiguration?.credentials ?? values.connectionConfiguration).length <= 1
-      : true;
+  const preparedValues = useMemo(() => getValues<Credentials>(values), [getValues, values]);
+  const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
+    ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
+    : true;
 
   return {
     loading,
@@ -81,8 +81,6 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
           return;
         }
       }
-
-      const preparedValues = getValues(values);
 
       const oauthInputParams = Object.entries(oauthInputProperties).reduce((acc, property) => {
         acc[property[0]] = get(preparedValues, makeConnectionConfigurationPath(property[1].path_in_connector_config));
