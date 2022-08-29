@@ -48,7 +48,7 @@ class SourceSalesforce(AbstractSource):
         rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
         # If we have a lot of properties we can overcome REST API URL length and get an error: "reason: URI Too Long".
         # For such cases connector tries to use BULK API because it uses POST request and passes properties in the request body.
-        bulk_required = properties_length + 2000 > Salesforce.MAX_URL_LENGTH
+        bulk_required = properties_length + 2000 > Salesforce.REQUEST_SIZE_LIMITS
 
         if bulk_required and not rest_required:
             return "bulk"
