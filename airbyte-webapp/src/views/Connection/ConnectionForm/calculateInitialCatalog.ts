@@ -15,7 +15,6 @@ const verifySourceDefinedPrimaryKeys = (streamNode: SyncSchemaStream) => {
 
   const {
     stream: { sourceDefinedPrimaryKey },
-    config: { primaryKey },
   } = streamNode;
 
   if (!sourceDefinedPrimaryKey || sourceDefinedPrimaryKey.length === 0) {
