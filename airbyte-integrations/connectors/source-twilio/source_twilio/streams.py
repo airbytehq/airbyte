@@ -49,7 +49,7 @@ class TwilioStream(HttpStream, ABC):
             next_page_params = dict(parse_qsl(next_url.query))
             return next_page_params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
@@ -377,6 +377,7 @@ class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
                         if not validated:
                             break
                     if validated:
+
                         yield {"subresource_uri": item["subresource_uris"][self.subresource_uri_key]}
 
 
