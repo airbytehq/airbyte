@@ -954,11 +954,11 @@ class BasicAcceptanceTests {
       return null;
     });
 
-    final SourceRead source = testHarness.createPostgresSource();
+    final SourceRead source = testHarness.createPostgresSource(true);
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination(true).getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
