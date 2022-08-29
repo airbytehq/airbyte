@@ -99,6 +99,12 @@
               "type": "string",
               "title": "Destination Table Name",
               "description": "The table name in your destination database for choosen query."
+            },
+            "use_segments_date": {
+              "type": "boolean",
+              "title": "Sometimes doesn't need segments.date",
+              "description": "True for use segment_date,and false for no segments.date field when query",
+              "default": true
             }
           }
         }

@@ -164,18 +164,28 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
             end_date = self._end_date
 
-            for chunk in chunk_date_range(
-                start_date=start_date,
-                end_date=end_date,
-                conversion_window=self.conversion_window_days,
-                field=self.cursor_field,
-                days_of_data_storage=self.days_of_data_storage,
-                range_days=self.range_days,
-                time_zone=customer.time_zone,
-            ):
-                if chunk:
-                    chunk["customer_id"] = customer.id
+            if self.cursor_field is not None:
+                for chunk in chunk_date_range(
+                    start_date=start_date,
+                    end_date=end_date,
+                    conversion_window=self.conversion_window_days,
+                    field=self.cursor_field,
+                    days_of_data_storage=self.days_of_data_storage,
+                    range_days=self.range_days,
+                    time_zone=customer.time_zone,
+                ):
+                    if chunk:
+                        chunk["customer_id"] = customer.id
+                    yield chunk
+            else :
+                end_date = pendulum.parse(end_date) if end_date else pendulum.now()
+                chunk = {
+                        "start_date": start_date,
+                        "end_date": end_date.to_date_string(),
+                        "customer_id": customer.id,
+                    }
                 yield chunk
+
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -197,7 +207,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         self.state = {customer_id: {self.cursor_field: cursor_value}}
                         yield record
                         continue
-                    self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+                    if self.cursor_field is not None:
+                        self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
                     yield record
                     continue
             except GoogleAdsException as exception:

@@ -13,6 +13,8 @@ class CustomQuery(IncrementalGoogleAdsStream):
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
         self.user_defined_query = custom_query_config["query"]
+        if "use_segments_date" in self.custom_query_config and self.custom_query_config["use_segments_date"] == False:
+            self.cursor_field = None
         super().__init__(**kwargs)
 
     @property
@@ -31,7 +33,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
-        return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
+        return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date, self.custom_query_config)
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
     # responses, caching playing crucial role for performance here.
@@ -59,7 +61,10 @@ class CustomQuery(IncrementalGoogleAdsStream):
             "DATE": "string",
         }
         fields = CustomQuery.get_query_fields(self.user_defined_query)
-        fields.append(self.cursor_field)
+        if "use_segments_date" in self.custom_query_config and self.custom_query_config["use_segments_date"] == False:
+            self.cursor_field = None
+        else:
+            fields.append(self.cursor_field)
         google_schema = self.google_ads_client.get_fields_metadata(fields)
 
         for field in fields:
@@ -107,7 +112,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         return [f.strip() for f in fields.split(",")]
 
     @staticmethod
-    def insert_segments_date_expr(query: str, start_date: str, end_date: str) -> str:
+    def insert_segments_date_expr(query: str, start_date: str, end_date: str, custom_query_config = {"use_segments_date":True}) -> str:
         """
         Insert segments.date condition to break query into slices for incremental stream.
         :param query Origin user defined query
@@ -120,8 +125,12 @@ class CustomQuery(IncrementalGoogleAdsStream):
         if not columns:
             raise Exception("Not valid GAQL expression")
         columns = columns.group(1)
-        new_columns = columns + ", segments.date\n"
-        result_query = query.replace(columns, new_columns)
+
+        if "use_segments_date" in custom_query_config and custom_query_config["use_segments_date"] == False:
+            result_query = query
+        else:
+            new_columns = columns + ", segments.date\n"
+            result_query = query.replace(columns, new_columns)
 
         # Modify/insert where condition
         where_cond = CustomQuery.WHERE_EXPR.search(result_query)

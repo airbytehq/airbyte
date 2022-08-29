@@ -3,6 +3,8 @@
 #
 
 
+import re
+import urllib.parse
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, MutableMapping
 
@@ -32,6 +34,17 @@ REPORT_MAPPING = {
 }
 API_VERSION = "v11"
 
+
+def change_coding(s):
+  p=re.compile(r'(?P<s>(\\\d\d\d){3,})')
+  for i in p.finditer(s):
+      old=i.group('s')
+      name=old.split('\\')
+      name=['%x' %int(g,8) for g in name if g.isdigit() ]
+      name='%'+'%'.join(name)
+      CN_name= urllib.parse.unquote(name).encode().decode('utf-8')
+      s = s.replace(old,CN_name)
+  return s.strip('"')
 
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
@@ -166,7 +179,7 @@ class GoogleAds:
         # string if it has "repeated" flag on metadata
         if schema_type.get("protobuf_message"):
             if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
+                field_value = [change_coding(str(field)) for field in field_value]
             else:
                 field_value = str(field_value)
 
