@@ -180,7 +180,7 @@ const useDiscoverSchema = (
     } finally {
       setIsLoading(false);
     }
-  }, [service, sourceId]);
+  }, [disableCache, service, sourceId]);
 
   useEffect(() => {
     if (sourceId) {
