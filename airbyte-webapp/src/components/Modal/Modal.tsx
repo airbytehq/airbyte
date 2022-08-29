@@ -22,15 +22,12 @@ const cardStyleBySize = {
   xl: styles.xl,
 };
 
-const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, clear, testId }) => {
+export const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, clear, testId }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const onModalClose = () => {
     setIsOpen(false);
-
-    if (onClose) {
-      onClose();
-    }
+    onClose?.();
   };
 
   return (
@@ -50,5 +47,3 @@ const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, clear, te
     </Dialog>
   );
 };
-
-export default Modal;
