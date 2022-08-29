@@ -252,6 +252,46 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     // overrides test with a no-op until we handle full UTF-8 in the destination
   }
 
+    private String retrieveTableCharset(final String schemaName, final String tableName) throws SQLException {
+        try (final DSLContext dslContext = DSLContextFactory.create(
+                db.getUsername(),
+                db.getPassword(),
+                db.getDriverClassName(),
+                String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+                        db.getHost(),
+                        db.getFirstMappedPort(),
+                        db.getDatabaseName()),
+                SQLDialect.MYSQL)) {
+            return new Database(dslContext).query(
+                    ctx -> ctx
+                            .fetch(String.format("SELECT CCSA.character_set_name \n" +
+                                    "FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA\n" +
+                                    "WHERE CCSA.collation_name = T.table_collation\n" +
+                                    "AND T.table_schema = \"%s\" AND T.table_name = \"%s\";", schemaName, tableName))
+                            .stream().map(this::getJsonFromRecord).toList().get(0).get("CHARACTER_SET_NAME").asText());
+        }
+    }
+
+    @Test
+    public void testUTF8() throws Exception {
+        // create table
+        String testCreateTableName = "mysql_utf8_test_table";
+
+        String createSQL = String.format(
+                "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+                        + "%s VARCHAR(256) PRIMARY KEY,\n"
+                        + "%s JSON,\n"
+                        + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
+                        + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
+                db.getDatabaseName(), testCreateTableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+
+        executeQuery(createSQL);
+
+        // check charset
+        String utf8mb4Charset = "utf8mb4";
+        assertEquals(utf8mb4Charset, retrieveTableCharset(db.getDatabaseName(), testCreateTableName));
+    }
+
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
