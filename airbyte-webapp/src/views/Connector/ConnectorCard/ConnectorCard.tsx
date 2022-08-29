@@ -6,35 +6,41 @@ import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
-import { CheckConnectionRead } from "core/request/AirbyteClient";
-import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { SynchronousJobRead } from "core/request/AirbyteClient";
+import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
 
-export interface ConnectorCardProvidedProps {
-  isTestConnectionInProgress: boolean;
-  isSuccess: boolean;
-  onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+type ConnectorCardProvidedProps = Omit<
+  ServiceFormProps,
+  "isKeyConnectionInProgress" | "isSuccess" | "onStopTesting" | "testConnector"
+>;
+
+interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
+  title?: React.ReactNode;
+  full?: boolean;
+  jobInfo?: SynchronousJobRead | null;
 }
 
-export const ConnectorCard: React.FC<
-  {
-    title?: React.ReactNode;
-    full?: boolean;
-    jobInfo?: SynchronousJobReadWithStatus | null;
-  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
-    (
-      | {
-          isEditMode: true;
-          connector: ConnectorT;
-        }
-      | { isEditMode?: false }
-    )
-> = ({ title, full, jobInfo, onSubmit, ...props }) => {
+interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
+  isEditMode?: false;
+}
+
+interface ConnectorCardEditProps extends ConnectorCardBaseProps {
+  isEditMode: true;
+  connector: ConnectorT;
+}
+
+export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+  title,
+  full,
+  jobInfo,
+  onSubmit,
+  ...props
+}) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
@@ -62,8 +68,8 @@ export const ConnectorCard: React.FC<
 
       analyticsService.track(namespace, actionType, {
         actionDescription,
-        connector_source: connector?.name,
-        connector_source_definition_id: Connector.id(connector),
+        connector: connector?.name,
+        connector_definition_id: Connector.id(connector),
       });
     };
 

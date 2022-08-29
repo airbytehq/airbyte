@@ -5,7 +5,7 @@ Hubplanner is a tool to plan, schedule, report and manage your entire team.
 ## Prerequisites
 * Create the API Key to access your data in Hubplanner.
 
-## Airbyte OSS
+## Airbyte Open Source
 * API Key
 
 ## Airbyte Cloud
@@ -13,9 +13,9 @@ Hubplanner is a tool to plan, schedule, report and manage your entire team.
 
 
 ## Setup guide
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
-1. Access https://<your-domain>.hubplanner.com/settings#api or access the panel in left side Integrations/Hub Planner API
+1. Access https://your-domain.hubplanner.com/settings#api or access the panel in left side Integrations/Hub Planner API
 2. Click in Generate Key
 
 ## Supported sync modes

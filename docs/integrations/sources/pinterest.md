@@ -1,14 +1,47 @@
 # Pinterest
 
-## Overview
+This page contains the setup guide and reference information for the Pinterest source connector.
 
-The Pinterest source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Please read [How to get your credentials](https://developers.pinterest.com/docs/api/v5/#tag/Authentication).
 
-### Output schema
+## Setup guide
+## Step 1: Set up the Pinterest connector in Airbyte
 
-Several output streams are available from this source:
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Pinterest connector and select **Pinterest** from the Source type dropdown. 
+4. Enter your `client_id`
+5. Enter your `client_secret`
+6. Enter your `refresh_token`
+7. Enter the `start_date` you want your sync to start from
+8. Click **Set up source**
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard
+2. Set the name for your source 
+3. Enter your `client_id`
+4. Enter your `client_secret`
+5. Enter your `refresh_token`
+6. Enter the `start_date` you want your sync to start from
+7. Click **Set up source**
+
+## Supported sync modes
+
+The Pinterest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature                   | Supported? |
+| :------------------------ | :--------- |
+| Full Refresh Sync         | Yes        |
+| Incremental - Append Sync | Yes        |
+| SSL connection            | Yes        |
+| Namespaces                | No         |
+
+## Supported Streams
 
 * [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics) \(Incremental\)
 * [Boards](https://developers.pinterest.com/docs/api/v5/#operation/boards/list) \(Full table\)
@@ -24,19 +57,7 @@ Several output streams are available from this source:
   * [Ads](https://developers.pinterest.com/docs/api/v5/#operation/ads/list) \(Incremental\)
     * [Ad analytics](https://developers.pinterest.com/docs/api/v5/#operation/ads/analytics) \(Incremental\)
 
-
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
-
-### Features
-
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
-
-### Performance considerations
+## Performance considerations
 
 The connector is restricted by normal Pinterest [requests limitation](https://developers.pinterest.com/docs/api/v5/#tag/Rate-limits).
 
@@ -46,25 +67,10 @@ Analytics streams - 300 calls per day / per user \
 Ad accounts streams (Campaigns, Ad groups, Ads) - 1000 calls per min / per user / per app \
 Boards streams - 10 calls per sec / per user / per app
 
-The Pinterest connector should not run into Pinterest API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
-
-### Requirements
-
-* Pinterest Client Id
-* Pinterest Client Secret
-* Pinterest Refresh token
-
-### Setup guide
-
-Please read [How to get your credentials](https://developers.pinterest.com/docs/api/v5/#tag/Authentication).
-
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.2 | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields  |
-| 0.1.1 | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043) | Update connector fields title/description |
-| 0.1.0 | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector |
-
+| Version | Date       | Pull Request                                             | Subject                                           |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.2   | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields  |
+| 0.1.1   | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043)   | Update connector fields title/description         |
+| 0.1.0   | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493)   | Release Pinterest CDK Connector                   |

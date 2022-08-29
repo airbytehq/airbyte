@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.0-alpha",
+  "version": "0.40.3",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -22,6 +22,7 @@
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
+    "@floating-ui/react-dom": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
@@ -40,6 +41,7 @@
     "framer-motion": "^6.3.11",
     "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
+    "mdast": "^3.0.0",
     "query-string": "^6.13.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -59,6 +61,7 @@
     "recharts": "^2.1.10",
     "rehype-slug": "^5.0.1",
     "rehype-urls": "^1.1.1",
+    "remark-directive": "^2.0.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
     "rxjs": "^7.5.5",
@@ -66,6 +69,7 @@
     "sass": "^1.52.2",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
+    "unist-util-visit": "^4.1.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {
@@ -95,6 +99,7 @@
     "@types/react-widgets": "^4.4.7",
     "@types/sanitize-html": "^2.6.2",
     "@types/styled-components": "^5.1.25",
+    "@types/unist": "^2.0.5",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "@typescript-eslint/parser": "^5.27.1",
     "eslint-config-prettier": "^8.5.0",

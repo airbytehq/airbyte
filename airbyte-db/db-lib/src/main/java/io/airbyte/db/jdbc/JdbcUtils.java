@@ -4,11 +4,29 @@
 
 package io.airbyte.db.jdbc;
 
+import static java.sql.JDBCType.BIGINT;
+import static java.sql.JDBCType.DATE;
+import static java.sql.JDBCType.DECIMAL;
+import static java.sql.JDBCType.DOUBLE;
+import static java.sql.JDBCType.FLOAT;
+import static java.sql.JDBCType.INTEGER;
+import static java.sql.JDBCType.LONGVARCHAR;
+import static java.sql.JDBCType.NUMERIC;
+import static java.sql.JDBCType.NVARCHAR;
+import static java.sql.JDBCType.REAL;
+import static java.sql.JDBCType.SMALLINT;
+import static java.sql.JDBCType.TIME;
+import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TINYINT;
+import static java.sql.JDBCType.VARCHAR;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
+import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.jooq.JSONFormat;
 
 public class JdbcUtils {
@@ -29,8 +47,14 @@ public class JdbcUtils {
   // NOTE: this is the plural version of SCHEMA_KEY
   public static final String SCHEMAS_KEY = "schemas";
   public static final String SSL_KEY = "ssl";
+  public static final String SSL_MODE_KEY = "ssl_mode";
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
+  public static final String MODE_KEY = "mode";
+  public static final String AMPERSAND = "&";
+  public static final String EQUALS = "=";
+  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
+      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
