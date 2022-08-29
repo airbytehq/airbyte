@@ -20,6 +20,7 @@ def setup_responses(
     adgroups_response=None,
     targeting_response=None,
     product_ads_response=None,
+    attribution_report_response=None,
     generic_response=None,
 ):
     responses.add(
@@ -56,6 +57,12 @@ def setup_responses(
             responses.GET,
             "https://advertising-api.amazon.com/sd/productAds",
             body=product_ads_response,
+        )
+    if attribution_report_response:
+        responses.add(
+            responses.POST,
+            "https://advertising-api.amazon.com/attribution/report",
+            body=attribution_report_response,
         )
     if generic_response:
         responses.add(
@@ -248,3 +255,63 @@ def test_streams_brands_and_products(config, stream_name, endpoint, profiles_res
     records = get_all_stream_records(test_stream)
     assert records == []
     assert any([endpoint in call.request.url for call in responses.calls])
+
+
+@responses.activate
+def test_attribution_report_schema(config, profiles_response, attribution_report_response):
+    setup_responses(profiles_response=profiles_response, attribution_report_response=attribution_report_response)
+
+    source = SourceAmazonAds()
+    streams = source.streams(config)
+
+    profile_stream = get_stream_by_name(streams, "profiles")
+    attribution_report_stream = get_stream_by_name(streams, "attribution_report")
+    schema = attribution_report_stream.get_json_schema()
+
+    profile_records = get_all_stream_records(profile_stream)
+    attribution_records = get_all_stream_records(attribution_report_stream)
+    assert len(attribution_records) == len(profile_records) * len(json.loads(attribution_report_response).get("reports"))
+
+    for record in attribution_records:
+        validate(schema=schema, instance=record)
+
+
+@responses.activate
+def test_attribution_report_with_pagination(mocker, config, profiles_response, attribution_report_response):
+    profiles = json.loads(profiles_response)
+    # use only single profile
+    profiles_response = json.dumps([profiles[0]])
+
+    setup_responses(profiles_response=profiles_response)
+
+    source = SourceAmazonAds()
+    streams = source.streams(config)
+
+    profile_stream = get_stream_by_name(streams, "profiles")
+    attribution_report_stream = get_stream_by_name(streams, "attribution_report")
+    attribution_data = json.loads(attribution_report_response)
+
+    def _callback(request: requests.PreparedRequest):
+        attribution_data["cursorId"] = None
+        request_data = json.loads(request.body)
+
+        if request_data["count"] > 0:
+            mocker.patch("source_amazon_ads.streams.attribution_report.AttributionReport.page_size", 0)
+            attribution_data["cursorId"] = "thisshouldleadtonextpage"
+
+        return 200, {}, json.dumps(attribution_data)
+
+    responses.add_callback(
+        responses.POST,
+        "https://advertising-api.amazon.com/attribution/report",
+        content_type="application/json",
+        callback=_callback,
+    )
+
+    profile_records = get_all_stream_records(profile_stream)
+    attribution_records = get_all_stream_records(attribution_report_stream)
+
+    # request should be called 2 times for a single profile
+    assert len(attribution_records) == 2
+
+

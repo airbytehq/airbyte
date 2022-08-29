@@ -49,3 +49,17 @@ def targeting_response():
     return """
 [{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":{"type":"asinSameAs","value":"B0123456789"},"resolvedExpression":{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}}]
 """
+
+
+@fixture
+def attribution_report_response():
+    return """
+{"reports":[{"date": "20220828","attributedAddToCartClicks14d": "2","brb_bonus_amount": "0",
+"campaignId": "_Ampd__amazon_com_fake_id","attributedDetailPageViewsClicks14d": "6",
+"attributedPurchases14d": "1","attributedTotalAddToCartClicks14d": "5","attributedTotalPurchases14d": "2",
+"advertiserName": "Eversprout","totalUnitsSold14d": "2","unitsSold14d": "1","Click-throughs": "32",
+"attributedTotalDetailPageViewsClicks14d": "17","attributedSales14d": "56.99","totalAttributedSales14d": "96.98"}]}    
+"""
+
+
+
