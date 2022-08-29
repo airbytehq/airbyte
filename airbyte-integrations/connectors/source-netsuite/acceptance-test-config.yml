@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-netsuite-soap:dev
+connector_image: airbyte/source-netsuite:dev
 tests:
   spec:
-    - spec_path: "source_netsuite_soap/spec.yaml"
+    - spec_path: "source_netsuite/spec.yaml"
   connection:
     - config_path: "sample_files/config.json"
       status: "succeed"
