@@ -1,0 +1,21 @@
+@use "../../../scss/colors";
+
+.sortButtonView {
+  display: inline-block;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  font-size: 11px;
+  line-height: 12px;
+  opacity: 0.4;
+  pointer-events: all;
+  background: none !important;
+  border: none;
+  color: inherit;
+  margin-left: 10px;
+  padding: 0;
+
+  &.wasActive {
+    opacity: 1;
+  }
+}

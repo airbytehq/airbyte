@@ -42,11 +42,6 @@ const FormRow = styled(Row)`
   margin-bottom: 8px;
 `;
 
-const DeleteButton = styled(Button)`
-  width: 34px;
-  height: 34px;
-`;
-
 const ROLE_OPTIONS = [
   {
     value: "admin",
@@ -134,7 +129,8 @@ export const InviteUsersModal: React.FC<{
                               </Field>
                             </Cell>
                           )}
-                          <DeleteButton
+                          <Button
+                            customStyles={styles.deleteButton}
                             type="button"
                             disabled={values.users.length < 2}
                             onClick={() => {

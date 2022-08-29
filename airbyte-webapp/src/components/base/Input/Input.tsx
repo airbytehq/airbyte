@@ -95,7 +95,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
       />
       {isVisibilityButtonVisible ? (
         <Button
-          className={styles.visibilityButton}
+          customStyles={styles.visibilityButton}
           buttonRef={buttonRef}
           onClick={() => {
             toggleIsContentVisible();

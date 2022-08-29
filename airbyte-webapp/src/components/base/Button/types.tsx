@@ -5,7 +5,6 @@ type ButtonVariant = "primary" | "secondary" | "danger" | "light";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   buttonRef?: MutableRefObject<HTMLButtonElement | null>;
-  variant?: ButtonVariant;
   clickable?: boolean;
   customStyles?: string;
   full?: boolean;
@@ -13,6 +12,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   iconPosition?: "left" | "right";
   isLoading?: boolean;
   size?: ButtonSize;
+  variant?: ButtonVariant;
   wasActive?: boolean;
   width?: number;
 }
