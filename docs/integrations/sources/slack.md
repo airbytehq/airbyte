@@ -1,70 +1,21 @@
 # Slack
 
-## Sync overview
+This page contains the setup guide and reference information for the Slack source connector.
 
-This source can sync data for the [Slack API](https://api.slack.com/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
 
-### Output schema
+You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
-This Source is capable of syncing the following core Streams:
+We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
-* [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
-* [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
-* [Users](https://api.slack.com/methods/users.list)
-* [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
-* [User Groups](https://api.slack.com/methods/usergroups.list)
-* [Files](https://api.slack.com/methods/files.list)
-* [Remote Files](https://api.slack.com/methods/files.remote.list)
+Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-The connector is restricted by normal Slack [requests limitation](https://api.slack.com/docs/rate-limits).
-
-It is recommended to sync required channels only, this can be done by specifying config variable `channel_filter` in settings.
-
-The Slack connector should not run into Slack API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
-
-### Requirements
-
-#### Slack connector can be connected using two types of authentication: OAuth2.0 or API Token
-
-#### Using OAuth2.0 authenticator
-
-* Client ID - issued when you created your app
-* Client Secret - issued when you created your app
-* Refresh Token - a special kind of token used to obtain a renewed access token
-
-You can get more detailed information about this type of authentication by reading [Slack's documentation about OAuth2.0](https://api.slack.com/authentication/oauth-v2).
-
-#### Using API Token
-
-* Slack API Token 
-
-### Setup guide
+## Setup guide
+### Step 1: Set up Slack
 
 :::info
 
-If you are using an "legacy" Slack API, skip to the Legacy API Key section below.
+If you are using an "legacy" Slack API, skip to the Airbyte Open Source additional setup steps section below.
 
 :::
 
@@ -107,23 +58,87 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 8. In Airbyte, create a Slack source. The "Bot User OAuth Access Token" from the earlier should be used as the token.
 9. You can now pull data from your slack instance!
 
-### Setup guide \(Legacy API Key\)
+
+### Airbyte Open Source additional setup steps
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+
+## Step 2: Set up the Slack connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown. 
+4. Select `Authenticate your account` and log in and Authorize to the Slack account.
+5. Enter your `start_date`.
+6. Enter your `lookback_window`.
+7. Enter your `join_channels`.
+8. Enter your `channel_filter`. 
+9. Click **Set up source**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source. 
+3. Enter your `start_date`.
+4. Enter your `lookback_window`.
+5. Enter your `join_channels`.
+6. Enter your `channel_filter`.
+7. Enter your `api_token`. 
+8. Click **Set up source**.
+
+## Supported sync modes
+
+The Slack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| Namespaces        | No         |
+
+## Supported Streams
+
+* [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
+* [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
+* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
+* [Users](https://api.slack.com/methods/users.list)
+* [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
+* [User Groups](https://api.slack.com/methods/usergroups.list)
+* [Files](https://api.slack.com/methods/files.list)
+* [Remote Files](https://api.slack.com/methods/files.remote.list)
+
+## Performance considerations
+
+The connector is restricted by normal Slack [requests limitation](https://api.slack.com/docs/rate-limits).
+
+It is recommended to sync required channels only, this can be done by specifying config variable `channel_filter` in settings.
+
+## Data type map
+
+| Integration Type | Airbyte Type |
+| :--------------- | :----------- |
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
+
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.15 | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance |
-| 0.1.14 | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575) | Correct schema |
-| 0.1.13 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.12 | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator |
-| 0.1.11 | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fixed sync operations hang forever issue |
-| 0.1.10 | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fixed max retries issue |
-| 0.1.9 | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |
-| 0.1.8 | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float\_ts primary key |
-| 0.1.7 | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector |
-
+| Version | Date       | Pull Request                                             | Subject                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                         |
+| 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                            |
+| 0.1.15  | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance |
+| 0.1.14  | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575)   | Correct schema                                      |
+| 0.1.13  | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                     |
+| 0.1.12  | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570)   | Implement OAuth support with OAuth authenticator    |
+| 0.1.11  | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830)   | Fix sync operations hang forever issue              |
+| 0.1.10  | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697)   | Fix max retries issue                               |
+| 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860)   | Fix reading threads issue                           |
+| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float\_ts primary key                           |
+| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                         |

@@ -110,15 +110,14 @@ public abstract class AbstractSourceConnectorTest {
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-
-    setupEnvironment(environment);
-
     processFactory = new DockerProcessFactory(
         workerConfigs,
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
         "host");
+
+    setupEnvironment(environment);
   }
 
   @AfterEach

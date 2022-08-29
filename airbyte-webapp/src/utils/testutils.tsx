@@ -47,7 +47,7 @@ export async function render<
 }
 export const TestWrapper: React.FC = ({ children }) => (
   <ThemeProvider theme={{}}>
-    <IntlProvider locale="en" messages={en}>
+    <IntlProvider locale="en" messages={en} onError={() => null}>
       {children}
     </IntlProvider>
   </ThemeProvider>

@@ -22,9 +22,7 @@
     },
     "issueTypeMappings": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      },
+      "additionalProperties": true,
       "description": "The issue type to workflow mappings, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme."
     },
     "originalDefaultWorkflow": {
@@ -34,10 +32,7 @@
     },
     "originalIssueTypeMappings": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string",
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "For draft workflow schemes, this property is the issue type to workflow mappings for the original workflow scheme, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.",
       "readOnly": true
     },
@@ -301,6 +296,6 @@
       "readOnly": true
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details about a workflow scheme."
 }

@@ -47,11 +47,123 @@
         "type": "string",
         "order": 5
       },
+      "ssl_mode": {
+        "title": "SSL modes",
+        "description": "SSL connection modes. <li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li><li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "required",
+            "description": "Require SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "required",
+                "enum": ["required"],
+                "default": "required",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Verify CA",
+            "description": "Verify CA SSL mode.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify_ca",
+                "enum": ["verify_ca"],
+                "default": "verify_ca",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Verify Identity",
+            "description": "Verify-full SSL mode.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify_identity",
+                "enum": ["verify_identity"],
+                "default": "verify_identity",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      },
       "replication_method": {
         "type": "string",
         "title": "Replication Method",
         "description": "Replication method which is used for data extraction from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-        "order": 7,
+        "order": 8,
         "default": "STANDARD",
         "enum": ["STANDARD", "CDC"]
       }

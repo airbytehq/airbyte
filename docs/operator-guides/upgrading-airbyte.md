@@ -21,7 +21,7 @@ To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections,
 
 1. If you are in a cloned Airbyte repo, v0.32.0-alpha-patch-1 can be pulled from GitHub with
 
-   ``` 
+   ```
    git checkout v0.32.0-alpha-patch-1
    ```
 
@@ -103,7 +103,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.39.42-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.40.3 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
@@ -147,4 +147,3 @@ Here is an example of what this request might look like assuming that the migrat
 ```bash
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
-

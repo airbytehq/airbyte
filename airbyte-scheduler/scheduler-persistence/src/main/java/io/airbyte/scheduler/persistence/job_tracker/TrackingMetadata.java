@@ -109,6 +109,16 @@ public class TrackingMetadata {
             metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
             metadata.put("volume_mb", syncSummary.getBytesSynced());
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
+            metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
+            metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
+            metadata.put("max_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("mean_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("max_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
+            metadata.put("mean_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
           }
         }
 

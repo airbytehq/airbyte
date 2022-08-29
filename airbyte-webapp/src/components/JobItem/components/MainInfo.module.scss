@@ -9,12 +9,14 @@
     width: 80%;
     display: flex;
     color: colors.$dark-blue;
+    min-width: 0;
 
     .statusIcon {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 75px;
+      min-width: 75px;
 
       & > div {
         margin: 0;
@@ -30,8 +32,10 @@
     .justification {
       width: 80%;
       display: flex;
+      flex-grow: 1;
       flex-direction: column;
       justify-content: center;
+      min-width: 0;
     }
   }
 

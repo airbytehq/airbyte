@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.42-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.3
 ```
 
 ### Using `docker-compose`
@@ -173,7 +173,7 @@ headers:
 ### `octavia` subcommands
 
 | **Command**                               | **Usage**                                                                                  |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------|
+| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
 | **`octavia init`**                        | Initialize required directories for the project.                                           |
 | **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                      |
 | **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.                 |
@@ -280,7 +280,7 @@ weather_to_pg  a4491317-153e-436f-b646-0b39338f9aab  active  c4aa8550-2122-4a33-
 Get an existing source in current the Airbyte workspace. You can use a source ID or name.
 
 | **Argument**  | **Description**  |
-| --------------| -----------------|
+| ------------- | ---------------- |
 | `SOURCE_ID`   | The source id.   |
 | `SOURCE_NAME` | The source name. |
 
@@ -315,7 +315,7 @@ $ octavia get source "My Poke"
 Get an existing destination in current the Airbyte workspace. You can use a destination ID or name.
 
 | **Argument**       | **Description**       |
-| ------------------ | ----------------------|
+| ------------------ | --------------------- |
 | `DESTINATION_ID`   | The destination id.   |
 | `DESTINATION_NAME` | The destination name. |
 
@@ -353,8 +353,8 @@ $ octavia get destination pg
 
 Get an existing connection in current the Airbyte workspace. You can use a connection ID or name.
 
-| **Argument**       | **Description**       |
-| ------------------ | ----------------------|
+| **Argument**      | **Description**      |
+| ----------------- | -------------------- |
 | `CONNECTION_ID`   | The connection id.   |
 | `CONNECTION_NAME` | The connection name. |
 
@@ -505,7 +505,8 @@ $ octavia import all
 ⚠️  - Please update any secrets stored in destinations/postgres/configuration.yaml
 ✅ - Imported connection poke-to-pg in connections/poke_to_pg/configuration.yaml. State stored in connections/poke_to_pg/state_b06c6fbb-cadd-4c5c-bdbb-710add7dedb9.yaml
 ```
-You know have local configuration files for all Airbyte resources that were already existing. 
+
+You know have local configuration files for all Airbyte resources that were already existing.
 You need to edit any secret values that exist in these configuration files as secrets are not imported.
 You can edit the configuration files and run `octavia apply` to continue managing them with octavia-cli.
 
@@ -514,7 +515,7 @@ You can edit the configuration files and run `octavia apply` to continue managin
 Import an existing destination to manage it with octavia-cli. You can use a destination ID or name.
 
 | **Argument**       | **Description**       |
-| -------------------| ----------------------|
+| ------------------ | --------------------- |
 | `DESTINATION_ID`   | The destination id.   |
 | `DESTINATION_NAME` | The destination name. |
 
@@ -523,7 +524,7 @@ Import an existing destination to manage it with octavia-cli. You can use a dest
 Import an existing source to manage it with octavia-cli. You can use a source ID or name.
 
 | **Argument**  | **Description**  |
-| --------------| -----------------|
+| ------------- | ---------------- |
 | `SOURCE_ID`   | The source id.   |
 | `SOURCE_NAME` | The source name. |
 
@@ -535,7 +536,8 @@ $ octavia import source poke
 ✅ - Imported source poke in sources/poke/configuration.yaml. State stored in sources/poke/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
 ⚠️  - Please update any secrets stored in sources/poke/configuration.yaml
 ```
-You know have local configuration file for an Airbyte source that was already existing. 
+
+You know have local configuration file for an Airbyte source that was already existing.
 You need to edit any secret value that exist in this configuration as secrets are not imported.
 You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
 
@@ -544,7 +546,7 @@ You can edit the configuration and run `octavia apply` to continue managing it w
 Import an existing destination to manage it with octavia-cli. You can use a destination ID or name.
 
 | **Argument**       | **Description**       |
-| -------------------| ----------------------|
+| ------------------ | --------------------- |
 | `DESTINATION_ID`   | The destination id.   |
 | `DESTINATION_NAME` | The destination name. |
 
@@ -556,7 +558,8 @@ $ octavia import destination pg
 ✅ - Imported destination pg in destinations/pg/configuration.yaml. State stored in destinations/pg/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
 ⚠️  - Please update any secrets stored in destinations/pg/configuration.yaml
 ```
-You know have local configuration file for an Airbyte destination that was already existing. 
+
+You know have local configuration file for an Airbyte destination that was already existing.
 You need to edit any secret value that exist in this configuration as secrets are not imported.
 You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
 
@@ -565,7 +568,7 @@ You can edit the configuration and run `octavia apply` to continue managing it w
 Import an existing connection to manage it with octavia-cli. You can use a connection ID or name.
 
 | **Argument**      | **Description**      |
-| ------------------| ---------------------|
+| ----------------- | -------------------- |
 | `CONNECTION_ID`   | The connection id.   |
 | `CONNECTION_NAME` | The connection name. |
 
@@ -577,7 +580,8 @@ $ octavia import connection poke-to-pg
 ✅ - Imported connection poke-to-pg in connections/poke-to-pg/configuration.yaml. State stored in connections/poke-to-pg/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
 ⚠️  - Please update any secrets stored in connections/poke-to-pg/configuration.yaml
 ```
-You know have local configuration file for an Airbyte connection that was already existing. 
+
+You know have local configuration file for an Airbyte connection that was already existing.
 **N.B.: You first need to import the source and destination used by the connection.**
 You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
 
@@ -704,7 +708,8 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 ## Changelog
 
 | Version | Date       | Description                                                                           | PR                                                          |
-| ------- | ---------- | --------------------------------------------------------------------------------------| ----------------------------------------------------------- |
+| ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| 0.40.3  | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
 | 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
