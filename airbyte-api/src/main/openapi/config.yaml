@@ -1984,7 +1984,7 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Update a connection
+      summary: Update a connection # TODO (pmossman) add detail to the summary, especially around operations and other complex updates that can occur for web_backend
       operationId: webBackendUpdateConnection
       requestBody:
         content:
@@ -3309,10 +3309,6 @@ components:
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        operationIds:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
