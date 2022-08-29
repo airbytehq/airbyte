@@ -339,7 +339,7 @@ class SourceSlack(AbstractSource):
         if "api_token" in config:
             return TokenAuthenticator(config["api_token"])
 
-        credentials = config.get("credentials")
+        credentials = config.get("credentials", {})
         credentials_title = credentials.get("option_title")
         if credentials_title == "Default OAuth2.0 authorization":
             # We can get `refresh_token` only if the token rotation function is enabled for the Slack Oauth Application.
@@ -364,8 +364,12 @@ class SourceSlack(AbstractSource):
             users_stream = Users(authenticator=authenticator)
             next(users_stream.read_records(SyncMode.full_refresh))
             return True, None
-        except Exception:
-            return False, "There are no users in the given Slack instance or your token is incorrect"
+        except Exception as e:
+            return (
+                False,
+                f"Got an exception while trying to set up the connection: {e}. "
+                f"Most probably, there are no users in the given Slack instance or your token is incorrect",
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
