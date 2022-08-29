@@ -136,8 +136,12 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell />
       <HeaderCell>
         <ActionCell>
-          <ActionButton onClick={onCancel} label={<FormattedMessage id="connectionForm.bulkEdit.cancel" />} />
-          <ActionButton onClick={onApply} label={<FormattedMessage id="connectionForm.bulkEdit.apply" />} />
+          <ActionButton onClick={onCancel}>
+            <FormattedMessage id="connectionForm.bulkEdit.cancel" />
+          </ActionButton>
+          <ActionButton onClick={onApply}>
+            <FormattedMessage id="connectionForm.bulkEdit.apply" />
+          </ActionButton>
         </ActionCell>
       </HeaderCell>
     </SchemaHeader>

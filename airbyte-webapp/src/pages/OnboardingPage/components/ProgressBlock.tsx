@@ -85,7 +85,9 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
     return (
       <ControlBlock>
         <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
-        <PaddedButton onClick={onSync} label={<FormattedMessage id="sources.syncNow" />} />
+        <PaddedButton onClick={onSync}>
+          <FormattedMessage id="sources.syncNow" />
+        </PaddedButton>
       </ControlBlock>
     );
   }

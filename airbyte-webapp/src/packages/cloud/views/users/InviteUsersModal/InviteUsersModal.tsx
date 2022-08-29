@@ -6,7 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input, ButtonType, Modal } from "components";
+import { Button, DropDown, H5, Input, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -143,7 +143,7 @@ export const InviteUsersModal: React.FC<{
                                 ...values.users.slice(index + 1),
                               ]);
                             }}
-                            buttonType={ButtonType.Secondary}
+                            variant="secondary"
                             icon={<FontAwesomeIcon icon={faTimes} />}
                           />
                         </FormRow>
@@ -157,28 +157,27 @@ export const InviteUsersModal: React.FC<{
                             role: ROLE_OPTIONS[0].value,
                           })
                         }
-                        buttonType={ButtonType.Secondary}
-                        label={<FormattedMessage id="modals.addUser.button.addUser" />}
-                      />
+                        variant="secondary"
+                      >
+                        <FormattedMessage id="modals.addUser.button.addUser" />
+                      </Button>
                     </>
                   )}
                 />
 
                 <Controls>
+                  <Button type="button" variant="secondary" onClick={props.onClose}>
+                    <FormattedMessage id="modals.addUser.button.cancel" />
+                  </Button>
                   <Button
-                    type="button"
-                    buttonType={ButtonType.Secondary}
-                    onClick={() => props.onClose()}
-                    label={<FormattedMessage id="modals.addUser.button.cancel" />}
-                  />
-                  <Button
-                    customStyles={styles.send_invitation_button}
+                    customStyles={styles.sendInvitationButton}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}
-                    label={<FormattedMessage id="modals.addUser.button.submit" />}
-                  />
+                  >
+                    <FormattedMessage id="modals.addUser.button.submit" />
+                  </Button>
                 </Controls>
               </Content>
             </Form>

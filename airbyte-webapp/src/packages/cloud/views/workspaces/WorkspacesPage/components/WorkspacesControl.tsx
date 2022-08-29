@@ -29,11 +29,9 @@ const WorkspacesControl: React.FC<{
       <CreateWorkspaceForm onSubmit={onSubmit} />
     </FormContent>
   ) : (
-    <CreateButton
-      onClick={toggleMode}
-      data-testid="workspaces.createNew"
-      label={<FormattedMessage id="workspaces.createNew" />}
-    />
+    <CreateButton onClick={toggleMode} data-testid="workspaces.createNew">
+      <FormattedMessage id="workspaces.createNew" />
+    </CreateButton>
   );
 };
 

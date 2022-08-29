@@ -54,12 +54,9 @@ export const NameSection: React.FC = () => {
                   )}
                 </Field>
               </RowFieldItem>
-              <Button
-                disabled={!isValid || !dirty}
-                type="submit"
-                isLoading={isSubmitting}
-                label={<FormattedMessage id="settings.accountSettings.updateName" />}
-              />
+              <Button disabled={!isValid || !dirty} type="submit" isLoading={isSubmitting}>
+                <FormattedMessage id="settings.accountSettings.updateName" />
+              </Button>
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} />
             </Form>
           )}

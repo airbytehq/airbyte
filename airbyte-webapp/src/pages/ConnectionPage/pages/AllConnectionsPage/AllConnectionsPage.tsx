@@ -12,7 +12,6 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 
-import { ButtonType } from "../../../../components";
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
@@ -35,13 +34,14 @@ const AllConnectionsPage: React.FC = () => {
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
                 <Button
-                  buttonType={ButtonType.Primary}
-                  size="s"
+                  variant="primary"
+                  size="sm"
                   icon={<FontAwesomeIcon icon={faPlus} />}
                   onClick={onCreateClick}
                   disabled={!allowCreateConnection}
-                  label={<FormattedMessage id="connection.newConnection" />}
-                />
+                >
+                  <FormattedMessage id="connection.newConnection" />
+                </Button>
               }
             />
           }

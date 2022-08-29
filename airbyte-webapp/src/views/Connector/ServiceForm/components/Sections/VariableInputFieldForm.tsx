@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { useAsync, useEffectOnce } from "react-use";
 import * as yup from "yup";
 
-import { Button, ModalBody, ModalFooter, ButtonType } from "components";
+import { Button, ModalBody, ModalFooter } from "components";
 
 import { FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
@@ -67,13 +67,14 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
       <ModalFooter>
         <Button
           data-testid="cancel-button"
-          buttonType={ButtonType.Secondary}
+          variant="secondary"
           onClick={() => {
             onCancel();
             fieldHelper.setValue(undefined, false);
           }}
-          label={<FormattedMessage id="form.cancel" />}
-        />
+        >
+          <FormattedMessage id="form.cancel" />
+        </Button>
         <Button
           data-testid="done-button"
           disabled={disabled || !isValid}
@@ -81,8 +82,9 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
             onDone(field.value);
             fieldHelper.setValue(undefined, false);
           }}
-          label={<FormattedMessage id="form.done" />}
-        />
+        >
+          <FormattedMessage id="form.done" />
+        </Button>
       </ModalFooter>
     </>
   );

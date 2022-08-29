@@ -10,7 +10,7 @@ export default {
 } as ComponentMeta<typeof Popout>;
 
 const Target: React.FC<{ onOpen: () => void; title: string }> = ({ onOpen, title }) => {
-  return <Button onClick={() => onOpen()} label={title} />;
+  return <Button onClick={() => onOpen()}>{title}</Button>;
 };
 
 const options = [

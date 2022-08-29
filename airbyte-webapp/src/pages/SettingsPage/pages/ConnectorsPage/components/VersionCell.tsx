@@ -110,8 +110,9 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
               isLoading={isSubmitting}
               type="submit"
               disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
-              label={<FormattedMessage id="form.change" />}
-            />
+            >
+              <FormattedMessage id="form.change" />
+            </Button>
           </Form>
         )}
       </Formik>

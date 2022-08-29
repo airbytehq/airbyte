@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, LabeledInput, Link, Modal, StatusIcon, ButtonType } from "components";
+import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
 
 import { useConfig } from "config";
 
@@ -208,18 +208,12 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <Button
-                    customStyles={styles.button_with_margin}
-                    onClick={onClose}
-                    type="button"
-                    buttonType={ButtonType.Secondary}
-                    label={<FormattedMessage id="form.cancel" />}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !dirty || !isValid}
-                    label={<FormattedMessage id="form.add" />}
-                  />
+                  <Button customStyles={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
+                    <FormattedMessage id="form.cancel" />
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
+                    <FormattedMessage id="form.add" />
+                  </Button>
                 </div>
               </ButtonContent>
             </Form>

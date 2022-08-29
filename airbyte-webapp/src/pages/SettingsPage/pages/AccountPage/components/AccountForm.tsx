@@ -105,12 +105,9 @@ const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessa
             </Field>
           </div>
           <div className={styles.submit}>
-            <Button
-              isLoading={isSubmitting}
-              type="submit"
-              disabled={!dirty || !values.email}
-              label={<FormattedMessage id="form.saveChanges" />}
-            />
+            <Button isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
+              <FormattedMessage id="form.saveChanges" />
+            </Button>
           </div>
           {!dirty &&
             (successMessage ? (

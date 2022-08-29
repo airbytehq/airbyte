@@ -128,16 +128,18 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
           type="button"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
-          label={<FormattedMessage id="credits.buyCredits" />}
-        />
+        >
+          <FormattedMessage id="credits.buyCredits" />
+        </Button>
         <Button
           // @ts-ignore
           as="a"
           target="_blank"
           href={config.links.contactSales}
-          size="l"
-          label={<FormattedMessage id="credits.talkToSales" />}
-        />
+          size="lg"
+        >
+          <FormattedMessage id="credits.talkToSales" />
+        </Button>
       </Actions>
     </Block>
   );

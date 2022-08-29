@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useMutation } from "react-query";
 import styled from "styled-components";
 
-import { Button, ButtonType } from "components";
+import { Button } from "components";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -30,13 +30,9 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <Button
-              buttonType={ButtonType.Danger}
-              onClick={() => logout()}
-              isLoading={isLoggingOut}
-              data-testid="button.signout"
-              label={<FormattedMessage id="settings.accountSettings.logoutText" />}
-            />
+            <Button variant="danger" onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
+              <FormattedMessage id="settings.accountSettings.logoutText" />
+            </Button>
           </Header>
         }
       />

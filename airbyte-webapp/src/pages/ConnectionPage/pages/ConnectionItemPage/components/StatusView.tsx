@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard, ButtonType } from "components";
+import { Button, ContentCard } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -116,8 +116,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   let label = null;
   if (activeJob?.action === ActionType.RESET) {
     label = <FormattedMessage id="connection.cancelReset" />;
-  }
-  if (activeJob?.action === ActionType.SYNC) {
+  } else if (activeJob?.action === ActionType.SYNC) {
     label = <FormattedMessage id="connection.cancelSync" />;
   }
 
@@ -142,8 +141,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       disabled={!activeJob?.id || activeJob.isCanceling}
       onClick={onCancelJob}
       icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
-      label={label}
-    />
+    >
+      {label}
+    </Button>
   );
 
   return (
@@ -157,12 +157,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
               <div className={styles.actions}>
                 {!activeJob?.action && (
                   <>
-                    <Button
-                      className={styles.resetButton}
-                      buttonType={ButtonType.Secondary}
-                      onClick={onResetDataButtonClick}
-                      label={<FormattedMessage id="connection.resetData" />}
-                    />
+                    <Button className={styles.resetButton} variant="secondary" onClick={onResetDataButtonClick}>
+                      <FormattedMessage id="connection.resetData" />
+                    </Button>
                     <Button
                       className={styles.syncButton}
                       disabled={!allowSync}
@@ -172,8 +169,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
                           <RotateIcon />
                         </div>
                       }
-                      label={<FormattedMessage id="sources.syncNow" />}
-                    />
+                    >
+                      <FormattedMessage id="sources.syncNow" />
+                    </Button>
                   </>
                 )}
                 {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}

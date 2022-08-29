@@ -5,7 +5,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter, ButtonType } from "components";
+import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { useConfig } from "config";
@@ -153,20 +153,18 @@ const TransformationForm: React.FC<TransformationProps> = ({
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button
-          onClick={onFormCancel}
-          type="button"
-          buttonType={ButtonType.Secondary}
-          label={<FormattedMessage id="form.cancel" />}
-        />
+        <Button onClick={onFormCancel} type="button" variant="secondary">
+          <FormattedMessage id="form.cancel" />
+        </Button>
         <Button
           onClick={() => formik.handleSubmit()}
           type="button"
           data-testid="done-button"
           isLoading={formik.isSubmitting}
           disabled={!formik.isValid || !formik.dirty || equal(transformation, formik.values)}
-          label={<FormattedMessage id="form.saveTransformation" />}
-        />
+        >
+          <FormattedMessage id="form.saveTransformation" />
+        </Button>
       </ModalFooter>
     </>
   );

@@ -72,11 +72,19 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
     }
 
     if (dirty) {
-      return <Button isLoading={isSubmitting} type="submit" label={<FormattedMessage id="form.saveChanges" />} />;
+      return (
+        <Button isLoading={isSubmitting} type="submit">
+          <FormattedMessage id="form.saveChanges" />
+        </Button>
+      );
     }
 
     if (webhook) {
-      return <Button isLoading={isSubmitting} type="submit" label={<FormattedMessage id="settings.test" />} />;
+      return (
+        <Button isLoading={isSubmitting} type="submit">
+          <FormattedMessage id="settings.test" />
+        </Button>
+      );
     }
 
     return null;
