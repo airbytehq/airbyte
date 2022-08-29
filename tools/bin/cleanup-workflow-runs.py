@@ -2,19 +2,15 @@ import argparse
 import os
 import subprocess
 import re
-import json
 from datetime import datetime, timedelta
 from github import Github
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
 
 DAYS_TO_KEEP_ORPHANED_JOBS = 90
-SLACK_CHANNEL_FOR_NOTIFICATIONS = "infra-alerts"
 
 
 '''
 
-This script is intended to be run in conjuction with cleanup-workflow-runs.py to keep GH actions clean.
+This script is intended to be run in conjuction with identify-dormant-workflows.py to keep GH actions clean.
 
 The basic workflow is 
 
@@ -34,31 +30,24 @@ parser = argparse.ArgumentParser()
 
 # Add long and short argument
 parser.add_argument("--pat", "-p", help="Set github personal access token")
-parser.add_argument("--sat", "-s", help="Set slack api token. Optional. If not passed, will just print to console")
+parser.add_argument("--delete", "-d", action='store', nargs='*', help="By default, the script will only print runs that will be deleted. Pass --delete to actually delete them")
 
 def main():
     # Read arguments from the command line
     args = parser.parse_args()
-
-
     # Check for user supplied PAT. If not supplied, assume we are running in actions
     # and pull from environment
-    gh_token = None
-    slack_token = None
+
+    token = None
 
     if args.pat:
-        gh_token = args.pat
+        token = args.pat
     else:
-        gh_token = os.getenv('GITHUB_TOKEN')
-    if not gh_token:
+        token = os.getenv('GITHUB_TOKEN')
+    if not token:
         raise Exception("Github personal access token not provided via args and not available in GITHUB_TOKEN variable")
-    
-    if args.sat:
-        slack_token = args.sat
-    else:
-        slack_token = os.getenv('SLACK_TOKEN')
 
-    g = Github(gh_token)
+    g = Github(token)
 
     git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True)  
 
@@ -66,35 +55,31 @@ def main():
     # git@github.com:airbytehq/airbyte.git
     # https://github.com/airbytehq/airbyte.git
 
-
-    git_url_regex = re.compile(r'(?:git@|https://)github\.com[:/](.*?)(\.git|$)')
+    git_url_regex = re.compile(r'(?:git@|https://)github\.com[:/](.*?)(\.git|$)') 
     re_match = git_url_regex.match(git_url.stdout.decode("utf-8"))
 
-    repo_name = re_match.group(1)
-
-    repo = g.get_repo(repo_name)
+    repo = g.get_repo(re_match.group(1))
     workflows = repo.get_workflows()
 
     runs_to_delete = []
 
     for workflow in workflows:
-        runs = workflow.get_runs()
-        for run in runs:
-            # check and see if a workflow exists but is not actively being triggered/run
-            if os.path.exists(workflow.path) and run.updated_at < datetime.now() - timedelta(days=DAYS_TO_KEEP_ORPHANED_JOBS):
-                message = "The Github Workflow '" + workflow.name + "' exists in " + repo_name + " but has no run newer than 90 days old. URL: " + workflow.html_url
-                print(message)  
+        if not os.path.exists(workflow.path): # it's not in the current branch 
+            runs = workflow.get_runs()
+            for run in runs:
+                if run.updated_at > datetime.now() - timedelta(days=DAYS_TO_KEEP_ORPHANED_JOBS): 
+                    break # don't clean up if it has a run newer than 90 days
+                if args.delete is not None:
+                    print("Deleting run id " + str(run.id))
+                    #run.delete()
+                else:
+                    runs_to_delete.append((workflow.name, run.id, run.created_at.strftime("%m/%d/%Y, %H:%M:%S")))
+                
+    if args.delete is None:
+        print("[DRY RUN] A total of " + str(len(runs_to_delete)) + " runs would be deleted: ")
+        for run in runs_to_delete:
+            print(run)
 
-                if slack_token:
-
-                    print("Sending Slack notification...")
-                    client = WebClient(slack_token)
-
-                    try:  response = client.chat_postMessage(channel = SLACK_CHANNEL_FOR_NOTIFICATIONS, text = message)
-                    except SlackApiError as e:  
-                        print(e, '\n\n')
-                        raise Exception("Error calling the Slack API")
-            break
 
 if __name__ == '__main__':
     main()
