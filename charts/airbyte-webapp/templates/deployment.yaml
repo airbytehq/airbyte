@@ -36,7 +36,7 @@ spec:
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
-          {{- printf "- name: %s" .name | nindent 2 }}
+          {{- printf "- name: %s" .name | nindent 8 }}
         {{- end }}
       {{- end }}
       containers:
