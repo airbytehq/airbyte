@@ -693,7 +693,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-cassandra:0.1.3"
+- dockerImage: "airbyte/destination-cassandra:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
     connectionSpecification:
