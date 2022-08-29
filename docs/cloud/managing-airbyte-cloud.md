@@ -14,7 +14,7 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings**. 
 2. In the Workspace Settings sidebar, click **Access Management**.
 3. In the top right-hand corner, click **+ New User**.
 4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
@@ -27,7 +27,7 @@ To add a user to your workspace:
 
 To switch between workspaces:
 
-1. On the Airbyte Cloud dashboard, click the current workspace name under the Airbyte logo in the left-hand navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the left-hand navigation bar.
 
 2. Click **View all workspaces**.
 
@@ -53,17 +53,17 @@ To delete a workspace:
 
 3. Click **Delete your workspace**.
 
-## Single Workspace vs. Multiple Workspaces
+### Single workspace vs. multiple workspaces
  
 You can use one or multiple workspaces with Airbyte Cloud. 
  
-### Access
+#### Access
 | Number of Workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
 | Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
  
-### Billing
+#### Billing
 | Number of Workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
@@ -97,7 +97,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the Sync Log Summary
+## View the sync log summary
 The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
  
 To view the sync log summary:
@@ -113,8 +113,8 @@ To view the sync log summary:
 
 4. For more information about a sync, click the sync log dropdown.  
  
-## Sync Log Summary
-### Succeeded
+### Sync log summary
+#### Succeeded
 The log summary for a successful sync shows the following data.
 
 | Log                            | Description                                                                                                                                             |
@@ -131,7 +131,7 @@ In a successful sync, the number of emitted records and committed records should
 
 :::  
 
-### Cancelled
+#### Cancelled
 The log summary for a cancelled sync may show the following data.
 
 | Log            | Description                                                                                     |
@@ -148,7 +148,7 @@ Airbyte will try to sync your data three times. After a third failure, it will s
     
 :::
 
-### Failed
+#### Failed
 The log summary for a failed sync may show the following data.
 
 | Log            | Description                                                                                 |
@@ -159,7 +159,7 @@ The log summary for a failed sync may show the following data.
 | Sync or Reset  | The action that was performed (either a sync or a reset).                                   |
 | Failure Origin | The cause of the sync failure.                                                              |
 
-### Running
+#### Running
 The sync log summary displays **Running** when the sync is actively running.
 
 ## Edit stream configuration
@@ -242,13 +242,13 @@ To refresh the source schema:
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
 
-## Buy Credits
+## Buy credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
  To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **coin icon**.
+1. On the Airbyte Cloud dashboard, click the **coin icon**.
     
     The Credits page displays.
 
