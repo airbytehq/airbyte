@@ -1,6 +1,7 @@
 import React from "react";
 
 import { Popout } from "components";
+import { Tooltip } from "components/base/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
@@ -41,7 +42,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
           : pathDisplayName(props.path)
         : "";
 
-      return <>{text}</>;
+      return <Tooltip control={<>{text}</>}>{text}</Tooltip>;
     }
     return <>{"<sourceDefined>"}</>;
   }
