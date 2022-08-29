@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -85,7 +86,7 @@ public class StatePersistence {
       throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
     final StateType currentStateType = state.getStateType();
-    final boolean isMigration = isMigration(connectionId, currentStateType, previousState);
+    final boolean isMigration = StateMessageHelper.isMigration(currentStateType, previousState);
 
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
@@ -105,12 +106,6 @@ public class StatePersistence {
       }
       return null;
     });
-  }
-
-  public Boolean isMigration(final UUID connectionId, final StateType currentStateType, final Optional<StateWrapper> previousState)
-      throws IOException {
-    return previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
-        currentStateType != StateType.LEGACY;
   }
 
   private static void clearLegacyState(final DSLContext ctx, final UUID connectionId) {
