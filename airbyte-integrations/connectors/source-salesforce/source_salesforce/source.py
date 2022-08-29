@@ -3,6 +3,7 @@
 #
 
 import copy
+import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -37,6 +38,24 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
+    def _get_api_type(cls, stream_name, properties, stream_state):
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
+        properties_not_supported_by_bulk = {
+            key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
+        }
+        properties_length = len(",".join(p for p in properties))
+
+        rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
+        bulk_required = properties_length + 2000 > Salesforce.MAX_HTTP_QUERY_STRING_SIZE
+
+        if bulk_required and not rest_required:
+            return "bulk"
+        elif rest_required and not bulk_required:
+            return "rest"
+        elif not bulk_required and not rest_required:
+            return "rest" if stream_state else "bulk"
+
+    @classmethod
     def generate_streams(
         cls,
         config: Mapping[str, Any],
@@ -45,25 +64,23 @@ class SourceSalesforce(AbstractSource):
         state: Mapping[str, Any] = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
+        logger = logging.getLogger("airbyte")
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
             streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
-
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
-            # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-            properties_not_supported_by_bulk = {
-                key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
-            }
 
-            if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk:
-                # Use REST API
+            api_type = cls._get_api_type(stream_name, selected_properties, stream_state)
+            if api_type == "rest":
                 full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
-            else:
-                # Use BULK API
+            elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
+            else:
+                logger.warning("Stream %s cannot be processed by REST or BULK API, it will be ignored.", stream_name)
+                continue
 
             json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
