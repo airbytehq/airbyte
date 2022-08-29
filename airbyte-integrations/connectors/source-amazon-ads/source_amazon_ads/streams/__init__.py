@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from .attribution_report import AttributionReport
 from .profiles import Profiles
 from .report_streams import (
     SponsoredBrandsReportStream,
@@ -18,7 +19,6 @@ from .sponsored_products import (
     SponsoredProductNegativeKeywords,
     SponsoredProductTargetings,
 )
-from .attribution_report import AttributionReport
 
 __all__ = [
     "Profiles",
@@ -39,5 +39,5 @@ __all__ = [
     "SponsoredProductsReportStream",
     "SponsoredBrandsReportStream",
     "SponsoredBrandsVideoReportStream",
-    AttributionReport
+    AttributionReport,
 ]

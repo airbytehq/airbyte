@@ -287,7 +287,6 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
     source = SourceAmazonAds()
     streams = source.streams(config)
 
-    profile_stream = get_stream_by_name(streams, "profiles")
     attribution_report_stream = get_stream_by_name(streams, "attribution_report")
     attribution_data = json.loads(attribution_report_response)
 
@@ -308,10 +307,7 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
         callback=_callback,
     )
 
-    profile_records = get_all_stream_records(profile_stream)
     attribution_records = get_all_stream_records(attribution_report_stream)
 
     # request should be called 2 times for a single profile
     assert len(attribution_records) == 2
-
-

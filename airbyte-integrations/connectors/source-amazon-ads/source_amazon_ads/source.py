@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .schemas import Profile
 from .streams import (
+    AttributionReport,
     Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
@@ -32,7 +33,6 @@ from .streams import (
     SponsoredProductNegativeKeywords,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
-    AttributionReport,
 )
 
 # Oauth 2.0 authentication URL for amazon

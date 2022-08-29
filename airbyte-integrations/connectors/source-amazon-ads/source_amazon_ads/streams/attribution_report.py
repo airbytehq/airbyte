@@ -2,14 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Dict
-from pydantic import ValidationError
-import requests
-import pendulum
-from http import HTTPStatus
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from source_amazon_ads.streams.common import AmazonAdsStream, ErrorResponse
-from source_amazon_ads.schemas import Profile, AttributionReportModel
+import pendulum
+import requests
+from source_amazon_ads.schemas import AttributionReportModel, Profile
+from source_amazon_ads.streams.common import AmazonAdsStream
 
 METRICS_MAP = {
     "PERFORMANCE": [
@@ -31,8 +29,8 @@ METRICS_MAP = {
 
 class AttributionReport(AmazonAdsStream):
     """
-        This stream corresponds to Amazon Advertising API - Attribution Reports
-        https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
+    This stream corresponds to Amazon Advertising API - Attribution Reports
+    https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
     """
 
     model = AttributionReportModel
@@ -94,10 +92,10 @@ class AttributionReport(AmazonAdsStream):
         return "/attribution/report"
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
 
         body = {
@@ -107,7 +105,7 @@ class AttributionReport(AmazonAdsStream):
             "groupBy": "CAMPAIGN",
             "startDate": self._req_start_date,
             "endDate": self._req_end_date,
-            "cursorId": ""
+            "cursorId": "",
         }
 
         if next_page_token:

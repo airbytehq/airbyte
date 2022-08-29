@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Dict, List
+from typing import List
 
 from .common import CatalogModel
 

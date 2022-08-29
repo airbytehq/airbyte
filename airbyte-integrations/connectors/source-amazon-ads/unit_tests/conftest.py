@@ -58,8 +58,5 @@ def attribution_report_response():
 "campaignId": "_Ampd__amazon_com_fake_id","attributedDetailPageViewsClicks14d": "6",
 "attributedPurchases14d": "1","attributedTotalAddToCartClicks14d": "5","attributedTotalPurchases14d": "2",
 "advertiserName": "Eversprout","totalUnitsSold14d": "2","unitsSold14d": "1","Click-throughs": "32",
-"attributedTotalDetailPageViewsClicks14d": "17","attributedSales14d": "56.99","totalAttributedSales14d": "96.98"}]}    
+"attributedTotalDetailPageViewsClicks14d": "17","attributedSales14d": "56.99","totalAttributedSales14d": "96.98"}]}
 """
-
-
-

@@ -21,12 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+from .attribution_report import AttributionReportModel
 from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
 from .sponsored_products import ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
-from .attribution_report import AttributionReportModel
 
 __all__ = [
     "BrandsAdGroup",
