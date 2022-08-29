@@ -25,7 +25,8 @@ class EventsStream(HttpStream):
         return {"startDate": self.latest_stream_timestamp}
 
     def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
-        self._cursor_value = response.json()[0]["eventDate"][:26] # [:26] to get rid of +00:00
+        if response.text:
+            self._cursor_value = response.json()[0]["eventDate"][:26] # [:26] to get rid of +00:00
         yield from response.json()
 
     def next_page_token(self, _: requests.Response) -> Optional[Mapping[str, Any]]:
