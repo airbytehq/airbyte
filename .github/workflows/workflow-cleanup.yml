@@ -1,4 +1,4 @@
-name: Cleanup old and orphaned workflow runs
+name: Cleanup old GH action workflow runs
 
 on: [pull_request] # TODO: remove before merge to run on default branch
   #schedule:
