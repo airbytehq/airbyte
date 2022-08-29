@@ -87,17 +87,18 @@ class TwilioStream(HttpStream, ABC):
             try:
                 return pendulum.from_format(original_value, "ddd, D MMM YYYY HH:mm:ss ZZ").in_timezone("UTC").to_iso8601_string()
             except ValueError:
-                # Twilio API returns datetime in two formats:
-                #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
-                #   - ISO8601, like "2020-12-11T04:29:09Z".
-                # If `ValueError` exception was raised this means that datetime was already in ISO8601 format and there
-                # is no need in transforming anything.
+                """Twilio API returns datetime in two formats:
+                  - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
+                  - ISO8601, like "2020-12-11T04:29:09Z".
+                If `ValueError` exception was raised this means that datetime was already in ISO8601 format and there
+                is no need in transforming anything."""
                 pass
         return original_value
 
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     time_filter_template = "YYYY-MM-DD HH:mm:ss[Z]"
+    state_checkpoint_interval = 1000
 
     def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
         super().__init__(**kwargs)
