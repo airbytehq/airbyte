@@ -1,7 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -24,7 +24,6 @@ const getBackgroundColor = (props: IStyleProps) => {
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
-  defaultFocus?: boolean;
 }
 
 const InputContainer = styled.div<InputProps>`
@@ -83,7 +82,7 @@ const VisibilityButton = styled(Button)`
   border: none;
 `;
 
-const Input: React.FC<InputProps> = ({ defaultFocus = false, ...props }) => {
+const Input: React.FC<InputProps> = ({ ...props }) => {
   const { formatMessage } = useIntl();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -114,12 +113,6 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, ...props }) => {
       }, 0);
     }
   }, []);
-
-  useEffect(() => {
-    if (defaultFocus) {
-      focusOnInputElement();
-    }
-  }, [defaultFocus, focusOnInputElement]);
 
   const onContainerFocus: React.FocusEventHandler<HTMLDivElement> = () => {
     setFocused(true);
