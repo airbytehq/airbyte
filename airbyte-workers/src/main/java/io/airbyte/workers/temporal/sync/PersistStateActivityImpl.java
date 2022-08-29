@@ -4,18 +4,25 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
+import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
+
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
-import java.io.IOException;
+import io.airbyte.workers.helper.StateConverter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,25 +31,34 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PersistStateActivityImpl implements PersistStateActivity {
 
-  private final StatePersistence statePersistence;
+  private final AirbyteApiClient airbyteApiClient;
   private final FeatureFlags featureFlags;
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
     final State state = syncOutput.getState();
     if (state != null) {
+      // todo: these validation logic should happen on server side.
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final Optional<StateWrapper> previousState = statePersistence.getCurrentState(connectionId);
-          final StateType newStateType = maybeStateWrapper.get().getStateType();
-          if (statePersistence.isMigration(connectionId, newStateType, previousState) && newStateType == StateType.STREAM) {
-            validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+          final ConnectionState previousState = airbyteApiClient.getConnectionApi()
+              .getState(new ConnectionIdRequestBody().connectionId(connectionId));
+          if (previousState != null) {
+            final StateType newStateType = maybeStateWrapper.get().getStateType();
+            final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
+
+            if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
+              validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+            }
           }
 
-          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
+          airbyteApiClient.getConnectionApi().createOrUpdateState(
+              new ConnectionStateCreateOrUpdate()
+                  .connectionId(connectionId)
+                  .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
         }
-      } catch (final IOException e) {
+      } catch (final ApiException e) {
         throw new RuntimeException(e);
       }
       return true;
