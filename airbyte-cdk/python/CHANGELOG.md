@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.80
+- Add NoAuth to declarative registry and auth parse bug fix
+
+## 0.1.79
+- Fix yaml schema parsing when running from docker container
+
 ## 0.1.78
 - Fix yaml config parsing when running from docker container
 

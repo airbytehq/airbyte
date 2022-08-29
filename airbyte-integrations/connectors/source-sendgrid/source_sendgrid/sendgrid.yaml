@@ -67,7 +67,7 @@ definitions:
       datetime: "{{ config['start_time'] }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc() }}}"
+      datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
