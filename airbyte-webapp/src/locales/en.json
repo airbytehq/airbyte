@@ -145,6 +145,7 @@
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
+  "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
 
