@@ -38,8 +38,6 @@ def main():
         slack_token = args.sat
     else:
         slack_token = os.getenv('SLACK_TOKEN')
-    if not slack_token:
-        raise Exception("Slack app token not provided via args and not available in SLACK_TOKEN variable")
 
     g = Github(gh_token)
 
@@ -60,13 +58,17 @@ def main():
             # check and see if a workflow exists but is not actively being triggered/run
             if os.path.exists(workflow.path) and run.updated_at < datetime.now() - timedelta(days=DAYS_TO_KEEP_ORPHANED_JOBS):
                 message = "The Github Workflow '" + workflow.name + "' exists in " + repo_name + " but has no run newer than 90 days old. URL: " + workflow.html_url
-                print("Sending Slack notification...")
-                client = WebClient(slack_token)
+                print(message)  
 
-                try:  response = client.chat_postMessage(channel = SLACK_CHANNEL_FOR_NOTIFICATIONS, text = message)
-                except SlackApiError as e:  
-                    print(e, '\n\n')
-                    raise Exception("Error calling the Slack API")
+                if slack_token:
+
+                    print("Sending Slack notification...")
+                    client = WebClient(slack_token)
+
+                    try:  response = client.chat_postMessage(channel = SLACK_CHANNEL_FOR_NOTIFICATIONS, text = message)
+                    except SlackApiError as e:  
+                        print(e, '\n\n')
+                        raise Exception("Error calling the Slack API")
             break
 
 if __name__ == '__main__':
