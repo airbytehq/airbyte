@@ -4,15 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics Data API Spec",
     "type": "object",
-    "required": [
-      "property_id",
-      "json_credentials",
-      "report_name",
-      "dimensions",
-      "metrics",
-      "date_ranges_start_date",
-      "date_ranges_end_date"
-    ],
+    "required": ["property_id", "date_ranges_start_date"],
+    "additionalProperties": true,
     "properties": {
       "property_id": {
         "type": "string",
@@ -20,43 +13,103 @@
         "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
         "order": 1
       },
-      "json_credentials": {
-        "type": "string",
-        "title": "JSON Credentials",
-        "description": "The JSON key of the Service Account to use for authorization",
-        "airbyte_secret": true,
-        "order": 2
-      },
-      "report_name": {
-        "type": "string",
-        "title": "Report Name",
-        "description": "The report name",
-        "order": 3
-      },
-      "dimensions": {
-        "type": "string",
-        "title": "Dimensions",
-        "description": "Comma seprated report dimensions https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#dimensions",
-        "order": 4
-      },
-      "metrics": {
-        "type": "string",
-        "title": "Metrics",
-        "description": "Comma seprated report metrics https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#metrics",
-        "order": 5
+      "credentials": {
+        "order": 0,
+        "type": "object",
+        "title": "Credentials",
+        "description": "Credentials for the service",
+        "oneOf": [
+          {
+            "title": "Authenticate via Google (Oauth)",
+            "type": "object",
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your Google Analytics developer application.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The Client Secret of your Google Analytics developer application.",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "The token for obtaining a new access token.",
+                "airbyte_secret": true,
+                "order": 3
+              },
+              "access_token": {
+                "title": "Access Token (Optional)",
+                "type": "string",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Service Account Key Authentication",
+            "required": ["credentials_json"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Service",
+                "order": 0
+              },
+              "credentials_json": {
+                "title": "Service Account JSON Key",
+                "type": "string",
+                "description": "The JSON key of the service account to use for authorization",
+                "examples": [
+                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                ],
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
       "date_ranges_start_date": {
         "type": "string",
         "title": "Date Range Start Date",
         "description": "The start date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
-        "order": 6
+        "order": 2
       },
-      "date_ranges_end_date": {
+      "custom_reports": {
+        "order": 3,
         "type": "string",
-        "title": "Date Range End Date",
-        "description": "The end date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
-        "order": 7
+        "title": "Custom Reports (Optional)",
+        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
+      },
+      "window_in_days": {
+        "type": "integer",
+        "title": "Data request time increment in days (Optional)",
+        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. ",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 1,
+        "order": 4
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }

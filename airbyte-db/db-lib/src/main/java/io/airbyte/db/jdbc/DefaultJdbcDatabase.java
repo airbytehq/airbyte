@@ -73,10 +73,10 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    final Connection conn = dataSource.getConnection();
-    final DatabaseMetaData metaData = conn.getMetaData();
-    conn.close();
-    return metaData;
+    try (final Connection connection = dataSource.getConnection()) {
+      final DatabaseMetaData metaData = connection.getMetaData();
+      return metaData;
+    }
   }
 
   /**

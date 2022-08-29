@@ -185,7 +185,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-  const frequencies = useFrequencyDropdownData();
+  const frequencies = useFrequencyDropdownData(connection.schedule);
 
   return (
     <Formik
@@ -332,6 +332,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
                 additionalControl={additionalSchemaControl}
                 component={SchemaField}
+                isSubmitting={isSubmitting}
                 mode={mode}
               />
             </StyledSection>

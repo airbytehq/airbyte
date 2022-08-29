@@ -34,7 +34,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 11. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
@@ -90,6 +90,12 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.18 | 2022-08-25 | [15951](https://github.com/airbytehq/airbyte/pull/15951)    | Skip API error "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."                     |
+| 0.1.17 | 2022-08-24 | [15921](https://github.com/airbytehq/airbyte/pull/15921)    | Skip API error "Report date is too far in the past."                                                              |
+| 0.1.16 | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822)    | Set default value for 'region' if needed                                                                          |
+| 0.1.15 | 2022-08-20 | [15816](https://github.com/airbytehq/airbyte/pull/15816)    | Update STATE of incremental sync if no records                                                                    |
+| 0.1.14 | 2022-08-15 | [15637](https://github.com/airbytehq/airbyte/pull/15637)    | Generate slices by lazy evaluation                                                                                |
+| 0.1.12 | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469)    | Define primary_key for all report streams                                                                         |
 | 0.1.11 | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031)    | Improve report streams date-range generation                                                                      |
 | 0.1.10 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042)    | Update `additionalProperties` field to true from schemas                                                          |
 | 0.1.9  | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541)    | Improve documentation for Beta                                                                                    |

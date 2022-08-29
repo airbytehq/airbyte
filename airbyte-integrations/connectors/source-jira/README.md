@@ -8,7 +8,7 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.9.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
@@ -80,7 +80,7 @@ Then run any of the connector commands as follows:
 docker run --rm airbyte/source-jira:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jira:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jira:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-jira:dev read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-jira:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 #### Acceptance Tests

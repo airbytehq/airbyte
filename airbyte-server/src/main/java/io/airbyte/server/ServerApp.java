@@ -55,6 +55,7 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -79,6 +80,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
@@ -132,6 +134,15 @@ public class ServerApp implements ServerRunnable {
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      try {
+        server.stop();
+      } catch (Exception ex) {
+        // silently fail at this stage because server is terminating.
+        LOGGER.warn("exception: " + ex);
+      }
+    }));
   }
 
   private static void assertDatabasesReady(final Configs configs,
@@ -207,6 +218,8 @@ public class ServerApp implements ServerRunnable {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 

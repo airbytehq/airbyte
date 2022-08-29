@@ -1,3 +1,22 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots'
+        }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            // We're using the 6.1.0-SNAPSHOT version of openapi-generator which contains a fix for generating nullable arrays (https://github.com/OpenAPITools/openapi-generator/issues/13025)
+            // The snapshot version isn't available in the main Gradle Plugin Portal, so we added the Sonatype snapshot repository above.
+            // The useModule command below allows us to map from the plugin id, `org.openapi.generator`, to the underlying module (https://oss.sonatype.org/content/repositories/snapshots/org/openapitools/openapi-generator-gradle-plugin/6.1.0-SNAPSHOT/_
+            if (requested.id.id == 'org.openapi.generator') {
+                useModule "org.openapitools:openapi-generator-gradle-plugin:${requested.version}"
+            }
+        }
+    }
+}
+
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
@@ -77,6 +96,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-webapp-e2e-tests'
+    include ':airbyte-cron'
 }
 
 // connectors base

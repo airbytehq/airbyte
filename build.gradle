@@ -1,6 +1,9 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
 
+// The buildscript block defines dependencies in order for .gradle file evaluation.
+// This is separate from application dependencies.
+// See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
     repositories {
         maven {
@@ -9,6 +12,14 @@ buildscript {
     }
     dependencies {
         classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
+        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
+        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
+        // Since api generation is only used in the airbyte-api module and the base gradle files
+        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
+        // the bmuschko plugin and thus placing an older jackson version on the class path.
+        // The alternative is to import the openapi plugin for all modules.
+        // This might need to be updated when we change openapi plugin versions.
+        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     }
 }
 
@@ -238,6 +249,9 @@ subprojects {
         }
         maven {
             url 'https://jitpack.io'
+        }
+        maven {
+            url 'https://maven.twttr.com'
         }
     }
 

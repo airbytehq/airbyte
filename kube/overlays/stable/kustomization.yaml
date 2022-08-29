@@ -8,17 +8,19 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.39.42-alpha
+    newTag: 0.40.3
   - name: airbyte/bootloader
-    newTag: 0.39.42-alpha
+    newTag: 0.40.3
   - name: airbyte/server
-    newTag: 0.39.42-alpha
+    newTag: 0.40.3
   - name: airbyte/webapp
-    newTag: 0.39.42-alpha
+    newTag: 0.40.3
   - name: airbyte/worker
-    newTag: 0.39.42-alpha
+    newTag: 0.40.3
   - name: temporalio/auto-setup
     newTag: 1.7.0
+  - name: airbyte/cron
+    newTag: 0.40.3
 
 configMapGenerator:
   - name: airbyte-env

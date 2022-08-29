@@ -143,7 +143,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.42-alpha
+    tag: 0.40.3
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -259,9 +259,6 @@ webapp:
   ## @param webapp.api.url The webapp API url.
   api:
     url: /api/v1/
-
-  ## @param webapp.isDemo Set to true if this is a demo
-  isDemo: false
 
   ## @param webapp.fullstory.enabled Whether or not to enable fullstory
   fullstory:
@@ -419,7 +416,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.42-alpha
+    tag: 0.40.3
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -547,7 +544,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.42-alpha
+    tag: 0.40.3
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -656,6 +653,9 @@ worker:
   ##
   extraVolumes: []
 
+  hpa:
+    enabled: false
+
 ## @section Bootloader Parameters
 
 airbyte-bootloader:
@@ -666,7 +666,7 @@ airbyte-bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.42-alpha
+    tag: 0.40.3
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -903,6 +903,7 @@ externalDatabase:
 ## @param minio.accessKey.password Minio Access Key
 ## @param minio.secretKey.password Minio Secret Key
 minio:
+  enabled: true
   auth:
     rootUser: minio
     rootPassword: minio123
