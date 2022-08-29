@@ -5,6 +5,7 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
 import { StatusIcon } from "components";
+import { ResetIcon } from "components/icons/ResetIcon";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
@@ -13,7 +14,6 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/comp
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
-import { ResetIcon } from "./ResetIcon";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
