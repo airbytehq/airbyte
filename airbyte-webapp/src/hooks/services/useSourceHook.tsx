@@ -153,7 +153,8 @@ const useUpdateSource = () => {
 };
 
 const useDiscoverSchema = (
-  sourceId?: string
+  sourceId: string,
+  disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
@@ -174,7 +175,7 @@ const useDiscoverSchema = (
     setIsLoading(true);
     setSchemaErrorStatus(null);
     try {
-      const data = await service.discoverSchema(sourceId || "");
+      const data = await service.discoverSchema(sourceId || "", disableCache);
       setSchema(data.catalog);
       setCatalogId(data.catalogId);
     } catch (e) {
