@@ -145,6 +145,8 @@ public class AirbyteAcceptanceTestHarness {
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
   private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
+
+  // Used for bypassing SSL modification for db configs
   private static final String IS_TEST = "is_test";
 
   private static boolean isKube;
@@ -626,7 +628,9 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
-    // bypasses the SSL modification for cloud acceptance tests
+    // bypasses the SSL modification for cloud acceptance tests. This use useful in cloud since it
+    // enforces most databases to have SSL on, but the postgres containers we use for testing does not
+    // allow SSL.
     if (!isLegacy) {
       dbConfig.put(IS_TEST, true);
     }
