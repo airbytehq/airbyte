@@ -177,7 +177,9 @@ class Salesforce:
     logger = logging.getLogger("airbyte")
     version = "v52.0"
     parallel_tasks_size = 100
-    MAX_URL_LENGTH = 16113
+    # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
+    # Request Size Limits
+    REQUEST_SIZE_LIMITS = 16_384
 
     def __init__(
         self,
