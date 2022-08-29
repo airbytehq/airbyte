@@ -8,6 +8,24 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   return streamNode.config?.cursorField || [];
 };
 
+const verifySourceDefinedPrimaryKeys = (streamNode: SyncSchemaStream) => {
+  if (!streamNode.stream || !streamNode.config) {
+    return streamNode;
+  }
+
+  const {
+    stream: { sourceDefinedPrimaryKey },
+    config: { primaryKey },
+  } = streamNode;
+
+  if (!sourceDefinedPrimaryKey || sourceDefinedPrimaryKey.length === 0 || sourceDefinedPrimaryKey === primaryKey) {
+    return streamNode;
+  }
+
+  streamNode.config.primaryKey = sourceDefinedPrimaryKey;
+  return streamNode;
+};
+
 const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSchemaStream => {
   if (!streamNode.stream) {
     return streamNode;
@@ -98,7 +116,7 @@ const calculateInitialCatalog = (
 ): SyncSchema => ({
   streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
     const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySupportedSyncModes(nodeWithId);
+    const nodeStream = verifySourceDefinedPrimaryKeys(verifySupportedSyncModes(nodeWithId));
 
     if (isEditMode) {
       return nodeStream;
