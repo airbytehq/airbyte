@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "customForm": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "expenseAcct": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "rateRequired": {
+      "type": "boolean"
+    },
+    "subsidiaryList": {
+      "type": ["null", "string"]
+    },
+    "defaultRate": {
+      "type": ["null", "string"]
+    },
+    "ratesList": {
+      "type": ["null", "string"]
+    },
+    "translationsList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "customForm",
+    "name",
+    "description",
+    "expenseAcct",
+    "isInactive",
+    "rateRequired",
+    "subsidiaryList",
+    "defaultRate",
+    "ratesList",
+    "translationsList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

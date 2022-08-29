@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "parent": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "showSubsidiaryName": {
+      "type": "boolean"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "logo": {
+      "type": ["null", "string"]
+    },
+    "tranPrefix": {
+      "type": ["null", "string"]
+    },
+    "pageLogo": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "mainAddress": {
+      "type": "object",
+      "properties": {
+        "nullFieldList": {
+          "type": ["null", "string"]
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "attention": {
+          "type": ["null", "string"]
+        },
+        "addressee": {
+          "type": ["null", "string"]
+        },
+        "addrPhone": {
+          "type": ["null", "string"]
+        },
+        "addr1": {
+          "type": ["null", "string"]
+        },
+        "addr2": {
+          "type": ["null", "string"]
+        },
+        "addr3": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "addrText": {
+          "type": ["null", "string"]
+        },
+        "override": {
+          "type": "boolean"
+        },
+        "customFieldList": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "nullFieldList",
+        "internalId",
+        "country",
+        "attention",
+        "addressee",
+        "addrPhone",
+        "addr1",
+        "addr2",
+        "addr3",
+        "city",
+        "state",
+        "zip",
+        "addrText",
+        "override",
+        "customFieldList"
+      ]
+    },
+    "shippingAddress": {
+      "type": ["null", "string"]
+    },
+    "returnAddress": {
+      "type": ["null", "string"]
+    },
+    "legalName": {
+      "type": "string"
+    },
+    "isElimination": {
+      "type": "boolean"
+    },
+    "fiscalCalendar": {
+      "type": ["null", "string"]
+    },
+    "taxFiscalCalendar": {
+      "type": ["null", "string"]
+    },
+    "allowPayroll": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "purchaseOrderQuantity": {
+      "type": ["null", "string"]
+    },
+    "purchaseOrderAmount": {
+      "type": ["null", "string"]
+    },
+    "purchaseOrderQuantityDiff": {
+      "type": ["null", "string"]
+    },
+    "receiptQuantity": {
+      "type": ["null", "string"]
+    },
+    "receiptAmount": {
+      "type": ["null", "string"]
+    },
+    "receiptQuantityDiff": {
+      "type": ["null", "string"]
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "edition": {
+      "type": "string"
+    },
+    "federalIdNumber": {
+      "type": ["null", "string"]
+    },
+    "addrLanguage": {
+      "type": ["null", "string"]
+    },
+    "nonConsol": {
+      "type": ["null", "string"]
+    },
+    "consol": {
+      "type": ["null", "string"]
+    },
+    "state1TaxNumber": {
+      "type": ["null", "string"]
+    },
+    "taxRegistrationList": {
+      "type": ["null", "string"]
+    },
+    "ssnOrTin": {
+      "type": ["null", "string"]
+    },
+    "interCoAccount": {
+      "type": ["null", "string"]
+    },
+    "nexusList": {
+      "type": ["null", "string"]
+    },
+    "accountingBookDetailList": {
+      "type": ["null", "string"]
+    },
+    "checkLayout": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "inboundEmail": {
+      "type": ["null", "string"]
+    },
+    "classTranslationList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "name",
+    "parent",
+    "isInactive",
+    "showSubsidiaryName",
+    "url",
+    "logo",
+    "tranPrefix",
+    "pageLogo",
+    "state",
+    "country",
+    "mainAddress",
+    "shippingAddress",
+    "returnAddress",
+    "legalName",
+    "isElimination",
+    "fiscalCalendar",
+    "taxFiscalCalendar",
+    "allowPayroll",
+    "email",
+    "currency",
+    "purchaseOrderQuantity",
+    "purchaseOrderAmount",
+    "purchaseOrderQuantityDiff",
+    "receiptQuantity",
+    "receiptAmount",
+    "receiptQuantityDiff",
+    "fax",
+    "edition",
+    "federalIdNumber",
+    "addrLanguage",
+    "nonConsol",
+    "consol",
+    "state1TaxNumber",
+    "taxRegistrationList",
+    "ssnOrTin",
+    "interCoAccount",
+    "nexusList",
+    "accountingBookDetailList",
+    "checkLayout",
+    "inboundEmail",
+    "classTranslationList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

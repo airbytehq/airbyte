@@ -1,0 +1,423 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "customForm": {
+      "type": ["null", "string"]
+    },
+    "entityId": {
+      "type": "string"
+    },
+    "altName": {
+      "type": ["null", "string"]
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "phoneticName": {
+      "type": ["null", "string"]
+    },
+    "entityStatus": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "defaultAddress": {
+      "type": ["null", "string"]
+    },
+    "parent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "percentCompleteOverrideList": {
+      "type": ["null", "string"]
+    },
+    "lastModifiedDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "billPay": {
+      "type": ["null", "string"]
+    },
+    "dateCreated": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "workplace": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "accountNumber": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "fxRate": {
+      "type": ["null", "string"]
+    },
+    "startDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "altPhone": {
+      "type": ["null", "string"]
+    },
+    "calculatedEndDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "calculatedEndDateBaseline": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "startDateBaseline": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "projectedEndDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "projectedEndDateBaseline": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "lastBaselineDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "jobType": {
+      "type": ["null", "string"]
+    },
+    "percentComplete": {
+      "type": ["null", "string"]
+    },
+    "estimatedCost": {
+      "type": ["null", "string"]
+    },
+    "estimatedRevenue": {
+      "type": ["null", "string"]
+    },
+    "estimatedTime": {
+      "type": ["null", "string"]
+    },
+    "estimatedTimeOverride": {
+      "type": ["null", "string"]
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": "string"
+    },
+    "emailPreference": {
+      "type": "string"
+    },
+    "openingBalance": {
+      "type": ["null", "string"]
+    },
+    "openingBalanceDate": {
+      "type": ["null", "string"]
+    },
+    "openingBalanceAccount": {
+      "type": ["null", "string"]
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "jobBillingType": {
+      "type": "string"
+    },
+    "billingSchedule": {
+      "type": ["null", "string"]
+    },
+    "jobItem": {
+      "type": ["null", "string"]
+    },
+    "percentTimeComplete": {
+      "type": ["null", "string"]
+    },
+    "actualTime": {
+      "type": ["null", "string"]
+    },
+    "allowTime": {
+      "type": ["null", "string"]
+    },
+    "timeRemaining": {
+      "type": ["null", "string"]
+    },
+    "limitTimeToAssignees": {
+      "type": ["null", "string"]
+    },
+    "estimatedLaborCost": {
+      "type": ["null", "string"]
+    },
+    "estimatedLaborCostBaseline": {
+      "type": ["null", "string"]
+    },
+    "estimateRevRecTemplate": {
+      "type": ["null", "string"]
+    },
+    "revRecForecastRule": {
+      "type": ["null", "string"]
+    },
+    "usePercentCompleteOverride": {
+      "type": ["null", "string"]
+    },
+    "estimatedLaborRevenue": {
+      "type": ["null", "string"]
+    },
+    "estimatedGrossProfit": {
+      "type": ["null", "string"]
+    },
+    "estimatedGrossProfitPercent": {
+      "type": ["null", "string"]
+    },
+    "projectExpenseType": {
+      "type": ["null", "string"]
+    },
+    "applyProjectExpenseTypeToAll": {
+      "type": ["null", "string"]
+    },
+    "allowAllResourcesForTasks": {
+      "type": ["null", "string"]
+    },
+    "jobPrice": {
+      "type": ["null", "string"]
+    },
+    "isUtilizedTime": {
+      "type": ["null", "string"]
+    },
+    "isProductiveTime": {
+      "type": ["null", "string"]
+    },
+    "isExemptTime": {
+      "type": ["null", "string"]
+    },
+    "materializeTime": {
+      "type": ["null", "string"]
+    },
+    "allowExpenses": {
+      "type": ["null", "string"]
+    },
+    "allocatePayrollExpenses": {
+      "type": ["null", "string"]
+    },
+    "includeCrmTasksInTotals": {
+      "type": ["null", "string"]
+    },
+    "globalSubscriptionStatus": {
+      "type": ["null", "string"]
+    },
+    "jobResourcesList": {
+      "type": ["null", "string"]
+    },
+    "plStatementList": {
+      "type": ["null", "string"]
+    },
+    "addressbookList": {
+      "type": ["null", "string"]
+    },
+    "milestonesList": {
+      "type": ["null", "string"]
+    },
+    "creditCardsList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "customForm",
+    "entityId",
+    "altName",
+    "companyName",
+    "phoneticName",
+    "entityStatus",
+    "defaultAddress",
+    "parent",
+    "isInactive",
+    "percentCompleteOverrideList",
+    "lastModifiedDate",
+    "billPay",
+    "dateCreated",
+    "category",
+    "workplace",
+    "language",
+    "comments",
+    "accountNumber",
+    "currency",
+    "fxRate",
+    "startDate",
+    "endDate",
+    "phone",
+    "altPhone",
+    "calculatedEndDate",
+    "calculatedEndDateBaseline",
+    "startDateBaseline",
+    "projectedEndDate",
+    "projectedEndDateBaseline",
+    "lastBaselineDate",
+    "jobType",
+    "percentComplete",
+    "estimatedCost",
+    "estimatedRevenue",
+    "estimatedTime",
+    "estimatedTimeOverride",
+    "fax",
+    "email",
+    "emailPreference",
+    "openingBalance",
+    "openingBalanceDate",
+    "openingBalanceAccount",
+    "subsidiary",
+    "jobBillingType",
+    "billingSchedule",
+    "jobItem",
+    "percentTimeComplete",
+    "actualTime",
+    "allowTime",
+    "timeRemaining",
+    "limitTimeToAssignees",
+    "estimatedLaborCost",
+    "estimatedLaborCostBaseline",
+    "estimateRevRecTemplate",
+    "revRecForecastRule",
+    "usePercentCompleteOverride",
+    "estimatedLaborRevenue",
+    "estimatedGrossProfit",
+    "estimatedGrossProfitPercent",
+    "projectExpenseType",
+    "applyProjectExpenseTypeToAll",
+    "allowAllResourcesForTasks",
+    "jobPrice",
+    "isUtilizedTime",
+    "isProductiveTime",
+    "isExemptTime",
+    "materializeTime",
+    "allowExpenses",
+    "allocatePayrollExpenses",
+    "includeCrmTasksInTotals",
+    "globalSubscriptionStatus",
+    "jobResourcesList",
+    "plStatementList",
+    "addressbookList",
+    "milestonesList",
+    "creditCardsList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

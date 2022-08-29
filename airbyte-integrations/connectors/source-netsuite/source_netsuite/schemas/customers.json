@@ -1,0 +1,671 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "customForm": {
+      "type": ["null", "string"]
+    },
+    "entityId": {
+      "type": "string"
+    },
+    "altName": {
+      "type": ["null", "string"]
+    },
+    "isPerson": {
+      "type": "boolean"
+    },
+    "phoneticName": {
+      "type": ["null", "string"]
+    },
+    "salutation": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "middleName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "entityStatus": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "parent": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": "string"
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": "string"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "defaultAddress": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "printOnCheckAs": {
+      "type": ["null", "string"]
+    },
+    "altPhone": {
+      "type": ["null", "string"]
+    },
+    "homePhone": {
+      "type": ["null", "string"]
+    },
+    "mobilePhone": {
+      "type": ["null", "string"]
+    },
+    "altEmail": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "numberFormat": {
+      "type": ["null", "string"]
+    },
+    "negativeNumberFormat": {
+      "type": ["null", "string"]
+    },
+    "dateCreated": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "image": {
+      "type": ["null", "string"]
+    },
+    "emailPreference": {
+      "type": "string"
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "representingSubsidiary": {
+      "type": ["null", "string"]
+    },
+    "salesRep": {
+      "type": ["null", "string"]
+    },
+    "territory": {
+      "type": ["null", "string"]
+    },
+    "contribPct": {
+      "type": ["null", "string"]
+    },
+    "partner": {
+      "type": ["null", "string"]
+    },
+    "salesGroup": {
+      "type": ["null", "string"]
+    },
+    "vatRegNumber": {
+      "type": ["null", "string"]
+    },
+    "accountNumber": {
+      "type": ["null", "string"]
+    },
+    "taxExempt": {
+      "type": ["null", "string"]
+    },
+    "terms": {
+      "type": ["null", "string"]
+    },
+    "creditLimit": {
+      "type": ["null", "string"]
+    },
+    "creditHoldOverride": {
+      "type": "string"
+    },
+    "monthlyClosing": {
+      "type": ["null", "string"]
+    },
+    "overrideCurrencyFormat": {
+      "type": ["null", "string"]
+    },
+    "displaySymbol": {
+      "type": ["null", "string"]
+    },
+    "symbolPlacement": {
+      "type": ["null", "string"]
+    },
+    "balance": {
+      "type": ["null", "string"]
+    },
+    "overdueBalance": {
+      "type": ["null", "string"]
+    },
+    "daysOverdue": {
+      "type": ["null", "string"]
+    },
+    "unbilledOrders": {
+      "type": "number"
+    },
+    "consolUnbilledOrders": {
+      "type": ["null", "string"]
+    },
+    "consolOverdueBalance": {
+      "type": ["null", "string"]
+    },
+    "consolDepositBalance": {
+      "type": ["null", "string"]
+    },
+    "consolBalance": {
+      "type": ["null", "string"]
+    },
+    "consolAging": {
+      "type": ["null", "string"]
+    },
+    "consolAging1": {
+      "type": ["null", "string"]
+    },
+    "consolAging2": {
+      "type": ["null", "string"]
+    },
+    "consolAging3": {
+      "type": ["null", "string"]
+    },
+    "consolAging4": {
+      "type": ["null", "string"]
+    },
+    "consolDaysOverdue": {
+      "type": ["null", "string"]
+    },
+    "priceLevel": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "prefCCProcessor": {
+      "type": ["null", "string"]
+    },
+    "depositBalance": {
+      "type": ["null", "string"]
+    },
+    "shipComplete": {
+      "type": "boolean"
+    },
+    "taxable": {
+      "type": "boolean"
+    },
+    "taxItem": {
+      "type": ["null", "string"]
+    },
+    "resaleNumber": {
+      "type": ["null", "string"]
+    },
+    "aging": {
+      "type": "number"
+    },
+    "aging1": {
+      "type": "number"
+    },
+    "aging2": {
+      "type": "number"
+    },
+    "aging3": {
+      "type": "number"
+    },
+    "aging4": {
+      "type": "number"
+    },
+    "startDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "alcoholRecipientType": {
+      "type": "string"
+    },
+    "endDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "reminderDays": {
+      "type": ["null", "string"]
+    },
+    "shippingItem": {
+      "type": ["null", "string"]
+    },
+    "thirdPartyAcct": {
+      "type": ["null", "string"]
+    },
+    "thirdPartyZipcode": {
+      "type": ["null", "string"]
+    },
+    "thirdPartyCountry": {
+      "type": ["null", "string"]
+    },
+    "giveAccess": {
+      "type": "boolean"
+    },
+    "estimatedBudget": {
+      "type": ["null", "string"]
+    },
+    "accessRole": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "sendEmail": {
+      "type": ["null", "string"]
+    },
+    "assignedWebSite": {
+      "type": ["null", "string"]
+    },
+    "password": {
+      "type": ["null", "string"]
+    },
+    "password2": {
+      "type": ["null", "string"]
+    },
+    "requirePwdChange": {
+      "type": ["null", "string"]
+    },
+    "campaignCategory": {
+      "type": ["null", "string"]
+    },
+    "sourceWebSite": {
+      "type": ["null", "string"]
+    },
+    "leadSource": {
+      "type": ["null", "string"]
+    },
+    "receivablesAccount": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "drAccount": {
+      "type": ["null", "string"]
+    },
+    "fxAccount": {
+      "type": ["null", "string"]
+    },
+    "defaultOrderPriority": {
+      "type": ["null", "string"]
+    },
+    "webLead": {
+      "type": "string"
+    },
+    "referrer": {
+      "type": ["null", "string"]
+    },
+    "keywords": {
+      "type": ["null", "string"]
+    },
+    "clickStream": {
+      "type": ["null", "string"]
+    },
+    "lastPageVisited": {
+      "type": ["null", "string"]
+    },
+    "visits": {
+      "type": ["null", "string"]
+    },
+    "firstVisit": {
+      "type": ["null", "string"]
+    },
+    "lastVisit": {
+      "type": ["null", "string"]
+    },
+    "billPay": {
+      "type": ["null", "string"]
+    },
+    "openingBalance": {
+      "type": ["null", "string"]
+    },
+    "lastModifiedDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "openingBalanceDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "openingBalanceAccount": {
+      "type": ["null", "string"]
+    },
+    "stage": {
+      "type": "string"
+    },
+    "emailTransactions": {
+      "type": "boolean"
+    },
+    "printTransactions": {
+      "type": "boolean"
+    },
+    "faxTransactions": {
+      "type": "boolean"
+    },
+    "defaultTaxReg": {
+      "type": ["null", "string"]
+    },
+    "syncPartnerTeams": {
+      "type": ["null", "string"]
+    },
+    "isBudgetApproved": {
+      "type": "boolean"
+    },
+    "globalSubscriptionStatus": {
+      "type": ["null", "string"]
+    },
+    "salesReadiness": {
+      "type": ["null", "string"]
+    },
+    "salesTeamList": {
+      "type": ["null", "string"]
+    },
+    "buyingReason": {
+      "type": ["null", "string"]
+    },
+    "downloadList": {
+      "type": ["null", "string"]
+    },
+    "buyingTimeFrame": {
+      "type": ["null", "string"]
+    },
+    "addressbookList": {
+      "type": ["null", "string"]
+    },
+    "subscriptionsList": {
+      "type": ["null", "string"]
+    },
+    "contactRolesList": {
+      "type": ["null", "string"]
+    },
+    "currencyList": {
+      "type": ["null", "string"]
+    },
+    "creditCardsList": {
+      "type": ["null", "string"]
+    },
+    "partnersList": {
+      "type": ["null", "string"]
+    },
+    "groupPricingList": {
+      "type": ["null", "string"]
+    },
+    "itemPricingList": {
+      "type": ["null", "string"]
+    },
+    "taxRegistrationList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "customForm",
+    "entityId",
+    "altName",
+    "isPerson",
+    "phoneticName",
+    "salutation",
+    "firstName",
+    "middleName",
+    "lastName",
+    "companyName",
+    "entityStatus",
+    "parent",
+    "phone",
+    "fax",
+    "email",
+    "url",
+    "defaultAddress",
+    "isInactive",
+    "category",
+    "title",
+    "printOnCheckAs",
+    "altPhone",
+    "homePhone",
+    "mobilePhone",
+    "altEmail",
+    "language",
+    "comments",
+    "numberFormat",
+    "negativeNumberFormat",
+    "dateCreated",
+    "image",
+    "emailPreference",
+    "subsidiary",
+    "representingSubsidiary",
+    "salesRep",
+    "territory",
+    "contribPct",
+    "partner",
+    "salesGroup",
+    "vatRegNumber",
+    "accountNumber",
+    "taxExempt",
+    "terms",
+    "creditLimit",
+    "creditHoldOverride",
+    "monthlyClosing",
+    "overrideCurrencyFormat",
+    "displaySymbol",
+    "symbolPlacement",
+    "balance",
+    "overdueBalance",
+    "daysOverdue",
+    "unbilledOrders",
+    "consolUnbilledOrders",
+    "consolOverdueBalance",
+    "consolDepositBalance",
+    "consolBalance",
+    "consolAging",
+    "consolAging1",
+    "consolAging2",
+    "consolAging3",
+    "consolAging4",
+    "consolDaysOverdue",
+    "priceLevel",
+    "currency",
+    "prefCCProcessor",
+    "depositBalance",
+    "shipComplete",
+    "taxable",
+    "taxItem",
+    "resaleNumber",
+    "aging",
+    "aging1",
+    "aging2",
+    "aging3",
+    "aging4",
+    "startDate",
+    "alcoholRecipientType",
+    "endDate",
+    "reminderDays",
+    "shippingItem",
+    "thirdPartyAcct",
+    "thirdPartyZipcode",
+    "thirdPartyCountry",
+    "giveAccess",
+    "estimatedBudget",
+    "accessRole",
+    "sendEmail",
+    "assignedWebSite",
+    "password",
+    "password2",
+    "requirePwdChange",
+    "campaignCategory",
+    "sourceWebSite",
+    "leadSource",
+    "receivablesAccount",
+    "drAccount",
+    "fxAccount",
+    "defaultOrderPriority",
+    "webLead",
+    "referrer",
+    "keywords",
+    "clickStream",
+    "lastPageVisited",
+    "visits",
+    "firstVisit",
+    "lastVisit",
+    "billPay",
+    "openingBalance",
+    "lastModifiedDate",
+    "openingBalanceDate",
+    "openingBalanceAccount",
+    "stage",
+    "emailTransactions",
+    "printTransactions",
+    "faxTransactions",
+    "defaultTaxReg",
+    "syncPartnerTeams",
+    "isBudgetApproved",
+    "globalSubscriptionStatus",
+    "salesReadiness",
+    "salesTeamList",
+    "buyingReason",
+    "downloadList",
+    "buyingTimeFrame",
+    "addressbookList",
+    "subscriptionsList",
+    "contactRolesList",
+    "currencyList",
+    "creditCardsList",
+    "partnersList",
+    "groupPricingList",
+    "itemPricingList",
+    "taxRegistrationList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

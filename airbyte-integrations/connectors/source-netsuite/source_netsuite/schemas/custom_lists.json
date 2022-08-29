@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "attachFrom": {
+      "type": ["null", "string"]
+    },
+    "mediaTypeName": {
+      "type": "string"
+    },
+    "fileType": {
+      "type": "string"
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "folder": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "fileSize": {
+      "type": "number"
+    },
+    "url": {
+      "type": "string"
+    },
+    "urlComponent": {
+      "type": ["null", "string"]
+    },
+    "mediaFile": {
+      "type": ["null", "string"]
+    },
+    "textFileEncoding": {
+      "type": "string"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "encoding": {
+      "type": ["null", "string"]
+    },
+    "altTagCaption": {
+      "type": ["null", "string"]
+    },
+    "isOnline": {
+      "type": "boolean"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "class": {
+      "type": "string"
+    },
+    "bundleable": {
+      "type": ["null", "string"]
+    },
+    "department": {
+      "type": "string"
+    },
+    "hideInBundle": {
+      "type": "boolean"
+    },
+    "isPrivate": {
+      "type": "boolean"
+    },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "caption": {
+      "type": "string"
+    },
+    "storeDisplayThumbnail": {
+      "type": ["null", "string"]
+    },
+    "siteDescription": {
+      "type": ["null", "string"]
+    },
+    "featuredDescription": {
+      "type": ["null", "string"]
+    },
+    "lastModifiedDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "createdDate": {
+          "type": ["null","string"],
+          "format": "date-time"
+    },
+    "siteCategoryList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "name",
+    "attachFrom",
+    "mediaTypeName",
+    "fileType",
+    "content",
+    "folder",
+    "fileSize",
+    "url",
+    "urlComponent",
+    "mediaFile",
+    "textFileEncoding",
+    "description",
+    "encoding",
+    "altTagCaption",
+    "isOnline",
+    "isInactive",
+    "class",
+    "bundleable",
+    "department",
+    "hideInBundle",
+    "isPrivate",
+    "owner",
+    "caption",
+    "storeDisplayThumbnail",
+    "siteDescription",
+    "featuredDescription",
+    "lastModifiedDate",
+    "createdDate",
+    "siteCategoryList",
+    "internalId",
+    "externalId"
+  ]
+}

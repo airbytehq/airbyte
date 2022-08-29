@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "postingPeriod": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "tranDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "exchangeRate": {
+      "type": "number"
+    },
+    "tranId": {
+      "type": "string"
+    },
+    "reversalDate": {
+      "type": ["null", "string"]
+    },
+    "reversalDefer": {
+      "type": ["null", "string"]
+    },
+    "parentExpenseAlloc": {
+      "type": ["null", "string"]
+    },
+    "isBookSpecific": {
+      "type": ["null", "string"]
+    },
+    "accountingBook": {
+      "type": ["null", "string"]
+    },
+    "reversalEntry": {
+      "type": ["null", "string"]
+    },
+    "createdFrom": {
+      "type": ["null", "string"]
+    },
+    "department": {
+      "type": ["null", "string"]
+    },
+    "class": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "nexus": {
+      "type": ["null", "string"]
+    },
+    "subsidiaryTaxRegNum": {
+      "type": ["null", "string"]
+    },
+    "taxPointDate": {
+      "type": ["null", "string"]
+    },
+    "memo": {
+      "type": ["null", "string"]
+    },
+    "toSubsidiary": {
+      "type": ["null", "string"]
+    },
+    "approved": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastModifiedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "customForm": {
+      "type": ["null", "string"]
+    },
+    "lineList": {
+      "type": ["null", "string"]
+    },
+    "accountingBookDetailList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "postingPeriod",
+    "tranDate",
+    "currency",
+    "exchangeRate",
+    "tranId",
+    "reversalDate",
+    "reversalDefer",
+    "parentExpenseAlloc",
+    "isBookSpecific",
+    "accountingBook",
+    "reversalEntry",
+    "createdFrom",
+    "department",
+    "class",
+    "location",
+    "subsidiary",
+    "nexus",
+    "subsidiaryTaxRegNum",
+    "taxPointDate",
+    "memo",
+    "toSubsidiary",
+    "approved",
+    "createdDate",
+    "lastModifiedDate",
+    "customForm",
+    "lineList",
+    "accountingBookDetailList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

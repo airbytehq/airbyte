@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "dateDriven": {
+      "type": ["null", "string"]
+    },
+    "daysUntilNetDue": {
+      "type": "integer"
+    },
+    "discountPercent": {
+      "type": "number"
+    },
+    "daysUntilExpiry": {
+      "type": "integer"
+    },
+    "dayOfMonthNetDue": {
+      "type": ["null", "string"]
+    },
+    "dueNextMonthIfWithinDays": {
+      "type": ["null", "string"]
+    },
+    "discountPercentDateDriven": {
+      "type": ["null", "string"]
+    },
+    "dayDiscountExpires": {
+      "type": ["null", "string"]
+    },
+    "preferred": {
+      "type": "boolean"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "name",
+    "dateDriven",
+    "daysUntilNetDue",
+    "discountPercent",
+    "daysUntilExpiry",
+    "dayOfMonthNetDue",
+    "dueNextMonthIfWithinDays",
+    "discountPercentDateDriven",
+    "dayDiscountExpires",
+    "preferred",
+    "isInactive",
+    "internalId",
+    "externalId"
+  ]
+}

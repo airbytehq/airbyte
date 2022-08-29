@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": "string"
+    },
+    "acctType": {
+      "type": "string"
+    },
+    "unitsType": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "acctNumber": {
+      "type": "string"
+    },
+    "acctName": {
+      "type": "string"
+    },
+    "legalName": {
+      "type": "string"
+    },
+    "includeChildren": {
+      "type": "boolean"
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "exchangeRate": {
+      "type": "string"
+    },
+    "generalRate": {
+      "type": "string"
+    },
+    "parent": {
+      "type": "string"
+    },
+    "cashFlowRate": {
+      "type": "string"
+    },
+    "billableExpensesAcct": {
+      "type": "string"
+    },
+    "deferralAcct": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "curDocNum": {
+      "type": "string"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "department": {
+      "type": "string"
+    },
+    "class": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "restrictToAccountingBookList": {
+      "type": "string"
+    },
+    "inventory": {
+      "type": "string"
+    },
+    "eliminate": {
+      "type": "string"
+    },
+    "subsidiaryList": {
+      "type": "string"
+    },
+    "category1099misc": {
+      "type": "string"
+    },
+    "localizationsList": {
+      "type": "string"
+    },
+    "openingBalance": {
+      "type": "string"
+    },
+    "tranDate": {
+      "type": "string"
+    },
+    "revalue": {
+      "type": "boolean"
+    },
+    "customFieldList": {
+      "type": "string"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "acctType",
+    "acctNumber",
+    "acctName",
+    "internalId"
+  ]
+}

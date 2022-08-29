@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "department": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "isPrivate": {
+      "type": "boolean"
+    },
+    "bundleable": {
+      "type": ["null", "string"]
+    },
+    "hideInBundle": {
+      "type": ["null", "string"]
+    },
+    "isOnline": {
+      "type": ["null", "string"]
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "parent": {
+      "type": ["null", "string"]
+    },
+    "folderType": {
+      "type": "string"
+    },
+    "class": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "subsidiary": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "name",
+    "department",
+    "description",
+    "isInactive",
+    "isPrivate",
+    "bundleable",
+    "hideInBundle",
+    "isOnline",
+    "group",
+    "parent",
+    "folderType",
+    "class",
+    "location",
+    "subsidiary",
+    "internalId",
+    "externalId"
+  ]
+}

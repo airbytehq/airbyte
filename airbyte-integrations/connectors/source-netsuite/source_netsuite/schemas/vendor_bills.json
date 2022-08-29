@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": "string"
+    },
+    "createdDate": {
+      "type": "string"
+    },
+    "lastModifiedDate": {
+      "type": "string"
+    },
+    "nexus": {
+      "type": "string"
+    },
+    "subsidiaryTaxRegNum": {
+      "type": "string"
+    },
+    "taxRegOverride": {
+      "type": "string"
+    },
+    "taxDetailsOverride": {
+      "type": "string"
+    },
+    "customForm": {
+      "type": "string"
+    },
+    "billAddressList": {
+      "type": "string"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "entity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "approvalStatus": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "nextApprover": {
+      "type": "string"
+    },
+    "vatRegNum": {
+      "type": "string"
+    },
+    "postingPeriod": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "tranDate": {
+      "type": "string"
+    },
+    "currencyName": {
+      "type": "string"
+    },
+    "billingAddress": {
+      "type": "string"
+    },
+    "exchangeRate": {
+      "type": "number"
+    },
+    "entityTaxRegNum": {
+      "type": "string"
+    },
+    "taxPointDate": {
+      "type": "string"
+    },
+    "terms": {
+      "type": "string"
+    },
+    "dueDate": {
+      "type": "string"
+    },
+    "discountDate": {
+      "type": "string"
+    },
+    "tranId": {
+      "type": "string"
+    },
+    "userTotal": {
+      "type": "number"
+    },
+    "discountAmount": {
+      "type": "string"
+    },
+    "taxTotal": {
+      "type": "string"
+    },
+    "paymentHold": {
+      "type": "boolean"
+    },
+    "memo": {
+      "type": "string"
+    },
+    "tax2Total": {
+      "type": "string"
+    },
+    "creditLimit": {
+      "type": "string"
+    },
+    "availableVendorCredit": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "class": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "landedCostMethod": {
+      "type": "string"
+    },
+    "landedCostPerLine": {
+      "type": "string"
+    },
+    "transactionNumber": {
+      "type": "string"
+    },
+    "expenseList": {
+      "type": "string"
+    },
+    "accountingBookDetailList": {
+      "type": "string"
+    },
+    "itemList": {
+      "type": "string"
+    },
+    "landedCostsList": {
+      "type": "string"
+    },
+    "purchaseOrderList": {
+      "type": "string"
+    },
+    "taxDetailsList": {
+      "type": "string"
+    },
+    "customFieldList": {
+      "type": "string"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "createdDate",
+    "lastModifiedDate",
+    "nexus",
+    "subsidiaryTaxRegNum",
+    "taxRegOverride",
+    "taxDetailsOverride",
+    "customForm",
+    "billAddressList",
+    "account",
+    "entity",
+    "subsidiary",
+    "approvalStatus",
+    "nextApprover",
+    "vatRegNum",
+    "postingPeriod",
+    "tranDate",
+    "currencyName",
+    "billingAddress",
+    "exchangeRate",
+    "entityTaxRegNum",
+    "taxPointDate",
+    "terms",
+    "dueDate",
+    "discountDate",
+    "tranId",
+    "userTotal",
+    "discountAmount",
+    "taxTotal",
+    "paymentHold",
+    "memo",
+    "tax2Total",
+    "creditLimit",
+    "availableVendorCredit",
+    "currency",
+    "class",
+    "department",
+    "location",
+    "status",
+    "landedCostMethod",
+    "landedCostPerLine",
+    "transactionNumber",
+    "expenseList",
+    "accountingBookDetailList",
+    "itemList",
+    "landedCostsList",
+    "purchaseOrderList",
+    "taxDetailsList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

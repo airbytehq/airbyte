@@ -1,0 +1,381 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "customForm": {
+      "type": ["null", "string"]
+    },
+    "entityId": {
+      "type": ["null", "string"]
+    },
+    "altName": {
+      "type": ["null", "string"]
+    },
+    "isPerson": {
+      "type": "boolean"
+    },
+    "phoneticName": {
+      "type": ["null", "string"]
+    },
+    "salutation": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "middleName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "companyName": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "defaultAddress": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "lastModifiedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datereated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "printOnCheckAs": {
+      "type": ["null", "string"]
+    },
+    "altPhone": {
+      "type": ["null", "string"]
+    },
+    "homePhone": {
+      "type": ["null", "string"]
+    },
+    "mobilePhone": {
+      "type": ["null", "string"]
+    },
+    "altEmail": {
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "globalSubscriptionStatus": {
+      "type": ["null", "string"]
+    },
+    "image": {
+      "type": ["null", "string"]
+    },
+    "emailPreference": {
+      "type": ["null", "string"]
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "internalId": {
+          "type": ["null", "string"]
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "representingSubsidiary": {
+      "type": ["null", "string"]
+    },
+    "accountNumber": {
+      "type": ["null", "string"]
+    },
+    "legalName": {
+      "type": ["null", "string"]
+    },
+    "vatRegNumber": {
+      "type": ["null", "string"]
+    },
+    "expenseAccount": {
+      "type": ["null", "string"]
+    },
+    "payablesAccount": {
+      "type": ["null", "string"]
+    },
+    "terms": {
+      "type": ["null", "string"]
+    },
+    "incoterm": {
+      "type": ["null", "string"]
+    },
+    "creditLimit": {
+      "type": ["null", "string"]
+    },
+    "balancePrimary": {
+      "type": "number"
+    },
+    "openinBalance": {
+      "type": ["null", "string"]
+    },
+    "openingBalanceDate": {
+      "type": ["null", "string"]
+    },
+    "openingBalanceAccount": {
+      "type": ["null", "string"]
+    },
+    "balance": {
+      "type": ["null", "string"]
+    },
+    "unbilledOrdersPrimary": {
+      "type": "number"
+    },
+    "bcn": {
+      "type": ["null", "string"]
+    },
+    "unbilledOrders": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "internalId": {
+          "type": ["null", "string"]
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "is1099Eligible": {
+      "type": "boolean"
+    },
+    "isJobResourceVend": {
+      "type": "boolean"
+    },
+    "laborCost": {
+      "type": ["null", "string"]
+    },
+    "purchaseOrderQuantity": {
+      "type": ["null", "string"]
+    },
+    "purchaseOrderAmount": {
+      "type": ["null", "string"]
+    },
+    "purchaseOrderQuantityDiff": {
+      "type": ["null", "string"]
+    },
+    "receiptQuantity": {
+      "type": ["null", "string"]
+    },
+    "receiptAmount": {
+      "type": ["null", "string"]
+    },
+    "receiptQuantityDiff": {
+      "type": ["null", "string"]
+    },
+    "workCalendar": {
+      "type": ["null", "string"]
+    },
+    "taxIdNum": {
+      "type": ["null", "string"]
+    },
+    "taxItem": {
+      "type": ["null", "string"]
+    },
+    "giveAccess": {
+      "type": ["null", "string"]
+    },
+    "sendEmail": {
+      "type": ["null", "string"]
+    },
+    "billPay": {
+      "type": ["null", "string"]
+    },
+    "isAccountant": {
+      "type": ["null", "string"]
+    },
+    "password": {
+      "type": ["null", "string"]
+    },
+    "password2": {
+      "type": ["null", "string"]
+    },
+    "requirePwdChange": {
+      "type": ["null", "string"]
+    },
+    "eligibleForCommission": {
+      "type": ["null", "string"]
+    },
+    "emailTransactions": {
+      "type": "boolean"
+    },
+    "printTransactions": {
+      "type": "boolean"
+    },
+    "faxTransactions": {
+      "type": "boolean"
+    },
+    "defaultTaxReg": {
+      "type": ["null", "string"]
+    },
+    "pricingScheduleList": {
+      "type": ["null", "string"]
+    },
+    "subscriptionsList": {
+      "type": ["null", "string"]
+    },
+    "addressbookList": {
+      "type": ["null", "string"]
+    },
+    "currencyList": {
+      "type": ["null", "string"]
+    },
+    "rolesList": {
+      "type": ["null", "string"]
+    },
+    "taxRegistrationList": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": ["null", "string"]
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "customForm",
+    "entityId",
+    "altName",
+    "isPerson",
+    "phoneticName",
+    "salutation",
+    "firstName",
+    "middleName",
+    "lastName",
+    "companyName",
+    "phone",
+    "fax",
+    "email",
+    "url",
+    "defaultAddress",
+    "isInactive",
+    "lastModifiedDate",
+    "dateCreated",
+    "category",
+    "title",
+    "printOnCheckAs",
+    "altPhone",
+    "homePhone",
+    "mobilePhone",
+    "altEmail",
+    "comments",
+    "globalSubscriptionStatus",
+    "image",
+    "emailPreference",
+    "subsidiary",
+    "representingSubsidiary",
+    "accountNumber",
+    "legalName",
+    "vatRegNumber",
+    "expenseAccount",
+    "payablesAccount",
+    "terms",
+    "incoterm",
+    "creditLimit",
+    "balancePrimary",
+    "openingBalance",
+    "openingBalanceDate",
+    "openingBalanceAccount",
+    "balance",
+    "unbilledOrdersPrimary",
+    "bcn",
+    "unbilledOrders",
+    "currency",
+    "is1099Eligible",
+    "isJobResourceVend",
+    "laborCost",
+    "purchaseOrderQuantity",
+    "purchaseOrderAmount",
+    "purchaseOrderQuantityDiff",
+    "receiptQuantity",
+    "receiptAmount",
+    "receiptQuantityDiff",
+    "workCalendar",
+    "taxIdNum",
+    "taxItem",
+    "giveAccess",
+    "sendEmail",
+    "billPay",
+    "isAccountant",
+    "password",
+    "password2",
+    "requirePwdChange",
+    "eligibleForCommission",
+    "emailTransactions",
+    "printTransactions",
+    "faxTransactions",
+    "defaultTaxReg",
+    "pricingScheduleList",
+    "subscriptionsList",
+    "addressbookList",
+    "currencyList",
+    "rolesList",
+    "taxRegistrationList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

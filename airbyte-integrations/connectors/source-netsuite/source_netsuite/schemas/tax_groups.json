@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "itemId": {
+      "type": "string"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "subsidiaryList": {
+      "type": ["null", "string"]
+    },
+    "taxitem1": {
+      "type": ["null", "string"]
+    },
+    "unitprice1": {
+      "type": ["null", "string"]
+    },
+    "taxitem2": {
+      "type": ["null", "string"]
+    },
+    "unitprice2": {
+      "type": ["null", "string"]
+    },
+    "piggyback": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "rate": {
+      "type": "number"
+    },
+    "taxType": {
+      "type": ["null", "string"]
+    },
+    "includeChildren": {
+      "type": "boolean"
+    },
+    "county": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "nexusCountry": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "isDefault": {
+      "type": "boolean"
+    },
+    "taxItemList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "itemId",
+    "description",
+    "state",
+    "subsidiaryList",
+    "taxitem1",
+    "unitprice1",
+    "taxitem2",
+    "unitprice2",
+    "piggyback",
+    "isInactive",
+    "rate",
+    "taxType",
+    "includeChildren",
+    "county",
+    "city",
+    "zip",
+    "nexusCountry",
+    "isDefault",
+    "taxItemList",
+    "internalId",
+    "externalId"
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": ["null", "string"]
+    },
+    "itemId": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "rate": {
+      "type": "string"
+    },
+    "taxType": {
+      "type": ["null", "string"]
+    },
+    "taxAgency": {
+      "type": ["null", "string"]
+    },
+    "purchaseAccount": {
+      "type": ["null", "string"]
+    },
+    "saleAccount": {
+      "type": ["null", "string"]
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "effectiveFrom": {
+      "type": ["null", "string"]
+    },
+    "validUntil": {
+      "type": ["null", "string"]
+    },
+    "subsidiaryList": {
+      "type": ["null", "string"]
+    },
+    "includeChildren": {
+      "type": "boolean"
+    },
+    "eccode": {
+      "type": ["null", "string"]
+    },
+    "reverseCharge": {
+      "type": ["null", "string"]
+    },
+    "parent": {
+      "type": ["null", "string"]
+    },
+    "service": {
+      "type": ["null", "string"]
+    },
+    "exempt": {
+      "type": ["null", "string"]
+    },
+    "isDefault": {
+      "type": ["null", "string"]
+    },
+    "excludeFromTaxReports": {
+      "type": ["null", "string"]
+    },
+    "available": {
+      "type": ["null", "string"]
+    },
+    "export": {
+      "type": ["null", "string"]
+    },
+    "taxAccount": {
+      "type": ["null", "string"]
+    },
+    "county": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "nexusCountry": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "customFieldList": {
+      "type": ["null", "string"]
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "itemId",
+    "displayName",
+    "description",
+    "rate",
+    "taxType",
+    "taxAgency",
+    "purchaseAccount",
+    "saleAccount",
+    "isInactive",
+    "effectiveFrom",
+    "validUntil",
+    "subsidiaryList",
+    "includeChildren",
+    "eccode",
+    "reverseCharge",
+    "parent",
+    "service",
+    "exempt",
+    "isDefault",
+    "excludeFromTaxReports",
+    "available",
+    "export",
+    "taxAccount",
+    "county",
+    "city",
+    "state",
+    "zip",
+    "nexusCountry",
+    "name",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}

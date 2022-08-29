@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "includeChildren": {
+      "type": "boolean"
+    },
+    "parent": {
+      "type": "string"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "classTranslationList": {
+      "type": "string"
+    },
+    "subsidiaryList": {
+      "type": "string"
+    },
+    "customFieldList": {
+      "type": "string"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "internalId"
+  ]
+}

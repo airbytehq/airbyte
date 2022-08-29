@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "parent": {
+      "type": "string"
+    },
+    "includeChildren": {
+      "type": "boolean"
+    },
+    "subsidiaryList": {
+      "type": "string"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "tranPrefix": {
+      "type": "string"
+    },
+    "mainAddress": {
+      "type": "object",
+      "properties": {
+        "nullFieldList": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "attention": {
+          "type": "string"
+        },
+        "addressee": {
+          "type": "string"
+        },
+        "addrPhone": {
+          "type": "string"
+        },
+        "addr1": {
+          "type": "string"
+        },
+        "addr2": {
+          "type": "string"
+        },
+        "addr3": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        },
+        "addrText": {
+          "type": "string"
+        },
+        "override": {
+          "type": "boolean"
+        },
+        "customFieldList": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "nullFieldList",
+        "internalId",
+        "country",
+        "attention",
+        "addressee",
+        "addrPhone",
+        "addr1",
+        "addr2",
+        "addr3",
+        "city",
+        "state",
+        "zip",
+        "addrText",
+        "override",
+        "customFieldList"
+      ]
+    },
+    "returnAddress": {
+      "type": "string"
+    },
+    "locationType": {
+      "type": "string"
+    },
+    "timeZone": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "string"
+    },
+    "longitude": {
+      "type": "string"
+    },
+    "logo": {
+      "type": "string"
+    },
+    "useBins": {
+      "type": "string"
+    },
+    "makeInventoryAvailable": {
+      "type": "string"
+    },
+    "makeInventoryAvailableStore": {
+      "type": "string"
+    },
+    "geolocationMethod": {
+      "type": "string"
+    },
+    "autoAssignmentRegionSetting": {
+      "type": "string"
+    },
+    "nextPickupCutOffTime": {
+      "type": "string"
+    },
+    "bufferStock": {
+      "type": "string"
+    },
+    "allowStorePickup": {
+      "type": "string"
+    },
+    "storePickupBufferStock": {
+      "type": "string"
+    },
+    "dailyShippingCapacity": {
+      "type": "string"
+    },
+    "totalShippingCapacity": {
+      "type": "string"
+    },
+    "includeLocationRegionsList": {
+      "type": "string"
+    },
+    "excludeLocationRegionsList": {
+      "type": "string"
+    },
+    "businessHoursList": {
+      "type": "string"
+    },
+    "classTranslationList": {
+      "type": "string"
+    },
+    "customFieldList": {
+      "type": "string"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "internalId"
+  ]
+}

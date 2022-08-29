@@ -1,0 +1,33 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Netsuite Spec
+  type: object
+  required:
+    - realm
+    - consumer_key
+    - consumer_secret
+    - token_id
+    - token_secret
+  additionalProperties: true
+  properties:
+    realm:
+      type: string
+      description: Netsuite realm e.g. 2344535  (followed by _SB# if it is a sandbox)
+      pattern: ^\d{7}([_,S,B,0-9]{4})?$
+    consumer_key:
+      type: string
+      description: Consumer key associated with your integration
+      airbyte_secret: true
+    consumer_secret:
+      type: string
+      description: Consumer secret associated with your integration
+      airbyte_secret: true
+    token_id:
+      type: string
+      description: Access token id
+      airbyte_secret: true
+    token_secret:
+      type: string
+      description: Access token secret
+      airbyte_secret: true

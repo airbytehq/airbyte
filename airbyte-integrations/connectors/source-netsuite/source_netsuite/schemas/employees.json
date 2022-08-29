@@ -1,0 +1,506 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "nullFieldList": {
+      "type": "null"
+    },
+    "customForm": {
+      "type": "null"
+    },
+    "template": {
+      "type": "null"
+    },
+    "entityId": {
+      "type": "string"
+    },
+    "salutation": {
+      "type": "null"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "middleName": {
+      "type": "null"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "altName": {
+      "type": "null"
+    },
+    "phone": {
+      "type": "null"
+    },
+    "fax": {
+      "type": "null"
+    },
+    "email": {
+      "type": "string"
+    },
+    "defaultAddress": {
+      "type": "null"
+    },
+    "isInactive": {
+      "type": "boolean"
+    },
+    "phoneticName": {
+      "type": "null"
+    },
+    "lastModifiedDate": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "dateCreated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "initials": {
+      "type": "string"
+    },
+    "officePhone": {
+      "type": "null"
+    },
+    "homePhone": {
+      "type": "null"
+    },
+    "mobilePhone": {
+      "type": "null"
+    },
+    "department": {
+      "type": "null"
+    },
+    "class": {
+      "type": "null"
+    },
+    "location": {
+      "type": "null"
+    },
+    "subsidiary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "null"
+        },
+        "type": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "billingClass": {
+      "type": "null"
+    },
+    "accountNumber": {
+      "type": "null"
+    },
+    "compensationCurrency": {
+      "type": "null"
+    },
+    "baseWageType": {
+      "type": "null"
+    },
+    "baseWage": {
+      "type": "null"
+    },
+    "comments": {
+      "type": "null"
+    },
+    "globalSubscriptionStatus": {
+      "type": "null"
+    },
+    "image": {
+      "type": "null"
+    },
+    "payFrequency": {
+      "type": "null"
+    },
+    "lastPaidDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "null"
+        },
+        "type": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "useTimeData": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "usePerquest": {
+      "type": "null"
+    },
+    "workplace": {
+      "type": "null"
+    },
+    "adpId": {
+      "type": "null"
+    },
+    "directDeposit": {
+      "type": "null"
+    },
+    "expenseLimit": {
+      "type": "null"
+    },
+    "purchaseOrderLimit": {
+      "type": "number"
+    },
+    "purchaseOrderApprovalLimit": {
+      "type": "null"
+    },
+    "socialSecurityNumber": {
+      "type": "null"
+    },
+    "supervisor": {
+      "type": "null"
+    },
+    "approver": {
+      "type": "null"
+    },
+    "approvalLimit": {
+      "type": "null"
+    },
+    "timeApprover": {
+      "type": "null"
+    },
+    "employeeType": {
+      "type": "null"
+    },
+    "isSalesRep": {
+      "type": "boolean"
+    },
+    "salesRole": {
+      "type": "null"
+    },
+    "isSupportRep": {
+      "type": "null"
+    },
+    "isJobResource": {
+      "type": "null"
+    },
+    "laborCost": {
+      "type": "null"
+    },
+    "birthDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "hireDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "releaseDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "terminationDetails": {
+      "type": "null"
+    },
+    "terminationReason": {
+      "type": "null"
+    },
+    "terminationRegretted": {
+      "type": "null"
+    },
+    "terminationCategory": {
+      "type": "null"
+    },
+    "timeOffPlan": {
+      "type": "null"
+    },
+    "lastReviewDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "nextReviewDate": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "title": {
+      "type": "null"
+    },
+    "employeeStatus": {
+      "type": "null"
+    },
+    "jobDescription": {
+      "type": "null"
+    },
+    "workAssignment": {
+      "type": "null"
+    },
+    "job": {
+      "type": "null"
+    },
+    "maritalStatus": {
+      "type": "null"
+    },
+    "ethnicity": {
+      "type": "null"
+    },
+    "gender": {
+      "type": "null"
+    },
+    "purchaseOrderApprover": {
+      "type": "null"
+    },
+    "workCalendar": {
+      "type": "null"
+    },
+    "giveAccess": {
+      "type": "boolean"
+    },
+    "defaultExpenseReportCurrency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalId": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": "null"
+        },
+        "type": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "internalId",
+        "externalId",
+        "type"
+      ]
+    },
+    "concurrentWebServicesUser": {
+      "type": "null"
+    },
+    "sendEmail": {
+      "type": "null"
+    },
+    "hasOfflineAccess": {
+      "type": "null"
+    },
+    "password": {
+      "type": "null"
+    },
+    "password2": {
+      "type": "null"
+    },
+    "requirePwdChange": {
+      "type": "null"
+    },
+    "inheritIPRules": {
+      "type": "null"
+    },
+    "IPAddressRule": {
+      "type": "null"
+    },
+    "startDateTimeOffCalc": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "commissionPaymentPreference": {
+      "type": "string"
+    },
+    "billPay": {
+      "type": "null"
+    },
+    "defaultAcctCorpCardExp": {
+      "type": "null"
+    },
+    "eligibleForCommission": {
+      "type": "null"
+    },
+    "subscriptionsList": {
+      "type": "null"
+    },
+    "ratesList": {
+      "type": "null"
+    },
+    "addressbookList": {
+      "type": "null"
+    },
+    "rolesList": {
+      "type": "null"
+    },
+    "hrEducationList": {
+      "type": "null"
+    },
+    "accruedTimeList": {
+      "type": "null"
+    },
+    "directDepositList": {
+      "type": "null"
+    },
+    "currencyList": {
+      "type": "null"
+    },
+    "companyContributionList": {
+      "type": "null"
+    },
+    "earningList": {
+      "type": "null"
+    },
+    "emergencyContactList": {
+      "type": "null"
+    },
+    "hcmPositionList": {
+      "type": "null"
+    },
+    "deductionList": {
+      "type": "null"
+    },
+    "customFieldList": {
+      "type": "null"
+    },
+    "internalId": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "null"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "nullFieldList",
+    "customForm",
+    "template",
+    "entityId",
+    "salutation",
+    "firstName",
+    "middleName",
+    "lastName",
+    "altName",
+    "phone",
+    "fax",
+    "email",
+    "defaultAddress",
+    "isInactive",
+    "phoneticName",
+    "lastModifiedDate",
+    "dateCreated",
+    "initials",
+    "officePhone",
+    "homePhone",
+    "mobilePhone",
+    "department",
+    "class",
+    "location",
+    "subsidiary",
+    "billingClass",
+    "accountNumber",
+    "compensationCurrency",
+    "baseWageType",
+    "baseWage",
+    "comments",
+    "globalSubscriptionStatus",
+    "image",
+    "payFrequency",
+    "lastPaidDate",
+    "currency",
+    "useTimeData",
+    "usePerquest",
+    "workplace",
+    "adpId",
+    "directDeposit",
+    "expenseLimit",
+    "purchaseOrderLimit",
+    "purchaseOrderApprovalLimit",
+    "socialSecurityNumber",
+    "supervisor",
+    "approver",
+    "approvalLimit",
+    "timeApprover",
+    "employeeType",
+    "isSalesRep",
+    "salesRole",
+    "isSupportRep",
+    "isJobResource",
+    "laborCost",
+    "birthDate",
+    "hireDate",
+    "releaseDate",
+    "terminationDetails",
+    "terminationReason",
+    "terminationRegretted",
+    "terminationCategory",
+    "timeOffPlan",
+    "lastReviewDate",
+    "nextReviewDate",
+    "title",
+    "employeeStatus",
+    "jobDescription",
+    "workAssignment",
+    "job",
+    "maritalStatus",
+    "ethnicity",
+    "gender",
+    "purchaseOrderApprover",
+    "workCalendar",
+    "giveAccess",
+    "defaultExpenseReportCurrency",
+    "concurrentWebServicesUser",
+    "sendEmail",
+    "hasOfflineAccess",
+    "password",
+    "password2",
+    "requirePwdChange",
+    "inheritIPRules",
+    "IPAddressRule",
+    "startDateTimeOffCalc",
+    "commissionPaymentPreference",
+    "billPay",
+    "defaultAcctCorpCardExp",
+    "eligibleForCommission",
+    "subscriptionsList",
+    "ratesList",
+    "addressbookList",
+    "rolesList",
+    "hrEducationList",
+    "accruedTimeList",
+    "directDepositList",
+    "currencyList",
+    "companyContributionList",
+    "earningList",
+    "emergencyContactList",
+    "hcmPositionList",
+    "deductionList",
+    "customFieldList",
+    "internalId",
+    "externalId"
+  ]
+}
