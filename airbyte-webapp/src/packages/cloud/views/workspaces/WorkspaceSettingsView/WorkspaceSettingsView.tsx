@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Button, ButtonType, LabeledInput } from "components";
+import { Button, LabeledInput } from "components";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
@@ -45,12 +45,9 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button
-              type="button"
-              onClick={exitWorkspace}
-              data-testid="button.changeWorkspace"
-              label={<FormattedMessage id="settings.generalSettings.changeWorkspace" />}
-            />
+            <Button type="button" onClick={exitWorkspace} data-testid="button.changeWorkspace">
+              <FormattedMessage id="settings.generalSettings.changeWorkspace" />
+            </Button>
           </Header>
         }
       >
@@ -81,14 +78,12 @@ export const WorkspaceSettingsView: React.FC = () => {
                   )}
                 </Field>
                 <Buttons>
-                  <Button
-                    type="button"
-                    buttonType={ButtonType.Secondary}
-                    disabled={!dirty}
-                    onClick={() => resetForm()}
-                    label="cancel"
-                  />
-                  <Button type="submit" disabled={!isValid} isLoading={isSubmitting} label="save changes" />
+                  <Button type="button" variant="secondary" disabled={!dirty} onClick={() => resetForm()}>
+                    cancel
+                  </Button>
+                  <Button type="submit" disabled={!isValid} isLoading={isSubmitting}>
+                    save changes
+                  </Button>
                 </Buttons>
               </Content>
             </Form>
@@ -101,10 +96,11 @@ export const WorkspaceSettingsView: React.FC = () => {
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
             <Button
               isLoading={removeWorkspace.isLoading}
-              buttonType={ButtonType.Danger}
+              variant="danger"
               onClick={() => removeWorkspace.mutateAsync(workspace.workspaceId)}
-              label={<FormattedMessage id="settings.generalSettings.deleteText" />}
-            />
+            >
+              <FormattedMessage id="settings.generalSettings.deleteText" />
+            </Button>
           </Header>
         }
       />

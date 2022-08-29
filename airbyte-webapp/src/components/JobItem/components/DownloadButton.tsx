@@ -8,8 +8,6 @@ import { Button } from "components";
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
 import { downloadFile } from "utils/file";
 
-import { ButtonType } from "../../base/Button/types";
-
 interface DownloadButtonProps {
   jobDebugInfo: JobDebugInfoRead;
   fileName: string;
@@ -28,7 +26,7 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName 
   return (
     <Button
       onClick={downloadFileWithLogs}
-      buttonType={ButtonType.Secondary}
+      variant="secondary"
       title={formatMessage({
         id: "sources.downloadLogs",
       })}

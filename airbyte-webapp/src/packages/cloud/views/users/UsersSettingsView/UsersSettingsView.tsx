@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useToggle } from "react-use";
 
-import { Button, H5, ButtonType } from "components";
+import { Button, H5 } from "components";
 import Table from "components/Table";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -36,12 +36,9 @@ const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ w
   };
 
   return (
-    <Button
-      buttonType={ButtonType.Secondary}
-      onClick={onRemoveUserButtonClick}
-      isLoading={isLoading}
-      label={<FormattedMessage id="userSettings.user.remove" />}
-    />
+    <Button variant="secondary" onClick={onRemoveUserButtonClick} isLoading={isLoading}>
+      <FormattedMessage id="userSettings.user.remove" />
+    </Button>
   );
 };
 
@@ -89,7 +86,6 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button buttonType={ButtonType.Secondary}>send again</Button>,
           ].filter(Boolean),
       },
     ],
@@ -105,9 +101,10 @@ export const UsersSettingsView: React.FC = () => {
         <Button
           data-testid="userSettings.button.addNewUser"
           icon={<FontAwesomeIcon icon={faPlus} />}
-          label={<FormattedMessage id="userSettings.button.addNewUser" />}
           onClick={toggleModal}
-        />
+        >
+          <FormattedMessage id="userSettings.button.addNewUser" />
+        </Button>
       </div>
       <Table data={users ?? []} columns={columns} />
       {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}

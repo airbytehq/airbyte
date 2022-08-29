@@ -52,12 +52,9 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) =
               <ClearInput {...field} autoFocus type="text" error={!!meta.error && meta.touched} />
             )}
           </Field>
-          <Button
-            type="submit"
-            isLoading={isSubmitting}
-            data-testid="workspaces.create"
-            label={<FormattedMessage id="workspaces.create" />}
-          />
+          <Button type="submit" isLoading={isSubmitting} data-testid="workspaces.create">
+            <FormattedMessage id="workspaces.create" />
+          </Button>
         </CreationForm>
       )}
     </Formik>

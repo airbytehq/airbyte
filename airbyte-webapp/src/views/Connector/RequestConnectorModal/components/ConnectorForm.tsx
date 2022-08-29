@@ -6,7 +6,6 @@ import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 
-import { ButtonType } from "../../../../components/base/Button/types";
 import { Values } from "../types";
 
 const Buttons = styled.div`
@@ -137,24 +136,16 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
             </Field>
           )}
           <Buttons>
-            <Button
-              type="button"
-              buttonType={ButtonType.Secondary}
-              onClick={onCancel}
-              disabled={hasFeedback}
-              label={<FormattedMessage id="form.cancel" />}
-            />
-            <RequestButton
-              type="submit"
-              wasActive={hasFeedback}
-              label={
-                hasFeedback ? (
-                  <FormattedMessage id="connector.requested" />
-                ) : (
-                  <FormattedMessage id="connector.request" />
-                )
-              }
-            />
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={hasFeedback}>
+              <FormattedMessage id="form.cancel" />
+            </Button>
+            <RequestButton type="submit" wasActive={hasFeedback}>
+              {hasFeedback ? (
+                <FormattedMessage id="connector.requested" />
+              ) : (
+                <FormattedMessage id="connector.request" />
+              )}
+            </RequestButton>
           </Buttons>
         </Form>
       )}

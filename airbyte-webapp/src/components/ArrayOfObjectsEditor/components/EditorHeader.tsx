@@ -6,8 +6,6 @@ import { Button } from "components";
 
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 
-import { ButtonType } from "../../base/Button/types";
-
 const Content = styled.div`
   display: flex;
   justify-content: space-between;
@@ -41,14 +39,9 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
     <Content>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
       {mode !== "readonly" && (
-        <Button
-          buttonType={ButtonType.Secondary}
-          type="button"
-          onClick={onAddItem}
-          data-testid="addItemButton"
-          disabled={disabled}
-          label={addButtonText || <FormattedMessage id="form.addItems" />}
-        />
+        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+          {addButtonText || <FormattedMessage id="form.addItems" />}
+        </Button>
       )}
     </Content>
   );

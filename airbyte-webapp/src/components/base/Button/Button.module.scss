@@ -23,13 +23,13 @@
   }
 
   &:disabled,
-  &.is_loading {
+  &.isLoading {
     pointer-events: none;
   }
 
   &:focus,
   &:hover,
-  &:not(.type_light_grey) {
+  &:not(.typeLight) {
     box-shadow: 0 3px 4px -2px rgba(26, 25, 77, 0.21);
   }
 
@@ -37,28 +37,28 @@
     outline: 3px solid colors.$blue-50;
   }
 
-  &.size_xs {
+  &.sizeXS {
     height: 32px;
     font-size: 12px;
     line-height: 15px;
     padding: 10px;
   }
 
-  &.size_s {
+  &.sizeS {
     height: 36px;
     font-size: 12px;
     line-height: 15px;
     padding: 10px 14px;
   }
 
-  &.size_l {
+  &.sizeL {
     height: 44px;
     font-size: 16px;
     line-height: 19px;
     padding: 10px 14px;
   }
 
-  &.type_primary {
+  &.typePrimary {
     background-color: colors.$blue-400;
     color: colors.$white;
     &:hover {
@@ -69,7 +69,7 @@
     }
   }
 
-  &.type_secondary {
+  &.typeSecondary {
     background-color: colors.$white;
     color: colors.$grey-300;
     border: 1px solid colors.$grey-200;
@@ -84,7 +84,7 @@
     }
   }
 
-  &.type_danger {
+  &.typeDanger {
     background-color: colors.$red-300;
     color: colors.$white;
     &:hover {
@@ -95,7 +95,7 @@
     }
   }
 
-  &.type_light_grey {
+  &.typeLight {
     background-color: colors.$grey-50;
     color: colors.$grey-300;
     &:hover {
@@ -108,7 +108,7 @@
     }
   }
 
-  &.is_loading {
+  &.isLoading {
     display: flex;
     position: relative;
     align-content: center;
@@ -117,46 +117,46 @@
   }
 }
 
-.button_icon {
-  &.size_xs {
+.buttonIcon {
+  &.sizeXS {
     font-size: 14px;
   }
 
-  &.size_s {
+  &.sizeS {
     font-size: 15px;
   }
 
-  &.size_l {
-    &.is_spinner_icon {
+  &.sizeL {
+    &.isSpinnerIcon {
       margin-top: 3px;
     }
     font-size: 18px;
   }
 
-  &.position_left {
-    &.with_label {
+  &.positionLeft {
+    &.withLabel {
       margin-right: 7px;
     }
   }
 
-  &.position_right {
-    &.with_label {
+  &.positionRight {
+    &.withLabel {
       margin-left: 7px;
     }
   }
 
-  &.type_primary,
-  &.type_danger {
+  &.typePrimary,
+  &.typeDanger {
     color: colors.$white;
   }
 
-  &.type_secondary,
-  &.type_light_grey {
+  &.typeSecondary,
+  &.typeLight {
     color: colors.$grey-300;
   }
 
-  &.is_regular_icon {
-    &.type_secondary {
+  &.isRegularIcon {
+    &.typeSecondary {
       &:hover {
         color: colors.$grey-400;
       }
@@ -165,7 +165,7 @@
       }
     }
 
-    &.type_light_grey {
+    &.typeLight {
       &:hover {
         color: colors.$grey-500;
       }
@@ -175,7 +175,7 @@
     }
   }
 
-  &.is_spinner_icon {
+  &.isSpinnerIcon {
     @keyframes spin {
       from {
         transform: rotate(0deg);
@@ -189,7 +189,7 @@
     animation: spin 1.5s linear 0s infinite;
   }
 
-  &.is_loading {
+  &.isLoading {
     color: colors.$transparentColor;
   }
 }

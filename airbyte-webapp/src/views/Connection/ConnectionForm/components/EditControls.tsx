@@ -4,8 +4,6 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
-import { ButtonType } from "../../../../components/base/Button/types";
-
 interface EditControlProps {
   isSubmitting: boolean;
   dirty: boolean;
@@ -74,17 +72,19 @@ const EditControls: React.FC<EditControlProps> = ({
         <div>
           <Button
             type="button"
-            buttonType={ButtonType.Secondary}
+            variant="secondary"
             disabled={isSubmitting || (!dirty && !enableControls)}
             onClick={resetForm}
-            label={<FormattedMessage id="form.cancel" />}
-          />
+          >
+            <FormattedMessage id="form.cancel" />
+          </Button>
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
-            label={<FormattedMessage id="form.saveChanges" />}
-          />
+          >
+            <FormattedMessage id="form.saveChanges" />
+          </ControlButton>
         </div>
       </Buttons>
     </>

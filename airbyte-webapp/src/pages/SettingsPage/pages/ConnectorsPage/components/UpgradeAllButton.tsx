@@ -53,8 +53,9 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
         isLoading={isLoading}
         wasActive={hasSuccess}
         icon={hasSuccess ? undefined : <TryArrow icon={faRedoAlt} />}
-        label={hasSuccess ? <FormattedMessage id="admin.upgraded" /> : <FormattedMessage id="admin.upgradeAll" />}
-      />
+      >
+        {hasSuccess ? <FormattedMessage id="admin.upgraded" /> : <FormattedMessage id="admin.upgradeAll" />}
+      </UpdateButton>
     </UpdateButtonContent>
   );
 };

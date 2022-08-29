@@ -1,22 +1,17 @@
 import React from "react";
 
-export enum ButtonType {
-  Primary = "primary",
-  Secondary = "secondary",
-  Danger = "danger",
-  LightGrey = "lightGrey",
-}
+type ButtonSize = "xs" | "sm" | "lg";
+type ButtonVariant = "primary" | "secondary" | "danger" | "light";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   customStyles?: string;
-  buttonType?: ButtonType;
+  variant?: ButtonVariant;
   clickable?: boolean;
   full?: boolean;
   icon?: React.ReactElement;
   iconPosition?: "left" | "right";
   isLoading?: boolean;
-  label?: string | React.ReactNode;
-  size?: "xs" | "s" | "l";
+  size?: ButtonSize;
   wasActive?: boolean;
   width?: number;
 }

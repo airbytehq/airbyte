@@ -6,7 +6,6 @@ import { useIntl } from "react-intl";
 import { Button } from "components";
 
 import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
-import { ButtonType } from "../../base/Button/types";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
 interface IProps {
@@ -21,7 +20,7 @@ const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
     <>
       <Button
         onClick={() => setIsModalOpen(true)}
-        buttonType={ButtonType.Secondary}
+        variant="secondary"
         title={formatMessage({
           id: "sources.debugInfoDetails",
         })}

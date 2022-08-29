@@ -54,16 +54,12 @@ const LogsContent: React.FC = () => {
 
   return (
     <Content>
-      <LogsButton
-        onClick={downloadServerLogs}
-        isLoading={serverLogsLoading}
-        label={<FormattedMessage id="admin.downloadServerLogs" />}
-      />
-      <LogsButton
-        onClick={downloadSchedulerLogs}
-        isLoading={schedulerLogsLoading}
-        label={<FormattedMessage id="admin.downloadSchedulerLogs" />}
-      />
+      <LogsButton onClick={downloadServerLogs} isLoading={serverLogsLoading}>
+        <FormattedMessage id="admin.downloadServerLogs" />
+      </LogsButton>
+      <LogsButton onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
+        <FormattedMessage id="admin.downloadSchedulerLogs" />
+      </LogsButton>
     </Content>
   );
 };

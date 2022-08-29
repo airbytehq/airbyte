@@ -73,12 +73,9 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <Button
-                type="submit"
-                isLoading={isSubmitting}
-                data-testid="login.resetPassword"
-                label={<FormattedMessage id="login.resetPassword" />}
-              />
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
+                <FormattedMessage id="login.resetPassword" />
+              </Button>
             </BottomBlock>
           </Form>
         )}

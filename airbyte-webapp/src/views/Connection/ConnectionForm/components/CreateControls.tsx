@@ -91,11 +91,9 @@ const CreateControls: React.FC<CreateControlsProps> = ({
       )}
       <div>
         {additionBottomControls || null}
-        <Button
-          type="submit"
-          disabled={isSubmitting || !isValid}
-          label={<FormattedMessage id="onboarding.setUpConnection" />}
-        />
+        <Button type="submit" disabled={isSubmitting || !isValid}>
+          <FormattedMessage id="onboarding.setUpConnection" />
+        </Button>
       </div>
     </ButtonContainer>
   );

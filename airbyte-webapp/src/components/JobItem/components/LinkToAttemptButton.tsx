@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useDebounce } from "react-use";
 
-import { Button, ButtonType } from "components";
+import { Button } from "components";
 import ToolTip from "components/ToolTip";
 
 import { copyToClipboard } from "utils/clipboard";
@@ -37,7 +37,7 @@ export const LinkToAttemptButton: React.FC<Props> = ({ jobId, attemptId }) => {
       disabled={!showCopyTooltip}
       control={
         <Button
-          buttonType={ButtonType.Secondary}
+          variant="secondary"
           onClick={onCopyLink}
           title={formatMessage({ id: "connection.copyLogLink" })}
           aria-label={formatMessage({ id: "connection.copyLogLink" })}

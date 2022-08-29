@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 
-import { Button, ButtonType } from "components";
+import { Button } from "components";
 
 import { CloudRoutes } from "../../../../cloudRoutes";
 import styles from "./Header.module.scss";
@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ toLogin }) => (
         <FormattedMessage id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"} />
       </div>
       <Button
-        buttonType={ButtonType.Secondary}
+        variant="secondary"
         // @ts-ignore
         as={Link}
         to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}

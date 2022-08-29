@@ -74,11 +74,9 @@ const PasswordSection: React.FC = () => {
                   )}
                 </Field>
               </FieldItem>
-              <Button
-                type="submit"
-                isLoading={isSubmitting}
-                label={<FormattedMessage id="settings.accountSettings.updatePassword" />}
-              />
+              <Button type="submit" isLoading={isSubmitting}>
+                <FormattedMessage id="settings.accountSettings.updatePassword" />
+              </Button>
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isSubmitting} />
             </Form>
           )}

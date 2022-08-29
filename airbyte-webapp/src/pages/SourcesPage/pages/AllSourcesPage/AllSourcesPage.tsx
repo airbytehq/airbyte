@@ -24,7 +24,9 @@ const AllSourcesPage: React.FC = () => {
         <PageTitle
           title={<FormattedMessage id="sidebar.sources" />}
           endComponent={
-            <Button onClick={onCreateSource} data-id="new-source" label={<FormattedMessage id="sources.newSource" />} />
+            <Button onClick={onCreateSource} data-id="new-source">
+              <FormattedMessage id="sources.newSource" />
+            </Button>
           }
         />
       }

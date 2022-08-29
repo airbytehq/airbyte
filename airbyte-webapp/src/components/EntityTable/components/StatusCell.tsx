@@ -43,13 +43,9 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
   }
 
   return (
-    <Button
-      size="xs"
-      onClick={OnLaunch}
-      isLoading={loading}
-      disabled={!allowSync}
-      label={<FormattedMessage id="tables.launch" />}
-    />
+    <Button size="xs" onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
+      <FormattedMessage id="tables.launch" />
+    </Button>
   );
 };
 

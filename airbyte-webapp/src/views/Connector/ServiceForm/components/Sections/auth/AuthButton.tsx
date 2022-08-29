@@ -69,7 +69,7 @@ export const AuthButton: React.FC = () => {
   );
   return (
     <AuthSectionRow>
-      <Component isLoading={loading} type="button" onClick={() => run()} label={buttonLabel}>
+      <Component isLoading={loading} type="button" onClick={run}>
         {buttonLabel}
       </Component>
       {done && (

@@ -183,7 +183,9 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
             />
           ) : (
             <ButtonContainer>
-              <Button size="l" type="submit" disabled={isSubmitting} label={<FormattedMessage id="form.continue" />} />
+              <Button size="lg" type="submit" disabled={isSubmitting}>
+                <FormattedMessage id="form.continue" />
+              </Button>
             </ButtonContainer>
           )}
         </Form>

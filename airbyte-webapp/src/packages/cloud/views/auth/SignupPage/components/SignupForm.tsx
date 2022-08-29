@@ -164,13 +164,9 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   disabled,
   buttonMessageId = "login.signup.submitButton",
 }) => (
-  <Button
-    className={styles.signUpButton}
-    type="submit"
-    isLoading={isLoading}
-    disabled={disabled}
-    label={<FormattedMessage id={buttonMessageId} />}
-  />
+  <Button className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+    <FormattedMessage id={buttonMessageId} />
+  </Button>
 );
 
 export const SignupFormStatusMessage: React.FC = ({ children }) => (

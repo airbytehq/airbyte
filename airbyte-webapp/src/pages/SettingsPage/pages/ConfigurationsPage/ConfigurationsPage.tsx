@@ -92,11 +92,9 @@ const ConfigurationsPage: React.FC = () => {
       <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]} />
       <ContentCard title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
-          <Button
-            onClick={onExport}
-            isLoading={loadingExport}
-            label={<FormattedMessage id="admin.exportConfiguration" />}
-          />
+          <Button onClick={onExport} isLoading={loadingExport}>
+            <FormattedMessage id="admin.exportConfiguration" />
+          </Button>
           <Text>
             <FormattedMessage
               id="admin.exportConfigurationText"
@@ -114,7 +112,9 @@ const ConfigurationsPage: React.FC = () => {
 
       <ControlContent title={<FormattedMessage id="admin.import" />}>
         <ButtonContent>
-          <Button onClick={() => setIsModalOpen(true)} label={<FormattedMessage id="admin.importConfiguration" />} />
+          <Button onClick={() => setIsModalOpen(true)}>
+            <FormattedMessage id="admin.importConfiguration" />
+          </Button>
           <Text>
             <FormattedMessage
               id="admin.importConfigurationText"

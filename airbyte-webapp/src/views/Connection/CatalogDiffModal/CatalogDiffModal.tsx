@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
+import { ModalBody, ModalFooter } from "components/Modal";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 
-import { ModalBody, ModalFooter } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
@@ -33,7 +33,9 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={() => onClose()} label={<FormattedMessage id="connection.updateSchema.confirm" />} />
+        <Button onClick={() => onClose()}>
+          <FormattedMessage id="connection.updateSchema.confirm" />
+        </Button>
       </ModalFooter>
     </>
   );

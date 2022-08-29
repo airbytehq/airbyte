@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, ButtonType } from "components";
+import { Button } from "components";
 import FileDropZone from "components/FileDropZone";
 import Modal from "components/Modal";
 
@@ -85,17 +85,12 @@ const ImportConfigurationModal: React.FC<IProps> = ({ onClose, onSubmit, isLoadi
         <Bottom>
           <Error>{error ? <FormattedMessage id="form.someError" /> : null}</Error>
           <div>
-            <ButtonWithMargin
-              onClick={onClose}
-              buttonType={ButtonType.Secondary}
-              disabled={isLoading}
-              label={<FormattedMessage id="form.cancel" />}
-            />
-            <Button
-              onClick={() => onSubmit(usersFile)}
-              disabled={!usersFile || isLoading}
-              label={<FormattedMessage id="form.submit" />}
-            />
+            <ButtonWithMargin onClick={onClose} variant="secondary" disabled={isLoading}>
+              <FormattedMessage id="form.cancel" />
+            </ButtonWithMargin>
+            <Button onClick={() => onSubmit(usersFile)} disabled={!usersFile || isLoading}>
+              <FormattedMessage id="form.submit" />
+            </Button>
           </div>
         </Bottom>
       </Content>

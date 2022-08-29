@@ -98,11 +98,9 @@ const EmailSection: React.FC = () => {
                 }}
               />
               <ChangeEmailFooter style={{ display: "none" }}>
-                <Button
-                  type="submit"
-                  disabled={user.email === values.email}
-                  label={<FormattedMessage id="settings.accountSettings.updateEmail" />}
-                />
+                <Button type="submit" disabled={user.email === values.email}>
+                  <FormattedMessage id="settings.accountSettings.updateEmail" />
+                </Button>
               </ChangeEmailFooter>
             </Form>
           )}
