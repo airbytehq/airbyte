@@ -14,7 +14,7 @@ import {
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
   ConnectionScheduleData,
-  ConnectionScheduleDataBasicSchedule,
+  ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   NamespaceDefinitionType,
@@ -31,7 +31,7 @@ import calculateInitialCatalog from "./calculateInitialCatalog";
 
 interface FormikConnectionFormValues {
   name?: string;
-  schedule?: ConnectionScheduleDataBasicSchedule | null;
+  scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
   prefix: string;
   syncCatalog: SyncSchema;
@@ -76,6 +76,7 @@ function useDefaultTransformation(): OperationCreate {
 const connectionValidationSchema = yup
   .object({
     name: yup.string().required("form.empty.error"),
+    scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
     scheduleData: yup
       .object({
         basicSchedule: yup

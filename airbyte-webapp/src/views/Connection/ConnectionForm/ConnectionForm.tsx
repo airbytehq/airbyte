@@ -9,6 +9,7 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 
 import {
   ConnectionScheduleDataBasicSchedule,
+  ConnectionScheduleType,
   NamespaceDefinitionType,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
@@ -163,6 +164,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
+      // Set the scheduleType based on the schedule value
+      values["scheduleType"] = values.scheduleData?.basicSchedule
+        ? ConnectionScheduleType.basic
+        : ConnectionScheduleType.manual;
+
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
       }) as unknown as ConnectionFormValues;

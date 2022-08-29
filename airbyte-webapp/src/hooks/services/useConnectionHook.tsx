@@ -10,6 +10,7 @@ import { useInitService } from "services/useInitService";
 import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
+  ConnectionScheduleType,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
@@ -35,6 +36,7 @@ export const connectionsKeys = {
 export interface ValuesProps {
   name?: string;
   scheduleData: ConnectionScheduleData;
+  scheduleType: ConnectionScheduleType;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;
@@ -137,9 +139,6 @@ const useCreateConnection = () => {
         ...values,
         status: "active",
         sourceCatalogId,
-
-        // TODO(harshith): Remove this once backend starts accepting only scheduleData params
-        schedule: values.scheduleData?.basicSchedule,
       });
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;

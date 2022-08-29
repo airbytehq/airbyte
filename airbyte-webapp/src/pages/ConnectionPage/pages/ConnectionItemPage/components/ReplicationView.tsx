@@ -123,7 +123,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       name: initialConnection.name,
       status: initialConnection.status || "",
       skipReset,
-      schedule: values.scheduleData?.basicSchedule,
     });
 
     setSaved(true);
