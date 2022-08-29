@@ -1,8 +1,8 @@
 name: Cleanup old GH action workflow runs
 
-on: [pull_request] # TODO: remove before merge to run on default branch
-  #schedule:
-    #- cron: '0 12 * * *' # runs at 12:00 UTC everyday
+on: 
+  schedule:
+    - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
       - name: execute cleanup workflow py script 
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python tools/bin/cleanup-workflow-runs.py # TODO: add --delete in before merge
+        run: python tools/bin/cleanup-workflow-runs.py --delete
       
       - name: execute dormant workflow py script 
         env: 
