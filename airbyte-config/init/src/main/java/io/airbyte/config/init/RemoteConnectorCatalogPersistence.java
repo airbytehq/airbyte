@@ -48,18 +48,18 @@ final public class RemoteConnectorCatalogPersistence implements ConfigPersistenc
 
   private final URI remoteConnectorCatalogUrl;
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
-  private Duration timeout;
+  private final Duration timeout;
   // A mapping from config type to config UUID to config.
   private ImmutableMap<AirbyteConfig, Map<String, JsonNode>> connectorCatalog;
 
-  public RemoteConnectorCatalogPersistence(final String remoteConnectorCatalogUrl) throws IOException, InterruptedException {
+  public RemoteConnectorCatalogPersistence(final String remoteConnectorCatalogUrl) throws InterruptedException {
     this.remoteConnectorCatalogUrl = URI.create(remoteConnectorCatalogUrl);
     this.timeout = DEFAULT_TIMEOUT;
     // TODO remove this call once dependency injection framework manages object creation
     initialize();
   }
 
-  public RemoteConnectorCatalogPersistence(final String remoteConnectorCatalogUrl, final Duration timeout) throws IOException, InterruptedException {
+  public RemoteConnectorCatalogPersistence(final String remoteConnectorCatalogUrl, final Duration timeout) throws InterruptedException {
     this.remoteConnectorCatalogUrl = URI.create(remoteConnectorCatalogUrl);
     this.timeout = timeout;
     // TODO remove this call once dependency injection framework manages object creation
@@ -91,7 +91,7 @@ final public class RemoteConnectorCatalogPersistence implements ConfigPersistenc
     try {
       return Jsons.deserialize(response.body());
     } catch (final RuntimeException e) {
-      throw new IOException("Could not deserialize JSON response.");
+      throw new IOException("Could not deserialize JSON response: ", e);
     }
 
   }
