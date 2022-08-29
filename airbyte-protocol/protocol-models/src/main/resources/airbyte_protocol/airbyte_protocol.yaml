@@ -427,6 +427,9 @@ definitions:
             type: string
           oauth_config_specification:
             "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. "
+        type: string
   OAuthConfigSpecification:
     type: object
     additionalProperties: true
