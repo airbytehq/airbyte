@@ -6,6 +6,7 @@ import DeleteBlock from "components/DeleteBlock";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -23,11 +24,11 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   connectionsWithDestination,
 }) => {
   const destinationSpecification = useGetDestinationDefinitionSpecification(currentDestination.destinationDefinitionId);
-
   const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);
-
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { mutateAsync: deleteDestination } = useDeleteDestination();
+  const formId = useUniqueFormId();
+  const { clearFormChange } = useFormChangeTrackerService();
 
   const onSubmitForm = async (values: {
     name: string;
@@ -40,15 +41,18 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
     });
   };
 
-  const onDelete = () =>
-    deleteDestination({
+  const onDelete = async () => {
+    clearFormChange(formId);
+    await deleteDestination({
       connectionsWithDestination,
       destination: currentDestination,
     });
+  };
 
   return (
     <div className={styles.content}>
       <ConnectorCard
+        formId={formId}
         isEditMode
         onSubmit={onSubmitForm}
         formType="destination"
