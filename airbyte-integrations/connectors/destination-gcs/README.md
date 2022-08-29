@@ -54,3 +54,4 @@ Two service accounts have been created in our GCP for testing this destination. 
 - Create a new package under `io.airbyte.integrations.destination.gcs`.
 - Implement a new `GcsWriter`. The implementation can extend `BaseGcsWriter`.
 - Write an acceptance test for the new output format. The test can extend `GcsDestinationAcceptanceTest`.
+
