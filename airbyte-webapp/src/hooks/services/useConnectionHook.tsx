@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
@@ -202,6 +203,20 @@ const useUpdateConnection = () => {
       queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },
   });
+};
+
+export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    (connectionIds: string[]) => {
+      queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+        ...ls,
+        connections: ls?.connections.filter((c) => !connectionIds.includes(c.connectionId)) ?? [],
+      }));
+    },
+    [queryClient]
+  );
 };
 
 const useConnectionList = (): ListConnection => {
