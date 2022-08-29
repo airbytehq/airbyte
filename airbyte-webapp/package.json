@@ -67,7 +67,7 @@
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
     "rxjs": "^7.5.5",
-    "sanitize-html": "^2.7.0",
+    "sanitize-html": "^2.7.1",
     "sass": "^1.52.2",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
