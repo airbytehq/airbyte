@@ -6,8 +6,8 @@ import calculateInitialCatalog from "./calculateInitialCatalog";
 const mockSyncSchemaStream: SyncSchemaStream = {
   id: "1",
   stream: {
-    sourceDefinedCursor: undefined,
-    defaultCursorField: [],
+    sourceDefinedCursor: true,
+    defaultCursorField: ["source_cursor"],
     sourceDefinedPrimaryKey: [["new_primary_key"]],
     jsonSchema: {},
     name: "test",
@@ -17,47 +17,7 @@ const mockSyncSchemaStream: SyncSchemaStream = {
     destinationSyncMode: DestinationSyncMode.append,
     selected: false,
     syncMode: SyncMode.full_refresh,
-    cursorField: [],
-    primaryKey: [["old_primary_key"]],
-    aliasName: "",
-  },
-};
-
-const mockSyncSchemaStreamNoSourcePk: SyncSchemaStream = {
-  id: "2",
-  stream: {
-    sourceDefinedCursor: undefined,
-    defaultCursorField: [],
-    sourceDefinedPrimaryKey: [],
-    jsonSchema: {},
-    name: "test",
-    supportedSyncModes: [],
-  },
-  config: {
-    destinationSyncMode: DestinationSyncMode.append,
-    selected: false,
-    syncMode: SyncMode.full_refresh,
-    cursorField: [],
-    primaryKey: [["old_primary_key"]],
-    aliasName: "",
-  },
-};
-
-const mockSyncSchemaStreamNoChange: SyncSchemaStream = {
-  id: "3",
-  stream: {
-    sourceDefinedCursor: undefined,
-    defaultCursorField: [],
-    sourceDefinedPrimaryKey: [["old_primary_key"]],
-    jsonSchema: {},
-    name: "test",
-    supportedSyncModes: [],
-  },
-  config: {
-    destinationSyncMode: DestinationSyncMode.append,
-    selected: false,
-    syncMode: SyncMode.full_refresh,
-    cursorField: [],
+    cursorField: ["old_cursor"],
     primaryKey: [["old_primary_key"]],
     aliasName: "",
   },
@@ -339,7 +299,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should not change syncMode, destinationSyncMode and cursorField in EditMode", () => {
+  test("should not change syncMode, destinationSyncMode in EditMode", () => {
     const { config, stream } = mockSyncSchemaStream;
 
     const { streams } = calculateInitialCatalog(
@@ -350,8 +310,6 @@ describe("calculateInitialCatalog", () => {
             stream: {
               ...stream,
               name: "test",
-              sourceDefinedCursor: true,
-              defaultCursorField: ["id"],
               supportedSyncModes: [],
             },
             config: {
@@ -368,7 +326,6 @@ describe("calculateInitialCatalog", () => {
 
     expect(streams[0]).toHaveProperty("stream.supportedSyncModes", [SyncMode.full_refresh]);
 
-    expect(streams[0]).toHaveProperty("config.cursorField", []);
     expect(streams[0]).toHaveProperty("config.syncMode", SyncMode.full_refresh);
     expect(streams[0]).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append);
   });
@@ -432,7 +389,7 @@ describe("calculateInitialCatalog", () => {
     expect(streams[2]).toHaveProperty("config.cursorField", []);
   });
 
-  test("source defined primary key should override the saved primary key", () => {
+  test("source defined properties should override the saved properties", () => {
     const { stream, config } = mockSyncSchemaStream;
 
     const { streams } = calculateInitialCatalog(
@@ -443,26 +400,29 @@ describe("calculateInitialCatalog", () => {
             stream: {
               ...stream,
               name: "test",
-              defaultCursorField: ["default_path"],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.overwrite,
-              cursorField: [],
-              syncMode: SyncMode.full_refresh,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
             },
           },
         ],
       },
       [DestinationSyncMode.append_dedup],
-      false
+      true
     );
-
+    // primary keys
     expect(streams[0].stream?.sourceDefinedPrimaryKey).toEqual(stream?.sourceDefinedPrimaryKey);
     expect(streams[0].config?.primaryKey).toEqual(streams[0].stream?.sourceDefinedPrimaryKey);
+
+    // cursor field
+    expect(streams[0].stream?.sourceDefinedCursor).toBeTruthy();
+    expect(streams[0].stream?.defaultCursorField).toEqual(stream?.defaultCursorField);
+    expect(streams[0].config?.cursorField).toEqual(streams[0].stream?.defaultCursorField);
   });
-  test("should keep original config if no source-defined primary key", () => {
-    const { stream, config } = mockSyncSchemaStreamNoSourcePk;
+  test("should keep original configured primary key if no source-defined primary key", () => {
+    const { stream, config } = mockSyncSchemaStream;
 
     const { streams } = calculateInitialCatalog(
       {
@@ -472,7 +432,9 @@ describe("calculateInitialCatalog", () => {
             stream: {
               ...stream,
               name: "test",
-              defaultCursorField: ["default_path"],
+              sourceDefinedCursor: undefined,
+              defaultCursorField: [],
+              sourceDefinedPrimaryKey: [],
             },
             config: {
               ...config,
@@ -489,9 +451,8 @@ describe("calculateInitialCatalog", () => {
 
     expect(streams[0].config?.primaryKey).toEqual(config?.primaryKey);
   });
-
-  test("should keep its original config if source-defined primary key matches config primary key", () => {
-    const { stream, config } = mockSyncSchemaStreamNoChange;
+  test("should not override config cursor if sourceDefinedCursor is false", () => {
+    const { stream, config } = mockSyncSchemaStream;
 
     const { streams } = calculateInitialCatalog(
       {
@@ -501,13 +462,12 @@ describe("calculateInitialCatalog", () => {
             stream: {
               ...stream,
               name: "test",
-              defaultCursorField: ["default_path"],
+              sourceDefinedCursor: false,
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.overwrite,
-              cursorField: [],
-              syncMode: SyncMode.full_refresh,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
             },
           },
         ],
@@ -516,7 +476,63 @@ describe("calculateInitialCatalog", () => {
       false
     );
 
-    expect(streams[0].stream?.sourceDefinedPrimaryKey).toEqual(stream?.sourceDefinedPrimaryKey);
+    expect(streams[0].config?.cursorField).toEqual(config?.cursorField);
+  });
+  test("should keep its original config if source-defined primary key matches config primary key", () => {
+    const { stream, config } = mockSyncSchemaStream;
+
+    const { streams } = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...stream,
+              name: "test",
+              sourceDefinedPrimaryKey: [["old_primary_key"]],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup],
+      false
+    );
+
     expect(streams[0].config?.primaryKey).toEqual(streams[0].stream?.sourceDefinedPrimaryKey);
+  });
+
+  test("should not change primary key or cursor if isEditMode is false", () => {
+    const { stream, config } = mockSyncSchemaStream;
+
+    const { streams } = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...stream,
+              name: "test",
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup],
+      false
+    );
+    // primary keys
+    expect(streams[0].config?.primaryKey).toEqual(config?.primaryKey);
+
+    // cursor field
+    expect(streams[0].config?.cursorField).toEqual(config?.cursorField);
   });
 });

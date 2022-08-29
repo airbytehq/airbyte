@@ -8,20 +8,28 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   return streamNode.config?.cursorField || [];
 };
 
-const verifySourceDefinedPrimaryKeys = (streamNode: SyncSchemaStream) => {
-  if (!streamNode.stream || !streamNode.config) {
+const verifySourceDefinedProperties = (streamNode: SyncSchemaStream, isEditMode: boolean) => {
+  if (!streamNode.stream || !streamNode.config || !isEditMode) {
     return streamNode;
   }
 
   const {
-    stream: { sourceDefinedPrimaryKey },
+    stream: { sourceDefinedPrimaryKey, sourceDefinedCursor },
   } = streamNode;
 
+  // if there's a source-defined cursor and the mode is correct, set the config to the default
+  if (sourceDefinedCursor) {
+    streamNode.config.cursorField = streamNode.stream.defaultCursorField;
+  }
+
+  // if the primary key doesn't need to be calculated from the source, just return the node
   if (!sourceDefinedPrimaryKey || sourceDefinedPrimaryKey.length === 0) {
     return streamNode;
   }
 
+  // override the primary key with what the source said
   streamNode.config.primaryKey = sourceDefinedPrimaryKey;
+
   return streamNode;
 };
 
@@ -115,7 +123,7 @@ const calculateInitialCatalog = (
 ): SyncSchema => ({
   streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
     const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySourceDefinedPrimaryKeys(verifySupportedSyncModes(nodeWithId));
+    const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isEditMode || false);
 
     if (isEditMode) {
       return nodeStream;
