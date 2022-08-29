@@ -228,7 +228,7 @@ class Client:
 
     CSV_CHUNK_SIZE = 10_000
     reader_class = URLFile
-    binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
+    binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
         self._dataset_name = dataset_name
@@ -299,6 +299,7 @@ class Client:
             "flat_json": pd.read_json,
             "html": pd.read_html,
             "excel": pd.read_excel,
+            "excel_binary": pd.read_excel,
             "feather": pd.read_feather,
             "parquet": pd.read_parquet,
             "orc": pd.read_orc,
@@ -319,6 +320,9 @@ class Client:
                 reader_options["nrows"] = 0
                 reader_options["index_col"] = 0
 
+            yield from reader(fp, **reader_options)
+        elif self._reader_options == "excel_binary":
+            reader_options["engine"] = "pyxlsb"
             yield from reader(fp, **reader_options)
         else:
             yield reader(fp, **reader_options)
