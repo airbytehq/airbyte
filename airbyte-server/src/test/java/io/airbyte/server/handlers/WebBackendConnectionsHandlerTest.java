@@ -483,8 +483,8 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
-        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule",
-            "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
+        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "addOperationIdsItem",
+            "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -505,7 +505,7 @@ class WebBackendConnectionsHandlerTest {
   void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
+            "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
