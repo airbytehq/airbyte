@@ -4,7 +4,7 @@ type ButtonSize = "xs" | "sm" | "lg";
 type ButtonVariant = "primary" | "secondary" | "danger" | "light";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  customStyles?: string;
+  customStyle?: string;
   variant?: ButtonVariant;
   clickable?: boolean;
   full?: boolean;

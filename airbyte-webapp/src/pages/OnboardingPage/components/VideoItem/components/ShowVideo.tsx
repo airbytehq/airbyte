@@ -1,32 +1,21 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import styled from "styled-components";
 
 import { Button } from "components/base";
 import Modal from "components/Modal";
+
+import styles from "./ShowVideo.module.scss";
 
 interface ShowVideoProps {
   videoId?: string;
   onClose: () => void;
 }
 
-const CloseButton = styled(Button)`
-  position: absolute;
-  top: 30px;
-  right: 30px;
-  color: ${({ theme }) => theme.whiteColor};
-  font-size: 20px;
-
-  &:hover {
-    border: none;
-  }
-`;
-
 const ShowVideo: React.FC<ShowVideoProps> = ({ videoId, onClose }) => {
   return (
     <Modal onClose={onClose} clear closeOnBackground>
-      <CloseButton onClick={onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
+      <Button customStyle={styles.closeButton} onClick={onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
       <iframe
         width="940"
         height="528"

@@ -6,6 +6,7 @@ import styled, { keyframes } from "styled-components";
 import { Button, H5 } from "components";
 
 import ErrorSign from "./components/ErrorSign";
+import styles from "./SingletonCard.module.scss";
 
 interface SingletonCardProps {
   title: string | React.ReactNode;
@@ -65,10 +66,6 @@ const Text = styled.div`
   margin-top: 5px;
 `;
 
-const CloseButton = styled(Button)`
-  margin-left: 10px;
-`;
-
 const SingletonCard: React.FC<SingletonCardProps> = (props) => (
   <Singleton hasError={props.hasError}>
     {props.hasError && <ErrorSign />}
@@ -76,7 +73,9 @@ const SingletonCard: React.FC<SingletonCardProps> = (props) => (
       <Title hasError={props.hasError}>{props.title}</Title>
       {props.text && <Text>{props.text}</Text>}
     </div>
-    {props.onClose && <CloseButton onClick={props.onClose} icon={<FontAwesomeIcon icon={faTimes} />} />}
+    {props.onClose && (
+      <Button customStyle={styles.closeButton} onClick={props.onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
+    )}
   </Singleton>
 );
 

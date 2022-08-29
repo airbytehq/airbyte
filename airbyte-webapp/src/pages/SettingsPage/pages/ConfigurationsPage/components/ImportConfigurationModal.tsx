@@ -6,6 +6,8 @@ import { Button } from "components";
 import FileDropZone from "components/FileDropZone";
 import Modal from "components/Modal";
 
+import styles from "./ImportConfigurationModal.module.scss";
+
 export interface IProps {
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,10 +23,6 @@ const Content = styled.div`
   font-size: 14px;
   line-height: 28px;
   width: 485px;
-`;
-
-const ButtonWithMargin = styled(Button)`
-  margin-right: 9px;
 `;
 
 const DropZoneSubtitle = styled.div`
@@ -85,9 +83,9 @@ const ImportConfigurationModal: React.FC<IProps> = ({ onClose, onSubmit, isLoadi
         <Bottom>
           <Error>{error ? <FormattedMessage id="form.someError" /> : null}</Error>
           <div>
-            <ButtonWithMargin onClick={onClose} variant="secondary" disabled={isLoading}>
+            <Button customStyle={styles.buttonWithMargin} onClick={onClose} variant="secondary" disabled={isLoading}>
               <FormattedMessage id="form.cancel" />
-            </ButtonWithMargin>
+            </Button>
             <Button onClick={() => onSubmit(usersFile)} disabled={!usersFile || isLoading}>
               <FormattedMessage id="form.submit" />
             </Button>

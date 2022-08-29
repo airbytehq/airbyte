@@ -8,6 +8,7 @@ import styled from "styled-components";
 import { Theme } from "theme";
 
 import { Button } from "../Button";
+import styles from "./Imput.module.scss";
 
 type IStyleProps = InputProps & { theme: Theme };
 
@@ -71,18 +72,6 @@ const InputComponent = styled.input<InputProps & { isPassword?: boolean }>`
   }
 `;
 
-const VisibilityButton = styled(Button)`
-  position: absolute;
-  right: 0px;
-  top: 0;
-  display: flex;
-  height: 100%;
-  width: 30px;
-  align-items: center;
-  justify-content: center;
-  border: none;
-`;
-
 const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ...props }) => {
   const { formatMessage } = useIntl();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -120,7 +109,8 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
         }}
       />
       {isVisibilityButtonVisible ? (
-        <VisibilityButton
+        <Button
+          customStyle={styles.visibilityButton}
           onClick={() => setIsContentVisible()}
           type="button"
           aria-label={formatMessage({

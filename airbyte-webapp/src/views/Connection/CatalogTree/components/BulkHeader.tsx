@@ -12,6 +12,7 @@ import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
 import { flatten, getPathType } from "../utils";
+import styles from "./BulkHeader.module.scss";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
@@ -24,12 +25,6 @@ const SchemaHeader = styled(Header)`
   height: 41px;
   background: ${({ theme }) => theme.primaryColor};
   border-radius: 8px 8px 0 0;
-`;
-
-const ActionButton = styled(Button).attrs({
-  type: "button",
-})`
-  white-space: nowrap;
 `;
 
 interface BulkHeaderProps {
@@ -136,12 +131,12 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell />
       <HeaderCell>
         <ActionCell>
-          <ActionButton onClick={onCancel}>
+          <Button customStyle={styles.actionButton} onClick={onCancel}>
             <FormattedMessage id="connectionForm.bulkEdit.cancel" />
-          </ActionButton>
-          <ActionButton onClick={onApply}>
+          </Button>
+          <Button customStyle={styles.actionButton} onClick={onApply}>
             <FormattedMessage id="connectionForm.bulkEdit.apply" />
-          </ActionButton>
+          </Button>
         </ActionCell>
       </HeaderCell>
     </SchemaHeader>

@@ -6,6 +6,7 @@ import { Button } from "components";
 import Modal from "components/Modal";
 
 import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
+import styles from "./DebugInfoDetailsModal.module.scss";
 
 export interface IProps {
   onClose: () => void;
@@ -25,9 +26,6 @@ const ButtonContent = styled.div`
 const Section = styled.div`
   text-align: right;
   display: flex;
-`;
-const ButtonWithMargin = styled(Button)`
-  margin-right: 9px;
 `;
 
 const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
@@ -109,9 +107,9 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         <Section>{getSourceDetails()}</Section>
         <Section>{getDestinationDetails()}</Section>
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} variant="secondary">
+          <Button customStyle={styles.buttonWithMargin} onClick={onClose} variant="secondary">
             <FormattedMessage id="form.cancel" />
-          </ButtonWithMargin>
+          </Button>
           <Button onClick={onCopyClick}>
             <FormattedMessage id="sources.copyText" />
           </Button>

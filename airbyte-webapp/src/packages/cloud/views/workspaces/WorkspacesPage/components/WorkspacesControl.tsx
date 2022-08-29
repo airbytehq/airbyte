@@ -6,10 +6,8 @@ import styled from "styled-components";
 import { Button, ContentCard } from "components";
 
 import CreateWorkspaceForm from "./CreateWorkspaceForm";
+import styles from "./WorkspaceControl.module.scss";
 
-const CreateButton = styled(Button)`
-  margin-top: 25px;
-`;
 const FormContent = styled(ContentCard)`
   padding: 15px 20px 16px 20px;
 `;
@@ -29,9 +27,9 @@ const WorkspacesControl: React.FC<{
       <CreateWorkspaceForm onSubmit={onSubmit} />
     </FormContent>
   ) : (
-    <CreateButton onClick={toggleMode} data-testid="workspaces.createNew">
+    <Button customStyle={styles.createButton} onClick={toggleMode} data-testid="workspaces.createNew">
       <FormattedMessage id="workspaces.createNew" />
-    </CreateButton>
+    </Button>
   );
 };
 

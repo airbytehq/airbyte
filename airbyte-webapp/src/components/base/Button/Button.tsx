@@ -23,7 +23,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
     widthStyle.width = `${props.width}px`;
   }
   return (
-    <button style={widthStyle} className={classNames(styles.button, props.customStyles, buttonStyles)} {...props}>
+    <button style={widthStyle} className={classNames(styles.button, props.customStyle, buttonStyles)} {...props}>
       {props.isLoading && (
         <FontAwesomeIcon
           className={classNames(styles.buttonIcon, {

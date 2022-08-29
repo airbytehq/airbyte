@@ -6,6 +6,7 @@ import { Button } from "components/base/Button";
 import Modal from "components/Modal";
 
 import useLoadingState from "../../hooks/useLoadingState";
+import styles from "./ConfirmationModal.module.scss";
 
 const Content = styled.div`
   width: 585px;
@@ -19,10 +20,6 @@ const ButtonContent = styled.div`
   margin-top: 26px;
   display: flex;
   justify-content: flex-end;
-`;
-
-const ButtonWithMargin = styled(Button)`
-  margin-right: 12px;
 `;
 
 export interface ConfirmationModalProps {
@@ -52,9 +49,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <Content>
         <FormattedMessage id={text} />
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} type="button" variant="secondary" disabled={isLoading}>
+          <Button
+            customStyle={styles.buttonWithMargin}
+            onClick={onClose}
+            type="button"
+            variant="secondary"
+            disabled={isLoading}
+          >
             <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
-          </ButtonWithMargin>
+          </Button>
           <Button variant="danger" onClick={onSubmitBtnClick} data-id={submitButtonDataId} isLoading={isLoading}>
             <FormattedMessage id={submitButtonText} />
           </Button>

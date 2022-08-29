@@ -7,6 +7,7 @@ import * as yup from "yup";
 import { Button, ControlLabels, DropDown, Input } from "components";
 
 import { Values } from "../types";
+import styles from "./ConnectorForm.module.scss";
 
 const Buttons = styled.div`
   width: 100%;
@@ -22,10 +23,6 @@ const Buttons = styled.div`
 
 const ControlLabelsWithMargin = styled(ControlLabels)`
   margin-bottom: 29px;
-`;
-
-const RequestButton = styled(Button)`
-  min-width: 105px;
 `;
 
 interface ConnectorFormProps {
@@ -139,13 +136,13 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
             <Button type="button" variant="secondary" onClick={onCancel} disabled={hasFeedback}>
               <FormattedMessage id="form.cancel" />
             </Button>
-            <RequestButton type="submit" wasActive={hasFeedback}>
+            <Button customStyle={styles.requestButton} type="submit" wasActive={hasFeedback}>
               {hasFeedback ? (
                 <FormattedMessage id="connector.requested" />
               ) : (
                 <FormattedMessage id="connector.request" />
               )}
-            </RequestButton>
+            </Button>
           </Buttons>
         </Form>
       )}

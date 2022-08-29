@@ -11,6 +11,7 @@ import Status from "core/statuses";
 
 import { JobStatus, WebBackendConnectionRead } from "../../../core/request/AirbyteClient";
 import { RoutePaths } from "../../routePaths";
+import styles from "./ProgressBlock.module.scss";
 
 const run = keyframes`
   from {
@@ -53,9 +54,6 @@ const ControlBlock = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const PaddedButton = styled(Button)`
-  margin-left: 10px;
-`;
 
 interface ProgressBlockProps {
   connection: WebBackendConnectionRead;
@@ -85,9 +83,9 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
     return (
       <ControlBlock>
         <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
-        <PaddedButton onClick={onSync}>
+        <Button customStyle={styles.paddedButton} onClick={onSync}>
           <FormattedMessage id="sources.syncNow" />
-        </PaddedButton>
+        </Button>
       </ControlBlock>
     );
   }

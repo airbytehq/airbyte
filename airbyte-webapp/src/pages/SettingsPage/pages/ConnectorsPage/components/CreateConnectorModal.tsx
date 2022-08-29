@@ -208,7 +208,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <Button customStyles={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
+                  <Button customStyle={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
                     <FormattedMessage id="form.cancel" />
                   </Button>
                   <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>

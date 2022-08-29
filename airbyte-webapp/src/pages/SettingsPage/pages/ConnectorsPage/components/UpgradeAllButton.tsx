@@ -6,10 +6,7 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
-const UpdateButton = styled(Button)`
-  margin: -6px 0;
-  min-width: 120px;
-`;
+import styles from "./UpgradeAllButton.module.scss";
 
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
@@ -48,14 +45,15 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
           <FormattedMessage id="form.someError" />
         </ErrorBlock>
       )}
-      <UpdateButton
+      <Button
+        customStyle={styles.updateButton}
         onClick={onUpdate}
         isLoading={isLoading}
         wasActive={hasSuccess}
         icon={hasSuccess ? undefined : <TryArrow icon={faRedoAlt} />}
       >
         {hasSuccess ? <FormattedMessage id="admin.upgraded" /> : <FormattedMessage id="admin.upgradeAll" />}
-      </UpdateButton>
+      </Button>
     </UpdateButtonContent>
   );
 };

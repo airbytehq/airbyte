@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import styles from "./EditControls.module.scss";
+
 interface EditControlProps {
   isSubmitting: boolean;
   dirty: boolean;
@@ -21,10 +23,6 @@ const Buttons = styled.div`
   align-items: center;
   flex-direction: row;
   margin-top: 16px;
-`;
-
-const ControlButton = styled(Button)`
-  margin-left: 10px;
 `;
 
 const Success = styled.span`
@@ -78,13 +76,14 @@ const EditControls: React.FC<EditControlProps> = ({
           >
             <FormattedMessage id="form.cancel" />
           </Button>
-          <ControlButton
+          <Button
+            customStyle={styles.controlButton}
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
           >
             <FormattedMessage id="form.saveChanges" />
-          </ControlButton>
+          </Button>
         </div>
       </Buttons>
     </>

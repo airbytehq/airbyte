@@ -13,6 +13,7 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 import { useSourceList } from "../../../../../hooks/services/useSourceHook";
+import styles from "./ExistingEntityForm.module.scss";
 
 interface IProps {
   type: "source" | "destination";
@@ -110,7 +111,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                 )}
               </Field>
               <BottomBlock>
-                <Button disabled={isSubmitting} type="submit">
+                <Button customStyle={styles.submitButton} disabled={isSubmitting} type="submit">
                   <FormattedMessage id={`connectionForm.${type}Use`} />
                 </Button>
               </BottomBlock>

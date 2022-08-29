@@ -10,13 +10,11 @@ import { useNotificationService } from "hooks/services/Notification";
 import { useGetLogs } from "services/logs/LogsService";
 import { downloadFile } from "utils/file";
 
+import styles from "./LogsContainer.module.scss";
+
 const Content = styled.div`
   padding: 29px 0 27px;
   text-align: center;
-`;
-
-const LogsButton = styled(Button)`
-  margin: 0 15px;
 `;
 
 const LogsContent: React.FC = () => {
@@ -54,12 +52,12 @@ const LogsContent: React.FC = () => {
 
   return (
     <Content>
-      <LogsButton onClick={downloadServerLogs} isLoading={serverLogsLoading}>
+      <Button customStyle={styles.logsButton} onClick={downloadServerLogs} isLoading={serverLogsLoading}>
         <FormattedMessage id="admin.downloadServerLogs" />
-      </LogsButton>
-      <LogsButton onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
+      </Button>
+      <Button customStyle={styles.logsButton} onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
         <FormattedMessage id="admin.downloadSchedulerLogs" />
-      </LogsButton>
+      </Button>
     </Content>
   );
 };
