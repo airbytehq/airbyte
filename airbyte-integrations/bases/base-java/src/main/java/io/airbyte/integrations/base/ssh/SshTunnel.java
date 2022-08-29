@@ -14,11 +14,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.time.Duration;
 import java.util.List;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
+import org.apache.sshd.core.CoreModuleProperties;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -247,11 +249,11 @@ public class SshTunnel implements AutoCloseable {
    * before opening a tunnel.
    */
   private SshClient createClient() {
-    java.security.Security.addProvider(
-        new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     final SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+    CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ZERO);
     return client;
   }
 
