@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 from typing import Any, List, Mapping, Tuple
 
@@ -34,7 +35,6 @@ from source_twilio.streams import (
     UsageRecords,
     UsageTriggers,
 )
-
 
 RETENTION_WINDOW_LIMIT = 400
 
@@ -76,7 +76,7 @@ class SourceTwilio(AbstractSource):
         incremental_stream_kwargs_message_stream = dict(**incremental_stream_kwargs)
         if pendulum.now().diff(pendulum.parse(config["start_date"])).days >= RETENTION_WINDOW_LIMIT:
             incremental_stream_kwargs_message_stream["start_date"] = (
-                    pendulum.now() - datetime.timedelta(days=RETENTION_WINDOW_LIMIT - 1)
+                pendulum.now() - datetime.timedelta(days=RETENTION_WINDOW_LIMIT - 1)
             ).to_iso8601_string()
 
         streams = [
