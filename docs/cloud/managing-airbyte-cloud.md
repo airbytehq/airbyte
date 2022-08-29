@@ -14,10 +14,10 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings**. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
 2. In the Workspace Settings sidebar, click **Access Management**.
-3. In the top right-hand corner, click **+ New User**.
-4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
+3. Click **+ New user**.
+4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
 
     :::info
     The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
@@ -27,7 +27,7 @@ To add a user to your workspace:
 
 To switch between workspaces:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the left-hand navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
 
 2. Click **View all workspaces**.
 
@@ -37,7 +37,7 @@ To switch between workspaces:
 
 To rename a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **General Settings**.
 
@@ -47,7 +47,7 @@ To rename a workspace:
 
 To delete a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **General Settings**.
 
@@ -73,7 +73,7 @@ You can use one or multiple workspaces with Airbyte Cloud.
 
 To set up Slack notifications:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **Notifications.**
 
@@ -101,7 +101,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
  
 To view the sync log summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
 
     The Connections page displays.
 
@@ -164,7 +164,7 @@ The sync log summary displays **Running** when the sync is actively running.
 
 ## Edit stream configuration
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.  
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click a connection in the list you want to change.  
 
     The **Connection** page displays.  
 
@@ -252,7 +252,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
  To buy credits:
 
-1. On the Airbyte Cloud dashboard, click the **coin icon**.
+1. On the Airbyte Cloud dashboard, click the **coin icon** in the navigation bar.
     
     The Credits page displays.
 
@@ -260,7 +260,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
 3. Click **Buy credits**. The Stripe payment page displays.
 
-4. If you want to change the amount of credits, click Qty **200**. **Update quantity** displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
+4. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
     Purchase limits:
