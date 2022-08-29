@@ -5,7 +5,7 @@
     "title": "Sentry Spec",
     "type": "object",
     "required": ["auth_token", "organization", "project"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "auth_token": {
         "type": "string",
