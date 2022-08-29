@@ -177,7 +177,7 @@ class Salesforce:
     logger = logging.getLogger("airbyte")
     version = "v52.0"
     parallel_tasks_size = 100
-    MAX_HTTP_QUERY_STRING_SIZE = 16113
+    MAX_URL_LENGTH = 16113
 
     def __init__(
         self,

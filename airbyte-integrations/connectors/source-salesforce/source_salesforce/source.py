@@ -46,7 +46,7 @@ class SourceSalesforce(AbstractSource):
         properties_length = len(",".join(p for p in properties))
 
         rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        bulk_required = properties_length + 2000 > Salesforce.MAX_HTTP_QUERY_STRING_SIZE
+        bulk_required = properties_length + 2000 > Salesforce.MAX_URL_LENGTH
 
         if bulk_required and not rest_required:
             return "bulk"
