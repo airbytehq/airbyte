@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -507,7 +508,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static ConnectionUpdate toConnectionUpdate(final WebBackendConnectionUpdate webBackendConnectionUpdate, final List<UUID> operationIds) {
+  protected static ConnectionUpdate toConnectionUpdate(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
@@ -515,7 +516,10 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
     connectionUpdate.name(webBackendConnectionUpdate.getName());
-    connectionUpdate.operationIds(operationIds);
+    connectionUpdate.operationIds(
+        webBackendConnectionUpdate.getOperations().stream()
+            .map(WebBackendOperationCreateOrUpdate::getOperationId)
+            .collect(Collectors.toList()));
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.scheduleType(webBackendConnectionUpdate.getScheduleType());

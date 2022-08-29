@@ -867,7 +867,6 @@ public class AirbyteAcceptanceTestHarness {
     return new WebBackendConnectionUpdate()
         .connectionId(connection.getConnectionId())
         .name(connection.getName())
-        .operationIds(connection.getOperationIds())
         .operations(List.of(new WebBackendOperationCreateOrUpdate()
             .name(operation.getName())
             .operationId(operation.getOperationId())

@@ -456,7 +456,7 @@ class WebBackendConnectionsHandlerTest {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
-        .operationIds(List.of(newOperationId))
+        .operations(List.of(new WebBackendOperationCreateOrUpdate().operationId(newOperationId)))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
@@ -475,7 +475,7 @@ class WebBackendConnectionsHandlerTest {
         .name(standardSync.getName())
         .syncCatalog(catalog);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input);
 
     assertEquals(expected, actual);
   }
