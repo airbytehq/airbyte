@@ -160,7 +160,7 @@
 {% endmacro %}
 
 {% macro firebolt__type_numeric() %}
-    FLOAT
+    DOUBLE
 {% endmacro %}
 
 {# very_large_integer --------------------------------------- --#}
@@ -261,7 +261,7 @@ so this macro needs to be called very_large_integer.
 {%- endmacro -%}
 
 {% macro firebolt__type_timestamp_with_timezone() %}
-    DATETIME
+    STRING
 {% endmacro %}
 
 
