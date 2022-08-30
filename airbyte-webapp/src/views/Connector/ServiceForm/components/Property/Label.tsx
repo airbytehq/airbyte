@@ -4,7 +4,7 @@ import { ControlLabels } from "components/LabeledControl";
 
 import { FormBaseItem } from "core/form/types";
 
-import { LabelMessage } from "./LabelMessage";
+import { LabelInfo } from "./LabelInfo";
 
 interface LabelMessageProps {
   property: FormBaseItem;
@@ -24,7 +24,7 @@ const Label: React.FC<LabelMessageProps> = ({ property, error, touched, children
       labelAdditionLength={0}
       error={displayError}
       label={label}
-      message={<LabelMessage property={property} error={error} touched={touched} />}
+      infoMessage={<LabelInfo property={property} error={error} touched={touched} />}
     >
       {children}
     </ControlLabels>

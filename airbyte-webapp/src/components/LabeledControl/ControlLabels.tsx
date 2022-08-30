@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
+import { InfoTooltip } from "components/base/Tooltip";
 import Label from "components/Label";
 
 export interface ControlLabelsProps {
@@ -12,6 +13,7 @@ export interface ControlLabelsProps {
   errorMessage?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
+  infoMessage?: React.ReactNode;
 }
 
 const ControlContainer = styled.div`
@@ -29,6 +31,7 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
       nextLine={props.nextLine}
     >
       {props.label}
+      {props.infoMessage && <InfoTooltip>{props.infoMessage}</InfoTooltip>}
     </Label>
     {props.children}
   </ControlContainer>
