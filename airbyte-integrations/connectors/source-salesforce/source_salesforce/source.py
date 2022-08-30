@@ -3,7 +3,6 @@
 #
 
 import copy
-import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -66,7 +65,6 @@ class SourceSalesforce(AbstractSource):
         state: Mapping[str, Any] = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
-        logger = logging.getLogger("airbyte")
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -81,8 +79,7 @@ class SourceSalesforce(AbstractSource):
             elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
             else:
-                logger.warning("Stream %s cannot be processed by REST or BULK API, it will be ignored.", stream_name)
-                continue
+                raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API, it will be ignored.")
 
             json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
