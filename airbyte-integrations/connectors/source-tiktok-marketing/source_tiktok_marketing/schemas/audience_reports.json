@@ -1,6 +1,18 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
+    "ad_id": {
+      "type": ["null", "integer"]
+    },
+    "stat_time_day": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "stat_time_hour": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "metrics": {
       "type": ["null", "object"],
       "properties": {

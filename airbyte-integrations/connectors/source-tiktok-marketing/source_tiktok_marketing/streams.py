@@ -175,13 +175,12 @@ class TiktokStream(HttpStream, ABC):
         data = response.json()
         if data["code"]:
             raise TiktokException(data)
-            raise TiktokException(data["message"])
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
         for record in data:
             yield record
-
+            
     @property
     def url_base(self) -> str:
         """
@@ -342,7 +341,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             params.update(next_page_token)
         return params
 
-    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:        
         if not data or not self.cursor_field:
             return None
 
@@ -352,13 +351,25 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
+    @staticmethod
+    def unnest_field(record: Mapping[str, Any], unnest_from: str, fields: Iterable[str]):
+        """
+        Unnest cursor_field to the root level of the record.
+        """
+        if unnest_from in record:
+            prop = record.get(unnest_from, {})
+            for field in fields:
+                if field in prop:
+                    record[field] = prop.get(field)
+
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
-
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            # unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
+            self.unnest_field(record, "dimensions", [self.cursor_field, self.primary_key])
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
@@ -433,7 +444,7 @@ class Ads(IncrementalTiktokStream):
 class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
-    primary_key = None
+    primary_key = "ad_id"
     schema_name = "basic_reports"
     report_granularity = None
 
@@ -457,9 +468,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
     @property
     def cursor_field(self):
         if self.report_granularity == ReportGranularity.DAY:
-            return ["dimensions", "stat_time_day"]
+            return "stat_time_day"
         if self.report_granularity == ReportGranularity.HOUR:
-            return ["dimensions", "stat_time_hour"]
+            return "stat_time_hour"
         return []
 
     @staticmethod
