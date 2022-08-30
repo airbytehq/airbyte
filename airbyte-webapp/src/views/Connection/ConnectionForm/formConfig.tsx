@@ -269,7 +269,7 @@ const useInitialValues = (
     connection.namespaceFormat,
     connection.operations,
     connection.prefix,
-    connection.schedule,
+    connection.scheduleData,
     connection.source.name,
     destDefinition.supportsDbt,
     destDefinition.supportsNormalization,
