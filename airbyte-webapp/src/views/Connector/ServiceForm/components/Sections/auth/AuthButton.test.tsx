@@ -73,11 +73,11 @@ describe("auth button", () => {
     const button = screen.getByRole("button", { name: "Authenticate your account" });
     expect(button).toBeInTheDocument();
 
-    //no error message
+    // no error message
     const errorMessage = screen.queryByText(/Authentication required/i);
     expect(errorMessage).not.toBeInTheDocument();
 
-    //no success message
+    // no success message
     const successMessage = screen.queryByText(/Authentication succeeded/i);
     expect(successMessage).not.toBeInTheDocument();
   });
