@@ -10,11 +10,11 @@ class EventsStream(HttpStream):
     primary_key = "id"
     cursor_field = "eventDate"
     url_base = "https://prod-main-net-dashboard-api.azurewebsites.net"
-    purchase_event =  "A.30cf5dcf6ea8d379.AeraPack.Purchased"
     
-    def __init__(self, config: Mapping[str, Any], **_):
+    def __init__(self, config: Mapping[str, Any], event_id: str, **_):
         super().__init__()
         self.company_id = config["company_id"]
+        self.event_id = event_id
         self.latest_stream_timestamp = config["start_datetime"]
 
     def request_headers(self, **_) -> Mapping[str, Any]:
@@ -22,8 +22,8 @@ class EventsStream(HttpStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **_) -> MutableMapping[str, Any]:
         if stream_state:
-            return {"startDate": self._cursor_value, "eventType": self.purchase_event}
-        return {"startDate": self.latest_stream_timestamp, "eventType": self.purchase_event}
+            return {"startDate": self._cursor_value, "eventType": self.event_id}
+        return {"startDate": self.latest_stream_timestamp, "eventType": self.event_id}
 
     def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
         self._cursor_value = response.json()[0]["eventDate"][:26] # [:26] to get rid of +00:00
@@ -42,6 +42,11 @@ class EventsStream(HttpStream):
         self._cursor_value = value["eventDate"]
 
 
-class Events(EventsStream):
+class PurchasedEvents(EventsStream):
+    def path(self, **_) -> str:
+        return f"api/company/{self.company_id}/search"
+
+
+class PackRevealEvents(EventsStream):
     def path(self, **_) -> str:
         return f"api/company/{self.company_id}/search"

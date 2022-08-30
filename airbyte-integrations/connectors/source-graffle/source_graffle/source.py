@@ -3,7 +3,7 @@ from typing import Any, Mapping, Tuple, List
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .stream_events import Events
+from .stream_events import PurchasedEvents, PackRevealEvents
 
 class SourceGraffle(AbstractSource):
 
@@ -20,5 +20,6 @@ class SourceGraffle(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            Events(config)
+            PurchasedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Purchased"),
+            PackRevealEvents(config, "A.30cf5dcf6ea8d379.AeraPack.PackReveal"),
         ]
