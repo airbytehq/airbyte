@@ -14,8 +14,10 @@ describe("useFrequencyDropdownData", () => {
 
   it("should return only default frequencies when additional frequency is already present", () => {
     const additionalFrequency = {
-      units: 1,
-      timeUnit: ConnectionScheduleTimeUnit["hours"],
+      basicSchedule: {
+        units: 1,
+        timeUnit: ConnectionScheduleTimeUnit["hours"],
+      },
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
     expect(result.current.map((item) => item.value)).toEqual(frequencyConfig);
@@ -23,8 +25,10 @@ describe("useFrequencyDropdownData", () => {
 
   it("should include additional frequency when provided and unique", () => {
     const additionalFrequency = {
-      units: 7,
-      timeUnit: ConnectionScheduleTimeUnit["minutes"],
+      basicSchedule: {
+        units: 7,
+        timeUnit: ConnectionScheduleTimeUnit["minutes"],
+      },
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
 
