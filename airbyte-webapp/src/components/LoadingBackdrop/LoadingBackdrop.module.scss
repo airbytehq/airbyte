@@ -7,10 +7,12 @@
 
 .loadingBackdropContainer {
   @extend %cover;
+
   position: relative;
 
   .backdrop {
     @extend %cover;
+
     position: absolute;
     background-color: colors.$white;
     opacity: 0.6;
@@ -19,6 +21,7 @@
 
   .spinnerContainer {
     @extend %cover;
+
     position: absolute;
     display: flex;
     align-items: center;
