@@ -303,7 +303,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-        width:
+        with:
           fetch-depth: 0
 
       - name: Cache Build Artifacts
