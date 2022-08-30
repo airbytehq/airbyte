@@ -26,7 +26,7 @@ mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml
 echo "Starting app..."
 
 echo "Applying dev-integration-test manifests to kubernetes..."
-cd charts/airbyte && helm dep upgrade && cd -
+cd charts/airbyte && helm dep update && cd -
 helm upgrade --install --debug airbyte charts/airbyte
 
 echo "Waiting for server to be ready..."
