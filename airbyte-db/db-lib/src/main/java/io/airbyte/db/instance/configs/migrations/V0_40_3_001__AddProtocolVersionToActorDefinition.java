@@ -31,7 +31,7 @@ public class V0_40_3_001__AddProtocolVersionToActorDefinition extends BaseJavaMi
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "protocol_version",
-            SQLDataType.CHAR(255).nullable(true)))
+            SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }
 
