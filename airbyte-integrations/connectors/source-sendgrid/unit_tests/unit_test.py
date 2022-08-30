@@ -2,16 +2,25 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import unittest
+from unittest.mock import MagicMock
 
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from source_sendgrid.source import SourceSendgrid
+from source_sendgrid.streams import Messages, SendgridStream
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
+
+
+@pytest.fixture(name="sendgrid_stream")
+def sendgrid_stream_fixture(mocker) -> SendgridStream:
+    # Wipe the internal list of abstract methods to allow instantiating the abstract class without implementing its abstract methods
+    mocker.patch("source_sendgrid.streams.SendgridStream.__abstractmethods__", set())
+    # Mypy yells at us because we're init'ing an abstract class
+    return SendgridStream()  # type: ignore
 
 
 @pytest.fixture()
@@ -21,24 +30,11 @@ def mock_pendulum_now(monkeypatch):
     monkeypatch.setattr(pendulum, "now", pendulum_mock)
 
 
-def get_stream(stream_name):
-    source = SourceSendgrid()
-    streams = source.streams({})
-
-    return [s for s in streams if s.name == stream_name][0]
-
-
-def create_response():
+def test_parse_response_gracefully_handles_nulls(mocker, sendgrid_stream: SendgridStream):
     response = requests.Response()
-    response_body = {}
-    response.status_code = 200
-    response._content = json.dumps(response_body).encode("utf-8")
-    return response
-
-
-def test_parse_response_gracefully_handles_nulls():
-    response = create_response()
-    assert [] == list(get_stream("contacts").retriever.parse_response(response, stream_slice={}, stream_state={}))
+    mocker.patch.object(response, "json", return_value=None)
+    mocker.patch.object(response, "request", return_value=MagicMock())
+    assert [] == list(sendgrid_stream.parse_response(response))
 
 
 def test_source_wrong_credentials():
@@ -48,13 +44,11 @@ def test_source_wrong_credentials():
 
 
 def test_messages_stream_request_params(mock_pendulum_now):
-    stream = get_stream("messages")
+    start_time = 1558359830
+    stream = Messages(start_time)
     state = {"last_event_time": 1558359000}
-    expected_params = {
-        "query": 'last_event_time BETWEEN TIMESTAMP "2019-05-20T06:30:00Z" AND TIMESTAMP "2021-12-31T16:00:00Z"',
-        "limit": 1000,
-    }
-    request_params = stream.retriever.request_params(
-        stream_state=state, stream_slice={"start_time": "2019-05-20T06:30:00Z", "end_time": "2021-12-31T16:00:00Z"}
+    request_params = stream.request_params(state)
+    assert (
+        request_params
+        == "query=last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T13%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222022-01-01T00%3A00%3A00Z%22&limit=1000"
     )
-    assert request_params == expected_params
