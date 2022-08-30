@@ -1,0 +1,11 @@
+@use "../../scss/colors";
+
+.controlContainer {
+  width: 100%;
+  display: inline-block;
+}
+
+.errorMessage {
+  color: colors.$red-400;
+  padding-bottom: 5px;
+}

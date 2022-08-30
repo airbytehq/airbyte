@@ -1,8 +1,11 @@
+import className from "classnames";
 import React from "react";
-import styled from "styled-components";
 
+import { Text } from "components/base/Text";
 import { InfoTooltip } from "components/base/Tooltip";
 import Label from "components/Label";
+
+import styles from "./ControlLabels.module.scss";
 
 export interface ControlLabelsProps {
   className?: string;
@@ -16,13 +19,8 @@ export interface ControlLabelsProps {
   infoMessage?: React.ReactNode;
 }
 
-const ControlContainer = styled.div`
-  width: 100%;
-  display: inline-block;
-`;
-
 const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
-  <ControlContainer className={props.className}>
+  <div className={className(styles.controlContainer, props.className)}>
     <Label
       error={props.error}
       success={props.success}
@@ -33,8 +31,9 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
       {props.label}
       {props.infoMessage && <InfoTooltip placement="top-start">{props.infoMessage}</InfoTooltip>}
     </Label>
+    {props.errorMessage && <Text className={styles.errorMessage}>{props.errorMessage}</Text>}
     {props.children}
-  </ControlContainer>
+  </div>
 );
 
 export { ControlLabels };
