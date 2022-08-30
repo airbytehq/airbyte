@@ -86,6 +86,14 @@ connectionSpecification:
       type: array
       items:
         type: integer
+    attribution_report_type:
+      title: Attribution Report Type (Optional)
+      description:
+        Type of attribution report to fetch (PERFORMANCE or PRODUCTS).
+        Default is PERFORMANCE
+      default: "PERFORMANCE"
+      order: 9
+      type: string
   required:
     - client_id
     - client_secret
