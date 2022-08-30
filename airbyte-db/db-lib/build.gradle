@@ -12,9 +12,9 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config:config-models')
     implementation libs.flyway.core
+    implementation libs.platform.testcontainers.postgresql
 
     // Mark as compile only to avoid leaking transitively to connectors
-    compileOnly libs.platform.testcontainers.postgresql
     compileOnly libs.connectors.testcontainers.mysql
 
     // These are required because gradle might be using lower version of Jna from other
