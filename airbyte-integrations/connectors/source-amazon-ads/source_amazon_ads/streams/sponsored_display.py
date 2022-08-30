@@ -12,17 +12,21 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
     """
 
-    def __init__(self, *args, **kvargs):
-        state = kvargs.get("config", {}).get("stateFilter")
-        self.state_filter = ",".join(state) if state else ""
-        super().__init__(*args, **kvargs)
+    def __init__(self, *args, **kwargs):
+        self.state_filter = kwargs.get("config", {}).get("state_filter")
+        super().__init__(*args, **kwargs)
 
     primary_key = "campaignId"
     model = DisplayCampaign
 
-    def path(self, **kvargs) -> str:
-        params = f"?stateFilter={self.state_filter}" if self.state_filter else ""
-        return f"sd/campaigns{params}"
+    def path(self, **kwargs) -> str:
+        return "sd/campaigns"
+
+    def request_params(self, *args, **kwargs):
+        params = super().request_params(*args, **kwargs)
+        if self.state_filter:
+            params["stateFilter"] = ",".join(self.state_filter)
+        return params
 
 
 class SponsoredDisplayAdGroups(SubProfilesStream):
@@ -34,7 +38,7 @@ class SponsoredDisplayAdGroups(SubProfilesStream):
     primary_key = "adGroupId"
     model = DisplayAdGroup
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "sd/adGroups"
 
 
@@ -47,7 +51,7 @@ class SponsoredDisplayProductAds(SubProfilesStream):
     primary_key = "adId"
     model = DisplayProductAds
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "sd/productAds"
 
 
@@ -60,5 +64,5 @@ class SponsoredDisplayTargetings(SubProfilesStream):
     primary_key = "targetId"
     model = DisplayTargeting
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "sd/targets"
