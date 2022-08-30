@@ -71,7 +71,7 @@ def main():
                     break # don't clean up if it has a run newer than 90 days
                 if args.delete is not None:
                     print("Deleting run id " + str(run.id))
-                    run.delete()
+                    run._requester.requestJson("DELETE", run.url) # normally we would use run.delete() but even though it's been merged it's not yet in pypi: https://github.com/PyGithub/PyGithub/pull/2078
                 else:
                     runs_to_delete.append((workflow.name, run.id, run.created_at.strftime("%m/%d/%Y, %H:%M:%S")))
                 
