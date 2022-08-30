@@ -53,3 +53,14 @@ export const TestWrapper: React.FC = ({ children }) => (
     </IntlProvider>
   </ThemeProvider>
 );
+
+export const useMockIntersectionObserver = () => {
+  // IntersectionObserver isn't available in test environment but is used by the dialog component
+  const mockIntersectionObserver = jest.fn();
+  mockIntersectionObserver.mockReturnValue({
+    observe: jest.fn().mockReturnValue(null),
+    unobserve: jest.fn().mockReturnValue(null),
+    disconnect: jest.fn().mockReturnValue(null),
+  });
+  window.IntersectionObserver = mockIntersectionObserver;
+};
