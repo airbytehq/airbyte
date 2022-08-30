@@ -104,8 +104,16 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
+task stylelint(type: NpmTask) {
+    dependsOn npmInstall
+    args = ['run', 'stylelint']
+    inputs.files commonConfigs
+    inputs.file '.stylelintrc'
+    inputs.dir 'src'
+}
+
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test
+check.dependsOn validateLinks, licenseCheck, test, stylelint
 
 build.dependsOn buildStorybook
 
