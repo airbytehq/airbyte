@@ -27,7 +27,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Source {
+public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
@@ -62,6 +62,10 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     addSsl(additionalProperties);
+
+    if (redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      additionalProperties.addAll(List.of(redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
+    }
 
     builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
 
