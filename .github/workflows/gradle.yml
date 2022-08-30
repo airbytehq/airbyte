@@ -333,6 +333,15 @@ jobs:
 
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
+
+      - name: Publish Storybook to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          workingDir: airbyte-webapp/
+          storybookBuldDir: airbyte-webapp/build/storybook/
+
   frontend-test:
     name: "Frontend: Run End-to-End Tests"
     needs:
