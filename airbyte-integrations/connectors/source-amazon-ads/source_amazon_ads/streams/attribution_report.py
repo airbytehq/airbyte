@@ -23,7 +23,25 @@ METRICS_MAP = {
         "totalUnitsSold14d",
         "totalAttributedSales14d",
         "brb_bonus_amount",
-    ]
+    ],
+    "PRODUCTS": [
+        "attributedDetailPageViewsClicks14d",
+        "attributedAddToCartClicks14d",
+        "attributedPurchases14d",
+        "unitsSold14d",
+        "attributedSales14d",
+        "brandHaloDetailPageViewsClicks14d",
+        "brandHaloAttributedAddToCartClicks14d",
+        "brandHaloAttributedPurchases14d",
+        "brandHaloUnitsSold14d",
+        "brandHaloAttributedSales14d",
+        "attributedNewToBrandPurchases14d",
+        "attributedNewToBrandUnitsSold14d",
+        "attributedNewToBrandSales14d",
+        "brandHaloNewToBrandPurchases14d",
+        "brandHaloNewToBrandUnitsSold14d",
+        "brandHaloNewToBrandSales14d",
+    ],
 }
 
 
@@ -37,6 +55,7 @@ class AttributionReport(AmazonAdsStream):
     primary_key = None
     data_field = "reports"
     page_size = 300
+    report_type = ""
 
     _next_page_token_field = "cursorId"
     _current_profile_id = ""
@@ -52,6 +71,9 @@ class AttributionReport(AmazonAdsStream):
 
         self._req_start_date = ""
         self._req_end_date = ""
+
+        self.report_type = config.get("attribution_report_type", "PERFORMANCE")
+
         super().__init__(config, *args, **kwargs)
 
     def _set_dates(self, profile: Profile):
@@ -97,16 +119,17 @@ class AttributionReport(AmazonAdsStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-
         body = {
-            "reportType": "PERFORMANCE",
+            "reportType": self.report_type,
             "count": self.page_size,
-            "metrics": ",".join(METRICS_MAP["PERFORMANCE"]),
-            "groupBy": "CAMPAIGN",
+            "metrics": ",".join(METRICS_MAP[self.report_type]),
             "startDate": self._req_start_date,
             "endDate": self._req_end_date,
             "cursorId": "",
         }
+
+        if self.report_type == "PERFORMANCE":
+            body["groupBy"] = "CAMPAIGN"
 
         if next_page_token:
             body["cursorId"] = next_page_token[self._next_page_token_field]

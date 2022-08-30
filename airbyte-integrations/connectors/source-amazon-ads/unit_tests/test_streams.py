@@ -276,8 +276,13 @@ def test_attribution_report_schema(config, profiles_response, attribution_report
         validate(schema=schema, instance=record)
 
 
+@pytest.mark.parametrize(
+    ("report_type"),
+    ["PERFORMANCE", "PRODUCTS"],
+)
 @responses.activate
-def test_attribution_report_with_pagination(mocker, config, profiles_response, attribution_report_response):
+def test_attribution_report_with_pagination(mocker, config, profiles_response, attribution_report_response, report_type):
+    mocker.patch("source_amazon_ads.streams.attribution_report.AttributionReport.report_type", report_type)
     profiles = json.loads(profiles_response)
     # use only single profile
     profiles_response = json.dumps([profiles[0]])
@@ -310,4 +315,4 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
     attribution_records = get_all_stream_records(attribution_report_stream)
 
     # request should be called 2 times for a single profile
-    assert len(attribution_records) == 2
+    assert len(attribution_records) == 2 * len(attribution_data)
