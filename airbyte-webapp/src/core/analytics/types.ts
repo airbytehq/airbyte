@@ -36,6 +36,7 @@ export const enum Action {
   NO_MATCHING_CONNECTOR = "NoMatchingConnector",
   SELECTION_OPENED = "SelectionOpened",
   CHECKOUT_START = "CheckoutStart",
+  LOAD_MORE_JOBS = "LoadMoreJobs",
 }
 
 export type EventParams = Record<string, unknown>;

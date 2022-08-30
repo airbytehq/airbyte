@@ -3,13 +3,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard } from "components";
+import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 
+import { getFrequencyType } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
@@ -17,6 +20,8 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
+
+const JOB_PAGE_SIZE_INCREMENT = 25;
 
 enum ActionType {
   RESET = "reset_connection",
@@ -43,11 +48,18 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
 
 const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [activeJob, setActiveJob] = useState<ActiveJob>();
+  const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
+  const analyticsService = useAnalyticsService();
 
-  const jobs = useListJobs({
+  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+    pagination: {
+      pageSize: jobPageSize,
+    },
   });
+
+  const moreJobPagesAvailable = jobs.length === jobPageSize;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -102,6 +114,21 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     return cancelJob(activeJob.id);
   };
 
+  const onLoadMoreJobs = () => {
+    setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_INCREMENT);
+
+    analyticsService.track(Namespace.CONNECTION, Action.LOAD_MORE_JOBS, {
+      actionDescription: "Load more jobs button was clicked",
+      connection_id: connection.connectionId,
+      connector_source: connection.source?.sourceName,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      frequency: getFrequencyType(connection.schedule),
+      job_page_size: jobPageSize,
+    });
+  };
+
   const cancelJobBtn = (
     <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
       <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
@@ -145,6 +172,14 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       >
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </ContentCard>
+
+      {(moreJobPagesAvailable || isJobPageLoading) && (
+        <footer className={styles.footer}>
+          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+            <FormattedMessage id="connection.loadMoreJobs" />
+          </LoadingButton>
+        </footer>
+      )}
     </div>
   );
 };
