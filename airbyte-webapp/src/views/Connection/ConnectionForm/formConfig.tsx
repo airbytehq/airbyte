@@ -13,7 +13,8 @@ import {
 } from "core/domain/connection/operation";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
-  ConnectionSchedule,
+  ConnectionScheduleData,
+  ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   NamespaceDefinitionType,
@@ -30,7 +31,8 @@ import calculateInitialCatalog from "./calculateInitialCatalog";
 
 interface FormikConnectionFormValues {
   name?: string;
-  schedule?: ConnectionSchedule | null;
+  scheduleType?: ConnectionScheduleType | null;
+  scheduleData?: ConnectionScheduleData | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -48,9 +50,11 @@ const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
   [SyncMode.full_refresh, DestinationSyncMode.append],
 ];
 
-const DEFAULT_SCHEDULE: ConnectionSchedule = {
-  units: 24,
-  timeUnit: "hours",
+const DEFAULT_SCHEDULE: ConnectionScheduleData = {
+  basicSchedule: {
+    units: 24,
+    timeUnit: "hours",
+  },
 };
 
 function useDefaultTransformation(): OperationCreate {
@@ -72,10 +76,16 @@ function useDefaultTransformation(): OperationCreate {
 const connectionValidationSchema = yup
   .object({
     name: yup.string().required("form.empty.error"),
-    schedule: yup
+    scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
+    scheduleData: yup
       .object({
-        units: yup.number().required("form.empty.error"),
-        timeUnit: yup.string().required("form.empty.error"),
+        basicSchedule: yup
+          .object({
+            units: yup.number().required("form.empty.error"),
+            timeUnit: yup.string().required("form.empty.error"),
+          })
+          .nullable()
+          .defined("form.empty.error"),
       })
       .nullable()
       .defined("form.empty.error"),
@@ -234,7 +244,7 @@ const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      schedule: connection.connectionId ? connection.schedule ?? null : DEFAULT_SCHEDULE,
+      scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -255,19 +265,20 @@ const useInitialValues = (
 };
 
 const useFrequencyDropdownData = (
-  additionalFrequency: WebBackendConnectionRead["schedule"]
+  additionalFrequency: WebBackendConnectionRead["scheduleData"]
 ): DropDownRow.IDataItem[] => {
   const { formatMessage } = useIntl();
 
   return useMemo(() => {
     const frequencies = [...frequencyConfig];
-    if (additionalFrequency) {
+    if (additionalFrequency?.basicSchedule) {
       const additionalFreqAlreadyPresent = frequencies.some(
         (frequency) =>
-          frequency?.timeUnit === additionalFrequency.timeUnit && frequency?.units === additionalFrequency.units
+          frequency?.timeUnit === additionalFrequency.basicSchedule?.timeUnit &&
+          frequency?.units === additionalFrequency.basicSchedule?.units
       );
       if (!additionalFreqAlreadyPresent) {
-        frequencies.push(additionalFrequency);
+        frequencies.push(additionalFrequency.basicSchedule);
       }
     }
 
