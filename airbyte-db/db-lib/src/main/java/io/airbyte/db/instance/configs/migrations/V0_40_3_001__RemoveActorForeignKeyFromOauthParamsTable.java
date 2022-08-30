@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -26,4 +30,5 @@ public class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable extends Base
   private static void removeActorDefinitionForeignKey(final DSLContext ctx) {
     ctx.alterTable("actor_oauth_parameter").dropForeignKey("actor_oauth_parameter_actor_definition_id_fkey").execute();
   }
+
 }
