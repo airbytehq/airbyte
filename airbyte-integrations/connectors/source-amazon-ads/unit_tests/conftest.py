@@ -58,5 +58,14 @@ def attribution_report_response():
 "campaignId": "_Ampd__amazon_com_fake_id","attributedDetailPageViewsClicks14d": "6",
 "attributedPurchases14d": "1","attributedTotalAddToCartClicks14d": "5","attributedTotalPurchases14d": "2",
 "advertiserName": "Eversprout","totalUnitsSold14d": "2","unitsSold14d": "1","Click-throughs": "32",
-"attributedTotalDetailPageViewsClicks14d": "17","attributedSales14d": "56.99","totalAttributedSales14d": "96.98"}]}
+"attributedTotalDetailPageViewsClicks14d": "17","attributedSales14d": "56.99","totalAttributedSales14d": "96.98"},
+{"date": "20220829", "attributedDetailPageViewsClicks14d": "0", "attributedPurchases14d": "0", "adGroupId": "bestselling_fan-dusters",
+"advertiserName": "name", "productName": "some product name",
+"productCategory": "Chemicals", "productSubcategory": "Applicators", "brandHaloAttributedPurchases14d": "0",
+"brandHaloUnitsSold14d": "0", "attributedNewToBrandSales14d": "0", "attributedAddToCartClicks14d": "0",
+"brandHaloNewToBrandPurchases14d": "0", "brandName": "name", "marketplace": "AMAZON.COM", "brandHaloAttributedSales14d": "0",
+"campaignId": "my-campaign", "brandHaloNewToBrandUnitsSold14d": "0", "productAsin": "AAAAAAA",
+"productConversionType": "Brand Halo", "attributedNewToBrandUnitsSold14d": "0", "brandHaloAttributedAddToCartClicks14d": "0",
+"attributedNewToBrandPurchases14d": "0", "unitsSold14d": "0", "productGroup": "Automotive", "brandHaloNewToBrandSales14d": "0",
+"publisher": "Display - Other", "brandHaloDetailPageViewsClicks14d": "0", "attributedSales14d": "0"}]}
 """
