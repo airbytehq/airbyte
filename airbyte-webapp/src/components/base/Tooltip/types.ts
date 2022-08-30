@@ -13,3 +13,5 @@ export interface TooltipProps {
 }
 
 export type TooltipContext = TooltipProps;
+
+export type InfoTooltipProps = Omit<TooltipProps, "control">;
