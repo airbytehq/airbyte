@@ -55,7 +55,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
     </>
   );
 };
-//NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
+// NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
 export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
@@ -63,7 +63,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   return (
     <ReflexContainer orientation="vertical">
-      <ReflexElement className={classNames("left-pane", styles.leftPanelStyle)} propagateDimensions minSize={150}>
+      <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
         <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
       {documentationPanelOpen && (
@@ -74,7 +74,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
         </ReflexSplitter>
       )}
       {screenWidth > 500 && documentationPanelOpen && (
-        <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
+        <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
             <Suspense fallback={<LoadingPage />}>
               <LazyDocumentationPanel />
