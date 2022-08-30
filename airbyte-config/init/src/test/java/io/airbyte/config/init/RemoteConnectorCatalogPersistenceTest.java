@@ -35,10 +35,13 @@ class RemoteConnectorCatalogPersistenceTest {
   private static RemoteConnectorCatalogPersistence persistence;
   private static MockWebServer webServer;
   private static MockResponse validCatalogResponse;
+  private static String catalogUrl;
 
   @BeforeEach
   void setup() throws IOException {
     webServer = new MockWebServer();
+    catalogUrl = webServer.url("/connector_catalog.json").toString();
+
     final URL testCatalog = Resources.getResource("connector_catalog.json");
     final String jsonBody = Resources.toString(testCatalog, Charset.defaultCharset());
     validCatalogResponse = new MockResponse().setResponseCode(200)
@@ -50,7 +53,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testGetConfig() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString());
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl);
     // source
     final String stripeSourceId = "e094cb9a-26de-4645-8761-65c0c425d1de";
     final StandardSourceDefinition stripeSource = persistence
@@ -77,7 +80,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testGetInvalidConfig() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
 
     assertThrows(
         UnsupportedOperationException.class,
@@ -90,7 +93,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testDumpConfigs() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
 
     final Map<String, Stream<JsonNode>> allRemoteConfigs = persistence.dumpConfigs();
     assertEquals(2, allRemoteConfigs.size());
@@ -101,7 +104,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testWriteMethods() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
 
     assertThrows(UnsupportedOperationException.class, () -> persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "id", new Object()));
     assertThrows(UnsupportedOperationException.class, () -> persistence.replaceAllConfigs(Collections.emptyMap(), false));
@@ -110,7 +113,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testBadResponseStatus() throws Exception {
     webServer.enqueue(new MockResponse().setResponseCode(404));
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
     final Map<String, Stream<JsonNode>> allRemoteConfigs = persistence.dumpConfigs();
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
@@ -123,7 +126,7 @@ class RemoteConnectorCatalogPersistenceTest {
         .addHeader("Cache-Control", "no-cache")
         .setBody("not json");
     webServer.enqueue(notJson);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
     final Map<String, Stream<JsonNode>> allRemoteConfigs = persistence.dumpConfigs();
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
@@ -136,7 +139,7 @@ class RemoteConnectorCatalogPersistenceTest {
         .addHeader("Cache-Control", "no-cache")
         .setBody("{\"foo\":\"bar\"}");
     webServer.enqueue(invalidSchema);
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
     final Map<String, Stream<JsonNode>> allRemoteConfigs = persistence.dumpConfigs();
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
@@ -145,7 +148,7 @@ class RemoteConnectorCatalogPersistenceTest {
   @Test
   void testTimeOut() throws Exception {
     // No request enqueued -> Timeout
-    persistence = new RemoteConnectorCatalogPersistence(webServer.url("/connector_catalog.json").toString(), Duration.ofSeconds(1));
+    persistence = new RemoteConnectorCatalogPersistence(catalogUrl, Duration.ofSeconds(1));
     final Map<String, Stream<JsonNode>> allRemoteConfigs = persistence.dumpConfigs();
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
     assertFalse(allRemoteConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
