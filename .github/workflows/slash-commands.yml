@@ -3,10 +3,28 @@ on:
   issue_comment:
     types: [created]
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   slashCommandDispatch:
     # Only allow slash commands on pull request (not on issues)
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
+    needs: find_valid_pat
     steps:
       - name: Get PR repo and ref
         id: getref
@@ -18,7 +36,7 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.DAVINCHIA_PAT }}
+          token: ${{ needs.find_valid_pat.outputs.pat }}
           commands: |
             test
             test-performance
