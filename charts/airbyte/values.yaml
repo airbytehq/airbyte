@@ -7,11 +7,11 @@ global:
   serviceAccountName: &service-account-name "airbyte-admin"
   deploymentMode: "oss"
 
-  secretName: "airbyte-secrets"
+  secretName: ""
   database:
     secretValue: ""
-    host: "test"
-    port: "5432"
+    host: ""
+    port: ""
   logs:
     ## @param logs.accessKey.password Logs Access Key
     ## @param logs.accessKey.existingSecret

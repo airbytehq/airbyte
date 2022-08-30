@@ -7,6 +7,8 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -15,7 +17,7 @@ spec:
     protocol: TCP
     name: http
   selector:
-    airbyte: webapp
+    {{- include "airbyte.selectorLabels" . | nindent 4 }}
   {{- if .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
