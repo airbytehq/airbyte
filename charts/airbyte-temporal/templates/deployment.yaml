@@ -44,7 +44,14 @@ spec:
           - name: DB # The DB engine to use
             value: "postgresql"
           - name: DB_PORT
+            {{- if .Values.global.database.port }}
             value: {{ .Values.global.database.port | int | quote }}
+            {{- else }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+                key: DATABASE_PORT
+            {{- end }}
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
