@@ -119,10 +119,7 @@ final public class RemoteConnectorCatalogPersistence implements ConfigPersistenc
         json -> json));
     final Map<String, JsonNode> configsWithMissingField = configs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
-          final JsonNode output =
-              addMissingCustomField(
-                  addMissingPublicField(
-                      addMissingTombstoneField(e.getValue())));
+          final JsonNode output = addMissingTombstoneField(e.getValue());
           AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(configType, output);
           return output;
         }));
@@ -137,23 +134,6 @@ final public class RemoteConnectorCatalogPersistence implements ConfigPersistenc
     return definitionJson;
   }
 
-  private static JsonNode addMissingPublicField(final JsonNode definitionJson) {
-    final JsonNode currPublic = definitionJson.get("public");
-    if (currPublic == null || currPublic.isNull()) {
-      // definitions loaded from the cloud connector catalog are by definition public
-      ((ObjectNode) definitionJson).set("public", BooleanNode.TRUE);
-    }
-    return definitionJson;
-  }
-
-  private static JsonNode addMissingCustomField(final JsonNode definitionJson) {
-    final JsonNode currCustom = definitionJson.get("custom");
-    if (currCustom == null || currCustom.isNull()) {
-      // definitions loaded from the cloud connector catalog are by definition not custom
-      ((ObjectNode) definitionJson).set("custom", BooleanNode.FALSE);
-    }
-    return definitionJson;
-  }
 
   @Override
   public <T> T getConfig(final AirbyteConfig configType, final String configId, final Class<T> clazz)

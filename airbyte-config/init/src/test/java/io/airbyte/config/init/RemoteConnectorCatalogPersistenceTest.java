@@ -61,8 +61,7 @@ class RemoteConnectorCatalogPersistenceTest {
     assertEquals("https://docs.airbyte.io/integrations/sources/stripe", stripeSource.getDocumentationUrl());
     assertEquals("stripe.svg", stripeSource.getIcon());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
-    assertEquals(true, stripeSource.getPublic());
-    assertEquals(false, stripeSource.getCustom());
+
 
     // destination
     final String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
@@ -73,8 +72,6 @@ class RemoteConnectorCatalogPersistenceTest {
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
-    assertEquals(true, s3Destination.getPublic());
-    assertEquals(false, s3Destination.getCustom());
   }
 
   @Test
