@@ -20,7 +20,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
 from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")

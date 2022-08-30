@@ -900,7 +900,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.10"
+- dockerImage: "airbyte/source-bing-ads:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -6048,7 +6048,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.6.5"
+- dockerImage: "airbyte/source-mysql:0.6.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -6964,7 +6964,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-orb:0.1.2"
+- dockerImage: "airbyte/source-orb:0.1.3"
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
@@ -6973,7 +6973,7 @@
       type: "object"
       required:
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_key:
           type: "string"
@@ -7503,7 +7503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.4"
+- dockerImage: "airbyte/source-postgres:1.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7665,9 +7665,23 @@
                 airbyte_secret: true
                 multiline: true
                 order: 1
+              client_certificate:
+                type: "string"
+                title: "Client Certificate (Optional)"
+                description: "Client certificate"
+                airbyte_secret: true
+                multiline: true
+                order: 2
+              client_key:
+                type: "string"
+                title: "Client Key (Optional)"
+                description: "Client key"
+                airbyte_secret: true
+                multiline: true
+                order: 3
               client_key_password:
                 type: "string"
-                title: "Client Key Password (Optional)"
+                title: "Client key password (Optional)"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -7678,8 +7692,6 @@
             required:
             - "mode"
             - "ca_certificate"
-            - "client_certificate"
-            - "client_key"
             properties:
               mode:
                 type: "string"
@@ -7697,14 +7709,14 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate"
+                title: "Client Certificate (Optional)"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key"
+                title: "Client Key (Optional)"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
@@ -8035,7 +8047,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.7"
+- dockerImage: "airbyte/source-recharge:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -8103,7 +8115,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.12"
+- dockerImage: "airbyte/source-redshift:0.3.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -8163,6 +8175,13 @@
           type: "string"
           airbyte_secret: true
           order: 6
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 7
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8635,7 +8654,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.13"
+- dockerImage: "airbyte/source-salesforce:1.0.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -9021,7 +9040,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.15"
+- dockerImage: "airbyte/source-slack:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
@@ -9061,7 +9080,7 @@
           default: []
           items:
             type: "string"
-            min-item: 0
+            minLength: 0
           title: "Channel name filter"
           description: "A channel name list (without leading '#' char) which limit\
             \ the channels from which you'd like to sync. Empty list means no filter."
@@ -10268,7 +10287,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.6"
+- dockerImage: "airbyte/source-twilio:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
@@ -10279,7 +10298,7 @@
       - "account_sid"
       - "auth_token"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         account_sid:
           title: "Account ID"
