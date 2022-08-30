@@ -4,6 +4,7 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
@@ -27,7 +28,8 @@ public class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable extends Base
     removeActorDefinitionForeignKey(ctx);
   }
 
-  private static void removeActorDefinitionForeignKey(final DSLContext ctx) {
+  @VisibleForTesting
+  static void removeActorDefinitionForeignKey(final DSLContext ctx) {
     ctx.alterTable("actor_oauth_parameter").dropForeignKey("actor_oauth_parameter_actor_definition_id_fkey").execute();
   }
 
