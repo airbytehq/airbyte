@@ -5,6 +5,7 @@ import { Tooltip } from "components/base/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
+import styles from "./PathPopout.module.scss";
 import { PathPopoutButton } from "./PathPopoutButton";
 
 export function pathDisplayName(path: Path): string {
@@ -43,7 +44,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
         : "";
 
       return (
-        <Tooltip placement="bottom-start" control={<>{text}</>}>
+        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
           {text}
         </Tooltip>
       );

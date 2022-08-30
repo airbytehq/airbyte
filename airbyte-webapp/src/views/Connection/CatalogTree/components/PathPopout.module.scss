@@ -1,0 +1,7 @@
+@use "../../../../scss/variables";
+
+.text {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
