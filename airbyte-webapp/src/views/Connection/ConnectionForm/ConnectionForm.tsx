@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { Card, ControlLabels, DropDown, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { ConnectionSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { ConnectionScheduleDataBasicSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
@@ -175,8 +175,8 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <Field name="schedule">
-              {({ field, meta }: FieldProps<ConnectionSchedule>) => (
+            <Field name="scheduleData.basicSchedule">
+              {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (
                 <FlexRow>
                   <LeftFieldCol>
                     <ConnectorLabel

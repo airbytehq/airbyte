@@ -4,7 +4,7 @@ import { Subject } from "rxjs";
 
 import { DropDownRow } from "components";
 
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -52,6 +52,11 @@ const useConnectionForm = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
+      // Set the scheduleType based on the schedule value
+      values["scheduleType"] = values.scheduleData?.basicSchedule
+        ? ConnectionScheduleType.basic
+        : ConnectionScheduleType.manual;
+
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
       }) as unknown as ConnectionFormValues; // TODO: We should align these types
@@ -76,7 +81,7 @@ const useConnectionForm = ({
   );
 
   const errorMessage = useMemo(() => (submitError ? createFormErrorMessage(submitError) : null), [submitError]);
-  const frequencies = useFrequencyDropdownData(connection.schedule);
+  const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   const formDirty = new Subject<boolean>();
 
