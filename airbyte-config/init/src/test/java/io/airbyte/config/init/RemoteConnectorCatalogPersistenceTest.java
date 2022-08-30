@@ -30,7 +30,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class RemoteCatalogConfigPersistenceTest {
+class RemoteConnectorCatalogPersistenceTest {
 
   private static RemoteConnectorCatalogPersistence persistence;
   private static MockWebServer webServer;
