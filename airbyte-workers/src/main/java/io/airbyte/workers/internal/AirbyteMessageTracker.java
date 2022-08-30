@@ -51,6 +51,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
+  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   private short nextStreamIndex;
 
@@ -99,6 +100,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
+    logMessageAsJSON("source", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
@@ -109,6 +112,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromDestination(final AirbyteMessage message) {
+    logMessageAsJSON("destination", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
@@ -403,6 +408,14 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public Boolean getUnreliableStateTimingMetrics() {
     return unreliableStateTimingMetrics;
+  }
+
+  private void logMessageAsJSON(final String caller, AirbyteMessage message) {
+    if (!logConnectorMessages) {
+      return;
+    }
+
+    log.info(caller + " message | " + Jsons.serialize(message));
   }
 
 }
