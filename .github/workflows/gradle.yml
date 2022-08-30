@@ -855,6 +855,7 @@ jobs:
       - octavia-cli-build
       - platform-build
       - kube-acceptance-test
+      - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Publish to OSS Build Failure Slack Channel
@@ -879,6 +880,7 @@ jobs:
       - octavia-cli-build
       - platform-build
       - kube-acceptance-test
+      - helm-acceptance-test
     if: success()
     steps:
       - name: Get Previous Workflow Status
