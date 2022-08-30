@@ -96,3 +96,17 @@ spec:
         {{- end }}
 
       resources: {{- toYaml .Values.resources | nindent 8 }}
+{{- if .Values.extraVolumeMounts }}
+      volumeMounts:
+{{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+{{- end }}
+{{- if .Values.extraContainers }}
+{{ toYaml .Values.extraContainers | indent 4 }}
+{{- end }}
+{{- if .Values.global.extraContainers }}
+{{ toYaml .Values.global.extraContainers | indent 4 }}
+{{- end }}
+{{- if .Values.extraVolumes }}
+  volumes:
+{{- toYaml .Values.extraVolumes | nindent 2 }}
+{{- end }}

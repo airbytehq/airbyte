@@ -707,6 +707,32 @@ airbyte-bootloader:
   ##
   affinity: {}
 
+  ## @param bootloader.extraContainers Additional Containers to initialize the pod
+  ## extraContainers:
+  ##   - name: busybox
+  ##     image: busybox
+  ##     ports:
+  ##     - containerPort: 80
+  ##     command: ["/bin/sh", "-ec", "sleep 1000"]
+  ##     volumeMounts:
+  ##       - name: config
+  ##         mountPath: /config
+  extraContainers: []
+
+  ## @param bootloader.extraVolumeMounts [array] Additional volumeMounts for bootloader container(s).
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ## @param bootloader.extraVolumes [array] Additional volumes for bootloader pod(s).
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
 

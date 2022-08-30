@@ -15,6 +15,7 @@ global:
     secretValue: ""
   secrets: {}
   env_vars: {}
+  extraContainers: []
 
 
 enabled: true
@@ -66,4 +67,6 @@ affinity: {}
 extraEnv: []
 secrets: {}
 env_vars: {}
-
+extraContainers: []
+extraVolumes: []
+extraVolumeMounts: []
