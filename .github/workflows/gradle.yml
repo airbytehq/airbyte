@@ -741,12 +741,16 @@ jobs:
         with:
           node-version: "lts/gallium"
 
+      - name: Install unzip
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
       - uses: azure/setup-helm@v3
         with:
           version: 'latest' 
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
-
+   
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
