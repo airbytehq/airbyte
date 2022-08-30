@@ -22,7 +22,7 @@ dependencies {
     migrations sourceSets.main.output
 
     // Mark as compile only to avoid leaking transitively to connectors
-    compileOnly libs.platform.testcontainers.postgresql
+    implementation libs.platform.testcontainers.postgresql
     compileOnly libs.connectors.testcontainers.mysql
 
     // These are required because gradle might be using lower version of Jna from other
