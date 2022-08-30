@@ -319,5 +319,14 @@ module.exports = {
         },
       ],
     },
+    {
+      type: 'category',
+      label: 'Release Notes',
+      items: [
+        {
+         'docs/release_notes/release_notes_augustmd.md'
+        },
+      ],
+    },
   ],
 }
