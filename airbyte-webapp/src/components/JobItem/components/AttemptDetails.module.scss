@@ -7,7 +7,7 @@
   color: colors.$grey;
 }
 
-.details > *:not(:last-child):after {
+.details > *:not(:last-child)::after {
   content: "|";
   padding: 0 variables.$spacing-sm;
 }
