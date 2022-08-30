@@ -53,6 +53,7 @@ create table "public"."actor_definition"(
   "resource_requirements" jsonb null,
   "public" bool not null default false,
   "custom" bool not null default false,
+  "protocol_version" bpchar(255) null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

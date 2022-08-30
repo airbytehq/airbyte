@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -30,4 +34,5 @@ public class V0_40_3_001__AddProtocolVersionToActorDefinition extends BaseJavaMi
             SQLDataType.CHAR(255).nullable(true)))
         .execute();
   }
+
 }
