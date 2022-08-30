@@ -19,7 +19,7 @@ export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ pro
   return (
     <ControlLabels
       error={!!fieldMeta.error && fieldMeta.touched}
-      label={<FormattedMessage id="form.name" />}
+      label={<FormattedMessage id={`form.${formType}Name`} />}
       message={formatMessage({
         id: `form.${formType}Name.message`,
       })}
