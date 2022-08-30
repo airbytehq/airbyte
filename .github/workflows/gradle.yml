@@ -303,6 +303,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        width:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
