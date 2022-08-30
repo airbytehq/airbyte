@@ -1,4 +1,6 @@
-name: "Shared Issues"
+# Runs automation internal to airbyte for Issues
+
+name: "Internal Automation for Issues"
 on:
   issues:
     types: [opened, labeled, unlabeled]
