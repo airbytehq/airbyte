@@ -36,6 +36,7 @@
     "prefer-destructuring": ["warn", { "AssignmentExpression": { "array": true } }],
     "prefer-object-spread": "warn",
     "prefer-template": "warn",
+    "spaced-comment": ["warn", "always", { "markers": ["/"] }],
     "yoda": "warn",
     "import/order": [
       "warn",

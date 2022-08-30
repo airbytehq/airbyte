@@ -1,15 +1,12 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 
-import { useConfig } from "config";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
@@ -25,23 +22,6 @@ import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
-
-function useDemo() {
-  const { formatMessage } = useIntl();
-  const config = useConfig();
-
-  const demoNotification = useMemo(
-    () => ({
-      id: "demo.message",
-      title: formatMessage({ id: "demo.message.title" }),
-      text: formatMessage({ id: "demo.message.body" }),
-      nonClosable: true,
-    }),
-    [formatMessage]
-  );
-
-  useNotificationService(config.isDemo ? demoNotification : undefined);
-}
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
@@ -103,7 +83,6 @@ const RoutingWithWorkspace: React.FC = () => {
   useAddAnalyticsContextForWorkspace(workspace);
   useTrackPageAnalytics();
   useApiHealthPoll();
-  useDemo();
 
   return (
     <OnboardingServiceProvider>

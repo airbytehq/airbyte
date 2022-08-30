@@ -39,7 +39,6 @@ Helm chart to deploy airbyte-webapp
 | ingress.enabled | bool | `false` |  |
 | ingress.hosts | list | `[]` |  |
 | ingress.tls | list | `[]` |  |
-| isDemo | bool | `false` |  |
 | livenessProbe.enabled | bool | `true` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `30` |  |

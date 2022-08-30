@@ -1,6 +1,6 @@
 # airbyte
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.1](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.3](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 
@@ -26,7 +26,7 @@ Helm chart to deploy airbyte
 | airbyte-bootloader.enabled                         | bool   | `true`                      |             |
 | airbyte-bootloader.image.pullPolicy                | string | `"IfNotPresent"`            |             |
 | airbyte-bootloader.image.repository                | string | `"airbyte/bootloader"`      |             |
-| airbyte-bootloader.image.tag                       | string | `"0.40.1"`                  |             |
+| airbyte-bootloader.image.tag                       | string | `"0.40.3"`                  |             |
 | airbyte-bootloader.nodeSelector                    | object | `{}`                        |             |
 | airbyte-bootloader.podAnnotations                  | object | `{}`                        |             |
 | airbyte-bootloader.resources.limits                | object | `{}`                        |             |
@@ -113,7 +113,7 @@ Helm chart to deploy airbyte
 | server.extraVolumes                                | list   | `[]`                        |             |
 | server.image.pullPolicy                            | string | `"IfNotPresent"`            |             |
 | server.image.repository                            | string | `"airbyte/server"`          |             |
-| server.image.tag                                   | string | `"0.40.1"`                  |             |
+| server.image.tag                                   | string | `"0.40.3"`                  |             |
 | server.livenessProbe.enabled                       | bool   | `true`                      |             |
 | server.livenessProbe.failureThreshold              | int    | `3`                         |             |
 | server.livenessProbe.initialDelaySeconds           | int    | `30`                        |             |
@@ -179,13 +179,12 @@ Helm chart to deploy airbyte
 | webapp.fullstory.enabled                           | bool   | `false`                     |             |
 | webapp.image.pullPolicy                            | string | `"IfNotPresent"`            |             |
 | webapp.image.repository                            | string | `"airbyte/webapp"`          |             |
-| webapp.image.tag                                   | string | `"0.40.1"`                  |             |
+| webapp.image.tag                                   | string | `"0.40.3"`                  |             |
 | webapp.ingress.annotations                         | object | `{}`                        |             |
 | webapp.ingress.className                           | string | `""`                        |             |
 | webapp.ingress.enabled                             | bool   | `false`                     |             |
 | webapp.ingress.hosts                               | list   | `[]`                        |             |
 | webapp.ingress.tls                                 | list   | `[]`                        |             |
-| webapp.isDemo                                      | bool   | `false`                     |             |
 | webapp.livenessProbe.enabled                       | bool   | `true`                      |             |
 | webapp.livenessProbe.failureThreshold              | int    | `3`                         |             |
 | webapp.livenessProbe.initialDelaySeconds           | int    | `30`                        |             |
@@ -215,7 +214,7 @@ Helm chart to deploy airbyte
 | worker.extraVolumes                                | list   | `[]`                        |             |
 | worker.image.pullPolicy                            | string | `"IfNotPresent"`            |             |
 | worker.image.repository                            | string | `"airbyte/worker"`          |             |
-| worker.image.tag                                   | string | `"0.40.1"`                  |             |
+| worker.image.tag                                   | string | `"0.40.3"`                  |             |
 | worker.livenessProbe.enabled                       | bool   | `true`                      |             |
 | worker.livenessProbe.failureThreshold              | int    | `3`                         |             |
 | worker.livenessProbe.initialDelaySeconds           | int    | `30`                        |             |

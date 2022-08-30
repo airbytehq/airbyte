@@ -8,7 +8,7 @@ export const toWebBackendConnectionUpdate = (connection: WebBackendConnectionRea
   prefix: connection.prefix,
   operationIds: connection.operationIds,
   syncCatalog: connection.syncCatalog,
-  schedule: connection.schedule,
+  scheduleData: connection.scheduleData,
   status: connection.status,
   resourceRequirements: connection.resourceRequirements,
   operations: connection.operations,
