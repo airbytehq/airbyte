@@ -71,10 +71,6 @@ class Engage(MixpanelStream):
     def source_defined_cursor(self) -> bool:
         return False
 
-    @property
-    def supports_incremental(self) -> bool:
-        return True
-
     # enable automatic object mutation to align with desired schema before outputting to the destination
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
