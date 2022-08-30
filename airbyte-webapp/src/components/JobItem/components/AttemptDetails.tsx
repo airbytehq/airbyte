@@ -71,7 +71,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   return (
     <div className={classNames(styles.details, className)}>
       <div>
-        <span>{formatBytes(attempt?.bytesSynced)} | </span>
+        <span>{formatBytes(attempt?.totalStats?.bytesEmitted)} | </span>
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
