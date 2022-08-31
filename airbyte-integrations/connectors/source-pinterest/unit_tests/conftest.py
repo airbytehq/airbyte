@@ -36,6 +36,7 @@ def test_current_stream_state():
 def test_record():
     return {"items": [{}], "bookmark": "string"}
 
+
 @fixture
 def test_record_filter():
     return {"items": [{"updated_time": "2021-11-01"}], "bookmark": "string"}
@@ -46,6 +47,7 @@ def test_response(test_record):
     response = MagicMock()
     response.json.return_value = test_record
     return response
+
 
 @fixture
 def test_response_filter(test_record_filter):

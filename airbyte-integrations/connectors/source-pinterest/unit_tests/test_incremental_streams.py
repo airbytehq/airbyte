@@ -6,10 +6,10 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from airbyte_cdk.models import SyncMode
 import pytest
+from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_pinterest.source import IncrementalPinterestSubStream, AdAccountAnalytics, Campaigns
+from source_pinterest.source import AdAccountAnalytics, Campaigns, IncrementalPinterestSubStream
 
 
 @fixture
@@ -63,8 +63,8 @@ def test_request_params(patch_incremental_base_class):
     expected_property = "columns"
     res = stream.request_params({}, test_slice)
     assert expected_property in res
-   
-    
+
+
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),
     [
@@ -79,10 +79,10 @@ def test_should_retry(patch_incremental_base_class, http_status, should_retry):
     response_mock.status_code = http_status
     stream = AdAccountAnalytics(None, config=MagicMock())
     assert stream.should_retry(response_mock) == should_retry
-  
-     
+
+
 def test_parse_response(patch_incremental_base_class, test_response_filter, test_current_stream_state):
     stream = Campaigns(None, config=MagicMock())
-    expected_parsed_object = [{'updated_time': '2021-11-01'}]
+    expected_parsed_object = [{"updated_time": "2021-11-01"}]
     result = list(stream.parse_response(test_response_filter, test_current_stream_state))
     assert result == expected_parsed_object
