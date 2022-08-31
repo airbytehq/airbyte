@@ -121,12 +121,14 @@ class Spec(pydantic.BaseModel):
         title="API Token",
         description="Adjust API key, see https://help.adjust.com/en/article/report-service-api-authentication",
         airbyte_secret=True,
+        order=0,
     )
 
     ingest_start: datetime.date = pydantic.Field(
         ...,
         title="Ingest Start Date",
         description="Data ingest start date.",
+        order=1,
     )
 
     metrics: typing.Set[BASE_METRICS] = pydantic.Field(
@@ -134,12 +136,14 @@ class Spec(pydantic.BaseModel):
         title="Metrics to ingest",
         description="Select at least one metric to query.",
         min_items=1,
+        order=2,
     )
 
     additional_metrics: typing.List[str] = pydantic.Field(
         None,
         title="Additional metrics for ingestion",
         description="Metrics names that are not pre-defined, such as cohort metrics or app specific metrics.",
+        order=3,
     )
 
     dimensions: typing.Set[DIMENSIONS] = pydantic.Field(
@@ -150,11 +154,13 @@ class Spec(pydantic.BaseModel):
             "the number of installs by date, country and network."
         ),
         min_items=1,
+        order=4,
     )
 
     until_today: bool = pydantic.Field(
         False,
         description="Syncs data up until today. Useful when running daily incremental syncs, and duplicates are not desired.",
+        order=5,
     )
 
     class Config:

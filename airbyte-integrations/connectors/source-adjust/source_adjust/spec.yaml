@@ -7,11 +7,13 @@ connectionSpecification:
         or app specific metrics.
       items:
         type: string
+      order: 3
       title: Additional metrics for ingestion
       type: array
     api_token:
       airbyte_secret: true
       description: Adjust API key, see https://help.adjust.com/en/article/report-service-api-authentication
+      order: 0
       title: API Token
       type: string
     dimensions:
@@ -48,12 +50,14 @@ connectionSpecification:
         - partner_id
         type: string
       minItems: 1
+      order: 4
       title: Dimensions
       type: array
       uniqueItems: true
     ingest_start:
       description: Data ingest start date.
       format: date
+      order: 1
       title: Ingest Start Date
       type: string
     metrics:
@@ -124,6 +128,7 @@ connectionSpecification:
         - ecpm
         type: string
       minItems: 1
+      order: 2
       title: Metrics to ingest
       type: array
       uniqueItems: true
@@ -131,6 +136,7 @@ connectionSpecification:
       default: false
       description: Syncs data up until today. Useful when running daily incremental
         syncs, and duplicates are not desired.
+      order: 5
       title: Until Today
       type: boolean
   required:
