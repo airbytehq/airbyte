@@ -6,7 +6,7 @@
 from abc import ABC
 from base64 import standard_b64encode
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
@@ -14,9 +14,27 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 from .utils import analytics_columns, to_datetime_str
+
+
+class PinterestAuthentication:
+    """ Provides the authentication capabilities for both old and new methods. """
+
+    def __init__(self, config: Dict):
+        self.config = config
+
+    def get_auth(self) -> TokenAuthenticator:
+        """ Return the TokenAuthenticator object with access_token. """
+
+        # the old config supports for backward capability
+        access_token = self.config.get("access_token")
+        if not access_token:
+            # the new config supports `OAuth2.0`
+            access_token = self.config["credentials"]["access_token"]
+
+        return TokenAuthenticator(token=access_token)
 
 
 class PinterestStream(HttpStream, ABC):
