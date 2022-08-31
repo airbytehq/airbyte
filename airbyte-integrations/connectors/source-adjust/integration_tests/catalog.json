@@ -1,7 +1,7 @@
 {
   "streams": [
     {
-      "name": "adjust_stream",
+      "name": "adjust_report_stream",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": "day",

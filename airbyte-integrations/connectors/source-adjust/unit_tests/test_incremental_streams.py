@@ -5,7 +5,7 @@
 import datetime
 
 from airbyte_cdk.models import SyncMode
-from source_adjust.source import AdjustStream
+from source_adjust.source import AdjustReportStream
 
 CONFIG = {
     "ingest_start": "2022-07-01",
@@ -14,13 +14,13 @@ CONFIG = {
 
 
 def test_cursor_field():
-    stream = AdjustStream(connector=None, config=CONFIG)
+    stream = AdjustReportStream(connector=None, config=CONFIG)
     expected_cursor_field = "day"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_stream_slices():
-    stream = AdjustStream(connector=None, config=CONFIG)
+    stream = AdjustReportStream(connector=None, config=CONFIG)
     period = 5
     start = datetime.date.today() - datetime.timedelta(days=period)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "day", "stream_state": {"day": start.isoformat()}}
@@ -28,16 +28,16 @@ def test_stream_slices():
 
 
 def test_supports_incremental():
-    stream = AdjustStream(connector=None, config=CONFIG)
+    stream = AdjustReportStream(connector=None, config=CONFIG)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor():
-    stream = AdjustStream(connector=None, config=CONFIG)
+    stream = AdjustReportStream(connector=None, config=CONFIG)
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval():
-    stream = AdjustStream(connector=None, config=CONFIG)
+    stream = AdjustReportStream(connector=None, config=CONFIG)
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

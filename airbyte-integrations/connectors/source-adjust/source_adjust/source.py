@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
-class AdjustStream(HttpStream, IncrementalMixin):
+class AdjustReportStream(HttpStream, IncrementalMixin):
     """
     Adjust reports service integration with support for incremental synchronization.
     """
@@ -194,7 +194,7 @@ class SourceAdjust(AbstractSource):
         auth = TokenAuthenticator(token=config["api_token"])
 
         self._streams = [
-            AdjustStream(connector=self, config=config, authenticator=auth),
+            AdjustReportStream(connector=self, config=config, authenticator=auth),
         ]
         return self._streams
 

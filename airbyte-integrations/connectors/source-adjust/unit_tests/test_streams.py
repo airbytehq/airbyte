@@ -6,12 +6,12 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_adjust.source import AdjustStream
+from source_adjust.source import AdjustReportStream
 
 
 @pytest.fixture
 def stream():
-    return AdjustStream(
+    return AdjustReportStream(
         connector=None,
         config={
             "ingest_start": "2022-07-01",
