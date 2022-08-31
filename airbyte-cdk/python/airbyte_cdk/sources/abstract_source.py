@@ -228,7 +228,7 @@ class AbstractSource(Source, ABC):
         total_records_counter = 0
         if not slices:
             # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_instance, stream_instance.state, connector_state)
+            checkpoint = self._checkpoint_state(stream_instance, stream_state, connector_state)
             yield checkpoint
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
