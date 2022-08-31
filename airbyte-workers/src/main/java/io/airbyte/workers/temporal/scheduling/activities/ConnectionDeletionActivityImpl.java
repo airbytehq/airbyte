@@ -9,12 +9,18 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
+@Singleton
 public class ConnectionDeletionActivityImpl implements ConnectionDeletionActivity {
 
-  private final ConnectionHelper connectionHelper;
+  @Inject
+  private ConnectionHelper connectionHelper;
 
   @Override
   public void deleteConnection(final ConnectionDeletionInput input) {

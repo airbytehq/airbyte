@@ -105,6 +105,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+    ports:
+      - 9000:9000
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging

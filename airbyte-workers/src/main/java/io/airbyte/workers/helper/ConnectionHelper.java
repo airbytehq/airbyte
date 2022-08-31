@@ -21,14 +21,19 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AllArgsConstructor;
 
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @AllArgsConstructor
+@Singleton
 public class ConnectionHelper {
 
-  private final ConfigRepository configRepository;
+  @Inject
+  private ConfigRepository configRepository;
+  @Inject
   private final WorkspaceHelper workspaceHelper;
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -140,7 +145,7 @@ public class ConnectionHelper {
   }
 
   // Helper method to convert between TimeUnit enums for old and new schedule schemas.
-  private static BasicSchedule.TimeUnit convertTimeUnitSchema(Schedule.TimeUnit timeUnit) {
+  private static BasicSchedule.TimeUnit convertTimeUnitSchema(final Schedule.TimeUnit timeUnit) {
     switch (timeUnit) {
       case MINUTES:
         return BasicSchedule.TimeUnit.MINUTES;
