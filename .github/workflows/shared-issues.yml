@@ -1,4 +1,5 @@
-# Runs automation internal to airbyte for Issues
+# Adds metadata and labels to issues based on context
+# https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts <-- this gets run
 
 name: "Internal Automation for Issues"
 on:
