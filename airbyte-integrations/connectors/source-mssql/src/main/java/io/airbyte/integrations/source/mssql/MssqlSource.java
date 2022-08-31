@@ -191,10 +191,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       }
     }
 
-    if (schemas != null && !schemas.isEmpty()) {
-      additionalParameters.add("currentSchema=" + String.join(",", schemas));
-    }
-
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
     }
@@ -400,6 +396,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
           props, catalog, true);
