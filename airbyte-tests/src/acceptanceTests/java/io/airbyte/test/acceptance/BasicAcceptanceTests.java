@@ -155,12 +155,12 @@ class BasicAcceptanceTests {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
-            .setPort(8001)
+            .setPort(8002)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
             .setHost("localhost")
-            .setPort(8001)
+            .setPort(8002)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
