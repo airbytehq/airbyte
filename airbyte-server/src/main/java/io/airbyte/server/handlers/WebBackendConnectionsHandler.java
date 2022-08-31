@@ -359,11 +359,11 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from the patch
-   * to the connection.
+   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from
+   * the patch to the connection.
    *
-   * As a convenience to the front-end, this endpoint also creates new operations present in the request, and bundles
-   * those newly-created operationIds into the connection update.
+   * As a convenience to the front-end, this endpoint also creates new operations present in the
+   * request, and bundles those newly-created operationIds into the connection update.
    */
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -378,7 +378,8 @@ public class WebBackendConnectionsHandler {
 
     final List<UUID> operationIds = updateOperations(connectionRead, webBackendConnectionPatch);
 
-    // pass in operationIds because the patch object doesn't include operationIds that were just created above.
+    // pass in operationIds because the patch object doesn't include operationIds that were just created
+    // above.
     final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, operationIds);
 
     // persist the update and set the connectionRead to the updated form.
