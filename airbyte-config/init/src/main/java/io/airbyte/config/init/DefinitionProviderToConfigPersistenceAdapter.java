@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +22,7 @@ import java.util.stream.Stream;
 
 public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersistence {
 
-  private DefinitionsProvider definitionsProvider;
+  private final DefinitionsProvider definitionsProvider;
   private static final String PERSISTENCE_READ_ONLY_ERROR_MSG = "The remote definitions are read only.";
 
   public DefinitionProviderToConfigPersistenceAdapter(DefinitionsProvider definitionsProvider) {
@@ -45,7 +49,8 @@ public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersi
       return (List<T>) definitionsProvider.getDestinationDefinitions();
     } else {
       throw new UnsupportedOperationException("The config type you passed does not match any existing model class.");
-    }  }
+    }
+  }
 
   @Override
   public <T> ConfigWithMetadata<T> getConfigWithMetadata(AirbyteConfig configType, String configId, Class<T> clazz)
@@ -95,4 +100,5 @@ public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersi
     throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
 
   }
+
 }

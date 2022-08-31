@@ -150,4 +150,5 @@ class RemoteDefinitionsProviderTest {
       new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
     });
   }
+
 }
