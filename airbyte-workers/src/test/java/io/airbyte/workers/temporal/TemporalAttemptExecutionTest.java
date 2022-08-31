@@ -7,49 +7,47 @@ package io.airbyte.workers.temporal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.workers.Worker;
 import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
-import javax.sql.DataSource;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+@ExtendWith(MockitoExtension.class)
 class TemporalAttemptExecutionTest {
 
   private static final String JOB_ID = "11";
-  private static final int ATTEMPT_ID = 21;
-  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
+  private static final int ATTEMPT_NUMBER = 1;
+
+  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_NUMBER);
   private static final String SOURCE_USERNAME = "sourceusername";
   private static final String SOURCE_PASSWORD = "hunter2";
 
   private static PostgreSQLContainer<?> container;
   private static Configs configs;
-  private static DataSource dataSource;
-  private static DSLContext dslContext;
 
   private Path jobRoot;
 
@@ -58,6 +56,9 @@ class TemporalAttemptExecutionTest {
 
   private TemporalAttemptExecution<String, String> attemptExecution;
 
+  @Mock
+  private AttemptApi attemptApi;
+
   @BeforeAll
   static void setUpAll() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
@@ -65,20 +66,16 @@ class TemporalAttemptExecutionTest {
         .withPassword(SOURCE_PASSWORD);
     container.start();
     configs = mock(Configs.class);
-
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
   }
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException, DatabaseInitializationException {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
-    final Database jobDatabase = databaseProviders.createNewJobsDatabase();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
+    when(airbyteApiClient.getAttemptApi()).thenReturn(attemptApi);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
-    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
+    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_NUMBER));
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(Consumer.class);
@@ -90,7 +87,7 @@ class TemporalAttemptExecutionTest {
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        jobPersistence,
+        airbyteApiClient,
         () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
@@ -114,6 +111,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter, atLeast(2)).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -125,6 +124,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
   @Test
@@ -135,6 +136,8 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
+    verify(attemptApi, times(1)).setWorkflowInAttempt(
+        argThat(request -> request.getAttemptNumber().equals(ATTEMPT_NUMBER) && request.getJobId().equals(Long.valueOf(JOB_ID))));
   }
 
 }

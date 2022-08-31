@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class StateMessageHelper {
 
@@ -92,6 +93,14 @@ public class StateMessageHelper {
       case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
       default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
     };
+  }
+
+  public static Boolean isMigration(final StateType currentStateType, final Optional<StateWrapper> previousState) {
+    return previousState.isPresent() && isMigration(currentStateType, previousState.get().getStateType());
+  }
+
+  public static Boolean isMigration(final StateType currentStateType, final @Nullable StateType previousStateType) {
+    return previousStateType == StateType.LEGACY && currentStateType != StateType.LEGACY;
   }
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {

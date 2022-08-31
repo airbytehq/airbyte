@@ -8,7 +8,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   createTestSource(sourceName);
   createTestDestination(destinationName);
-  cy.wait(3000);
+  cy.wait(5000);
 
   cy.get("div[data-testid='select-source']").click();
   cy.get("div").contains(sourceName).click();
@@ -16,7 +16,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
   cy.wait("@discoverSchema");
 
   cy.get("input[data-testid='connectionName']").type("Connection name");
-  cy.get("div[data-testid='schedule']").click();
+  cy.get("div[data-testid='scheduleData.basicSchedule']").click();
   cy.get("div[data-testid='Manual']").click();
 
   cy.get("div[data-testid='namespaceDefinition']").click();

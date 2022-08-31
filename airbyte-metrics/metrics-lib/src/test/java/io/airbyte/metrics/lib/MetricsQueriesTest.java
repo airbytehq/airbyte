@@ -24,6 +24,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
@@ -562,6 +563,107 @@ public class MetricsQueriesTest {
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
       assertEquals(0, res.size());
+    }
+
+  }
+
+  @Nested
+  class AbnormalJobsInLastDay {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+      configDb.transaction(ctx -> ctx.truncate(CONNECTION).cascade().execute());
+    }
+
+    @Test
+    @DisplayName("should return correct number for abnormal jobs")
+    void shouldCountInJobsWithMissingRun() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var connectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(connectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 6, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+              .execute());
+
+      // Jobs running in prior day will not be counted
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(5, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      assertEquals(1, abnormalConnectionResult);
+    }
+
+    @Test
+    @DisplayName("normal jobs should not be counted")
+    void shouldNotCountNormalJobsInAbnormalMetric() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var inactiveConnectionId = UUID.randomUUID();
+      final var activeConnectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(inactiveConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.inactive, updateAt, updateAt)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(activeConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(1L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt,
+                  syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(2L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt,
+                  syncConfigType)
+              .execute());
+
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      assertEquals(0, abnormalConnectionResult);
     }
 
   }
