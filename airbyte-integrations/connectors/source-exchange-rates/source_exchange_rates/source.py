@@ -23,11 +23,11 @@ class ExchangeRates(HttpStream):
     cursor_field = date_field_name
     primary_key = ""
 
-    def __init__(self, base: Optional[str], start_date: DateTime, api_key: str, ignore_weekends: Optional[bool]):
+    def __init__(self, base: Optional[str], start_date: DateTime, access_key: str, ignore_weekends: Optional[bool]):
         super().__init__()
         self._base = base
         self._start_date = start_date
-        self.api_key = api_key
+        self.access_key = access_key
         self.ignore_weekends = ignore_weekends
 
     def path(
@@ -45,9 +45,9 @@ class ExchangeRates(HttpStream):
             params["base"] = self._base
 
         return params
-    
+
     def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
-        headers = {"apikey": self.api_key}
+        headers = {"apikey": self.access_key}
 
         return headers
 
@@ -87,12 +87,12 @@ def chunk_date_range(start_date: DateTime, ignore_weekends: bool) -> Iterable[Ma
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            headers = {"apikey": config["api_key"]}
+            headers = {"apikey": config["access_key"]}
             params = {}
             base = config.get("base")
             if base is not None:
                 params["base"] = base
-            
+
             resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params, headers=headers)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
@@ -113,4 +113,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config.get("base"), config["start_date"], config["api_key"], config.get("ignore_weekends", True))]
+        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"], config.get("ignore_weekends", True))]

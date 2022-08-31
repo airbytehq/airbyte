@@ -5,8 +5,8 @@ connectionSpecification:
   type: object
   required:
     - start_date
-    - api_key
-  additionalProperties: false
+    - access_key
+  additionalProperties: true
   properties:
     start_date:
       type: string
@@ -14,7 +14,7 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - YYYY-MM-DD
-    api_key:
+    access_key:
       type: string
       description: >-
         Your API Key. See <a
