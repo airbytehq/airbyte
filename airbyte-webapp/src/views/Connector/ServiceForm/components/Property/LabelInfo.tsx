@@ -23,11 +23,14 @@ const LabelInfo: React.FC<IProps> = ({ property, label }) => {
       <>
         {/* don't use <Text as=h4> here, because we want the default tooltip styling for this header */}
         <h4 className={styles.exampleHeader}>{`Example value${examplesArray.length > 1 ? "s" : ""}`}</h4>
-        <ul className={styles.exampleList}>
+        {examplesArray.map((example) => (
+          <span className={styles.exampleList}>{example}</span>
+        ))}
+        {/* <ul className={styles.exampleList}>
           {examplesArray.map((example) => (
             <li key={example?.toString()}>{example}</li>
           ))}
-        </ul>
+        </ul> */}
       </>
     );
   };

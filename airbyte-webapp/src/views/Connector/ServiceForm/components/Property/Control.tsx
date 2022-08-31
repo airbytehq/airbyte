@@ -27,23 +27,6 @@ export const Control: React.FC<ControlProps> = ({
 }) => {
   const [field, meta, form] = useField(name);
 
-  // TODO: think what to do with other cases
-  let placeholder: string | undefined;
-
-  switch (typeof property.examples) {
-    case "object":
-      if (Array.isArray(property.examples)) {
-        placeholder = `${property.examples[0]}`;
-      }
-      break;
-    case "number":
-      placeholder = `${property.examples}`;
-      break;
-    case "string":
-      placeholder = property.examples;
-      break;
-  }
-
   if (property.type === "array" && !property.enum) {
     return (
       <FieldArray
@@ -74,7 +57,6 @@ export const Control: React.FC<ControlProps> = ({
     return (
       <Multiselect
         name={name}
-        placeholder={placeholder}
         data={data}
         onChange={(dataItems) => form.setValue(dataItems)}
         value={field.value}
@@ -88,7 +70,6 @@ export const Control: React.FC<ControlProps> = ({
     return (
       <DropDown
         {...field}
-        placeholder={placeholder}
         options={property.enum.map((dataItem) => ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
@@ -99,16 +80,7 @@ export const Control: React.FC<ControlProps> = ({
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return (
-      <TextArea
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        value={value ?? ""}
-        rows={3}
-        disabled={disabled}
-      />
-    );
+    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} />;
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
@@ -117,23 +89,9 @@ export const Control: React.FC<ControlProps> = ({
       <ConfirmationControl
         component={
           property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <TextArea
-              {...field}
-              autoComplete="off"
-              placeholder={placeholder}
-              value={value ?? ""}
-              rows={3}
-              disabled={disabled}
-            />
+            <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} />
           ) : (
-            <Input
-              {...field}
-              autoComplete="off"
-              placeholder={placeholder}
-              value={value ?? ""}
-              type="password"
-              disabled={disabled}
-            />
+            <Input {...field} autoComplete="off" value={value ?? ""} type="password" disabled={disabled} />
           )
         }
         showButtons={isFormInEditMode}
@@ -155,14 +113,5 @@ export const Control: React.FC<ControlProps> = ({
   }
   const inputType = property.type === "integer" ? "number" : "text";
 
-  return (
-    <Input
-      {...field}
-      placeholder={placeholder}
-      autoComplete="off"
-      type={inputType}
-      value={value ?? ""}
-      disabled={disabled}
-    />
-  );
+  return <Input {...field} autoComplete="off" type={inputType} value={value ?? ""} disabled={disabled} />;
 };

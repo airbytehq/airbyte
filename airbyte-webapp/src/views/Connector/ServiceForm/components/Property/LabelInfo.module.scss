@@ -1,3 +1,5 @@
+@use "../../../../../scss/colors";
+
 .descriptionHeader {
   margin-top: 0px;
   margin-bottom: 5px;
@@ -9,6 +11,12 @@
 }
 
 .exampleList {
-  margin: 0;
-  padding-left: 20px;
+  width: max-content;
+  max-width: 100%;
+  word-wrap: break-word;
+  margin-top: 5px;
+  padding: 3px 5px 3px 5px;
+  display: block;
+  background-color: colors.$dark-blue-400;
+  border-radius: 3px;
 }
