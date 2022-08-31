@@ -180,7 +180,7 @@ class TiktokStream(HttpStream, ABC):
             data = data[self.response_list_field]
         for record in data:
             yield record
-            
+
     @property
     def url_base(self) -> str:
         """
@@ -341,16 +341,16 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             params.update(next_page_token)
         return params
 
-    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:        
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if not data or not self.cursor_field:
             return None
 
         cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
-        
+
         # backward capability to support old state objects
         if "dimensions" in data:
             cursor_field_path = self.deprecated_cursor_field
-            
+
         result = data
         for key in cursor_field_path:
             result = result.get(key)
@@ -476,7 +476,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
             return ["dimensions", "stat_time_day"]
         if self.report_granularity == ReportGranularity.HOUR:
             return ["dimensions", "stat_time_hour"]
-        return []
+        if self.report_granularity == ReportGranularity.LIFETIME:
+            return ["dimensions", "stat_time_day"]
 
     @property
     def cursor_field(self):
@@ -484,8 +485,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
             return "stat_time_day"
         if self.report_granularity == ReportGranularity.HOUR:
             return "stat_time_hour"
-        return []
-    
+        if self.report_granularity == ReportGranularity.LIFETIME:
+            return "stat_time_day"
+
     @staticmethod
     def _get_time_interval(
         start_date: Union[datetime, str], ending_date: Union[datetime, str], granularity: ReportGranularity
@@ -501,7 +503,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             start_date = pendulum.parse(start_date)
         end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
-        # Snapchat API only allows certain amount of days of data based on the reporting granularity
+        # TikTok API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
             max_interval = 30
         elif granularity == ReportGranularity.HOUR:
@@ -680,18 +682,24 @@ class AdsReports(BasicReports):
 class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
+    primary_key = "advertiser_id"
+    
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
+    primary_key = "campaign_id"
+    
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
 
+    primary_key = "adgroup_id"
+    
     report_level = ReportLevel.ADGROUP
 
 
@@ -721,21 +729,28 @@ class AudienceReport(BasicReports):
 
 class AdGroupAudienceReports(AudienceReport):
 
+    primary_key = "adgroup_id"
+    
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
 
+    
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
 
+    primary_key = "advertiser_id"
+    
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsAudienceReportsByCountry(AudienceReport):
     """Custom reports for campaigns by country"""
 
+    primary_key = "campaign_id"
+    
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
