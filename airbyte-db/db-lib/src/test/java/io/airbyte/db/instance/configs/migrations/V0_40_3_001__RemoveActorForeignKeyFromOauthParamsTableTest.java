@@ -19,7 +19,7 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest extends AbstractConfigsDatabaseTest {
+class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest extends AbstractConfigsDatabaseTest {
 
   @BeforeEach
   void beforeEach() {
