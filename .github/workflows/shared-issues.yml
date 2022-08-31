@@ -1,7 +1,7 @@
 # Adds metadata and labels to issues based on context
 # https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts <-- this gets run
 
-name: "Internal Automation for Issues"
+name: "Add metadata and labels to issues based on context"
 on:
   issues:
     types: [opened, labeled, unlabeled]
