@@ -1,5 +1,6 @@
 @use "../../scss/colors";
 @use "../../scss/variables";
+@use "../../scss/z-indices";
 
 @keyframes fade-in {
   from {
@@ -17,7 +18,8 @@
 }
 
 .modalPageContainer {
-  z-index: 50;
+  position: absolute;
+  z-index: z-indices.$modal;
 }
 
 .modalContainer {
