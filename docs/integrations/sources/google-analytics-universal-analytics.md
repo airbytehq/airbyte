@@ -6,18 +6,22 @@ This page contains the setup guide and reference information for the Google Anal
 
 ### For Airbyte Cloud
 
+To set up Google Sheets as a source in Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown. 
+4. For Name, enter a name for the Google Analytics connector. 
+5. Authenticate your Google account via OAuth or Service Account Key Authentication. 
+    - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
+    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. <!---Make sure the Service Account has the Project Viewer permission. --->
+6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
+8. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
+
 <!---
 Edit from here
 --->
-
-**For Airbyte Cloud:**
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Google Analytics connector and select **Google Analytics** from the Source type dropdown.
-4. Click `OAuth2.0 authorization` then `Authenticate your Google Analytics account`.
-5. Find your View ID for the view you want to fetch data from. Find it [here](https://ga-dev-tools.web.app/account-explorer/).
-6. Enter a start date, and custom report information.
 
 **For Airbyte Open Source:**
 
@@ -88,7 +92,7 @@ Reach out to us on Slack or [create an issue](https://github.com/airbytehq/airby
 
 The Google Analytics connector should not run into the "requests per 100 seconds" limitation under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully and try increasing the `window_in_days` value. 
 
-## Sampling in reports 
+## Sampled data in reports 
 
 If you are not on the Google Analytics 360 tier, the Google Analytics API may return sampled data if the amount of data in your Google Analytics account exceeds Google's [pre-determined compute thresholds](https://support.google.com/analytics/answer/2637192?hl=en&ref_topic=2601030&visit_id=637868645346124317-2833523666&rd=1#thresholds&zippy=%2Cin-this-article). This means the data returned in the report is an estimate which may have some inaccuracy. This [Google page](https://support.google.com/analytics/answer/2637192) provides a comprehensive overview of how Google applies sampling to your data.  
 
