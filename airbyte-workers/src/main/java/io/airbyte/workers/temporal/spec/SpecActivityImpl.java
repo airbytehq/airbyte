@@ -20,36 +20,35 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
+@Singleton
 public class SpecActivityImpl implements SpecActivity {
 
-  private final WorkerConfigs workerConfigs;
-  private final ProcessFactory processFactory;
-  private final Path workspaceRoot;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final AirbyteApiClient airbyteApiClient;
-  private final String airbyteVersion;
-
-  public SpecActivityImpl(final WorkerConfigs workerConfigs,
-                          final ProcessFactory processFactory,
-                          final Path workspaceRoot,
-                          final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs,
-                          final AirbyteApiClient airbyteApiClient,
-                          final String airbyteVersion) {
-    this.workerConfigs = workerConfigs;
-    this.processFactory = processFactory;
-    this.workspaceRoot = workspaceRoot;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.airbyteApiClient = airbyteApiClient;
-    this.airbyteVersion = airbyteVersion;
-  }
+  @Inject
+  @Named("specWorkerConfigs")
+  private WorkerConfigs workerConfigs;
+  @Inject
+  @Named("specProcessFactory")
+  private ProcessFactory processFactory;
+  @Inject
+  @Named("workspaceRoot")
+  private Path workspaceRoot;
+  @Inject
+  private WorkerEnvironment workerEnvironment;
+  @Inject
+  private LogConfigs logConfigs;
+  @Inject
+  private AirbyteApiClient airbyteApiClient;
+  @Value("${airbyte.version}")
+  private String airbyteVersion;
 
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {

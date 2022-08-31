@@ -10,7 +10,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -62,6 +61,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final boolean useStreamCapableState;
+  private final Integer serverPort;
 
   public AsyncOrchestratorPodProcess(
                                      final KubePodInfo kubePodInfo,
@@ -70,7 +70,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final String secretName,
                                      final String secretMountPath,
                                      final String googleApplicationCredentials,
-                                     final boolean useStreamCapableState) {
+                                     final boolean useStreamCapableState,
+                                     final Integer serverPort) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
@@ -79,6 +80,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.useStreamCapableState = useStreamCapableState;
+    this.serverPort = serverPort;
   }
 
   public Optional<String> getOutput() {
@@ -287,7 +289,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
-    containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
+    containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
