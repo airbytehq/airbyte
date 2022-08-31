@@ -29,6 +29,8 @@ The TiDB source does not alter the schema present in your database. Depending on
 2. Allow connections from Airbyte to your TiDB database \(if they exist in separate VPCs\)
 3. (Optional) Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
+**Note:** When connecting to [TiDB Cloud](https://en.pingcap.com/tidb-cloud/) with TLS enabled, you need to specify TLS protocol, such as `enabledTLSProtocols=TLSv1.2` or `enabledTLSProtocols=TLSv1.3` in the JDBC parameters.
+
 ### Setup guide
 
 #### 1. Make sure your database is accessible from the machine running Airbyte

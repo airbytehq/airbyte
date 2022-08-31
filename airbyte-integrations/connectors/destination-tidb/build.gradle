@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.tidb.TiDBDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation libs.connectors.testcontainers.tidb
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-tidb')
+
+    integrationTestJavaImplementation libs.connectors.testcontainers.tidb
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+}

@@ -353,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date       | Pull Request | Subject                                                                    |
 |:----------------|:----------------------|:-----------| :--- |:---------------------------------------------------------------------------|
+|                 | 0.2.20                | 2022-08-30 | [\#15592](https://github.com/airbytehq/airbyte/pull/15592) | Add TiDB support                                                           |
 |                 | 0.2.19                | 2022-08-21 | [\#14897](https://github.com/airbytehq/airbyte/pull/14897) | Update Clickhouse DBT to 1.1.7                                             |
 |                 | 0.2.16                | 2022-08-04 | [\#14295](https://github.com/airbytehq/airbyte/pull/14295) | Fixed SSH tunnel port usage                                                |
 |                 | 0.2.14                | 2022-08-01 | [\#14790](https://github.com/airbytehq/airbyte/pull/14790) | Add and persist job failures for Normalization                             |
