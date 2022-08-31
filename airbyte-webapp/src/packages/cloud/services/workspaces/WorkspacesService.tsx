@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "react-query";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import type { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
 import { SCOPE_USER } from "services/Scope";

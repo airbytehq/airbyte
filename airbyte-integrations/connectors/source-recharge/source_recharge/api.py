@@ -74,6 +74,10 @@ class IncrementalRechargeStream(RechargeStream, ABC):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
 
+    @property
+    def state_checkpoint_interval(self):
+        return self.limit
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
@@ -103,6 +107,20 @@ class Charges(IncrementalRechargeStream):
     """
     Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
     """
+
+    def get_stream_data(self, response_data: Any) -> List[dict]:
+        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
+        # Cast these down to int if possible, and error if not.
+        data = super().get_stream_data(response_data)
+        for record in data:
+            if "total_weight" in record:
+                total_weight = record["total_weight"]
+                int_total_weight = int(total_weight)
+                if total_weight == int_total_weight:
+                    record["total_weight"] = int_total_weight
+                else:
+                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
+        return data
 
 
 class Collections(RechargeStream):
@@ -144,6 +162,20 @@ class Orders(IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     """
+
+    def get_stream_data(self, response_data: Any) -> List[dict]:
+        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
+        # Cast these down to int if possible, and error if not.
+        data = super().get_stream_data(response_data)
+        for record in data:
+            if "total_weight" in record:
+                total_weight = record["total_weight"]
+                int_total_weight = int(total_weight)
+                if total_weight == int_total_weight:
+                    record["total_weight"] = int_total_weight
+                else:
+                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
+        return data
 
 
 class Products(RechargeStream):

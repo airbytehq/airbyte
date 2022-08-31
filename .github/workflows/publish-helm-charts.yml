@@ -1,0 +1,91 @@
+name: Publish Helm OSS charts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+on:
+  push:
+    branches: 
+      - 'master'
+    paths:
+      - 'charts/**'
+  workflow_dispatch:
+
+jobs:
+  generate-semantic-version:
+    name: Generate semantic version
+    runs-on: ubuntu-22.04
+    outputs:
+      next-version: ${{ steps.sem-ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - uses: paulhatch/semantic-version@v4.0.3
+        id: sem-ver
+        with:
+          tag_prefix: "v"
+          major_pattern: "feat:"
+          minor_pattern: "fix:"
+          format: "${major}.${minor}.${patch}"
+          change_path: "./charts"
+          bump_each_commit: true
+
+  release-chart:
+    name: Chart release
+    runs-on: ubuntu-22.04
+    needs: ["generate-semantic-version"]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: "airbyte"
+          fetch-depth: 0
+
+      - uses: actions/checkout@v3
+        with:
+          repository: "airbytehq/helm-charts"
+          token: ${{ secrets.OCTAVIA_PAT }}
+          path: "airbyte-oss"
+
+      - name: Replace semantic version in main chart for deps
+        shell: bash
+        working-directory: ./airbyte/charts
+        run: |
+          sed -i "s/    version: placeholder/    version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" airbyte/Chart.yaml
+
+      - name: "Helm package"
+        shell: bash
+        run: |
+          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker")
+          for val in ${StringArray[@]}; do
+            cd ./airbyte/charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
+            helm package ./airbyte/charts/${val} -d airbyte-oss  --version ${{ needs.generate-semantic-version.outputs.next-version }}
+          done
+          helm repo index airbyte-oss/
+      
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
+          add: '.'
+          cwd: './airbyte-oss/'
+
+      - name: "Helm package main chart"
+        shell: bash
+        run: |
+          echo "Waiting for published charts to be synced in helm-charts repo"
+          sleep 300
+          declare -a StringArray=("airbyte")
+          for val in ${StringArray[@]}; do
+            cd ./airbyte/charts/${val} && cat Chart.yaml && helm dep update && cd $GITHUB_WORKSPACE
+            helm package ./airbyte/charts/${val} -d airbyte-oss  --version ${{ needs.generate-semantic-version.outputs.next-version }}
+          done
+          helm repo index airbyte-oss/
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
+          add: '.'
+          cwd: './airbyte-oss/'
+      

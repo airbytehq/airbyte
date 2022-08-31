@@ -227,17 +227,6 @@
     },
     {
       "stream": {
-        "name": "property_history",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "default_cursor_field": ["timestamp"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["timestamp"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "quotes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

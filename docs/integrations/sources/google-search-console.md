@@ -68,7 +68,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 5. Fill in the `start date` field.
 6. You should be ready to sync data.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 1. Fill in the `service_account_info` and `email` fields for authentication. 
 2. Fill in the `site_urls` field. 
@@ -119,6 +119,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date | Pull Request | Subject |
 |:---------| :--- | :--- | :--- |
+| `0.1.13`  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
 | `0.1.12`  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | `0.1.11` | 2022-01-05 | [9186](https://github.com/airbytehq/airbyte/pull/9186) [9194](https://github.com/airbytehq/airbyte/pull/9194) | Fix incremental sync: keep all urls in state object |
 | `0.1.10` | 2021-12-23 | [9073](https://github.com/airbytehq/airbyte/pull/9073) | Add slicing by date range |

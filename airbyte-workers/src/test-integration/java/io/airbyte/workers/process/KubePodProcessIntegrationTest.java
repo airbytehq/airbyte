@@ -82,9 +82,6 @@ public class KubePodProcessIntegrationTest {
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
-  private static final String ENV_KEY = "ENV_VAR_1";
-  private static final String ENV_VALUE = "ENV_VALUE_1";
-  private static final Map<String, String> ENV_MAP = ImmutableMap.of(ENV_KEY, ENV_VALUE);
 
   private WorkerHeartbeatServer server;
 

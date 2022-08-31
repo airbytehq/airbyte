@@ -9,10 +9,10 @@ will only read and output new records based on their `created_at` timestamp.
 
 This Source is capable of syncing the following core resources, each of which has a separate Stream. Note that all of the streams are incremental:
 
-* [Subscriptions]( https://docs.withorb.com/reference/list-subscriptions)
-* [Plans](https://docs.withorb.com/reference/list-plans)
-* [Customers](https://docs.withorb.com/reference/list-customers) 
-* [Credits Ledger Entries](https://docs.withorb.com/reference/view-credits-ledger)
+* [Subscriptions](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-subscriptions)
+* [Plans](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-plans)
+* [Customers](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-customers)
+* [Credits Ledger Entries](https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-customer-credit-ledger)
 
 
 As a caveat, the Credits Ledger Entries must read all Customers for an incremental sync, but will only incrementally return new ledger entries for each customers.
@@ -52,6 +52,7 @@ an Orb Account and API Key.
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.1.3 | 2022-08-26 | [16017](https://github.com/airbytehq/airbyte/pull/16017) | Add credit block id to ledger entries
 | 0.1.2 | 2022-04-20 | [11528](https://github.com/airbytehq/airbyte/pull/11528) | Add cost basis to ledger entries, update expiration date, sync only committed entries
 | 0.1.1 | 2022-03-03 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Support ledger entries with numeric properties + schema fixes
 | 0.1.0 | 2022-02-01 | | New Source: Orb

@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
@@ -7,7 +7,7 @@ import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
-import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
+import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import useRouter from "hooks/useRouter";
@@ -29,7 +29,7 @@ import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
@@ -56,8 +56,23 @@ export const CloudRoutes = {
 } as const;
 
 const MainRoutes: React.FC = () => {
+  const { setWorkspaceFeatures } = useFeatureService();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+
+  useEffect(() => {
+    const outOfCredits =
+      cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD ||
+      cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
+    // If the workspace is out of credits it doesn't allow creation of new connections
+    // or syncing existing connections.
+    setWorkspaceFeatures(
+      outOfCredits ? ({ [FeatureItem.AllowCreateConnection]: false, [FeatureItem.AllowSync]: false } as FeatureSet) : []
+    );
+    return () => {
+      setWorkspaceFeatures(undefined);
+    };
+  }, [cloudWorkspace.creditStatus, setWorkspaceFeatures]);
 
   const analyticsContext = useMemo(
     () => ({
@@ -69,17 +84,6 @@ const MainRoutes: React.FC = () => {
   useAnalyticsRegisterValues(analyticsContext);
 
   const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
-
-  const features = useMemo(
-    () =>
-      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD &&
-      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_MAX_THRESHOLD
-        ? [{ id: FeatureItem.AllowCreateConnection }, { id: FeatureItem.AllowSync }]
-        : null,
-    [cloudWorkspace]
-  );
-
-  useFeatureRegisterValues(features);
 
   return (
     <ApiErrorBoundary>
@@ -132,7 +136,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
+  const { user, inited, providers } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -152,7 +156,7 @@ export const Routing: React.FC = () => {
     [user]
   );
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId);
+  useAnalyticsIdentifyUser(user?.userId, { providers });
   useTrackPageAnalytics();
 
   if (!inited) {

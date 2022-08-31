@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,7 +52,6 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -67,10 +67,12 @@ import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.ErrorCode;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
@@ -91,8 +93,6 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_DOCKER_REPO = "dstimage";
   private static final String DESTINATION_DOCKER_TAG = "tag";
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
-
-  private static final String OPERATION_NAME = "transfo";
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -128,7 +128,6 @@ class SchedulerHandlerTest {
   private JobPersistence jobPersistence;
   private EventRunner eventRunner;
   private JobConverter jobConverter;
-  private StatePersistence statePersistence;
 
   @BeforeEach
   void setup() {
@@ -144,7 +143,6 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
-    statePersistence = mock(StatePersistence.class);
     eventRunner = mock(EventRunner.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
@@ -241,7 +239,6 @@ class SchedulerHandlerTest {
     final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId =
         new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
-    final SynchronousResponse<ConnectorSpecification> specResponse = (SynchronousResponse<ConnectorSpecification>) jobResponse;
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("name")
         .withDockerRepository(SOURCE_DOCKER_REPO)
@@ -585,6 +582,25 @@ class SchedulerHandlerTest {
     schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     verify(eventRunner).startNewManualSync(connectionId);
+  }
+
+  @Test
+  void testSyncConnectionFailWithOtherSyncRunning() throws IOException {
+    final UUID connectionId = UUID.randomUUID();
+
+    final ManualOperationResult manualOperationResult = ManualOperationResult
+        .builder()
+        .failingReason(Optional.of("another sync running"))
+        .jobId(Optional.empty())
+        .errorCode(Optional.of(ErrorCode.WORKFLOW_RUNNING))
+        .build();
+
+    when(eventRunner.startNewManualSync(connectionId))
+        .thenReturn(manualOperationResult);
+
+    assertThrows(ValueConflictKnownException.class,
+        () -> schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId)));
+
   }
 
   @Test

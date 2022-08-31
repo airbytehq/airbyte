@@ -387,6 +387,14 @@ class FbaInventoryReports(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
+class FbaStorageFeesReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
+    """
+
+    name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
+
+
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
@@ -421,6 +429,14 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
+
+
+class RestockInventoryReports(ReportsAmazonSPStream):
+    """
+    Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
+    """
+
+    name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
 
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
@@ -830,3 +846,94 @@ class ListFinancialEvents(FinanceStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from [response.json().get(self.data_field, {}).get("FinancialEvents", {})]
+
+
+class FbaCustomerReturnsReports(ReportsAmazonSPStream):
+
+    name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        replication_start_date = pendulum.parse(self._replication_start_date)
+
+        data = {
+            "reportType": self.name,
+            "marketplaceIds": [self.marketplace_id],
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
+        }
+        return data
+
+
+class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
+
+    name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+
+    def _create_report(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+
+        # For backwards
+
+        return {"reportId": stream_slice.get("report_id")}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        From https://developer-docs.amazon.com/sp-api/docs/report-type-values
+        documentation:
+        ```Settlement reports cannot be requested or scheduled.
+            They are automatically scheduled by Amazon.
+            You can search for these reports using the getReports operation.
+        ```
+        """
+
+        strict_start_date = pendulum.now("utc").subtract(days=90)
+
+        create_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
+        end_date = pendulum.parse(self._replication_end_date or pendulum.now("utc").date().to_date_string())
+
+        if end_date < strict_start_date:
+            end_date = pendulum.now("utc")
+
+        params = {
+            "reportTypes": self.name,
+            "pageSize": 100,
+            "createdSince": create_date.strftime(DATE_TIME_FORMAT),
+            "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
+        }
+        unique_records = list()
+        complete = False
+
+        while not complete:
+
+            request_headers = self.request_headers()
+            get_reports = self._create_prepared_request(
+                http_method="GET",
+                path=f"{self.path_prefix}/reports",
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=params,
+            )
+            report_response = self._send_request(get_reports)
+            response = report_response.json()
+            data = response.get(self.data_field, list())
+
+            records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
+            unique_records += records
+            reports = [{"report_id": report_id} for report_id in records]
+
+            yield from reports
+
+            next_value = response.get("nextToken", None)
+            params = {"nextToken": next_value}
+            if not next_value:
+                complete = True

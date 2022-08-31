@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.api.model.generated.AdvancedAuth;
@@ -58,21 +59,25 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.ErrorCode;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SchedulerHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
+
+  private static final ImmutableSet<ErrorCode> VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET =
+      ImmutableSet.of(ErrorCode.WORKFLOW_DELETED, ErrorCode.WORKFLOW_RUNNING);
 
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
@@ -218,7 +223,8 @@ public class SchedulerHandler {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
       if (response.isSuccess()) {
-        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
         returnValue.catalogId(catalogId);
       }
       return returnValue;
@@ -381,7 +387,11 @@ public class SchedulerHandler {
 
   private JobInfoRead readJobFromResult(final ManualOperationResult manualOperationResult) throws IOException, IllegalStateException {
     if (manualOperationResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+      if (VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET.contains(manualOperationResult.getErrorCode().get())) {
+        throw new ValueConflictKnownException(manualOperationResult.getFailingReason().get());
+      } else {
+        throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+      }
     }
 
     final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());

@@ -1,0 +1,155 @@
+
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  configMapName: ""
+  secretName: ""
+  extraContainers: []
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+
+
+enabled: true
+## @param temporal.replicaCount The number of temporal replicas to deploy
+replicaCount: 1
+
+## @param temporal.image.repository The temporal image repository to use
+## @param temporal.image.pullPolicy The pull policy for the temporal image
+## @param temporal.image.tag The temporal image tag to use
+image:
+  repository: temporalio/auto-setup
+  pullPolicy: IfNotPresent
+  tag: "1.7.0"
+
+## @param temporal.service.type The Kubernetes Service Type
+## @param temporal.service.port The temporal port and exposed kubernetes port
+service:
+  type: ClusterIP
+  port: 7233
+
+## @param temporal.podAnnotations [object] Add extra annotations to the temporal pod
+##
+podAnnotations: {}
+
+## @param temporal.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## @param temporal.extraInitContainers Additional InitContainers to initialize the pod
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraInitContainers:
+##   - name: config-loader
+##     image: temporalio/auto-setup:1.7.0
+##     command:
+##       - /bin/sh
+##       - -c
+##       - >-
+##         find /etc/temporal/config/ -maxdepth 1 -mindepth 1 -exec cp -ar {} /config/ \;
+##     volumeMounts:
+##       - name: config
+##         mountPath: /config
+extraInitContainers: []
+
+## Configure extra options for the temporal containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param temporal.livenessProbe.enabled Enable livenessProbe on the temporal
+## @param temporal.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param temporal.livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param temporal.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param temporal.livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param temporal.livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param temporal.readinessProbe.enabled Enable readinessProbe on the temporal
+## @param temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param temporal.readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param temporal.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param temporal.readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param temporal.readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param temporal.nodeSelector [object] Node labels for temporal pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## @param temporal.tolerations [array] Tolerations for temporal pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## @param temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
+## Example:
+##
+## extraEnv:
+## - name: SAMPLE_ENV_VAR
+##   value: "key=sample-value"
+extraEnv: []
+
+## @param temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##   - name: config
+##     mountPath: /etc/temporal/config
+##
+extraVolumeMounts: []
+
+## @param temporal.extraVolumes [array] Additional volumes for temporal pod(s).
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##  - name: config
+##    emptyDir: {}
+##
+extraVolumes: []
+
+## Temporal resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param temporal.resources.limits [object] The resources limits for temporal pod(s)
+## @param temporal.resources.requests [object] The requested resources for temporal pod(s)
+resources:
+  ## Example:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+
+extraContainers: []

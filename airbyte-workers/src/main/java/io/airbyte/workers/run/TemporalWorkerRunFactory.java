@@ -97,11 +97,4 @@ public class TemporalWorkerRunFactory {
     return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
 
-  private OutputAndStatus<JobOutput> toOutputAndStatusConnector() {
-    // Since we are async we technically can't fail
-    final JobStatus status = JobStatus.SUCCEEDED;
-
-    return new OutputAndStatus<>(status, new JobOutput().withSync(null));
-  }
-
 }

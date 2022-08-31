@@ -238,6 +238,14 @@ class CollectionContents(WebflowStream):
         for schema_property in schema_records:
             json_schema.update(schema_property)
 
+        # Manually add in _cid and _id, which are not included in the list of fields sent back from Webflow,
+        # but which are necessary for joining data in the database
+        extra_fields = {
+            "_id": {"type": ["null", "string"]},
+            "_cid": {"type": ["null", "string"]},
+        }
+        json_schema.update(extra_fields)
+
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,

@@ -1,6 +1,9 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
 
+// The buildscript block defines dependencies in order for .gradle file evaluation.
+// This is separate from application dependencies.
+// See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
     repositories {
         maven {
@@ -9,6 +12,14 @@ buildscript {
     }
     dependencies {
         classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
+        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
+        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
+        // Since api generation is only used in the airbyte-api module and the base gradle files
+        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
+        // the bmuschko plugin and thus placing an older jackson version on the class path.
+        // The alternative is to import the openapi plugin for all modules.
+        // This might need to be updated when we change openapi plugin versions.
+        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     }
 }
 
@@ -99,6 +110,7 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template-oracle',
         'dbt-project-template-clickhouse',
         'dbt-project-template-snowflake',
+        'dbt-project-template-tidb',
         'dbt_test_config',
         'normalization_test_output',
         'tools',
@@ -146,6 +158,7 @@ check.dependsOn 'spotlessApply'
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+        // This is currently only used for connectors.
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
         def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
@@ -153,8 +166,8 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
-        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
+        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
+        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:19-slim-bullseye" : "amd64/openjdk:19-slim-bullseye"
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -237,6 +250,9 @@ subprojects {
         }
         maven {
             url 'https://jitpack.io'
+        }
+        maven {
+            url 'https://maven.twttr.com'
         }
     }
 

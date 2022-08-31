@@ -12,7 +12,6 @@ const windowConfigProvider: ConfigProvider = async () => {
     },
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
-    isDemo: window.IS_DEMO === "true",
     // cloud only start
     // TODO: remove when infra team supports proper webapp building
     cloud: window.CLOUD === "true",

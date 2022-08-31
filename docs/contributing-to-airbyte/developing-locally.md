@@ -28,7 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-
 To compile and build just the platform \(not all the connectors\):
 
 ```bash
@@ -108,7 +107,19 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-If you are working on an individual connectors run: `./gradlew :airbyte-integrations:<directory the connector is in e.g. source-postgres>:format`.
+To format an individual connector in python, run:
+
+```
+ ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+
+For instance:
+
+```
+./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+```
+
+To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
@@ -211,3 +222,7 @@ For example:
 ```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
+
+### Inspecting the messages passed between connectors
+
+You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker-compose up`

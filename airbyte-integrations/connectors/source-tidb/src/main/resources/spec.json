@@ -5,10 +5,10 @@
     "title": "TiDB Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "Hostname of the database.",
+        "title": "Host",
         "type": "string",
         "order": 0
       },
@@ -30,6 +30,7 @@
       },
       "username": {
         "description": "Username to use to access the database.",
+        "title": "Username",
         "type": "string",
         "order": 3
       },

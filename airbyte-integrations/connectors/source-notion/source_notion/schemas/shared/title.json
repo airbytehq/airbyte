@@ -1,119 +1,66 @@
 {
   "properties": {
     "type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "text": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "additionalProperties": false,
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "text": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "content": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "link": {
-                "type": [
-                  "null",
-                  "object"
-                ],
-                "additionalProperties": false,
+                "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {
                   "type": {
-                    "enum": [
-                      "url"
-                    ]
+                    "enum": ["url"]
                   },
                   "url": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 }
               }
             }
           },
           "annotations": {
-            "type": [
-              "null",
-              "object"
-            ],
-            "additionalProperties": false,
+            "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "bold": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "italic": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "strikethrough": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "underline": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "code": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "color": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
           "plain_text": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "href": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       }

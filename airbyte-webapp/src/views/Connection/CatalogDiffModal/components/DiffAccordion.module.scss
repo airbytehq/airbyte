@@ -1,0 +1,20 @@
+@use "../../../../scss/variables";
+@forward "../components/StreamRow.module.scss";
+@forward "../components/DiffSection.module.scss";
+
+.accordionContainer {
+  width: 100%;
+}
+
+.accordionButton {
+  width: 100%;
+  background: none;
+  border: none;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: variables.$spacing-sm;
+  font-weight: 400;
+}
