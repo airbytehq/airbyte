@@ -10,12 +10,18 @@
   margin-bottom: 5px;
 }
 
-.exampleList {
+.exampleContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  row-gap: 7px;
+  column-gap: 7px;
+}
+
+.exampleItem {
   width: max-content;
   max-width: 100%;
-  margin-top: 5px;
   padding: 3px 5px 3px 5px;
-  display: block;
-  background-color: colors.$dark-blue-900;
+  background-color: colors.$dark-blue-400;
   border-radius: 3px;
 }
