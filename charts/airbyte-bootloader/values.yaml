@@ -13,6 +13,8 @@ global:
   database:
     secretName: ""
     secretValue: ""
+  secrets: {}
+  env_vars: {}
 
 
 enabled: true
@@ -61,3 +63,7 @@ resources:
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
+extraEnv: []
+secrets: {}
+env_vars: {}
+

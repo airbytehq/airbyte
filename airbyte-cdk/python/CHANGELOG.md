@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+- Update Airbyte Protocol model to support protocol_version
+
+## 0.1.80
+- Add NoAuth to declarative registry and auth parse bug fix
+
+## 0.1.79
+- Fix yaml schema parsing when running from docker container
+
+## 0.1.78
+- Fix yaml config parsing when running from docker container
+
+## 0.1.77
+- Add schema validation for declarative YAML connector configs
+
+## 0.1.76
+- Bugfix: Correctly set parent slice stream for sub-resource streams
+
+## 0.1.75
+- Improve `filter_secrets` skip empty secret
+
+## 0.1.74
+- Replace JelloRecordExtractor with DpathRecordExtractor
+
 ## 0.1.73
 - Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
 

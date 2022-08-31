@@ -13,6 +13,9 @@ import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.model.generated.ConnectionScheduleData;
+import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
+import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SyncMode;
@@ -30,6 +33,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,6 +109,11 @@ public class ConnectionHelpers {
         .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
+  public static ConnectionScheduleData generateBasicConnectionScheduleData() {
+    return new ConnectionScheduleData().basicSchedule(
+        new ConnectionScheduleDataBasicSchedule().timeUnit(ConnectionScheduleDataBasicSchedule.TimeUnitEnum.DAYS).units(BASIC_SCHEDULE_UNITS));
+  }
+
   public static ScheduleData generateBasicScheduleData() {
     return new ScheduleData().withBasicSchedule(new BasicSchedule()
         .withTimeUnit(BasicSchedule.TimeUnit.fromValue((BASIC_SCHEDULE_DATA_TIME_UNITS)))
@@ -128,6 +137,8 @@ public class ConnectionHelpers {
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
+        .scheduleType(ConnectionScheduleType.BASIC)
+        .scheduleData(generateBasicConnectionScheduleData())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
@@ -175,11 +186,8 @@ public class ConnectionHelpers {
     if (standardSync.getStatus() != null) {
       connectionRead.status(io.airbyte.api.model.generated.ConnectionStatus.fromValue(standardSync.getStatus().value()));
     }
-    if (standardSync.getSchedule() != null) {
-      connectionRead.schedule(new io.airbyte.api.model.generated.ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
-    }
+    ApiPojoConverters.populateConnectionReadSchedule(standardSync, connectionRead);
+
     if (standardSync.getCatalog() != null) {
       connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
     }
@@ -245,6 +253,7 @@ public class ConnectionHelpers {
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
+        .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 

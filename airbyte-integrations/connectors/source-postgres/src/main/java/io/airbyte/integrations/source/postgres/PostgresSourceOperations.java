@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -328,6 +326,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @VisibleForTesting
   static String parseMoneyValue(final String moneyString) {
     return moneyString.replaceAll("[^\\d.-]", "");
+  }
+
+  @Override
+  public boolean isCursorType(JDBCType type) {
+    return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 
 }

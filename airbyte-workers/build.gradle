@@ -11,6 +11,8 @@ configurations {
 }
 
 dependencies {
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
+    implementation 'com.auth0:java-jwt:3.19.2'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'
@@ -23,6 +25,7 @@ dependencies {
     implementation libs.micrometer.statsd
 
     implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
@@ -33,6 +36,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
     implementation project(':airbyte-scheduler:scheduler-models')
+    implementation project(':airbyte-api')
 
     testImplementation 'io.temporal:temporal-testing:1.8.1'
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'

@@ -219,9 +219,14 @@ font-style: italic;
 
   <h3>Table of Contents </h3>
   <div class="method-summary"></div>
+  <h4><a href="#Attempt">Attempt</a></h4>
+  <ul>
+  <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
+  </ul>
   <h4><a href="#Connection">Connection</a></h4>
   <ul>
   <li><a href="#createConnection"><code><span class="http-method">post</span> /v1/connections/create</code></a></li>
+  <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#deleteConnection"><code><span class="http-method">post</span> /v1/connections/delete</code></a></li>
   <li><a href="#getConnection"><code><span class="http-method">post</span> /v1/connections/get</code></a></li>
   <li><a href="#getState"><code><span class="http-method">post</span> /v1/state/get</code></a></li>
@@ -282,6 +287,11 @@ font-style: italic;
   <h4><a href="#Health">Health</a></h4>
   <ul>
   <li><a href="#getHealthCheck"><code><span class="http-method">get</span> /v1/health</code></a></li>
+  </ul>
+  <h4><a href="#Internal">Internal</a></h4>
+  <ul>
+  <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
+  <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
@@ -369,7 +379,6 @@ font-style: italic;
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
-  <li><a href="#webBackendUpdateConnectionNew"><code><span class="http-method">post</span> /v1/web_backend/connections/updateNew</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
   <ul>
@@ -383,6 +392,59 @@ font-style: italic;
   <li><a href="#updateWorkspaceName"><code><span class="http-method">post</span> /v1/workspaces/update_name</code></a></li>
   </ul>
 
+  <h1><a name="Attempt">Attempt</a></h1>
+  <div class="method"><a name="setWorkflowInAttempt"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></pre></div>
+    <div class="method-summary">For worker to register the workflow id in attempt. (<span class="nickname">setWorkflowInAttempt</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetWorkflowInAttemptRequestBody <a href="#SetWorkflowInAttemptRequestBody">SetWorkflowInAttemptRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Connection">Connection</a></h1>
   <div class="method"><a name="createConnection"/>
     <div class="method-path">
@@ -470,7 +532,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -484,6 +556,88 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#ConnectionRead">ConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createOrUpdateState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/create_or_update</code></pre></div>
+    <div class="method-summary">Create or update the state for a connection. (<span class="nickname">createOrUpdateState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionStateCreateOrUpdate <a href="#ConnectionStateCreateOrUpdate">ConnectionStateCreateOrUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionState">ConnectionState</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "globalState" : {
+    "streamStates" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "streamState" : [ {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  }, {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -623,7 +777,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -870,7 +1034,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -922,7 +1096,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -1032,7 +1216,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -1084,7 +1278,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -1369,7 +1573,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -1421,7 +1635,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -1702,7 +1926,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -4025,6 +4259,141 @@ font-style: italic;
         <a href="#HealthCheckRead">HealthCheckRead</a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Internal">Internal</a></h1>
+  <div class="method"><a name="createOrUpdateState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/create_or_update</code></pre></div>
+    <div class="method-summary">Create or update the state for a connection. (<span class="nickname">createOrUpdateState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionStateCreateOrUpdate <a href="#ConnectionStateCreateOrUpdate">ConnectionStateCreateOrUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionState">ConnectionState</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "globalState" : {
+    "streamStates" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "streamState" : [ {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  }, {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setWorkflowInAttempt"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></pre></div>
+    <div class="method-summary">For worker to register the workflow id in attempt. (<span class="nickname">setWorkflowInAttempt</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetWorkflowInAttemptRequestBody <a href="#SetWorkflowInAttemptRequestBody">SetWorkflowInAttemptRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
   <div class="method"><a name="cancelJob"/>
     <div class="method-path">
@@ -5026,7 +5395,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       
-      map[String, Object]
+      map[String, oas_any_type_not_mapped]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5042,7 +5411,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#map[String, Object]">map[String, Object]</a>
+        
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -5079,7 +5448,7 @@ font-style: italic;
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       
-      map[String, Object]
+      map[String, oas_any_type_not_mapped]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -5095,7 +5464,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#map[String, Object]">map[String, Object]</a>
+        
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -8151,7 +8520,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -8350,7 +8729,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -8613,7 +9002,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
@@ -8759,7 +9158,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -8963,7 +9372,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
@@ -9109,7 +9528,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -9313,7 +9742,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
@@ -9459,7 +9898,17 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ]
+    "operationIds" : [ null, null ],
+    "scheduleData" : {
+      "cron" : {
+        "cronExpression" : "cronExpression",
+        "cronTimeZone" : "cronTimeZone"
+      },
+      "basicSchedule" : {
+        "units" : 6,
+        "timeUnit" : "minutes"
+      }
+    }
   } ]
 }</code></pre>
 
@@ -9659,206 +10108,17 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="webBackendUpdateConnectionNew"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/updateNew</code></pre></div>
-    <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnectionNew</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">WebBackendConnectionUpdate <a href="#WebBackendConnectionUpdate">WebBackendConnectionUpdate</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "latestSyncJobCreatedAt" : 0,
-  "prefix" : "prefix",
-  "destination" : {
-    "connectionConfiguration" : {
-      "user" : "charles"
+  "operationIds" : [ null, null ],
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
     },
-    "destinationName" : "destinationName",
-    "name" : "name",
-    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-  },
-  "isSyncing" : true,
-  "source" : {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "connectionConfiguration" : {
-      "user" : "charles"
-    },
-    "name" : "name",
-    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "sourceName" : "sourceName",
-    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-  },
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "catalogDiff" : {
-    "transforms" : [ {
-      "streamDescriptor" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
-      "transformType" : "add_stream",
-      "updateStream" : [ {
-        "updateFieldSchema" : { },
-        "fieldName" : [ "fieldName", "fieldName" ],
-        "addField" : { },
-        "transformType" : "add_field",
-        "removeField" : { }
-      }, {
-        "updateFieldSchema" : { },
-        "fieldName" : [ "fieldName", "fieldName" ],
-        "addField" : { },
-        "transformType" : "add_field",
-        "removeField" : { }
-      } ]
-    }, {
-      "streamDescriptor" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
-      "transformType" : "add_stream",
-      "updateStream" : [ {
-        "updateFieldSchema" : { },
-        "fieldName" : [ "fieldName", "fieldName" ],
-        "addField" : { },
-        "transformType" : "add_field",
-        "removeField" : { }
-      }, {
-        "updateFieldSchema" : { },
-        "fieldName" : [ "fieldName", "fieldName" ],
-        "addField" : { },
-        "transformType" : "add_field",
-        "removeField" : { }
-      } ]
-    } ]
-  },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
-  "operations" : [ {
-    "name" : "name",
-    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "operatorConfiguration" : {
-      "normalization" : {
-        "option" : "basic"
-      },
-      "dbt" : {
-        "gitRepoBranch" : "gitRepoBranch",
-        "dockerImage" : "dockerImage",
-        "dbtArguments" : "dbtArguments",
-        "gitRepoUrl" : "gitRepoUrl"
-      }
-    },
-    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-  }, {
-    "name" : "name",
-    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "operatorConfiguration" : {
-      "normalization" : {
-        "option" : "basic"
-      },
-      "dbt" : {
-        "gitRepoBranch" : "gitRepoBranch",
-        "dockerImage" : "dockerImage",
-        "dbtArguments" : "dbtArguments",
-        "gitRepoUrl" : "gitRepoUrl"
-      }
-    },
-    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-  } ],
-  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "name" : "name",
-  "syncCatalog" : {
-    "streams" : [ {
-      "stream" : {
-        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "namespace" : "namespace",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-      },
-      "config" : {
-        "aliasName" : "aliasName",
-        "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true,
-        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-      }
-    }, {
-      "stream" : {
-        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "namespace" : "namespace",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-      },
-      "config" : {
-        "aliasName" : "aliasName",
-        "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true,
-        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-      }
-    } ]
-  },
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ]
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  }
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -10516,8 +10776,13 @@ font-style: italic;
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
     <li><a href="#ConnectionReadList"><code>ConnectionReadList</code> - </a></li>
     <li><a href="#ConnectionSchedule"><code>ConnectionSchedule</code> - </a></li>
+    <li><a href="#ConnectionScheduleData"><code>ConnectionScheduleData</code> - </a></li>
+    <li><a href="#ConnectionScheduleData_basicSchedule"><code>ConnectionScheduleData_basicSchedule</code> - </a></li>
+    <li><a href="#ConnectionScheduleData_cron"><code>ConnectionScheduleData_cron</code> - </a></li>
+    <li><a href="#ConnectionScheduleType"><code>ConnectionScheduleType</code> - </a></li>
     <li><a href="#ConnectionSearch"><code>ConnectionSearch</code> - </a></li>
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
+    <li><a href="#ConnectionStateCreateOrUpdate"><code>ConnectionStateCreateOrUpdate</code> - </a></li>
     <li><a href="#ConnectionStateType"><code>ConnectionStateType</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
@@ -10557,6 +10822,7 @@ font-style: italic;
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
+    <li><a href="#InternalOperationResult"><code>InternalOperationResult</code> - </a></li>
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
@@ -10602,6 +10868,7 @@ font-style: italic;
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
+    <li><a href="#SetWorkflowInAttemptRequestBody"><code>SetWorkflowInAttemptRequestBody</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a></li>
@@ -10833,7 +11100,7 @@ font-style: italic;
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
-<div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
+<div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -10844,7 +11111,7 @@ font-style: italic;
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
-<div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
+<div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -10861,6 +11128,8 @@ font-style: italic;
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -10887,6 +11156,8 @@ font-style: italic;
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -10910,6 +11181,38 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="ConnectionScheduleData"><code>ConnectionScheduleData</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>schedule for when the the connection should run, per the schedule type</div>
+    <div class="field-items">
+      <div class="param">basicSchedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData_basicSchedule">ConnectionScheduleData_basicSchedule</a></span>  </div>
+<div class="param">cron (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData_cron">ConnectionScheduleData_cron</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionScheduleData_basicSchedule"><code>ConnectionScheduleData_basicSchedule</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">timeUnit </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">minutes</div><div class="param-enum">hours</div><div class="param-enum">days</div><div class="param-enum">weeks</div><div class="param-enum">months</div>
+<div class="param">units </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionScheduleData_cron"><code>ConnectionScheduleData_cron</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">cronExpression </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">cronTimeZone </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionScheduleType"><code>ConnectionScheduleType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>determine how the schedule data should be interpreted</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="ConnectionSearch"><code>ConnectionSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -10921,6 +11224,8 @@ font-style: italic;
 <div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
 <div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
@@ -10935,6 +11240,14 @@ font-style: italic;
 <div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#StateBlob">StateBlob</a></span>  </div>
 <div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
 <div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#GlobalState">GlobalState</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionStateCreateOrUpdate"><code>ConnectionStateCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionState </div><div class="param-desc"><span class="param-type"><a href="#ConnectionState">ConnectionState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10961,6 +11274,8 @@ font-style: italic;
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -11282,6 +11597,13 @@ font-style: italic;
     <div class="field-items">
       <div class="param">resourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="InternalOperationResult"><code>InternalOperationResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">succeeded </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11648,7 +11970,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11656,7 +11978,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SetWorkflowInAttemptRequestBody"><code>SetWorkflowInAttemptRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">attemptNumber </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">workflowId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11923,6 +12254,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
@@ -11942,6 +12275,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
@@ -11982,6 +12317,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
 <div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
@@ -11999,9 +12336,10 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
-<div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>

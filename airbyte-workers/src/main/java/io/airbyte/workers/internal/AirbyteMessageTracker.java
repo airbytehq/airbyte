@@ -17,16 +17,18 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -34,20 +36,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AirbyteMessageTracker implements MessageTracker {
 
-  private static final long STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES = 20L * 1024L * 1024L; // 20 MiB, ~10% of default cloud worker memory
+  private static final long STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES = 10L * 1024L * 1024L; // 10 MiB, ~5% of default cloud worker memory
+  private static final long STATE_METRICS_TRACKER_MESSAGE_LIMIT = 873813L; // 12 bytes per message tracked, maximum of 10MiB of memory
 
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
-  private final AtomicLong totalEmittedStateMessages;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamNameToIndex;
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
   private final StateDeltaTracker stateDeltaTracker;
+  private final StateMetricsTracker stateMetricsTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
+  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   private short nextStreamIndex;
 
@@ -56,6 +60,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    * not returned.
    */
   private boolean unreliableCommittedCounts;
+  /**
+   * If the StateMetricsTracker throws an exception, this flag is set to true and the metrics around
+   * max and mean time between state message emitted and committed are unreliable
+   */
+  private boolean unreliableStateTimingMetrics;
 
   private enum ConnectorType {
     SOURCE,
@@ -64,22 +73,26 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   public AirbyteMessageTracker() {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
-        new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()));
+        new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()),
+        new StateMetricsTracker(STATE_METRICS_TRACKER_MESSAGE_LIMIT));
   }
 
   @VisibleForTesting
-  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker, final StateAggregator stateAggregator) {
+  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker,
+                                  final StateAggregator stateAggregator,
+                                  final StateMetricsTracker stateMetricsTracker) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
-    this.totalEmittedStateMessages = new AtomicLong(0L);
     this.streamToRunningCount = new HashMap<>();
     this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.streamToTotalBytesEmitted = new HashMap<>();
     this.streamToTotalRecordsEmitted = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
+    this.stateMetricsTracker = stateMetricsTracker;
     this.nextStreamIndex = 0;
     this.unreliableCommittedCounts = false;
+    this.unreliableStateTimingMetrics = false;
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
     this.stateAggregator = stateAggregator;
@@ -87,6 +100,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
+    logMessageAsJSON("source", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
@@ -97,6 +112,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public void acceptFromDestination(final AirbyteMessage message) {
+    logMessageAsJSON("destination", message);
+
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
@@ -109,6 +126,10 @@ public class AirbyteMessageTracker implements MessageTracker {
    * total byte count for the record's stream.
    */
   private void handleSourceEmittedRecord(final AirbyteRecordMessage recordMessage) {
+    if (stateMetricsTracker.getFirstRecordReceivedAt() == null) {
+      stateMetricsTracker.setFirstRecordReceivedAt(LocalDateTime.now());
+    }
+
     final short streamIndex = getStreamIndex(recordMessage.getStream());
 
     final long currentRunningCount = streamToRunningCount.getOrDefault(streamIndex, 0L);
@@ -129,18 +150,28 @@ public class AirbyteMessageTracker implements MessageTracker {
    * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
+    final LocalDateTime timeEmittedStateMessage = LocalDateTime.now();
+    stateMetricsTracker.updateMaxAndMeanSecondsToReceiveStateMessage(timeEmittedStateMessage);
     sourceOutputState.set(new State().withState(stateMessage.getData()));
-    totalEmittedStateMessages.incrementAndGet();
+    stateMetricsTracker.incrementTotalSourceEmittedStateMessages();
     final int stateHash = getStateHashCode(stateMessage);
+
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
+      }
+      if (!unreliableStateTimingMetrics) {
+        stateMetricsTracker.addState(stateMessage, stateHash, timeEmittedStateMessage);
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
+    } catch (final StateMetricsTracker.StateMetricsTrackerOomException e) {
+      log.warn("The StateMetricsTracker encountered an out of memory error that prevents new state metrics from being recorded");
+      log.warn("This only affects metrics and does not indicate a problem with actual sync data.");
+      unreliableStateTimingMetrics = true;
     }
     streamToRunningCount.clear();
   }
@@ -150,17 +181,32 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
+    final LocalDateTime timeCommitted = LocalDateTime.now();
+    stateMetricsTracker.incrementTotalDestinationEmittedStateMessages();
     stateAggregator.ingest(stateMessage);
     destinationOutputState.set(stateAggregator.getAggregated());
+    final int stateHash = getStateHashCode(stateMessage);
+
     try {
       if (!unreliableCommittedCounts) {
-        stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
+        stateDeltaTracker.commitStateHash(stateHash);
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
+    }
+
+    try {
+      if (!unreliableStateTimingMetrics) {
+        stateMetricsTracker.updateStates(stateMessage, stateHash, timeCommitted);
+      }
+    } catch (final StateMetricsTrackerNoStateMatchException e) {
+      log.warn("The state message tracker was unable to match the destination state message to a corresponding source state message.");
+      log.warn("This only impacts metrics and does not indicate a problem with actual sync data.");
+      log.warn(e.getMessage(), e);
+      unreliableStateTimingMetrics = true;
     }
   }
 
@@ -192,7 +238,14 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
-    return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
+    if (AirbyteStateType.GLOBAL == stateMessage.getType()) {
+      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getGlobal()).getBytes(Charsets.UTF_8)).hashCode();
+    } else if (AirbyteStateType.STREAM == stateMessage.getType()) {
+      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getStream().getStreamState()).getBytes(Charsets.UTF_8)).hashCode();
+    } else {
+      // state type is LEGACY
+      return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
+    }
   }
 
   @Override
@@ -315,8 +368,54 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public Long getTotalStateMessagesEmitted() {
-    return totalEmittedStateMessages.get();
+  public Long getTotalSourceStateMessagesEmitted() {
+    return stateMetricsTracker.getTotalSourceStateMessageEmitted();
+  }
+
+  @Override
+  public Long getTotalDestinationStateMessagesEmitted() {
+    return stateMetricsTracker.getTotalDestinationStateMessageEmitted();
+  }
+
+  @Override
+  public Long getMaxSecondsToReceiveSourceStateMessage() {
+    return stateMetricsTracker.getMaxSecondsToReceiveSourceStateMessage();
+  }
+
+  @Override
+  public Long getMeanSecondsToReceiveSourceStateMessage() {
+    return stateMetricsTracker.getMeanSecondsToReceiveSourceStateMessage();
+  }
+
+  @Override
+  public Optional<Long> getMaxSecondsBetweenStateMessageEmittedAndCommitted() {
+    if (unreliableStateTimingMetrics) {
+      return Optional.empty();
+    }
+
+    return Optional.of(stateMetricsTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted());
+  }
+
+  @Override
+  public Optional<Long> getMeanSecondsBetweenStateMessageEmittedAndCommitted() {
+    if (unreliableStateTimingMetrics) {
+      return Optional.empty();
+    }
+
+    return Optional.of(stateMetricsTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted());
+  }
+
+  @Override
+  public Boolean getUnreliableStateTimingMetrics() {
+    return unreliableStateTimingMetrics;
+  }
+
+  private void logMessageAsJSON(final String caller, AirbyteMessage message) {
+    if (!logConnectorMessages) {
+      return;
+    }
+
+    log.info(caller + " message | " + Jsons.serialize(message));
   }
 
 }

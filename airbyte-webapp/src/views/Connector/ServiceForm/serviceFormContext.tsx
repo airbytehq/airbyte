@@ -25,6 +25,7 @@ interface ServiceFormContext {
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
   validationSchema: AnySchema;
+  authErrors: Record<string, string>;
 }
 
 const serviceFormContext = React.createContext<ServiceFormContext | null>(null);
@@ -63,7 +64,8 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   validationSchema,
   isEditMode,
 }) => {
-  const { values, resetForm } = useFormikContext<ServiceFormValues>();
+  const { values, resetForm, getFieldMeta, submitCount } = useFormikContext<ServiceFormValues>();
+
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
   const { serviceType } = values;
@@ -83,18 +85,31 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
 
   const authFieldsToHide = useMemo(
     () =>
-      Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
-        makeConnectionConfigurationPath(f.path_in_connector_config)
-      ),
-    [selectedConnector]
+      isAuthFlowSelected
+        ? Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
+            makeConnectionConfigurationPath(f.path_in_connector_config)
+          )
+        : [],
+    [selectedConnector, isAuthFlowSelected]
   );
 
+  const authErrors = useMemo(() => {
+    // key of field path, value of error code
+    return authFieldsToHide.reduce<Record<string, string>>((authErrors, fieldName) => {
+      const { error } = getFieldMeta(fieldName);
+      if (submitCount > 0 && error) {
+        authErrors[fieldName] = error;
+      }
+      return authErrors;
+    }, {});
+  }, [authFieldsToHide, getFieldMeta, submitCount]);
   const ctx = useMemo<ServiceFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
+      authErrors,
       widgetsInfo,
       isAuthFlowSelected,
-      authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
+      authFieldsToHide,
       getValues,
       setUiWidgetsInfo,
       selectedService,
@@ -120,6 +135,7 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
       },
     };
   }, [
+    authErrors,
     widgetsInfo,
     isAuthFlowSelected,
     authFieldsToHide,

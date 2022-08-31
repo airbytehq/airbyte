@@ -44,11 +44,11 @@ def test_source_wrong_credentials():
 
 
 def test_messages_stream_request_params(mock_pendulum_now):
-    start_time = 1558359837
+    start_time = 1558359830
     stream = Messages(start_time)
     state = {"last_event_time": 1558359000}
     request_params = stream.request_params(state)
     assert (
         request_params
-        == "query=last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T06%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222021-12-31T16%3A00%3A00Z%22&limit=1000"
+        == "query=last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T13%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222022-01-01T00%3A00%3A00Z%22&limit=1000"
     )

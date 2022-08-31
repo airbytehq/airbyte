@@ -31,7 +31,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
 
   const formatBytes = (bytes?: number) => {
     if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
+      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
     }
 
     const k = 1024;
@@ -99,7 +99,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
         ) : null}
       </div>
       {isFailed && (
-        <div>
+        <div className={styles.truncate}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",

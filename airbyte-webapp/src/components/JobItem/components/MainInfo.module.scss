@@ -8,12 +8,14 @@
   .titleCell {
     display: flex;
     color: colors.$dark-blue;
+    min-width: 0;
 
     .statusIcon {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 75px;
+      min-width: 75px;
 
       & > div {
         margin: 0;
@@ -28,8 +30,23 @@
 
     .justification {
       display: flex;
+      flex-grow: 1;
       flex-direction: column;
       justify-content: center;
+      min-width: 0;
+    }
+  }
+
+  &.open {
+    .arrow {
+      transform: rotate(-0deg);
+    }
+  }
+
+  &.failed {
+    .arrow,
+    .lastAttempt {
+      color: colors.$red;
     }
   }
 
@@ -52,24 +69,11 @@
       font-size: 22px;
       margin: 0 30px 0 50px;
 
+      div:hover > &,
       div:hover > div > &,
-      div:hover > div > div > &,
-      div:hover > & {
+      div:hover > div > div > & {
         opacity: 1;
       }
-    }
-  }
-
-  &.open {
-    .arrow {
-      transform: rotate(-0deg);
-    }
-  }
-
-  &.failed {
-    .arrow,
-    .lastAttempt {
-      color: colors.$red;
     }
   }
 

@@ -3,12 +3,6 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
 }
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://maven.twttr.com")
-    }
-}
 
 application {
     mainClass = 'io.airbyte.integrations.destination.s3.S3Destination'

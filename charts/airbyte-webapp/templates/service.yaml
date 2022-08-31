@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "common.names.fullname" . }}
+  name: airbyte-webapp-svc
   {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
