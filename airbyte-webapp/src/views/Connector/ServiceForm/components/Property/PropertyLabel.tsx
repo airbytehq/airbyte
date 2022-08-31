@@ -24,7 +24,7 @@ const PropertyLabel: React.FC<LabelMessageProps> = ({ property, label, error, to
     <ControlLabels
       labelAdditionLength={0}
       label={label}
-      infoMessage={<LabelInfo property={property} error={error} touched={touched} />}
+      infoMessage={<LabelInfo property={property} label={label} />}
       errorMessage={displayError ? errorMessage : undefined}
       required={property.isRequired}
     >

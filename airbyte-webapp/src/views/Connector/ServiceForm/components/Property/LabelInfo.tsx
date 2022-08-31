@@ -8,11 +8,10 @@ import styles from "./LabelInfo.module.scss";
 
 interface IProps {
   property: FormBaseItem;
-  error: string | undefined;
-  touched: boolean;
+  label: React.ReactNode;
 }
 
-const LabelInfo: React.FC<IProps> = ({ property }) => {
+const LabelInfo: React.FC<IProps> = ({ property, label }) => {
   const constructExamples = () => {
     if (!property.examples) {
       return null;
@@ -23,7 +22,7 @@ const LabelInfo: React.FC<IProps> = ({ property }) => {
     return (
       <>
         {/* don't use <Text as=h4> here, because we want the default tooltip styling for this header */}
-        <h4 className={styles.exampleHeader}>{examplesArray.length > 1 ? "Examples" : "Example"}</h4>
+        <h4 className={styles.exampleHeader}>{`Example value${examplesArray.length > 1 ? "s" : ""}`}</h4>
         <ul className={styles.exampleList}>
           {examplesArray.map((example) => (
             <li key={example?.toString()}>{example}</li>
@@ -33,11 +32,12 @@ const LabelInfo: React.FC<IProps> = ({ property }) => {
     );
   };
 
-  const message = property.description ? <TextWithHTML text={property.description} /> : null;
+  const description = property.description ? <TextWithHTML text={property.description} /> : null;
 
   return (
     <>
-      {message}
+      <h4 className={styles.descriptionHeader}>{label}</h4>
+      {description}
       {constructExamples()}
     </>
   );

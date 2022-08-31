@@ -30,7 +30,11 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
       nextLine={props.nextLine}
     >
       {props.label}
-      {props.infoMessage && <InfoTooltip placement="top-start">{props.infoMessage}</InfoTooltip>}
+      {props.infoMessage && (
+        <InfoTooltip className={styles.tooltip} placement="top-start">
+          {props.infoMessage}
+        </InfoTooltip>
+      )}
       {!props.required && (
         <Text size="sm" className={styles.optionalText}>
           Optional
