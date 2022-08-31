@@ -10,22 +10,25 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
-import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
+import javax.inject.Singleton;
 
+@Singleton
 public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
-
-  private final CheckConnectionActivity activity =
-      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
 
   private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
   private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
+
+  @TemporalActivityStub(activityOptionsBeanName = "checkActivityOptions")
+  private CheckConnectionActivity activity;
 
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig launcherConfig,
                                 final StandardCheckConnectionInput connectionConfiguration) {
+
     final CheckConnectionInput checkInput = new CheckConnectionInput(jobRunConfig, launcherConfig, connectionConfiguration);
 
     final int jobOutputVersion =

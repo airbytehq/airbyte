@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.Configs;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -16,6 +16,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Value;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.DateTimeException;
@@ -25,21 +26,28 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
-import lombok.AllArgsConstructor;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
 
+  @Inject
   private ConfigRepository configRepository;
+  @Inject
   private JobPersistence jobPersistence;
-  private Configs configs;
+  @Value("${airbyte.worker.sync.max-attempts}")
+  private Integer syncJobMaxAttempts;
+  @Inject
+  @Named("currentSecondsSupplier")
   private Supplier<Long> currentSecondsSupplier;
 
   @Override
@@ -64,7 +72,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `scheduleType` and `scheduleData` fields.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final StandardSync standardSync, UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final StandardSync standardSync, final UUID connectionId) throws IOException {
     if (standardSync.getScheduleType() == ScheduleType.MANUAL || standardSync.getStatus() != Status.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
@@ -103,7 +111,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         final Duration timeToWait = Duration.ofSeconds(
             Math.max(0, nextRunStart.getTime() / MS_PER_SECOND - currentSecondsSupplier.get()));
         return new ScheduleRetrieverOutput(timeToWait);
-      } catch (ParseException e) {
+      } catch (final ParseException e) {
         throw (DateTimeException) new DateTimeException(e.getMessage()).initCause(e);
       }
     }
@@ -117,7 +125,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `schedule` field.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final StandardSync standardSync, UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final StandardSync standardSync, final UUID connectionId) throws IOException {
     if (standardSync.getSchedule() == null || standardSync.getStatus() != Status.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
@@ -144,7 +152,27 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
-    return new GetMaxAttemptOutput(configs.getSyncJobMaxAttempts());
+    return new GetMaxAttemptOutput(syncJobMaxAttempts);
+  }
+
+  @VisibleForTesting
+  void setConfigRepository(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
+  }
+
+  @VisibleForTesting
+  void setJobPersistence(final JobPersistence jobPersistence) {
+    this.jobPersistence = jobPersistence;
+  }
+
+  @VisibleForTesting
+  void setSyncJobMaxAttempts(final Integer syncJobMaxAttempts) {
+    this.syncJobMaxAttempts = syncJobMaxAttempts;
+  }
+
+  @VisibleForTesting
+  void setCurrentSecondsSupplier(final Supplier<Long> currentSecondsSupplier) {
+    this.currentSecondsSupplier = currentSecondsSupplier;
   }
 
 }

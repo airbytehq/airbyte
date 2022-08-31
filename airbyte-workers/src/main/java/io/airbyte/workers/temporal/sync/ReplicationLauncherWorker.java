@@ -10,7 +10,8 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerApp;
+import io.airbyte.workers.ContainerOrchestratorConfig;
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
 import java.util.UUID;
@@ -29,12 +30,14 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
   public ReplicationLauncherWorker(final UUID connectionId,
-                                   final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                                   final ContainerOrchestratorConfig containerOrchestratorConfig,
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
                                    final JobRunConfig jobRunConfig,
                                    final ResourceRequirements resourceRequirements,
-                                   final Supplier<ActivityExecutionContext> activityContext) {
+                                   final Supplier<ActivityExecutionContext> activityContext,
+                                   final Integer serverPort,
+                                   final TemporalUtils temporalUtils) {
     super(
         connectionId,
         REPLICATION,
@@ -46,7 +49,9 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
         containerOrchestratorConfig,
         resourceRequirements,
         ReplicationOutput.class,
-        activityContext);
+        activityContext,
+        serverPort,
+        temporalUtils);
   }
 
 }

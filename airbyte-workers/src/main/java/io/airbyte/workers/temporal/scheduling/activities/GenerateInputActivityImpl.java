@@ -15,14 +15,20 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
+@Singleton
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
+  @Inject
   private JobPersistence jobPersistence;
 
   @Override
@@ -61,7 +67,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                 List.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION)));
       }
 
-      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
+      final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
