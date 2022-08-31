@@ -6,7 +6,8 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_pinterest.source import PinterestStream
+from airbyte_cdk.models import SyncMode
+from source_pinterest.source import Boards, PinterestStream
 
 
 @pytest.fixture
@@ -72,3 +73,40 @@ def test_backoff_time(patch_base_class):
     stream = PinterestStream(config=MagicMock())
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_backoff_strategy_on_rate_limit_error(requests_mock):
+    board_1 = {
+        "id": "549755885175",
+        "name": "Summer Recipes",
+        "description": "My favorite summer recipes",
+        "privacy": "PUBLIC"
+    }
+    board_2 = {
+        "id": "549755885176",
+        "name": "Crazy Cats",
+        "description": "These cats are crazy",
+        "privacy": "PUBLIC"
+    }
+    responses = [
+        {
+            "json": {"items": [board_1], "bookmark": "123"},
+            "status_code": 200,
+        },
+        {
+            "headers": {"X-RateLimit-Reset": "1"},
+            "status_code": 429,
+        },
+        {
+            "json": {"items": [board_2]},
+            "status_code": 200,
+        }
+    ]
+    requests_mock.register_uri("GET", "https://api.pinterest.com/v5/boards", responses)
+
+    records = []
+    for record in Boards(config=MagicMock()).read_records(sync_mode=SyncMode.full_refresh):
+        records.append(record)
+
+    assert board_1 in records
+    assert board_2 in records
