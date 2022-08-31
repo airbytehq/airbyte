@@ -63,7 +63,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       sourceCatalogId: catalogId,
     });
 
-    push(`../${createdConnection.connectionId}`);
+    push(`../../connections/${createdConnection.connectionId}`);
   };
 
   const onFrequencySelect = (item: IDataItem | null) => {
