@@ -151,7 +151,9 @@ class Spec(pydantic.BaseModel):
         description=(
             "Dimensions allow a user to break down metrics into "
             "groups using one or several parameters. For example, "
-            "the number of installs by date, country and network."
+            "the number of installs by date, country and network. "
+            "See https://help.adjust.com/en/article/reports-endpoint#dimensions "
+            "for more information about the dimensions."
         ),
         min_items=1,
         order=4,

@@ -19,7 +19,8 @@ connectionSpecification:
     dimensions:
       description: Dimensions allow a user to break down metrics into groups using
         one or several parameters. For example, the number of installs by date, country
-        and network.
+        and network. See https://help.adjust.com/en/article/reports-endpoint#dimensions
+        for more information about the dimensions.
       items:
         enum:
         - os_name
