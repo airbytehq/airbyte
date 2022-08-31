@@ -43,7 +43,12 @@ class TestBaseConfig:
                         "properties": {
                             "count": {"title": "Count", "type": "integer"},
                             "name": {"title": "Name", "type": "string"},
-                            "selected_strategy": {"const": "option1", "title": "Selected " "Strategy", "type": "string"},
+                            "selected_strategy": {
+                                "const": "option1",
+                                "default": "option1",
+                                "title": "Selected " "Strategy",
+                                "type": "string",
+                            },
                         },
                         "required": ["name", "count"],
                         "title": "Choice1",
@@ -51,7 +56,12 @@ class TestBaseConfig:
                     },
                     {
                         "properties": {
-                            "selected_strategy": {"const": "option2", "title": "Selected " "Strategy", "type": "string"},
+                            "selected_strategy": {
+                                "const": "option2",
+                                "default": "option2",
+                                "title": "Selected " "Strategy",
+                                "type": "string",
+                            },
                             "sequence": {"items": {"type": "string"}, "title": "Sequence", "type": "array"},
                         },
                         "required": ["sequence"],
