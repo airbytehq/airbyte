@@ -3,6 +3,7 @@ body, html {
     height: 100%;
     width: 100%;
 }
+
 noscript {
     box-sizing: border-box;
     background: #F8F8FF;
@@ -13,13 +14,14 @@ noscript {
     align-items: center;
     flex-direction: column;
 }
+
 .card {
     width: 100%;
     max-width: 600px;
     padding: 50px 10px;
-    background: #FFFFFF;
+    background: #FFF;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 25%);
     border: 1px solid #E8E8ED;
     margin-top: 20px;
     text-align: center;
@@ -44,6 +46,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */ url("/fonts/inter/Inter-Regular.svg#OpenSans")
     format("svg"); /* Legacy iOS */
+
     font-weight: normal;
     font-style: normal;
 }
@@ -61,6 +64,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */ url("/fonts/inter/Inter-Medium.svg#OpenSans")
     format("svg"); /* Legacy iOS */
+
     font-weight: 500;
     font-style: normal;
 }
@@ -77,6 +81,7 @@ noscript {
         /* Modern Browsers */ url("/fonts/inter/Inter-Bold.ttf") format("truetype"),
         /* Safari, Android, iOS */ url("/fonts/inter/Inter-Bold.svg#OpenSans")
     format("svg"); /* Legacy iOS */
+
     font-weight: bold;
     font-style: normal;
 }
@@ -95,6 +100,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */
     url("/fonts/montserrat/Montserrat-Bold.svg#OpenSans") format("svg"); /* Legacy iOS */
+
     font-weight: bold;
     font-style: normal;
 }
@@ -114,6 +120,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */
     url("/fonts/montserrat/Montserrat-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
+
     font-weight: normal;
     font-style: normal;
 }
@@ -133,6 +140,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */
     url("/fonts/robotoMono/RobotoMono-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
+
     font-weight: normal;
     font-style: normal;
 }
@@ -152,6 +160,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */
     url("/fonts/courierPrime/CourierPrime-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
+
     font-weight: normal;
     font-style: normal;
 }
@@ -171,6 +180,7 @@ noscript {
     format("truetype"),
         /* Safari, Android, iOS */
     url("/fonts/shrikhand/Shrikhand-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
+
     font-weight: normal;
     font-style: normal;
 }
