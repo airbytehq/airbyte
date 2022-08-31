@@ -26,7 +26,7 @@ const LabelInfo: React.FC<IProps> = ({ property }) => {
         <h4 className={styles.exampleHeader}>{examplesArray.length > 1 ? "Examples" : "Example"}</h4>
         <ul className={styles.exampleList}>
           {examplesArray.map((example) => (
-            <li>{example}</li>
+            <li key={example?.toString()}>{example}</li>
           ))}
         </ul>
       </>

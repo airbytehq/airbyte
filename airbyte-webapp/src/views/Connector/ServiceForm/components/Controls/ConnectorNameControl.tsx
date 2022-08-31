@@ -2,9 +2,11 @@ import { useField } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Input, ControlLabels } from "components";
+import { Input } from "components";
 
 import { FormBaseItem } from "core/form/types";
+
+import { PropertyLabel } from "../Property/PropertyLabel";
 
 interface ConnnectorNameControlProps {
   property: FormBaseItem;
@@ -17,12 +19,16 @@ export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ pro
   const [field, fieldMeta] = useField(property.path);
 
   return (
-    <ControlLabels
-      error={!!fieldMeta.error && fieldMeta.touched}
+    <PropertyLabel
+      property={{
+        ...property,
+        description: formatMessage({
+          id: `form.${formType}Name.message`,
+        }),
+      }}
       label={<FormattedMessage id={`form.${formType}Name`} />}
-      message={formatMessage({
-        id: `form.${formType}Name.message`,
-      })}
+      touched={fieldMeta.touched}
+      error={fieldMeta.error}
     >
       <Input
         {...field}
@@ -33,6 +39,6 @@ export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ pro
         })}
         disabled={disabled}
       />
-    </ControlLabels>
+    </PropertyLabel>
   );
 };

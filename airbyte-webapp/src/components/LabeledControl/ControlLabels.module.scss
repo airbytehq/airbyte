@@ -5,7 +5,15 @@
   display: inline-block;
 }
 
+.optionalText {
+  display: inline;
+  color: colors.$grey-300;
+  font-style: oblique;
+  padding-left: 5px;
+}
+
 .errorMessage {
+  display: inline;
   color: colors.$red-400;
-  padding-bottom: 5px;
+  padding-left: 5px;
 }

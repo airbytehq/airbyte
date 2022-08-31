@@ -17,6 +17,7 @@ export interface ControlLabelsProps {
   labelAdditionLength?: number;
   label?: React.ReactNode;
   infoMessage?: React.ReactNode;
+  required?: boolean;
 }
 
 const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
@@ -30,8 +31,13 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
     >
       {props.label}
       {props.infoMessage && <InfoTooltip placement="top-start">{props.infoMessage}</InfoTooltip>}
+      {!props.required && (
+        <Text size="sm" className={styles.optionalText}>
+          Optional
+        </Text>
+      )}
+      {props.errorMessage && <Text className={styles.errorMessage}>{props.errorMessage}</Text>}
     </Label>
-    {props.errorMessage && <Text className={styles.errorMessage}>{props.errorMessage}</Text>}
     {props.children}
   </div>
 );

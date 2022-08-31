@@ -248,6 +248,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
         label={formatMessage({
           id: `form.${formType}Type`,
         })}
+        required
       >
         <DropDown
           {...field}

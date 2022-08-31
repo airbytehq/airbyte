@@ -11,13 +11,10 @@ interface LabelMessageProps {
   property: FormBaseItem;
   error: string | undefined;
   touched: boolean;
+  label: React.ReactNode;
 }
 
-const Label: React.FC<LabelMessageProps> = ({ property, error, touched, children }) => {
-  const labelText = property.title || property.fieldKey;
-  const labelRequiredAppendix = property.isRequired ? " *" : "";
-  const label = `${labelText}${labelRequiredAppendix}`;
-
+const PropertyLabel: React.FC<LabelMessageProps> = ({ property, label, error, touched, children }) => {
   const displayError = !!error && touched;
 
   const errorValues = error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
@@ -29,10 +26,11 @@ const Label: React.FC<LabelMessageProps> = ({ property, error, touched, children
       label={label}
       infoMessage={<LabelInfo property={property} error={error} touched={touched} />}
       errorMessage={displayError ? errorMessage : undefined}
+      required={property.isRequired}
     >
       {children}
     </ControlLabels>
   );
 };
 
-export { Label };
+export { PropertyLabel };

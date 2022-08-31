@@ -7,7 +7,7 @@ import { FormBaseItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
-import { Label } from "../Property/Label";
+import { PropertyLabel } from "../Property/PropertyLabel";
 
 interface PropertySectionProps {
   property: FormBaseItem;
@@ -26,11 +26,13 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     return <>{overriddenComponent(property, { disabled })}</>;
   }
 
+  const labelText = property.title || property.fieldKey;
+
   if (property.type === "boolean") {
     return (
       <LabeledSwitch
         {...field}
-        label={property.title || property.fieldKey}
+        label={labelText}
         message={<TextWithHTML text={property.description} />}
         value={field.value ?? property.default}
         disabled={disabled}
@@ -39,7 +41,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
   }
 
   return (
-    <Label property={property} touched={meta.touched} error={meta.error}>
+    <PropertyLabel property={property} label={labelText} touched={meta.touched} error={meta.error}>
       <Control
         property={property}
         name={propertyPath}
@@ -48,7 +50,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
         unfinishedFlows={unfinishedFlows}
         disabled={disabled}
       />
-    </Label>
+    </PropertyLabel>
   );
 };
 
