@@ -7,6 +7,7 @@ import logging
 import os
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
 from airbyte_cdk.connector import _WriteConfigProtocol
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -36,6 +37,7 @@ from .streams import (
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
@@ -48,12 +50,21 @@ class SourceAmazonAds(AbstractSource):
         self.write_config(config, config_path)
         return config
 
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        try:
+            self._validate_and_transform(config)
+        except Exception as e:
+            return False, str(e)
         # Check connection by sending list of profiles request. Its most simple
         # request, not require additional parameters and usually has few data
         # in response body.
@@ -67,6 +78,7 @@ class SourceAmazonAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
+        self._validate_and_transform(config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
         # All data for individual Amazon Ads stream divided into sets of data for
