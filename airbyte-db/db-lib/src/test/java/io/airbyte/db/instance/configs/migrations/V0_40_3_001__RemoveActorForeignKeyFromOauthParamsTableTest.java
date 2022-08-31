@@ -7,20 +7,35 @@ package io.airbyte.db.instance.configs.migrations;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import java.io.IOException;
 import java.sql.SQLException;
+import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest extends AbstractConfigsDatabaseTest {
 
+  @BeforeEach
+  void beforeEach() {
+    final Flyway flyway =
+        FlywayFactory.create(dataSource, "V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest", ConfigsDatabaseMigrator.DB_IDENTIFIER,
+            ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final ConfigsDatabaseMigrator configsDbMigrator = new ConfigsDatabaseMigrator(database, flyway);
+
+    final V0_39_17_001__AddStreamDescriptorsToStateTable previousMigration = new V0_39_17_001__AddStreamDescriptorsToStateTable();
+    final DevDatabaseMigrator devConfigsDbMigrator = new DevDatabaseMigrator(configsDbMigrator, previousMigration.getVersion());
+    devConfigsDbMigrator.createBaseline();
+  }
+
   @Test
   void test() throws IOException, SQLException {
     final DSLContext context = getDslContext();
-    V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);
-
     assertTrue(foreignKeyExists(context));
     V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable.removeActorDefinitionForeignKey(context);
     assertFalse(foreignKeyExists(context));
