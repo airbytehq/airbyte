@@ -102,7 +102,10 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
                 else:  # Additional user-provided metrics are assumed to be decimal
                     type_ = decimal.Decimal
                 if type_ in (int, decimal.Decimal):
-                    row[k] = type_(v)
+                    try:
+                        row[k] = type_(v)
+                    except TypeError:
+                        self.logger.warning("Unable to convert field '%s': %s to %s, leaving '%s' as is", k, v, type_.__name__, k)
 
             return row
 
