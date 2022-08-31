@@ -187,8 +187,8 @@ def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected)
 @pytest.mark.parametrize(
     "granularity, cursor_field_expected",
     [
-        (Daily, ["stat_time_day"]),
-        (Hourly, ["stat_time_hour"]),
+        (Daily, "stat_time_day"),
+        (Hourly, "stat_time_hour"),
         (Lifetime, []),
     ],
 )
