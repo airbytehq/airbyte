@@ -3,6 +3,6 @@
   "api_token": "token",
   "metrics": ["installs", "clicks"],
   "dimensions": ["app", "network"],
-  "additional_metrics": []
+  "additional_metrics": [],
   "until_today": true
 }
