@@ -42,12 +42,7 @@ export const LogsDetails: React.FC<{
     <LogHeader>
       <LogPath>{path}</LogPath>
       <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
-      {jobDebugInfo && (
-        <>
-          <DownloadButton jobDebugInfo={jobDebugInfo} fileName={`logs-${id}`} />
-          {/* <DebugInfoButton jobDebugInfo={jobDebugInfo} /> pending Platform updates discussed in https://github.com/airbytehq/airbyte/issues/15947 */}
-        </>
-      )}
+      {jobDebugInfo && <DownloadButton jobDebugInfo={jobDebugInfo} fileName={`logs-${id}`} />}
     </LogHeader>
     <LogsTable logsArray={logs} />
   </>
