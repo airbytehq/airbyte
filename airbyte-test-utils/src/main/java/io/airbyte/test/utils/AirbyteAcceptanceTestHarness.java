@@ -21,6 +21,8 @@ import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
+import io.airbyte.api.client.model.generated.ConnectionScheduleData;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
@@ -455,7 +457,8 @@ public class AirbyteAcceptanceTestHarness {
                                          final UUID destinationId,
                                          final List<UUID> operationIds,
                                          final AirbyteCatalog catalog,
-                                         final ConnectionSchedule schedule)
+                                         final ConnectionScheduleType scheduleType,
+                                         final ConnectionScheduleData scheduleData)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -463,7 +466,8 @@ public class AirbyteAcceptanceTestHarness {
             .sourceId(sourceId)
             .destinationId(destinationId)
             .syncCatalog(catalog)
-            .schedule(schedule)
+            .scheduleType(scheduleType)
+            .scheduleData(scheduleData)
             .operationIds(operationIds)
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)

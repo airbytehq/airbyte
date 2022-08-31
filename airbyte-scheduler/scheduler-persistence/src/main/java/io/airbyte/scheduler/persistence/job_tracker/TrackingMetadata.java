@@ -35,7 +35,8 @@ public class TrackingMetadata {
     metadata.put("connection_id", standardSync.getConnectionId());
 
     final String frequencyString;
-    if (standardSync.getManual()) {
+    // TODO(https://github.com/airbytehq/airbyte/issues/2170): handle cron strings properly.
+    if (standardSync.getManual() || standardSync.getSchedule() == null) {
       frequencyString = "manual";
     } else {
       final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
