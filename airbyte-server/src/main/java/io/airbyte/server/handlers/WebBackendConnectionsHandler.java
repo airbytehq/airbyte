@@ -358,17 +358,17 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
 
-  // TODO note to self: instead of creating a full ConnectionUpdate by applying the patch, this method
-  // should instead do the following:
-  // 1. updateOperations to get the new list of operationIds that we want
-  // 2. call the connectionsHandler.updateConnection with a PATCH that includes the operationIds we
-  // want
-  // 3. update connectionsHandler.updateConnection to do the
-  // Optional.of(newThing).orElse(existingThing) pattern
-  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate)
+  /**
+   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from the patch
+   * to the connection.
+   *
+   * As a convenience to the front-end, this endpoint also creates new operations present in the request, and bundles
+   * those newly-created operationIds into the connection update.
+   */
+  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
-    final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
+    final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     ConnectionRead connectionRead = connectionsHandler.getConnection(connectionId);
 
     // before doing any updates, fetch the existing catalog so that it can be diffed
@@ -376,19 +376,17 @@ public class WebBackendConnectionsHandler {
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
 
-    // The WebBackendUpdateConnection handler allows for creation of new operations as
-    // a convenience for the front-end, so handle any operation creation up front so
-    // that we have the full list of operationIds going forward.
-    final List<UUID> operationIds = updateOperations(connectionRead, webBackendConnectionUpdate);
+    final List<UUID> operationIds = updateOperations(connectionRead, webBackendConnectionPatch);
 
-    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionUpdate, operationIds);
+    // pass in operationIds because the patch object doesn't include operationIds that were just created above.
+    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, operationIds);
 
     // persist the update and set the connectionRead to the updated form.
     connectionRead = connectionsHandler.updateConnection(connectionPatch);
 
     // now that the connection is fully updated, check for a diff between the
     // old catalog and the updated catalog to see if any streams need to be reset.
-    final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
+    final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : false;
     if (!skipReset) {
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
       final AirbyteCatalog upToDateAirbyteCatalog = connectionRead.getSyncCatalog();
@@ -452,11 +450,11 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
-  private List<UUID> updateOperations(final ConnectionRead connectionRead, final WebBackendConnectionUpdate webBackendConnectionUpdate)
+  private List<UUID> updateOperations(final ConnectionRead connectionRead, final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws JsonValidationException, ConfigNotFoundException, IOException {
 
     // this is a patch-style update, so don't make any changes if the request doesn't include operations
-    if (webBackendConnectionUpdate.getOperations() == null) {
+    if (webBackendConnectionPatch.getOperations() == null) {
       return null;
     }
 
@@ -464,7 +462,7 @@ public class WebBackendConnectionsHandler {
     final List<UUID> originalOperationIds =
         connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds());
 
-    final List<WebBackendOperationCreateOrUpdate> updatedOperations = webBackendConnectionUpdate.getOperations();
+    final List<WebBackendOperationCreateOrUpdate> updatedOperations = webBackendConnectionPatch.getOperations();
     final List<UUID> finalOperationIds = new ArrayList<>();
 
     for (final var operationCreateOrUpdate : updatedOperations) {
