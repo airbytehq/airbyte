@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,6 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
@@ -97,9 +99,34 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config.get("credentials")).put("password", "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+  }
+
+  @Test
+  public void testCheckEmptyUsernameFailure() throws Exception {
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200028;"));
   }
 
   @Override

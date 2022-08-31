@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.gcs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -12,6 +13,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
@@ -23,6 +25,7 @@ import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -112,8 +115,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode failCheckJson = Jsons.clone(baseJson);
     // invalid credential
-    ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
-    ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
+    ((ObjectNode) failCheckJson).put("hmac_key_access_id", "fake-key");
+    ((ObjectNode) failCheckJson).put("hmac_key_secret", "fake-secret");
     return failCheckJson;
   }
 
@@ -216,6 +219,54 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .set("format", getFormatConfig());
 
     assertEquals(Status.FAILED, runCheck(configJson).getStatus());
+  }
+
+  @Test
+  public void testCheckIncorrectHmacKeyAccessIdCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", "fake-key")
+        .put("hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
+        .build());
+
+    ((ObjectNode) baseJson).put("credential", credential);
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHmacKeySecretCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", baseJson.get("credential").get("hmac_key_access_id").asText())
+        .put("hmac_key_secret", "fake-secret")
+        .build());
+
+    ((ObjectNode) baseJson).put("credential", credential);
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
+  }
+
+  @Test
+  public void testCheckIncorrectBucketCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    ((ObjectNode) baseJson).put("gcs_bucket_name", "fake_bucket");
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: NoSuchKey;"));
   }
 
 }

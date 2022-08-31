@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.relationaldb;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -19,9 +21,11 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -80,6 +84,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final ConnectionErrorException ex) {
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

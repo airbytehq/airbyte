@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
@@ -11,11 +12,13 @@ import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3De
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -76,6 +79,12 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (final ConnectionErrorException e) {
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

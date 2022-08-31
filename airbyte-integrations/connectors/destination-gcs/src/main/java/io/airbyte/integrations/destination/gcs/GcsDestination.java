@@ -4,10 +4,14 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -52,10 +56,18 @@ public class GcsDestination extends BaseConnector implements Destination {
       S3Destination.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final AmazonS3Exception e) {
+      LOGGER.error("Exception attempting to access the AWS bucket: {}", e.getMessage());
+      final String message = getErrorMessage(e.getErrorCode(), 0, e.getMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+      LOGGER.error("Exception attempting to access the AWS bucket: {}", e.getMessage());
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
