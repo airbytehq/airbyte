@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 import { AttemptRead, JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import AttemptDetails from "./AttemptDetails";
-import DebugInfoButton from "./DebugInfoButton";
 import DownloadButton from "./DownloadButton";
 import { LinkToAttemptButton } from "./LinkToAttemptButton";
 import LogsTable from "./Logs";
@@ -46,7 +45,7 @@ export const LogsDetails: React.FC<{
       {jobDebugInfo && (
         <>
           <DownloadButton jobDebugInfo={jobDebugInfo} fileName={`logs-${id}`} />
-          <DebugInfoButton jobDebugInfo={jobDebugInfo} />
+          {/* <DebugInfoButton jobDebugInfo={jobDebugInfo} /> pending Platform updates discussed in https://github.com/airbytehq/airbyte/issues/15947 */}
         </>
       )}
     </LogHeader>
