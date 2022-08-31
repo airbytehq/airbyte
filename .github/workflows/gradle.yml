@@ -303,8 +303,6 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -336,13 +334,26 @@ jobs:
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
 
-      - name: Publish Storybook to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          workingDir: ./airbyte-webapp/
-          storybookBuildDir: build/storybook/
+  frontend-publish-storybook:
+      name: "Frontend: Publish Storybook"
+      needs: start-frontend-runner
+      runs-on: ${{ needs.start-frontend-runner.outputs.label }}
+      steps:
+        - name: Checkout Airbyte
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 0
+
+        - name: Install dependencies
+          run: cd && airbyte-webapp && npm install
+
+        - name: Publish Storybook to Chromatic
+          uses: chromaui/action@v1
+          with:
+            projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+            workingDir: ./airbyte-webapp/
+            storybookBuildDir: build/storybook/
 
   frontend-test:
     name: "Frontend: Run End-to-End Tests"
@@ -397,6 +408,7 @@ jobs:
       - frontend-test # required to wait when the e2e-test job is done
       - frontend-build # required to wait when then build job is done
       - find_valid_pat
+      - frontend-publish-storybook
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
