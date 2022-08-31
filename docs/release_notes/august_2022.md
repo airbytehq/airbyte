@@ -1,7 +1,7 @@
 # August 2022
 ## Airbyte [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41.alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
 
-This page includes new features and improvements to the Airbyte Cloud and OSS platforms. 
+This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms. 
 
 ### New features
 * Added per-stream state to the Airbyte Cloud and OSS platforms. Per-stream state currently includes per-stream resets and connection states, and it lays the groundwork for auto-detecting schema changes, parallel syncs, and more.  
@@ -34,16 +34,16 @@ This page includes new features and improvements to the Airbyte Cloud and OSS pl
 
 * Improved [documentation](https://docs.airbyte.com/contributing-to-airbyte/developing-locally#connector) about contributing locally by adding information on formatting connectors. [#14661](https://github.com/airbytehq/airbyte/pull/14661)  
 
-* [Octavia CLI](https://github.com/airbytehq/airbyte/tree/master/octavia-cli#-octavia-cli)
-    * Improved Octavia CLI so you can now:
-        * Switch between Airbyte instances and deploy the same configurations on multiple instances. [#13070](https://github.com/airbytehq/airbyte/pull/13070) [#13748](https://github.com/airbytehq/airbyte/issues/13748)  
+* Improved [Octavia CLI](https://github.com/airbytehq/airbyte/tree/master/octavia-cli#-octavia-cli) so you can now:
 
-        * Enable normalization or custom DBT transformation from YAML configurations. [#10973](https://github.com/airbytehq/airbyte/issues/10973)  
+    * Switch between Airbyte instances and deploy the same configurations on multiple instances. [#13070](https://github.com/airbytehq/airbyte/pull/13070) [#13748](https://github.com/airbytehq/airbyte/issues/13748)  
 
-        * Set custom HTTP headers on requests made to the Airbyte server. You can use CLI If you have instances secured with basic access authentication or identity-aware proxy (IAP). This lays the groundwork for making the CLI compatible with Airbyte Cloud once we release the public API. [#13770](https://github.com/airbytehq/airbyte/issues/13770)  
+    * Enable normalization or custom DBT transformation from YAML configurations. [#10973](https://github.com/airbytehq/airbyte/issues/10973)  
 
-        * Import existing remote resources to a local Octavia project with `octavia import`. [#14291](https://github.com/airbytehq/airbyte/issues/14291)  
+    * Set custom HTTP headers on requests made to the Airbyte server. You can use CLI If you have instances secured with basic access authentication or identity-aware proxy (IAP). This lays the groundwork for making the CLI compatible with Airbyte Cloud once we release the public API. [#13770](https://github.com/airbytehq/airbyte/issues/13770)  
 
-        * Use the `get` command to get existing configurations for sources, destinations, and connections. [#13254](https://github.com/airbytehq/airbyte/pull/13254)  
+     * Import existing remote resources to a local Octavia project with `octavia import`. [#14291](https://github.com/airbytehq/airbyte/issues/14291)  
 
-        * Retrieve the JSON configuration using `octavia get`, which is useful for some scripting and orchestration use cases. [#13254](https://github.com/airbytehq/airbyte/pull/13254)
+     * Use the `get` command to get existing configurations for sources, destinations, and connections. [#13254](https://github.com/airbytehq/airbyte/pull/13254)  
+
+     * Retrieve the JSON configuration using `octavia get`, which is useful for some scripting and orchestration use cases. [#13254](https://github.com/airbytehq/airbyte/pull/13254)
