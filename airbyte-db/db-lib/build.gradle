@@ -2,6 +2,10 @@ plugins {
     id 'java-library'
 }
 
+configurations {
+    migrations.extendsFrom implementation
+}
+
 dependencies {
     api libs.hikaricp
     api libs.jooq.meta
@@ -12,7 +16,10 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config:config-models')
     implementation libs.flyway.core
-    implementation libs.platform.testcontainers.postgresql
+
+    compileOnly libs.platform.testcontainers.postgresql
+    migrations libs.platform.testcontainers.postgresql
+    migrations sourceSets.main.output
 
     // Mark as compile only to avoid leaking transitively to connectors
     compileOnly libs.connectors.testcontainers.mysql
@@ -41,37 +48,37 @@ dependencies {
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'configs', 'create'
 }
 
 task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'configs', 'migrate'
 }
 
 task(dumpConfigsSchema, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'configs', 'dump_schema'
 }
 
 task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'create'
 }
 
 task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'migrate'
 }
 
 task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'dump_schema'
 }
 
