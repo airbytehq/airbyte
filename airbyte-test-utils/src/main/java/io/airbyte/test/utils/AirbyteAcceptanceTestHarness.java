@@ -479,21 +479,15 @@ public class AirbyteAcceptanceTestHarness {
     return connection;
   }
 
-  public ConnectionRead updateConnectionSchedule(final UUID connectionId, final ConnectionSchedule newSchedule) throws ApiException {
-    final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    return apiClient.getConnectionApi().updateConnection(
+  public void updateConnectionSchedule(
+      final UUID connectionId,
+      final ConnectionScheduleType newScheduleType,
+      final ConnectionScheduleData newScheduleData) throws ApiException {
+    apiClient.getConnectionApi().updateConnection(
         new ConnectionUpdate()
-            .namespaceDefinition(connectionRead.getNamespaceDefinition())
-            .namespaceFormat(connectionRead.getNamespaceFormat())
-            .prefix(connectionRead.getPrefix())
             .connectionId(connectionId)
-            .operationIds(connectionRead.getOperationIds())
-            .status(connectionRead.getStatus())
-            .syncCatalog(connectionRead.getSyncCatalog())
-            .name(connectionRead.getName())
-            .resourceRequirements(connectionRead.getResourceRequirements())
-            .schedule(newSchedule) // only field being updated
+            .scheduleType(newScheduleType)
+            .scheduleData(newScheduleData)
     );
   }
 
