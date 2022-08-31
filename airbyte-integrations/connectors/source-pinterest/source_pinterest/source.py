@@ -71,6 +71,10 @@ class PinterestStream(HttpStream, ABC):
 
             for record in data:
                 yield record
+    
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == requests.codes.too_many_requests:
+            return float(response.headers.get("X-RateLimit-Reset", 0))
 
 
 class PinterestSubStream(HttpSubStream):
@@ -195,12 +199,6 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     data_fields = []
     granularity = "DAY"
     analytics_target_ids = None
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 429:
-            self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            setattr(self, "raise_on_http_errors", False)
-        return 500 <= response.status_code < 600
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
