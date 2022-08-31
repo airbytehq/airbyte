@@ -56,8 +56,11 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.temporal.ConnectionManagerUtils;
+import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -224,14 +227,30 @@ public class ServerApp implements ServerRunnable {
             webUrlHelper,
             jobErrorReportingClient);
 
+    final TemporalUtils temporalUtils = new TemporalUtils(
+        configs.getActivityNumberOfAttempt(),
+        configs.getInitialDelayBetweenActivityAttemptsSeconds(),
+        configs.getMaxDelayBetweenActivityAttemptsSeconds(),
+        configs.getTemporalCloudClientCert(),
+        configs.getTemporalCloudClientKey(),
+        configs.temporalCloudEnabled(),
+        configs.getTemporalCloudHost(),
+        configs.getTemporalCloudNamespace(),
+        configs.getTemporalHost(),
+        configs.getTemporalRetentionInDays());
+
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
+    final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
     final TemporalClient temporalClient = new TemporalClient(
-        TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace()),
         configs.getWorkspaceRoot(),
+        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
         temporalService,
-        streamResetPersistence);
+        streamResetPersistence,
+        connectionManagerUtils,
+        streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
