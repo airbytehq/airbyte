@@ -39,6 +39,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-microsoft-teams", new MicrosoftTeamsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-notion", new NotionOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-bing-ads", new MicrosoftBingAdsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-pinterest", new PinterestOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-retently", new RetentlyOAuthFlow(configRepository, httpClient))
