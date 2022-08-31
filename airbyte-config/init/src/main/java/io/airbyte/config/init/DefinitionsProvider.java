@@ -10,7 +10,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
-public interface DefinitionProvider {
+public interface DefinitionsProvider {
 
   StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException;
 
