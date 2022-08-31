@@ -17,9 +17,9 @@ import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -167,7 +167,6 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static ServerRunnable getServer(final ServerFactory apiFactory,
-                                         final ConfigPersistence seed,
                                          final Configs configs,
                                          final DSLContext configsDslContext,
                                          final Flyway configsFlyway,
@@ -181,9 +180,6 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Checking databases..");
     assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
-
-    LOGGER.info("Creating Staged Resource folder...");
-    ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
     final Database configsDatabase = new Database(configsDslContext);
@@ -271,7 +267,6 @@ public class ServerApp implements ServerRunnable {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        seed,
         configsDatabase,
         jobsDatabase,
         trackingClient,
@@ -300,13 +295,14 @@ public class ServerApp implements ServerRunnable {
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
-            .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
+            .map(StandardSync::getConnectionId)
+            .collect(Collectors.toSet());
     eventRunner.migrateSyncIfNeeded(connectionIds);
     jobPersistence.setSchedulerMigrationDone();
     LOGGER.info("Done migrating to the new scheduler...");
   }
 
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     try {
       final Configs configs = new EnvConfigs();
 
@@ -327,10 +323,8 @@ public class ServerApp implements ServerRunnable {
             ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-        final ConfigPersistence yamlSeedConfigPersistence =
-            new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
-        getServer(new ServerFactory.Api(), yamlSeedConfigPersistence, configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
+        getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
