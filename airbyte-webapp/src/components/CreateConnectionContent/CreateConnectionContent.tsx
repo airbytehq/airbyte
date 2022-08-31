@@ -63,7 +63,9 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       sourceCatalogId: catalogId,
     });
 
-    push(`../../connections/${createdConnection.connectionId}`);
+    // This is a bit of a hack. I wanted to get away from our previous way of handling this
+    // but our form dirty tracking needs a second to catch up w/ the form reset + submit.
+    setTimeout(() => push(`../../connections/${createdConnection.connectionId}`), 1000);
   };
 
   const onFrequencySelect = (item: IDataItem | null) => {
