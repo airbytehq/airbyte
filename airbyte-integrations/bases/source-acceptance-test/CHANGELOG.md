@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.3
+Relax checking of `oneOf` common property and allow optional `default` keyword additional to `const` keyword. []()
+
 ## 0.2.2
 Backward compatibility tests: improve `check_if_cursor_field_was_changed` to make it less radical and allow stream addition to catalog.[#15835](https://github.com/airbytehq/airbyte/pull/15835/)
 

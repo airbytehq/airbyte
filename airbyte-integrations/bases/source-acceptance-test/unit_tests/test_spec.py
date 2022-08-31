@@ -339,6 +339,34 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                 }
             },
         },
+        "should_fail": False,
+    },
+    {
+        "test_id": "enum_keyword_in_common_property",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option1", "enum": "option1"},
+                                "option1": {"type": "string"},
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option2", "enum": "option2"},
+                                "option2": {"type": "string"},
+                            },
+                        },
+                    ],
+                }
+            },
+        },
         "should_fail": True,
     },
 )
