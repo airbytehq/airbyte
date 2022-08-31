@@ -88,10 +88,13 @@ describe("ConnectionFormService", () => {
     expect(resetForm).toBeCalledWith({ values: testValues });
     expect(onSubmit).toBeCalledWith({
       operations: [],
-      schedule: {
-        timeUnit: undefined,
-        units: undefined,
+      scheduleData: {
+        basicSchedule: {
+          timeUnit: undefined,
+          units: undefined,
+        },
       },
+      scheduleType: "manual",
       syncCatalog: {
         streams: undefined,
       },
