@@ -340,7 +340,7 @@ jobs:
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.LABEL_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           workingDir: ./airbyte-webapp/
           storybookBuildDir: build/storybook/
 
