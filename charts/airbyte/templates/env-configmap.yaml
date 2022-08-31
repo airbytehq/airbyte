@@ -53,8 +53,8 @@ data:
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
-  METRIC_CLIENT: ""
-  OTEL_COLLECTOR_ENDPOINT: ""
+  METRIC_CLIENT: {{ .Values.global.metrics.metricClient | default "" | quote }}
+  OTEL_COLLECTOR_ENDPOINT: {{ .Values.global.metrics.otelCollectorEndpoint | default "" | quote }}
   ACTIVITY_MAX_ATTEMPT: ""
   ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
