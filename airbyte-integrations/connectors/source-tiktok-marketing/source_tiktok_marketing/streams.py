@@ -346,6 +346,11 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             return None
 
         cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+        
+        # backward capability to support old state objects
+        if "dimensions" in data:
+            cursor_field_path = self.deprecated_cursor_field
+            
         result = data
         for key in cursor_field_path:
             result = result.get(key)
@@ -466,13 +471,21 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """
 
     @property
+    def deprecated_cursor_field(self):
+        if self.report_granularity == ReportGranularity.DAY:
+            return ["dimensions", "stat_time_day"]
+        if self.report_granularity == ReportGranularity.HOUR:
+            return ["dimensions", "stat_time_hour"]
+        return []
+
+    @property
     def cursor_field(self):
         if self.report_granularity == ReportGranularity.DAY:
             return "stat_time_day"
         if self.report_granularity == ReportGranularity.HOUR:
             return "stat_time_hour"
         return []
-
+    
     @staticmethod
     def _get_time_interval(
         start_date: Union[datetime, str], ending_date: Union[datetime, str], granularity: ReportGranularity
