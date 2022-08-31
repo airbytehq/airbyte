@@ -31,7 +31,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
 
   const formatBytes = (bytes?: number) => {
     if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
+      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
     }
 
     const k = 1024;
