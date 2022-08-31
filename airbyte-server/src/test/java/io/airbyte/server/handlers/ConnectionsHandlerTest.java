@@ -98,6 +98,7 @@ class ConnectionsHandlerTest {
   private static final String PK3 = "pk3";
   private static final String STREAM1 = "stream1";
   private static final String STREAM2 = "stream2";
+  private static final String AZKABAN_USERS = "azkaban_users";
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -313,9 +314,18 @@ class ConnectionsHandlerTest {
 
     @Test
     void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-      final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
-      catalog.getStreams().get(0).getStream().setName("azkaban_users");
-      catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
+      final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
+
+      // deselect the existing stream, and add a new stream called 'azkaban_users'.
+      // result that we persist and read after update should be a catalog with a single stream called
+      // 'azkaban_users'.
+      catalogForUpdate.getStreams().get(0).getConfig().setSelected(false);
+      catalogForUpdate.getStreams().get(1).getStream().setName(AZKABAN_USERS);
+      catalogForUpdate.getStreams().get(1).getConfig().setAliasName(AZKABAN_USERS);
+
+      final AirbyteCatalog expectedCatalog = ConnectionHelpers.generateBasicApiCatalog();
+      expectedCatalog.getStreams().get(0).getStream().setName(AZKABAN_USERS);
+      expectedCatalog.getStreams().get(0).getConfig().setAliasName(AZKABAN_USERS);
 
       final UUID newSourceCatalogId = UUID.randomUUID();
 
@@ -326,8 +336,8 @@ class ConnectionsHandlerTest {
           .connectionId(standardSync.getConnectionId())
           .operationIds(standardSync.getOperationIds())
           .status(ConnectionStatus.INACTIVE)
-          .schedule(null)
-          .syncCatalog(catalog)
+          .scheduleType(ConnectionScheduleType.MANUAL)
+          .syncCatalog(catalogForUpdate)
           .name(standardSync.getName())
           .resourceRequirements(new ResourceRequirements()
               .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -337,7 +347,7 @@ class ConnectionsHandlerTest {
           .sourceCatalogId(newSourceCatalogId);
 
       final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
-      configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
+      configuredCatalog.getStreams().get(0).getStream().withName(AZKABAN_USERS);
 
       final StandardSync updatedStandardSync = new StandardSync()
           .withConnectionId(standardSync.getConnectionId())
@@ -370,7 +380,7 @@ class ConnectionsHandlerTest {
           .schedule(null)
           .scheduleType(ConnectionScheduleType.MANUAL)
           .scheduleData(null)
-          .syncCatalog(catalog)
+          .syncCatalog(expectedCatalog)
           .status(ConnectionStatus.INACTIVE);
 
       assertEquals(expectedConnectionRead, actualConnectionRead);

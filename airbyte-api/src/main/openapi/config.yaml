@@ -3248,10 +3248,9 @@ components:
           $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3289,10 +3288,9 @@ components:
           format: uuid
     WebBackendConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         name:
           type: string

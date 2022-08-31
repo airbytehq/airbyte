@@ -34,7 +34,7 @@ public class ConnectionScheduleHelper {
     }
     switch (scheduleType) {
       // NOTE: the `manual` column is marked required, so we populate it until it's removed.
-      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL).withManual(true);
+      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL).withScheduleData(null).withManual(true);
       case BASIC -> {
         if (scheduleData.getBasicSchedule() == null) {
           throw new JsonValidationException("if schedule type is basic, then scheduleData.basic must be populated");
@@ -84,6 +84,9 @@ public class ConnectionScheduleHelper {
             .withManual(false);
       }
     }
+    // now that we've persisted a scheduleType and scheduleData, explicity clear out the legacy
+    // 'schedule' field
+    standardSync.withSchedule(null);
   }
 
 }
