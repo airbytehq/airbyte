@@ -86,4 +86,4 @@ KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tes
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
-mv charts/airbyte/Chart.yaml.old charts/airbyte/Chart.yaml 
+mv charts/airbyte/Chart.yaml.old charts/airbyte/Chart.yaml
