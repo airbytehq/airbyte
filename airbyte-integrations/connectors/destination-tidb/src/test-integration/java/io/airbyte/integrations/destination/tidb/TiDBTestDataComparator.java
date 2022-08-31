@@ -44,4 +44,5 @@ public class TiDBTestDataComparator extends AdvancedTestDataComparator {
       return super.compareBooleanValues(firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
     }
   }
+
 }

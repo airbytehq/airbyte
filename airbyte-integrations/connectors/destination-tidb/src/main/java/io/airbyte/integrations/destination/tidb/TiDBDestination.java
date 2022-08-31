@@ -10,16 +10,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.sql.DataSource;
 
 public class TiDBDestination extends AbstractJdbcDestination implements Destination {
 
@@ -30,9 +30,9 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
       "allowLoadLocalInfile", "true");
 
   static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
-          "useSSL", "true",
-          "requireSSL", "true",
-          "verifyServerCertificate", "false"),
+      "useSSL", "true",
+      "requireSSL", "true",
+      "verifyServerCertificate", "false"),
       DEFAULT_JDBC_PARAMETERS);
 
   public TiDBDestination() {

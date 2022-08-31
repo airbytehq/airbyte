@@ -4,10 +4,11 @@
 
 package io.airbyte.integrations.destination.tidb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -15,24 +16,23 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class TiDBDestinationTest {
 
@@ -58,8 +58,7 @@ public class TiDBDestinationTest {
         JdbcUtils.HOST_KEY, "127.0.0.1",
         JdbcUtils.PORT_KEY, container.getFirstMappedPort(),
         JdbcUtils.USERNAME_KEY, "root",
-        JdbcUtils.DATABASE_KEY, "test"
-    ));
+        JdbcUtils.DATABASE_KEY, "test"));
   }
 
   @Test
@@ -94,8 +93,7 @@ public class TiDBDestinationTest {
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()))
-    );
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
@@ -123,4 +121,5 @@ public class TiDBDestinationTest {
     Destination destination = new TiDBDestination();
     assertEquals(Status.SUCCEEDED, destination.check(getConfig()).getStatus());
   }
+
 }

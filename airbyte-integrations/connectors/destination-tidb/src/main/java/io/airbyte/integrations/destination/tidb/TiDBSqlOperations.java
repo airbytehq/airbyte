@@ -26,9 +26,9 @@ public class TiDBSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-      final List<AirbyteRecordMessage> records,
-      final String schemaName,
-      final String tmpTableName)
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -89,4 +89,5 @@ public class TiDBSqlOperations extends JdbcSqlOperations {
   protected JsonNode formatData(JsonNode data) {
     return StandardNameTransformer.formatJsonPath(data);
   }
+
 }

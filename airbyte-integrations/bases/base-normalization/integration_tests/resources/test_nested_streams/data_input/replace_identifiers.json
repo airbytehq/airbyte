@@ -80,7 +80,7 @@
       "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
     }
   ],
-    "tidb": [
+  "tidb": [
     {
       "_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names": "_airbyte_raw_nested_s__lting_into_long_names"
     },

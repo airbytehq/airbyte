@@ -13,12 +13,12 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.GenericContainer;
@@ -106,9 +106,9 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-      String streamName,
-      String namespace,
-      JsonNode streamSchema)
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
