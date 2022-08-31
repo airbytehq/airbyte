@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 public class InvalidCursorException extends RuntimeException {
 
   public InvalidCursorException(final List<InvalidCursorInfo> tablesWithInvalidCursor) {
-    super("The following tables have invalid columns selected as cursor, please select a column a column with a well-defined ordering as a cursor. " + tablesWithInvalidCursor.stream().map(InvalidCursorInfo::toString)
+    super("The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. " + tablesWithInvalidCursor.stream().map(InvalidCursorInfo::toString)
         .collect(Collectors.joining(",")));
   }
 

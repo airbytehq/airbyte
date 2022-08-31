@@ -523,7 +523,7 @@ class PostgresSourceTest {
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
         assertThat(throwable).isInstanceOf(InvalidCursorException.class)
             .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a valid column as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
       } finally {
         db.stop();
       }
