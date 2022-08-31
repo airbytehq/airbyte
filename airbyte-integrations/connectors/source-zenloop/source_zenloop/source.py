@@ -162,6 +162,7 @@ class Answers(ChildStreamMixin, IncrementalZenloopStream):
         # select answers and surveys to be able to link answer to a survey
         yield from response_json.get("answers", [])
 
+
 class Properties(ChildStreamMixin, ZenloopStream):
     # API Doc: https://docs.zenloop.com/reference/get-list-of-properties
     primary_key = "id"
@@ -183,6 +184,7 @@ class Properties(ChildStreamMixin, ZenloopStream):
         response_json = response.json()
         # select answers and surveys to be able to link answer to a survey
         yield from response_json.get("properties", [])
+
 
 class SurveyGroups(ZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-list-of-survey-groups
