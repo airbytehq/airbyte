@@ -15,10 +15,19 @@ dependencies {
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-scheduler:client')
+    implementation(project(':airbyte-scheduler:client')) {
+        exclude module: 'airbyte-workers'
+    }
     implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
-    implementation project(':airbyte-workers')
+    implementation(project(':airbyte-workers')) {
+        // Temporary hack to avoid dependency conflicts
+        exclude group: 'io.micronaut'
+        exclude group: 'io.micronaut.flyway'
+        exclude group: 'io.micronaut.jaxrs'
+        exclude group: 'io.micronaut.security'
+        exclude group: 'io.micronaut.sql'
+    }
 
     implementation libs.flyway.core
     implementation 'com.github.slugify:slugify:2.4'

@@ -10,8 +10,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
@@ -56,10 +56,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final String podNamePrefix;
   private final JobRunConfig jobRunConfig;
   private final Map<String, String> additionalFileMap;
-  private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
+  private final ContainerOrchestratorConfig containerOrchestratorConfig;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
   private final Supplier<ActivityExecutionContext> activityContext;
+  private final Integer serverPort;
+  private final TemporalUtils temporalUtils;
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
@@ -69,10 +71,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final String podNamePrefix,
                         final JobRunConfig jobRunConfig,
                         final Map<String, String> additionalFileMap,
-                        final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                        final ContainerOrchestratorConfig containerOrchestratorConfig,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
-                        final Supplier<ActivityExecutionContext> activityContext) {
+                        final Supplier<ActivityExecutionContext> activityContext,
+                        final Integer serverPort,
+                        final TemporalUtils temporalUtils) {
+
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -82,13 +87,15 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
     this.activityContext = activityContext;
+    this.serverPort = serverPort;
+    this.temporalUtils = temporalUtils;
   }
 
   @Override
   public OUTPUT run(final INPUT input, final Path jobRoot) throws WorkerException {
     final AtomicBoolean isCanceled = new AtomicBoolean(false);
     final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
-    return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
+    return temporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
@@ -102,7 +109,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)));
 
         final Map<Integer, Integer> portMap = Map.of(
-            WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+            serverPort, serverPort,
             OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
             OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
             OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
@@ -129,7 +136,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.googleApplicationCredentials(),
-            featureFlag.useStreamCapableState());
+            featureFlag.useStreamCapableState(),
+            serverPort);
 
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.

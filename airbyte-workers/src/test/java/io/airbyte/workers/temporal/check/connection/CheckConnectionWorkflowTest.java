@@ -4,11 +4,50 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.support.TemporalActivityStubGenerationOptions;
+import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
+import io.micronaut.context.BeanRegistration;
+import io.micronaut.inject.BeanIdentifier;
+import io.temporal.activity.ActivityOptions;
 import io.temporal.testing.WorkflowReplayer;
+import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class CheckConnectionWorkflowTest {
+
+  private ActivityOptions activityOptions;
+  private TemporalProxyHelper temporalProxyHelper;
+
+  @BeforeEach
+  void setUp() {
+    activityOptions = ActivityOptions.newBuilder()
+        .setScheduleToCloseTimeout(Duration.ofMinutes(5))
+        .setRetryOptions(TemporalUtils.NO_RETRY)
+        .build();
+
+    final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
+    when(activityOptionsBeanIdentifier.getName()).thenReturn("checkActivityOptions");
+    when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
+    when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
+
+    final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> mock(o.getActivityStubClass());
+    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
+    when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
+
+    temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
+  }
 
   @Test
   void replayOldWorkflow() throws Exception {
@@ -16,7 +55,8 @@ class CheckConnectionWorkflowTest {
     // This JSON file is exported from Temporal directly (e.g.
     // `http://${temporal-ui}/namespaces/default/workflows/${uuid}/${uuid}/history`) and export
 
-    WorkflowReplayer.replayWorkflowExecutionFromResource("checkWorkflowHistory.json", CheckConnectionWorkflowImpl.class);
+    WorkflowReplayer.replayWorkflowExecutionFromResource("checkWorkflowHistory.json",
+        temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
   }
 
 }

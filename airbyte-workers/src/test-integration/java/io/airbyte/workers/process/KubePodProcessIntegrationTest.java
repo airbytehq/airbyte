@@ -22,6 +22,8 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -43,7 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -69,6 +70,7 @@ import org.slf4j.LoggerFactory;
  */
 @Timeout(value = 6,
          unit = TimeUnit.MINUTES)
+@MicronautTest
 public class KubePodProcessIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcessIntegrationTest.class);
@@ -77,25 +79,25 @@ public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
-  private static int heartbeatPort;
-  private static String heartbeatUrl;
-  private static KubernetesClient fabricClient;
-  private static KubeProcessFactory processFactory;
+  @Value("${micronaut.server.port}")
+  private Integer heartbeatPort;
+  private String heartbeatUrl;
+  private KubernetesClient fabricClient;
+  private KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
-
-  private WorkerHeartbeatServer server;
 
   @BeforeAll
   public static void init() throws Exception {
-    openPorts = new ArrayList<>(getOpenPorts(30)); // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get
-                                                   // this
+    // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get this
+    openPorts = new ArrayList<>(getOpenPorts(30));
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+  }
 
-    heartbeatPort = openPorts.get(0);
+  @BeforeEach
+  public void setup() throws Exception {
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
     fabricClient = new DefaultKubernetesClient();
-
-    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
 
     final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
     when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
@@ -108,17 +110,6 @@ public class KubePodProcessIntegrationTest {
             heartbeatUrl,
             getHost(),
             false);
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
-    server = new WorkerHeartbeatServer(heartbeatPort);
-    server.startBackground();
-  }
-
-  @AfterEach
-  public void teardown() throws Exception {
-    server.stop();
   }
 
   /**
@@ -344,12 +335,28 @@ public class KubePodProcessIntegrationTest {
 
   @RetryingTest(3)
   public void testKillingWithoutHeartbeat() throws Exception {
+    heartbeatUrl = "invalid_host";
+
+    fabricClient = new DefaultKubernetesClient();
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
+    processFactory =
+        new KubeProcessFactory(
+            workerConfigs,
+            "default",
+            fabricClient,
+            heartbeatUrl,
+            getHost(),
+            false);
+
     // start an infinite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
     // kill the heartbeat server
-    server.stop();
+    // server.stop();
 
     // waiting for process
     process.waitFor();
