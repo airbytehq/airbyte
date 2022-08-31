@@ -665,7 +665,7 @@ worker:
 
 ## @section Metrics parameters
 metrics:
-  enabled: true
+  enabled: false
 
   ## @param metrics.replicaCount Number of metrics-reporter replicas
   replicaCount: 1
