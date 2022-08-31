@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
@@ -23,6 +22,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +99,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   @ValueSource(strings = {"IfNotPresent", " Always"})
   @ParameterizedTest
   public void testAsyncOrchestratorPodProcess(final String pullPolicy) throws InterruptedException {
-
+    final var serverPort = 8080;
     final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     final var mainContainerInfo = new KubeContainerInfo("airbyte/container-orchestrator:dev", pullPolicy);
     // make kubepodinfo
@@ -113,10 +113,11 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        true);
+        true,
+        serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(
-        WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+        serverPort, serverPort,
         OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
         OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
         OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
@@ -143,18 +144,9 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   }
 
   @AfterAll
-  public static void teardown() {
-    try {
-      portForwardProcess.destroyForcibly();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      kubernetesClient.pods().delete();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
+  public static void teardown() throws KubernetesClientException {
+    portForwardProcess.destroyForcibly();
+    kubernetesClient.pods().delete();
   }
 
 }

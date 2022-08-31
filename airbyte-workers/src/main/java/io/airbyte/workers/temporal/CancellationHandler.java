@@ -19,7 +19,7 @@ public interface CancellationHandler {
 
     private final ActivityExecutionContext activityContext;
 
-    public TemporalCancellationHandler(ActivityExecutionContext activityContext) {
+    public TemporalCancellationHandler(final ActivityExecutionContext activityContext) {
       this.activityContext = activityContext;
     }
 
