@@ -14,7 +14,6 @@ import useConnector from "hooks/services/useConnector";
 import useRouter from "hooks/useRouter";
 
 import AccountPage from "./pages/AccountPage";
-import ConfigurationsPage from "./pages/ConfigurationsPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 import MetricsPage from "./pages/MetricsPage";
 import NotificationPage from "./pages/NotificationPage";
@@ -70,11 +69,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           name: <FormattedMessage id="tables.destinations" />,
           indicatorCount: countNewDestinationVersion,
           component: DestinationsPage,
-        },
-        {
-          path: `${SettingsRoute.Configuration}`,
-          name: <FormattedMessage id="admin.configuration" />,
-          component: ConfigurationsPage,
         },
         {
           path: `${SettingsRoute.Notifications}`,
