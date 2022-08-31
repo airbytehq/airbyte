@@ -7,14 +7,24 @@ import { FormBaseItem } from "core/form/types";
 
 import { LabelInfo } from "./LabelInfo";
 
-interface LabelMessageProps {
+interface PropertyLabelProps {
   property: FormBaseItem;
   error: string | undefined;
   touched: boolean;
   label: React.ReactNode;
+  optional?: boolean;
+  className?: string;
 }
 
-const PropertyLabel: React.FC<LabelMessageProps> = ({ property, label, error, touched, children }) => {
+const PropertyLabel: React.FC<PropertyLabelProps> = ({
+  property,
+  label,
+  error,
+  touched,
+  optional,
+  className,
+  children,
+}) => {
   const displayError = !!error && touched;
 
   const errorValues = error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
@@ -22,11 +32,12 @@ const PropertyLabel: React.FC<LabelMessageProps> = ({ property, label, error, to
 
   return (
     <ControlLabels
+      className={className}
       labelAdditionLength={0}
       label={label}
       infoMessage={<LabelInfo property={property} label={label} />}
       errorMessage={displayError ? errorMessage : undefined}
-      required={property.isRequired}
+      optional={optional !== undefined ? optional : !property.isRequired}
     >
       {children}
     </ControlLabels>

@@ -1,13 +1,14 @@
 import { useField } from "formik";
 import React from "react";
 
-import { LabeledSwitch, TextWithHTML } from "components";
+import { LabeledSwitch } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
 import { PropertyLabel } from "../Property/PropertyLabel";
+import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
   property: FormBaseItem;
@@ -32,8 +33,16 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     return (
       <LabeledSwitch
         {...field}
-        label={labelText}
-        message={<TextWithHTML text={property.description} />}
+        label={
+          <PropertyLabel
+            className={styles.switchLabel}
+            property={property}
+            label={labelText}
+            touched={meta.touched}
+            error={meta.error}
+            optional={false}
+          />
+        }
         value={field.value ?? property.default}
         disabled={disabled}
       />
