@@ -1,5 +1,5 @@
 # August 2022
-## Airbyte [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41.alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
+## Airbyte [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
 
 This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms. 
 
