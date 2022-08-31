@@ -1,5 +1,5 @@
 # August 2022
-## Airbyte  [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41.alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
+## Airbyte [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41.alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
 
 This page includes new features and improvements to the Airbyte Cloud and OSS platforms. 
 
@@ -15,7 +15,7 @@ This page includes new features and improvements to the Airbyte Cloud and OSS pl
     * For Airbyte Open Source users:
         * If you are using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, upgrade your Airbyte platform to version v0.40.0-alpha or newer and [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your AzureBlobStorage connector to version 0.1.6 or newer. [#15008](https://github.com/airbytehq/airbyte/pull/15008)  
 
-* Added `airbyte_type` to normalization. This displays whether `timestamp` and `time` have an associated time zone.  [#13591](https://github.com/airbytehq/airbyte/pull/13591)  
+* Added `airbyte_type` to normalization. This displays whether `timestamp` and `time` have an associated time zone. [#13591](https://github.com/airbytehq/airbyte/pull/13591)  
 
 * Airbyte is currently developing a low-code connector builder, which allows you to easily create new source and destination connectors in your workspace. [#14402](https://github.com/airbytehq/airbyte/pull/14402) [#14317](https://github.com/airbytehq/airbyte/pull/14317) [#14288](https://github.com/airbytehq/airbyte/pull/14288) [#14004](https://github.com/airbytehq/airbyte/pull/14004)  
 
