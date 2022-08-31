@@ -16,14 +16,6 @@ const InputRow = styled(Row)`
   height: auto;
 `;
 
-// const ButtonCell = styled(Cell)`
-//   &:last-child {
-//     text-align: left;
-//   }
-//   padding-left: 11px;
-//   height: 9px;
-// `;
-
 const EmailForm = styled(Form)`
   position: relative;
 `;
