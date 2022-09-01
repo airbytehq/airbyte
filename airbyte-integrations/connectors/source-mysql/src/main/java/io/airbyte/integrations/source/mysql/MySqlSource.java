@@ -171,9 +171,16 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   private static boolean isCdc(final JsonNode config) {
-    return config.hasNonNull("replication_method")
-        && ReplicationMethod.valueOf(config.get("replication_method").asText())
-        .equals(ReplicationMethod.CDC);
+    if (config.hasNonNull("replication_method")) {
+      if (config.get("replication_method").isTextual()) {
+        return ReplicationMethod.valueOf(config.get("replication_method").asText())
+            .equals(ReplicationMethod.CDC);
+      } else if (config.get("replication_method").isObject()) {
+        return config.get("replication_method").get("method").asText()
+            .equals(ReplicationMethod.CDC.name());
+      }
+    }
+    return false;
   }
 
   @Override
