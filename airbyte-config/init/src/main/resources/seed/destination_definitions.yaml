@@ -231,7 +231,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.47
+  dockerImageTag: 0.3.48
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:
@@ -320,4 +320,5 @@
   dockerRepository: airbyte/destination-tidb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/tidb
+  icon: tidb.svg
   releaseStage: alpha
