@@ -266,6 +266,7 @@ def abstract_source(mocker):
             None,
             ValidationError,
         ),
+        ("test_invalid_state_message_has_no_stream_global_or_data", [{"type": "LEGACY", "not": "something"}], None, ValidationError),
     ],
 )
 def test_read_state(source, test_name, incoming_state, expected_state, expected_error):
