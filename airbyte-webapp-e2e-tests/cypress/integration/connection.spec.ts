@@ -23,7 +23,7 @@ describe("Connection main actions", () => {
   });
 
   it("Update connection", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    cy.intercept("/api/v1/web_backend/connections/updateNew").as("updateConnection");
 
     createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
 
@@ -83,16 +83,18 @@ describe("Connection main actions", () => {
         timeUnit: 'minutes'
       });
 
-      expect(interception.request.body.syncCatalog.streams[0].config).to.contain({
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.config).to.contain({
         aliasName: 'pokemon',
         destinationSyncMode: 'append',
         selected: true,
       });
 
-      expect(interception.request.body.syncCatalog.streams[0].stream).to.contain({
+      expect(streamToUpdate.stream).to.contain({
         name: "pokemon",
       });
-      expect(interception.request.body.syncCatalog.streams[0].stream.supportedSyncModes).to.contain(
+      expect(streamToUpdate.stream.supportedSyncModes).to.contain(
         'full_refresh'
       );
     })

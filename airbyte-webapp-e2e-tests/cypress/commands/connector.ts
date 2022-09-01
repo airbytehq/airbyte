@@ -1,4 +1,4 @@
-import { enterDestinationPath, selectServiceType, enterName, enterHost, enterPort, enterDatabase, enterUsername, enterPassword, enterPokeName } from "pages/createConnectorPage"
+import { enterDestinationPath, selectServiceType, enterName, enterHost, enterPort, enterDatabase, enterUsername, enterPassword, enterPokemonName } from "pages/createConnectorPage"
 
 export const fillPostgresForm = (name: string, host: string, port: string, database: string, username: string, password: string) => {
   cy.intercept("/api/v1/source_definition_specifications/get").as(
@@ -27,7 +27,7 @@ export const fillPokeAPIForm = (name: string, pokeName: string) => {
   cy.wait("@getSourceSpecifications");
   
   enterName(name);
-  enterPokeName(pokeName);
+  enterPokemonName(pokeName);
 };
 
 export const fillLocalJsonForm = (name: string, destinationPath: string) => {

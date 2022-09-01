@@ -1,5 +1,5 @@
 const scheduleDropdown = "div[data-testid='schedule']";
-const scheduleValue = "div[data-testid='";
+const scheduleValue = (value: string) => `div[data-testid='${value}']`;
 const destinationPrefix = "input[data-testid='prefixInput']";
 const replicationTab = "div[data-id='replication-step']";
 const destinationNamespace = "div[data-testid='namespaceDefinition']";
@@ -21,7 +21,7 @@ export const enterConnectionName = (name: string) => {
 
 export const selectSchedule = (value: string) => {
     cy.get(scheduleDropdown).click();
-    cy.get(scheduleValue + value + "']").click();
+    cy.get(scheduleValue(value)).click();
 }
 
 export const fillOutDestinationPrefix = (value: string) => {

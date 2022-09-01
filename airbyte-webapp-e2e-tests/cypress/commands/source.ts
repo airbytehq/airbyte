@@ -2,7 +2,14 @@ import { deleteEntity, openSettingForm, submitButtonClick, updateField } from ".
 import { goToSourcePage, openNewSourceForm} from "pages/sourcePage";
 import { fillPostgresForm, fillPokeAPIForm } from "./connector"
 
-export const createPostgresSource = (name: string, host: string, port: string, database: string, username: string, password: string) => {
+export const createPostgresSource = (
+  name: string,
+  host: string = "localhost",
+  port: string = "{selectAll}{del}5433",
+  database: string = "airbyte_ci",
+  username: string = "postgres",
+  password: string = "secret_password"
+) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );
@@ -17,7 +24,7 @@ export const createPostgresSource = (name: string, host: string, port: string, d
   cy.wait("@createSource");
 };
 
-export const createPokeTestSource = (name: string, pokeName: string) => {
+export const createPokeApiSource = (name: string, pokeName: string) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );

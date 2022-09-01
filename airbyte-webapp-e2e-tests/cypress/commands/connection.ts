@@ -1,6 +1,6 @@
 import { submitButtonClick } from "./common";
 import { createLocalJsonDestination } from "./destination";
-import { createPokeTestSource, createPostgresSource } from "./source";
+import { createPokeApiSource, createPostgresSource } from "./source";
 import { openAddSource } from "pages/destinationPage"
 import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage"
 
@@ -10,13 +10,13 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   switch (true) {
     case sourceName.includes('PokeAPI'):
-      createPokeTestSource(sourceName, "luxray")
+      createPokeApiSource(sourceName, "luxray")
       break;
     case sourceName.includes('Postgres'):
-      createPostgresSource(sourceName, "localhost", "{selectAll}{del}5433", "airbyte_ci", "postgres", "secret_password");
+      createPostgresSource(sourceName);
       break;
     default:
-      createPostgresSource(sourceName, "localhost", "{selectAll}{del}5433", "airbyte_ci", "postgres", "secret_password");
+      createPostgresSource(sourceName);
   }
 
   createLocalJsonDestination(destinationName, "/local");

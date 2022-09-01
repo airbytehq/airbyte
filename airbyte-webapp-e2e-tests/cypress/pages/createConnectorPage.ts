@@ -5,7 +5,7 @@ const portInput = "input[name='connectionConfiguration.port']";
 const databaseInput = "input[name='connectionConfiguration.database']";
 const usernameInput = "input[name='connectionConfiguration.username']";
 const passwordInput = "input[name='connectionConfiguration.password']";
-const pokeNameInput = "input[name='connectionConfiguration.pokemon_name']";
+const pokemonNameInput = "input[name='connectionConfiguration.pokemon_name']";
 const destinationPathInput = "input[name='connectionConfiguration.destination_path']";
 
 export const selectServiceType = (type: string) => {
@@ -37,8 +37,8 @@ export const enterPassword = (password: string) => {
   cy.get(passwordInput).type(password);
 }
 
-export const enterPokeName = (pokeName: string) => {
-  cy.get(pokeNameInput).type(pokeName);
+export const enterPokemonName = (pokeName: string) => {
+  cy.get(pokemonNameInput).type(pokeName);
 }
 
 export const enterDestinationPath = (destinationPath: string) => {
