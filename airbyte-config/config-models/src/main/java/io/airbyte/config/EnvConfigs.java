@@ -16,6 +16,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -326,9 +327,9 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getRemoteConnectorCatalogUrl() {
+  public URI getRemoteConnectorCatalogUrl() {
     // Default to reuse the job database
-    return getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL);
+    return URI.create(getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL));
   }
 
   // Docker Only
