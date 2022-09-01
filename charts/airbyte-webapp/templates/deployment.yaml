@@ -36,7 +36,7 @@ spec:
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
-          {{- printf "- name: %s" . | nindent 2 }}
+          {{- printf "- name: %s" .name | nindent 2 }}
         {{- end }}
       {{- end }}
       containers:
@@ -65,20 +65,37 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: FULLSTORY
-        - name: IS_DEMO
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: IS_DEMO
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: INTERNAL_API_HOST
         {{- end }}
-        {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: webapp-secrets
+              key: {{ $k }}
         {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+
+
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           tcpSocket:
@@ -114,6 +131,9 @@ spec:
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
+        {{- if .Values.global.extraVolumeMounts }}
+  {{ toYaml .Values.global.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       {{- if .Values.extraContainers }}
       {{ toYaml .Values.extraContainers | indent 8 }}
       {{- end }}
@@ -123,4 +143,7 @@ spec:
       volumes:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.extraVolumes }}
+{{ toYaml .Values.global.extraVolumes | nindent 6 }}
       {{- end }}

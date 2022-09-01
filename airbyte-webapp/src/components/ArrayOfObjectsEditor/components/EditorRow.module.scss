@@ -27,6 +27,5 @@
 .actions {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
   gap: variables.$spacing-md;
 }
