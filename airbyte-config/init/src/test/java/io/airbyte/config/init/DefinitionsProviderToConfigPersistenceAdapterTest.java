@@ -28,7 +28,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefinitionProviderToConfigPersistenceAdapterTest {
+class DefinitionsProviderToConfigPersistenceAdapterTest {
 
   private static MockWebServer webServer;
   private static MockResponse validCatalogResponse;
