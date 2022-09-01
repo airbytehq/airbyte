@@ -1,9 +1,9 @@
+import { JSONSchema7Type } from "json-schema";
 import React from "react";
 
 import { TextWithHTML } from "components";
 
 import styles from "./LabelInfo.module.scss";
-import { JSONSchema7Type } from "json-schema";
 
 interface IProps {
   label: React.ReactNode;
@@ -35,7 +35,7 @@ const LabelInfo: React.FC<IProps> = ({ label, examples, description }) => {
   return (
     <>
       <h4 className={styles.descriptionHeader}>{label}</h4>
-      {description && <TextWithHTML text={description} />}
+      {description && <TextWithHTML className={styles.description} text={description} />}
       {constructExamples()}
     </>
   );

@@ -5,6 +5,14 @@
   margin-bottom: 5px;
 }
 
+.description {
+  & ul {
+    padding-left: 25px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+}
+
 .exampleHeader {
   margin-top: 10px;
   margin-bottom: 5px;
