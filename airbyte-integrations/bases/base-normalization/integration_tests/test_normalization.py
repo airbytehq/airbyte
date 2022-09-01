@@ -139,7 +139,7 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
     if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
         # TODO: upgrade dbt-adapter repositories to work with dbt 0.21.0+ (outside airbyte's control)
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
-    if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value]:
+    if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value, DestinationType.TIDB.value]:
         pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
     if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value]:
         # TODO: create/fix github issue in corresponding dbt-adapter repository to handle schema changes (outside airbyte's control)
@@ -207,6 +207,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.REDSHIFT.value:
         copy_tree("../dbt-project-template-redshift", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-redshift/dbt_project.yml"
+    elif destination_type.value == DestinationType.TIDB.value:
+        copy_tree("../dbt-project-template-tidb", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-tidb/dbt_project.yml"
     dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
