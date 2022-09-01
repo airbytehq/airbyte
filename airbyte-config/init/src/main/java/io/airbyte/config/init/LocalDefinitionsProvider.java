@@ -28,8 +28,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * This config persistence contains all seed definitions according to the yaml files. It is
- * read-only.
+ * This provider contains all definitions according to the local yaml files.
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
 

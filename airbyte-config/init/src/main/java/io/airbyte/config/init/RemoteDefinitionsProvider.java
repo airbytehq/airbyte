@@ -17,41 +17,32 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * This config persistence pulls the definition configurations from a remotely hosted catalog. It is
- * read-only.
+ * This provider pulls the definitions from a remotely hosted catalog.
  */
 final public class RemoteDefinitionsProvider implements DefinitionsProvider {
 
   private Map<UUID, StandardSourceDefinition> sourceDefinitions;
   private Map<UUID, StandardDestinationDefinition> destinationDefinitions;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDefinitionsProvider.class);
   private static final HttpClient httpClient = HttpClient.newHttpClient();
   private final URI remoteDefinitionCatalogUrl;
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
   private final Duration timeout;
 
-  public RemoteDefinitionsProvider(final String remoteDefinitionCatalogUrl) throws InterruptedException, IOException {
-    this.remoteDefinitionCatalogUrl = URI.create(remoteDefinitionCatalogUrl);
-    this.timeout = DEFAULT_TIMEOUT;
-    // TODO remove this call once dependency injection framework manages object creation
-    initialize();
+  public RemoteDefinitionsProvider(final URI remoteDefinitionCatalogUrl) throws InterruptedException, IOException {
+    this(remoteDefinitionCatalogUrl, DEFAULT_TIMEOUT);
   }
 
-  public RemoteDefinitionsProvider(final String remoteDefinitionCatalogUrl, final Duration timeout) throws InterruptedException, IOException {
-    this.remoteDefinitionCatalogUrl = URI.create(remoteDefinitionCatalogUrl);
+  public RemoteDefinitionsProvider(final URI remoteDefinitionCatalogUrl, final Duration timeout) throws InterruptedException, IOException {
+    this.remoteDefinitionCatalogUrl = remoteDefinitionCatalogUrl;
     this.timeout = timeout;
     // TODO remove this call once dependency injection framework manages object creation
     initialize();
@@ -59,20 +50,11 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
 
   // TODO will be called automatically by the dependency injection framework on object creation
   public void initialize() throws InterruptedException, IOException {
-    try {
-      final JsonNode catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
-      this.sourceDefinitions =
-          parseDefinitions(catalog, "sources", StandardSourceDefinition.class, SeedType.STANDARD_SOURCE_DEFINITION.getIdName());
-      this.destinationDefinitions =
-          parseDefinitions(catalog, "destinations", StandardDestinationDefinition.class, SeedType.STANDARD_DESTINATION_DEFINITION.getIdName());
-    } catch (final HttpTimeoutException e) {
-      LOGGER.warn(
-          "Unable to retrieve the remote definition catalog. Using the catalog bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
-          e);
-      this.sourceDefinitions = Collections.emptyMap();
-      this.destinationDefinitions = Collections.emptyMap();
-    }
-
+    final JsonNode catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
+    this.sourceDefinitions =
+        parseDefinitions(catalog, "sources", StandardSourceDefinition.class, SeedType.STANDARD_SOURCE_DEFINITION.getIdName());
+    this.destinationDefinitions =
+        parseDefinitions(catalog, "destinations", StandardDestinationDefinition.class, SeedType.STANDARD_DESTINATION_DEFINITION.getIdName());
   }
 
   @Override
@@ -111,12 +93,7 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
       throw new IOException(
           "getRemoteDefinitionCatalog request ran into status code error: " + response.statusCode() + " with message: " + response.getClass());
     }
-    try {
-      return Jsons.deserialize(response.body());
-    } catch (final RuntimeException e) {
-      throw new IOException("Could not deserialize JSON response: ", e);
-    }
-
+    return Jsons.deserialize(response.body());
   }
 
   private static <T> Map<UUID, T> parseDefinitions(final JsonNode catalog,

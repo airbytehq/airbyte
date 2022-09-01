@@ -32,13 +32,13 @@ class DefinitionProviderToConfigPersistenceAdapterTest {
 
   private static MockWebServer webServer;
   private static MockResponse validCatalogResponse;
-  private static String catalogUrl;
+  private static URI catalogUrl;
   private static JsonNode jsonCatalog;
 
   @BeforeEach
   void setup() throws IOException {
     webServer = new MockWebServer();
-    catalogUrl = webServer.url("/connector_catalog.json").toString();
+    catalogUrl = URI.create(webServer.url("/connector_catalog.json").toString());
 
     final URL testCatalog = Resources.getResource("connector_catalog.json");
     final String jsonBody = Resources.toString(testCatalog, Charset.defaultCharset());

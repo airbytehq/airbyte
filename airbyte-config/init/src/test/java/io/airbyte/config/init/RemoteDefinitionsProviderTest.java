@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
@@ -30,13 +31,13 @@ class RemoteDefinitionsProviderTest {
 
   private static MockWebServer webServer;
   private static MockResponse validCatalogResponse;
-  private static String catalogUrl;
+  private static URI catalogUrl;
   private static JsonNode jsonCatalog;
 
   @BeforeEach
   void setup() throws IOException {
     webServer = new MockWebServer();
-    catalogUrl = webServer.url("/connector_catalog.json").toString();
+    catalogUrl = URI.create(webServer.url("/connector_catalog.json").toString());
 
     final URL testCatalog = Resources.getResource("connector_catalog.json");
     final String jsonBody = Resources.toString(testCatalog, Charset.defaultCharset());
@@ -120,11 +121,11 @@ class RemoteDefinitionsProviderTest {
   }
 
   @Test
-  void testTimeOut() throws Exception {
+  void testTimeOut() {
     // No request enqueued -> Timeout
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
-    assertEquals(0, remoteDefinitionsProvider.getSourceDefinitions().size());
-    assertEquals(0, remoteDefinitionsProvider.getDestinationDefinitions().size());
+    assertThrows(HttpTimeoutException.class, () -> {
+      new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
+    });
   }
 
   @Test
@@ -134,7 +135,7 @@ class RemoteDefinitionsProviderTest {
         .addHeader("Cache-Control", "no-cache")
         .setBody("not json");
     webServer.enqueue(notJson);
-    assertThrows(IOException.class, () -> {
+    assertThrows(RuntimeException.class, () -> {
       new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
     });
   }
