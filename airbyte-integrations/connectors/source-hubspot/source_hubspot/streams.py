@@ -759,14 +759,11 @@ class IncrementalStream(Stream, ABC):
         super().__init__(*args, **kwargs)
         self._state = None
         self._sync_mode = None
+        self._init_sync = pendulum.now("utc")
 
     def _update_state(self, latest_cursor):
-        if latest_cursor:
-            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
-            if new_state != self._state:
-                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-                self._state = new_state
-                self._start_date = self._state
+        self._state = self._init_sync
+        self._start_date = self._state
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
