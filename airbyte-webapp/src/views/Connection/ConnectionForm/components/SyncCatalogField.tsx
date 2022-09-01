@@ -22,7 +22,7 @@ import { ConnectionFormMode } from "../ConnectionForm";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
-const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
+const TreeViewContainer = styled.div`
   margin-bottom: 29px;
   max-height: 600px;
   overflow-y: auto;
@@ -216,7 +216,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({ additionalControl, field,
         <CatalogHeader />
         <CatalogSubheader />
         <BulkHeader />
-        <TreeViewContainer mode={mode}>
+        <TreeViewContainer>
           <CatalogTree streams={filteredStreams} onChangeStream={onChangeStream} />
         </TreeViewContainer>
       </LoadingBackdrop>
