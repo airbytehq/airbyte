@@ -480,15 +480,15 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public void updateConnectionSchedule(
-      final UUID connectionId,
-      final ConnectionScheduleType newScheduleType,
-      final ConnectionScheduleData newScheduleData) throws ApiException {
+                                       final UUID connectionId,
+                                       final ConnectionScheduleType newScheduleType,
+                                       final ConnectionScheduleData newScheduleData)
+      throws ApiException {
     apiClient.getConnectionApi().updateConnection(
         new ConnectionUpdate()
             .connectionId(connectionId)
             .scheduleType(newScheduleType)
-            .scheduleData(newScheduleData)
-    );
+            .scheduleData(newScheduleData));
   }
 
   public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
