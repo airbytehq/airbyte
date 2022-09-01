@@ -482,6 +482,9 @@ class Stream(HttpStream, ABC):
         properties = properties or self.properties
 
         for field_name, field_value in record["properties"].items():
+            if field_name not in properties:
+                self.logger.info("Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(record.get("id"), field_name))
+                continue
             declared_field_types = properties[field_name].get("type", [])
             if not isinstance(declared_field_types, Iterable):
                 declared_field_types = [declared_field_types]
