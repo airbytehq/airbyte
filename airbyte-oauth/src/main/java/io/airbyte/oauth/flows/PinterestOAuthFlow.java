@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
+import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Following docs from https://developers.pinterest.com/docs/getting-started/authentication
@@ -67,10 +69,40 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
+  protected Map<String, Object> completeOAuthFlow(final String clientId,
+                                                  final String clientSecret,
+                                                  final String authCode,
+                                                  final String redirectUrl,
+                                                  final JsonNode inputOAuthConfiguration,
+                                                  final JsonNode oAuthParamConfig)
+      throws IOException {
+    final var accessTokenUrl = getAccessTokenUrl(inputOAuthConfiguration);
+    final String authorization = Base64.getEncoder()
+        .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
+    final HttpRequest request = HttpRequest.newBuilder()
+        .POST(HttpRequest.BodyPublishers
+            .ofString(tokenReqContentType.getConverter().apply(
+                getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+        .uri(URI.create(accessTokenUrl))
+        .header("Content-Type", tokenReqContentType.getContentType())
+        .header("Authorization", "Basic " + authorization)
+        .build();
+
+    try {
+      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      return extractOAuthOutput(Jsons.deserialize(response.body()), accessTokenUrl);
+    } catch (final InterruptedException e) {
+      throw new IOException("Failed to complete PayPal OAuth flow", e);
+    }
+  }
+
+  @Override
   protected Map<String, String> getAccessTokenQueryParameters(String clientId,
                                                               String clientSecret,
                                                               String authCode,
                                                               String redirectUrl) {
+    final String authorization = Base64.getEncoder()
+        .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
     return ImmutableMap.<String, String>builder()
         // required
         .put("grant_type", "authorization_code")
