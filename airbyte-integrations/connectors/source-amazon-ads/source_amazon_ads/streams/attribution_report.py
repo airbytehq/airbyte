@@ -22,7 +22,6 @@ METRICS_MAP = {
         "attributedTotalPurchases14d",
         "totalUnitsSold14d",
         "totalAttributedSales14d",
-        "brb_bonus_amount",
     ],
     "PRODUCTS": [
         "attributedDetailPageViewsClicks14d",
@@ -127,9 +126,6 @@ class AttributionReport(AmazonAdsStream):
             "endDate": self._req_end_date,
             "cursorId": "",
         }
-
-        if self.report_type == "PERFORMANCE":
-            body["groupBy"] = "CAMPAIGN"
 
         if next_page_token:
             body["cursorId"] = next_page_token[self._next_page_token_field]
