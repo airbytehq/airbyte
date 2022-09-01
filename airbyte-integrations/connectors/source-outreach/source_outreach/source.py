@@ -128,7 +128,7 @@ class SequenceStates(IncrementalOutreachStream):
         return "sequenceStates"
 
 
-class Account(IncrementalOutreachStream):
+class Accounts(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#account
@@ -138,7 +138,7 @@ class Account(IncrementalOutreachStream):
         return "accounts"
 
 
-class Opportunity(IncrementalOutreachStream):
+class Opportunities(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#opportunity
@@ -148,7 +148,7 @@ class Opportunity(IncrementalOutreachStream):
         return "opportunities"
 
 
-class Persona(IncrementalOutreachStream):
+class Personas(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#persona
@@ -158,7 +158,7 @@ class Persona(IncrementalOutreachStream):
         return "personas"
 
 
-class Mailing(IncrementalOutreachStream):
+class Mailings(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#mailing
@@ -168,7 +168,7 @@ class Mailing(IncrementalOutreachStream):
         return "mailings"
 
 
-class Mailbox(IncrementalOutreachStream):
+class Mailboxes(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#mailbox
@@ -178,7 +178,7 @@ class Mailbox(IncrementalOutreachStream):
         return "mailboxes"
 
 
-class Stage(IncrementalOutreachStream):
+class Stages(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#stage
@@ -228,10 +228,10 @@ class SourceOutreach(AbstractSource):
             Prospects(authenticator=auth, **config),
             Sequences(authenticator=auth, **config),
             SequenceStates(authenticator=auth, **config),
-            Account(authenticator=auth, **config),
-            Opportunity(authenticator=auth, **config),
-            Persona(authenticator=auth, **config),
-            Mailing(authenticator=auth, **config),
-            Mailbox(authenticator=auth, **config),
-            Stage(authenticator=auth, **config),
+            Accounts(authenticator=auth, **config),
+            Opportunities(authenticator=auth, **config),
+            Personas(authenticator=auth, **config),
+            Mailings(authenticator=auth, **config),
+            Mailboxes(authenticator=auth, **config),
+            Stages(authenticator=auth, **config),
         ]
