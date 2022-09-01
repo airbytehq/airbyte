@@ -187,6 +187,9 @@ services:
       - POSTGRES_PWD=${DATABASE_PASSWORD}
       - POSTGRES_SEEDS=${DATABASE_HOST}
       - POSTGRES_USER=${DATABASE_USER}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
