@@ -1,12 +1,22 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Kustomer Spec
   type: object
   required:
-    - TODO
+    - api_token
+    - start_date
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    api_token:
       type: string
-      description: describe me
+      title: API Token
+      description: >-
+        Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\">docs</a> on how to obtain this
+      airbyte_secret: true
+    start_date:
+      type: string
+      title: Start Date
+      description: >-
+        The date from which you'd like to replicate the data
+      examples:
+        - "2019-01-01T00:00:00Z"
