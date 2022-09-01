@@ -10,7 +10,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-
 from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
@@ -57,7 +56,6 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""

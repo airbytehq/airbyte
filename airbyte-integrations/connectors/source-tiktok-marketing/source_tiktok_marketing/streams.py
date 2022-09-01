@@ -683,7 +683,7 @@ class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
     primary_key = "advertiser_id"
-    
+
     report_level = ReportLevel.ADVERTISER
 
 
@@ -691,7 +691,7 @@ class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
     primary_key = "campaign_id"
-    
+
     report_level = ReportLevel.CAMPAIGN
 
 
@@ -699,7 +699,7 @@ class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
 
     primary_key = "adgroup_id"
-    
+
     report_level = ReportLevel.ADGROUP
 
 
@@ -730,20 +730,19 @@ class AudienceReport(BasicReports):
 class AdGroupAudienceReports(AudienceReport):
 
     primary_key = "adgroup_id"
-    
+
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
 
-    
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
 
     primary_key = "advertiser_id"
-    
+
     report_level = ReportLevel.ADVERTISER
 
 
@@ -751,6 +750,6 @@ class CampaignsAudienceReportsByCountry(AudienceReport):
     """Custom reports for campaigns by country"""
 
     primary_key = "campaign_id"
-    
+
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
