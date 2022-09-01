@@ -43,8 +43,6 @@ const useConnectionForm = ({
   onFrequencySelect,
   onCancel,
 }: ConnectionServiceProps) => {
-  // Need to track form dirty state
-  // Might be easy if form context is in here
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -79,7 +77,6 @@ const useConnectionForm = ({
           throw new Error("Somehow this form does not have an id");
         }
 
-        console.log(onAfterSubmit?.toString());
         onAfterSubmit?.();
       } catch (e) {
         if (!(e instanceof ModalCancel)) {
