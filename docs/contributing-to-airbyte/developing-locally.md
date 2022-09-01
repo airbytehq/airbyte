@@ -93,18 +93,22 @@ VERSION=dev docker-compose up
 
 - Then, build the connector image:
 ```
-./gradlew :airbyte-integrations:connectors:<connector_name>:airbyteDocker
+docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
 ```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
+
+:::info
+
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
+
+:::
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
 - Go to `Settings` (gear icon in lower left corner) 
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Update the version number to `dev` 
+- Update the version number to use your docker image tag (default is `dev`)
 - Click `Change` to save the changes
 
-Now when you run a sync with that connector, it will use your local `dev` docker image
+Now when you run a sync with that connector, it will use your local docker image
 
 ## Run acceptance tests
 
