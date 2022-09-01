@@ -12,9 +12,9 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable extends BaseJavaMigration {
+public class V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTable extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTable.class);
 
   @Override
   public void migrate(final Context context) throws Exception {

@@ -19,16 +19,16 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest extends AbstractConfigsDatabaseTest {
+class V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTableTest extends AbstractConfigsDatabaseTest {
 
   @BeforeEach
   void beforeEach() {
     final Flyway flyway =
-        FlywayFactory.create(dataSource, "V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest", ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        FlywayFactory.create(dataSource, "V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTableTest", ConfigsDatabaseMigrator.DB_IDENTIFIER,
             ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     final ConfigsDatabaseMigrator configsDbMigrator = new ConfigsDatabaseMigrator(database, flyway);
 
-    final V0_39_17_001__AddStreamDescriptorsToStateTable previousMigration = new V0_39_17_001__AddStreamDescriptorsToStateTable();
+    final V0_40_3_001__AddProtocolVersionToActorDefinition previousMigration = new V0_40_3_001__AddProtocolVersionToActorDefinition();
     final DevDatabaseMigrator devConfigsDbMigrator = new DevDatabaseMigrator(configsDbMigrator, previousMigration.getVersion());
     devConfigsDbMigrator.createBaseline();
   }
@@ -37,7 +37,7 @@ class V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTableTest extends Abstrac
   void test() throws IOException, SQLException {
     final DSLContext context = getDslContext();
     assertTrue(foreignKeyExists(context));
-    V0_40_3_001__RemoveActorForeignKeyFromOauthParamsTable.removeActorDefinitionForeignKey(context);
+    V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTable.removeActorDefinitionForeignKey(context);
     assertFalse(foreignKeyExists(context));
   }
 
