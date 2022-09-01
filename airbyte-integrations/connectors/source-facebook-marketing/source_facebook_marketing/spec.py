@@ -3,11 +3,10 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
-import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
@@ -121,7 +120,7 @@ class ConnectorConfig(BaseConfig):
         ),
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
+        default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
     access_token: str = Field(
