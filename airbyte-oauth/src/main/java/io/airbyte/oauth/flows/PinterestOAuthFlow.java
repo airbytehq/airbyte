@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from https://developer.zendesk.com/documentation/live-chat/getting-started/auth/
+ * Following docs from https://developers.pinterest.com/docs/getting-started/authentication
  */
 public class PinterestOAuthFlow extends BaseOAuth2Flow {
 
@@ -46,13 +46,13 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
 
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
-        .setHost("api.pinterest.com")
-        .setPath("oauth2/authorizations/new")
+        .setHost("pinterest.com")
+        .setPath("oauth")
         // required
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
         .addParameter("response_type", "code")
-        .addParameter("scope", "read chat")
+        .addParameter("scope", "ads:read,boards:read,boards:read_secret,catalogs:read,pins:read,pins:read_secret,user_accounts:read")
         .addParameter("state", getState());
 
     try {
