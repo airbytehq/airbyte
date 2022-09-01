@@ -7261,71 +7261,37 @@
       - "refresh_token"
       additionalProperties: true
       properties:
-       credentials:
-          title: "Authorization Method"
-          type: "object"
-          oneOf:
-          - type: "object"
-            title: "OAuth2.0"
-            required:
-            - "credentials"
-            properties:
-              credentials:
-                type: "string"
-                const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
-                order: 0
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "Your Pinterest client ID. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
-                  >docs</a> for instructions on how to generate it."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client Secret"
-                description: "Your Pinterest client secret. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
-                  >docs</a> for instructions on how to generate it."
-                airbyte_secret: true
-              access_token:
-                type: "string"
-                title: "Access Token"
-                description: "Your Pinterest access token. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
-                  >docs</a> for instructions on how to generate it."
-                airbyte_secret: true
-              refresh_token:
-                type: "string"
-                title: "Refresh Token"
-                description: "your pinterest refresh token. see the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/authentication\"\
-                  >docs</a> for instructions on how to generate it."
-                airbyte_secret: true
-          - type: "object"
-            title: "Access Token"
-            required:
-            - "credentials"
-            - "access_token"
-            properties:
-              credentials:
-                type: "string"
-                const: "access_token"
-                enum:
-                - "access_token"
-                default: "access_token"
-                order: 0
-              access_token:
-                type: "string"
-                title: "Access Token"
-                description: "The Access Token to make authenticated requests."
-                airbyte_secret: true
-              start_date:
-                type: "string"
-                title: "Start Date"
-                description: "A date in the format YYYY-MM-DD. If you have not set a date,\
-                  \ it would be defaulted to 2020-07-28."
-                examples:
-                - "2020-07-28"
+       client_id:
+          type: "string"
+          title: "Client ID"
+          description: "Your Pinterest client ID. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
+            >docs</a> for instructions on how to generate it."
+          airbyte_secret: true
+      client_secret:
+          type: "string"
+          title: "Client Secret"
+          description: "Your Pinterest client secret. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
+            >docs</a> for instructions on how to generate it."
+          airbyte_secret: true
+      refresh_token:
+          type: "string"
+          title: "Refresh Token"
+          description: "Your Pinterest refresh token. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
+            >docs</a> for instructions on how to generate it."
+          airbyte_secret: true
+      access_token:
+          type: "string"
+          title: "Access Token"
+          description: "Your Pinterest access token. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\"\
+            >docs</a> for instructions on how to generate it."
+          airbyte_secret: true
+      start_date:
+          type: "string"
+          title: "Start Date"
+          description: "A date in the format YYYY-MM-DD. If you have not set a date,\
+            \ it would be defaulted to 2020-07-28."
+          examples:
+          - "2020-07-28"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
