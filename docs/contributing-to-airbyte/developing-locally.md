@@ -80,11 +80,11 @@ The build will take a few minutes. Once it completes, Airbyte compiled at curren
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
-## Run the `dev` image of a connector
+## Add a connector under development to Airbyte
 
 These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
 
-- First, start the web app:
+- First, build the platform images and run Airbyte:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
