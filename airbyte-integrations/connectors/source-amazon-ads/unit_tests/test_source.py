@@ -42,8 +42,25 @@ def test_spec():
 def test_check(config):
     setup_responses()
     source = SourceAmazonAds()
+    config.pop("start_date", None)
     assert source.check(None, config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
+
+    config["start_date"] = ""
+    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 4
+
+    config["start_date"] = "2022-02-20"
+    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 6
+
+    config["start_date"] = "2022-20-02"
+    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.FAILED, message="'month must be in 1..12'")
+    assert len(responses.calls) == 6
+
+    config["start_date"] = "no date"
+    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.FAILED, message="'String does not match format YYYY-MM-DD'")
+    assert len(responses.calls) == 6
 
 
 @responses.activate
