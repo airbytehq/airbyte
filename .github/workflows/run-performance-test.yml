@@ -1,4 +1,4 @@
-name: performance-test
+name: Run Performance Test
 on:
   workflow_dispatch:
     inputs:
