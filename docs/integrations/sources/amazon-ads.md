@@ -66,6 +66,7 @@ This source is capable of syncing the following streams:
 * [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 * [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports)
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
+* [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
 ## Connector-specific features and highlights
 
@@ -88,23 +89,24 @@ Information about expected report generation waiting time you may find [here](ht
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                               | Subject                                                                                                           |
-|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
-| 0.1.18 | 2022-08-25 | [15951](https://github.com/airbytehq/airbyte/pull/15951)    | Skip API error "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."                     |
-| 0.1.17 | 2022-08-24 | [15921](https://github.com/airbytehq/airbyte/pull/15921)    | Skip API error "Report date is too far in the past."                                                              |
-| 0.1.16 | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822)    | Set default value for 'region' if needed                                                                          |
-| 0.1.15 | 2022-08-20 | [15816](https://github.com/airbytehq/airbyte/pull/15816)    | Update STATE of incremental sync if no records                                                                    |
-| 0.1.14 | 2022-08-15 | [15637](https://github.com/airbytehq/airbyte/pull/15637)    | Generate slices by lazy evaluation                                                                                |
-| 0.1.12 | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469)    | Define primary_key for all report streams                                                                         |
-| 0.1.11 | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031)    | Improve report streams date-range generation                                                                      |
-| 0.1.10 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042)    | Update `additionalProperties` field to true from schemas                                                          |
-| 0.1.9  | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541)    | Improve documentation for Beta                                                                                    |
-| 0.1.8  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482)    | Update input configuration copy                                                                                   |
-| 0.1.7  | 2022-04-27 | [11730](https://github.com/airbytehq/airbyte/pull/11730)    | Update fields in source-connectors specifications                                                                 |
-| 0.1.6  | 2022-04-20 | [11659](https://github.com/airbytehq/airbyte/pull/11659)    | Add adId to products report                                                                                       |
-| 0.1.5  | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430)    | Added support OAuth2.0                                                                                            |
-| 0.1.4  | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513)    | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                           |
-| 0.1.3  | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)      | Add retry if recoverable error  occured for reporting stream processing                                           |
-| 0.1.2  | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)      | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback   |
-| 0.1.1  | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)      | Add seller and vendor filters to profiles stream                                                                  |
-| 0.1.0  | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)      | Initial version                                                                                                   |
+| Version | Date       | Pull Request                                             | Subject                                                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.1.19  | 2022-08-30 | [16130](https://github.com/airbytehq/airbyte/pull/16130) | Add attribution report.                                                                                         |
+| 0.1.18  | 2022-08-25 | [15951](https://github.com/airbytehq/airbyte/pull/15951) | Skip API error "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."                   |
+| 0.1.17  | 2022-08-24 | [15921](https://github.com/airbytehq/airbyte/pull/15921) | Skip API error "Report date is too far in the past."                                                            |
+| 0.1.16  | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822) | Set default value for 'region' if needed                                                                        |
+| 0.1.15  | 2022-08-20 | [15816](https://github.com/airbytehq/airbyte/pull/15816) | Update STATE of incremental sync if no records                                                                  |
+| 0.1.14  | 2022-08-15 | [15637](https://github.com/airbytehq/airbyte/pull/15637) | Generate slices by lazy evaluation                                                                              |
+| 0.1.12  | 2022-08-09 | [15469](https://github.com/airbytehq/airbyte/pull/15469) | Define primary_key for all report streams                                                                       |
+| 0.1.11  | 2022-07-28 | [15031](https://github.com/airbytehq/airbyte/pull/15031) | Improve report streams date-range generation                                                                    |
+| 0.1.10  | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from schemas                                                        |
+| 0.1.9   | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541) | Improve documentation for Beta                                                                                  |
+| 0.1.8   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                 |
+| 0.1.7   | 2022-04-27 | [11730](https://github.com/airbytehq/airbyte/pull/11730) | Update fields in source-connectors specifications                                                               |
+| 0.1.6   | 2022-04-20 | [11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report                                                                                     |
+| 0.1.5   | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430) | Added support OAuth2.0                                                                                          |
+| 0.1.4   | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513) | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                         |
+| 0.1.3   | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error  occured for reporting stream processing                                         |
+| 0.1.2   | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback |
+| 0.1.1   | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                |
+| 0.1.0   | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                 |
