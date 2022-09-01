@@ -1294,6 +1294,11 @@ paths:
       tags:
         - connection
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        If a catalog is specified on the update request body, only streams present in the update request's catalog
+        will be modified. To remove a stream from the connection's catalog, it should be marked with `selected: false`
+        in the request.
       operationId: updateConnection
       requestBody:
         content:
@@ -1984,7 +1989,14 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Update a connection # TODO (pmossman) add detail to the summary, especially around operations and other complex updates that can occur for web_backend
+      summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+        connection along with the rest of the operationIds in the request body.
+        If a catalog is specified on the update request body, only streams present in the update request's catalog
+        will be modified. To remove a stream from the connection's catalog, it should be marked with `selected: false`
+        in the request.
       operationId: webBackendUpdateConnection
       requestBody:
         content:

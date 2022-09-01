@@ -376,21 +376,49 @@ public class WebBackendConnectionsHandler {
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
 
-    final List<UUID> operationIds = updateOperations(connectionRead, webBackendConnectionPatch);
+    final List<UUID> newAndExistingOperationIds = updateOperations(connectionRead, webBackendConnectionPatch);
 
     // pass in operationIds because the patch object doesn't include operationIds that were just created
     // above.
-    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, operationIds);
+    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, newAndExistingOperationIds);
 
     // persist the update and set the connectionRead to the updated form.
     connectionRead = connectionsHandler.updateConnection(connectionPatch);
 
-    // now that the connection is fully updated, check for a diff between the
-    // old catalog and the updated catalog to see if any streams need to be reset.
+    // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
+    // and fetch
+    // an up-to-date connectionRead
+    connectionRead = resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
+
+    /*
+     * This catalog represents the full catalog that was used to create the configured catalog. It will
+     * have all streams that were present at the time. It will have no configuration set.
+     */
+    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+        .getConnectionAirbyteCatalog(connectionId);
+    if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+      // Update the Catalog returned to include all streams, including disabled ones
+      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
+      connectionRead.setSyncCatalog(syncCatalog);
+    }
+
+    return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  /**
+   * Given a fully updated connection, check for a diff between the old catalog and the updated
+   * catalog to see if any streams need to be reset.
+   */
+  private ConnectionRead resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
+                                              final ConfiguredAirbyteCatalog oldConfiguredCatalog,
+                                              final ConnectionRead updatedConnectionRead)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+
+    final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : false;
     if (!skipReset) {
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
-      final AirbyteCatalog upToDateAirbyteCatalog = connectionRead.getSyncCatalog();
+      final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
       final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog);
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
       final Set<StreamDescriptor> changedConfigStreamDescriptors =
@@ -414,23 +442,13 @@ public class WebBackendConnectionsHandler {
         verifyManualOperationResult(manualOperationResult);
         manualOperationResult = eventRunner.startNewManualSync(connectionId);
         verifyManualOperationResult(manualOperationResult);
-        connectionRead = connectionsHandler.getConnection(connectionId);
+
+        // return updated connectionRead after reset
+        return connectionsHandler.getConnection(connectionId);
       }
     }
-
-    /*
-     * This catalog represents the full catalog that was used to create the configured catalog. It will
-     * have all streams that were present at the time. It will have no configuration set.
-     */
-    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
-        .getConnectionAirbyteCatalog(connectionId);
-    if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
-      // Update the Catalog returned to include all streams, including disabled ones
-      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
-      connectionRead.setSyncCatalog(syncCatalog);
-    }
-
-    return buildWebBackendConnectionRead(connectionRead);
+    // if no reset was necessary, return the connectionRead without changes
+    return updatedConnectionRead;
   }
 
   private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {

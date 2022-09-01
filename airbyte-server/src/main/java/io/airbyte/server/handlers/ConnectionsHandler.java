@@ -352,6 +352,7 @@ public class ConnectionsHandler {
             "ConnectionUpdate should include scheduleData when setting the Connection scheduleType to CRON.");
         default -> {
           // shouldn't be possible to reach this case
+          throw new RuntimeException("Unrecognized scheduleType!");
         }
       }
     }

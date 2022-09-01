@@ -1838,7 +1838,10 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">updateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+If a catalog is specified on the update request body, only streams present in the update request's catalog
+will be modified. To remove a stream from the connection's catalog, it should be marked with <code>selected: false</code>
+in the request.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -9786,7 +9789,12 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+connection along with the rest of the operationIds in the request body.
+If a catalog is specified on the update request body, only streams present in the update request's catalog
+will be modified. To remove a stream from the connection's catalog, it should be marked with <code>selected: false</code>
+in the request.</div>
 
 
     <h3 class="field-label">Consumes</h3>
