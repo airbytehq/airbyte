@@ -4,8 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Talk Spec",
     "type": "object",
-    "required": ["start_date", "subdomain"],
-    "additionalProperties": true,
+    "required": ["start_date", "subdomain", "credentials"],
     "properties": {
       "start_date": {
         "type": "string",
@@ -20,7 +19,7 @@
         "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
       },
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [

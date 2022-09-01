@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import base64
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -28,16 +27,6 @@ from source_zendesk_talk.streams import (
     IVRs,
     PhoneNumbers,
 )
-
-
-class BasicApiTokenAuthenticator(TokenAuthenticator):
-    """basic Authorization header"""
-
-    def __init__(self, email: str, password: str):
-        # for API token auth we need to add the suffix '/token' in the end of email value
-        email_login = email + "/token"
-        token = base64.b64encode(f"{email_login}:{password}".encode("utf-8"))
-        super().__init__(token.decode("utf-8"), auth_method="Basic")
 
 
 class SourceZendeskTalk(AbstractSource):
@@ -68,8 +57,8 @@ class SourceZendeskTalk(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        common_kwargs = dict(authenticator=authenticator, subdomain=config["subdomain"])
-        incremental_kwargs = dict(**common_kwargs, start_date=pendulum.parse(config["start_date"]))
+        common_kwargs = {"authenticator": authenticator, "subdomain": config["subdomain"]}
+        incremental_kwargs = {**common_kwargs, **{"start_date": pendulum.parse(config["start_date"])}}
 
         return [
             AccountOverview(**common_kwargs),
