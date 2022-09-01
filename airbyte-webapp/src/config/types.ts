@@ -7,7 +7,6 @@ declare global {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
-    IS_DEMO?: string;
     CLOUD?: string;
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
@@ -25,7 +24,6 @@ export interface Config {
   apiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
-  isDemo: boolean;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;

@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -38,22 +37,18 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -115,83 +110,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Test
-  public void fullRefreshAndCDCShouldReturnSameRecords() throws Exception {
-    JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 1,
-        "bool_col", true,
-        "tiny_int_one_col", true));
-    ((ObjectNode) record1).put("tiny_int_two_col", (short) 80);
-    JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 2,
-        "bool_col", false,
-        "tiny_int_one_col", false));
-    ((ObjectNode) record2).put("tiny_int_two_col", (short) 90);
-    ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
-    Set<JsonNode> originalData = new HashSet<>(records);
-    setupForComparisonBetweenFullRefreshAndCDCSnapshot(records);
-
-    AirbyteCatalog discover = source.discover(config);
-    List<AirbyteStream> streams = discover.getStreams();
-
-    assertEquals(streams.size(), 1);
-    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
-    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
-    assertEquals(jsonSchema.get("bool_col").get("type").asText(), "boolean");
-    assertEquals(jsonSchema.get("tiny_int_one_col").get("type").asText(), "boolean");
-    assertEquals(jsonSchema.get("tiny_int_two_col").get("type").asText(), "number");
-
-    AirbyteCatalog catalog = new AirbyteCatalog().withStreams(streams);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
-
-    Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
-        AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-            .stream()
-            .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
-
-    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
-    Set<JsonNode> dataFromDebeziumSnapshot =
-        extractRecordMessages(AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-            .stream()
-            .map(airbyteRecordMessage -> {
-              JsonNode data = airbyteRecordMessage.getData();
-              removeCDCColumns((ObjectNode) data);
-              /**
-               * Debezium reads TINYINT (expect for TINYINT(1)) as IntNode while FullRefresh reads it as Short Ref
-               * : {@link io.airbyte.db.jdbc.JdbcUtils#setJsonField(java.sql.ResultSet, int, ObjectNode)} -> case
-               * TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
-               */
-              ((ObjectNode) data)
-                  .put("tiny_int_two_col", (short) data.get("tiny_int_two_col").asInt());
-              return data;
-            })
-            .collect(Collectors.toSet());
-
-    assertEquals(dataFromFullRefresh, originalData);
-    assertEquals(dataFromFullRefresh, dataFromDebeziumSnapshot);
-  }
-
-  private void setupForComparisonBetweenFullRefreshAndCDCSnapshot(ImmutableList<JsonNode> data) {
-    executeQuery("CREATE DATABASE " + "test_schema" + ";");
-    executeQuery(String.format(
-        "CREATE TABLE %s.%s(%s INTEGER, %s Boolean, %s TINYINT(1), %s TINYINT(2), PRIMARY KEY (%s));",
-        "test_schema", "table_with_tiny_int", "id", "bool_col", "tiny_int_one_col",
-        "tiny_int_two_col", "id"));
-
-    for (JsonNode record : data) {
-      executeQuery(String
-          .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
-              "table_with_tiny_int",
-              "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
-              record.get("id").asInt(), record.get("bool_col").asBoolean(),
-              record.get("tiny_int_one_col").asBoolean() ? 99 : -99, record.get("tiny_int_two_col").asInt()));
-    }
-
-    ((ObjectNode) config).put("database", "test_schema");
   }
 
   @Override
@@ -304,78 +222,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     streams.add(streamWithoutPK);
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
-  }
-
-  // TODO : Enable this test once we fix handling of DATETIME values
-  @Test
-  @Disabled
-  public void dateTimeDataTypeTest() throws Exception {
-    JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 1,
-        "datetime_col", "\'2013-09-05T10:10:02\'"));
-    JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 2,
-        "datetime_col", "\'2013-09-06T10:10:02\'"));
-    ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
-    setupForDateTimeDataTypeTest(records);
-    Set<JsonNode> originalData = records.stream().peek(c -> {
-      String dateTimeValue = c.get("datetime_col").asText();
-      ((ObjectNode) c).put("datetime_col", dateTimeValue.substring(1, dateTimeValue.length() - 1));
-    }).collect(Collectors.toSet());
-
-    AirbyteCatalog discover = source.discover(config);
-    List<AirbyteStream> streams = discover.getStreams();
-
-    assertEquals(streams.size(), 1);
-    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
-    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
-    assertEquals(jsonSchema.get("datetime_col").get("type").asText(), "string");
-
-    AirbyteCatalog catalog = new AirbyteCatalog().withStreams(streams);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-
-    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
-    Set<JsonNode> dataFromDebeziumSnapshot =
-        extractRecordMessages(AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-            .stream()
-            .map(airbyteRecordMessage -> {
-              JsonNode data = airbyteRecordMessage.getData();
-              removeCDCColumns((ObjectNode) data);
-              return data;
-            })
-            .collect(Collectors.toSet());
-
-    assertEquals(originalData, dataFromDebeziumSnapshot);
-
-    // TODO: Fix full refresh (non-cdc) mode. The value of the datetime_col is adjusted by the TIMEZONE
-    // the code is running in,
-    // in my case it got adjusted to IST i.e. "2013-09-05T15:40:02Z" and "2013-09-06T15:40:02Z".
-    // configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
-    // Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
-    // AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-    // .stream()
-    // .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
-    // assertEquals(dataFromFullRefresh, originalData);
-  }
-
-  private void setupForDateTimeDataTypeTest(ImmutableList<JsonNode> data) {
-    executeQuery("CREATE DATABASE " + "test_schema" + ";");
-    executeQuery(String.format(
-        "CREATE TABLE %s.%s(%s INTEGER, %s DATETIME, PRIMARY KEY (%s));",
-        "test_schema", "table_with_date_time", "id", "datetime_col", "id"));
-
-    executeQuery(String
-        .format("INSERT INTO %s.%s (%s, %s) VALUES (%s, %s);", "test_schema",
-            "table_with_date_time",
-            "id", "datetime_col",
-            data.get(0).get("id").asInt(), data.get(0).get("datetime_col").asText()));
-
-    executeQuery(String
-        .format("INSERT INTO %s.%s (%s, %s) VALUES (%s, %s);", "test_schema",
-            "table_with_date_time",
-            "id", "datetime_col",
-            data.get(1).get("id").asInt(), data.get(1).get("datetime_col").asText()));
-    ((ObjectNode) config).put("database", "test_schema");
   }
 
   @Test

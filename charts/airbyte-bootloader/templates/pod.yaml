@@ -59,7 +59,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
+              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -71,8 +71,22 @@ spec:
               name: {{ .Values.global.configMapName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
         {{- end }}
-        {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 10 }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: bootloader-secrets
+              key: {{ $k }}
+        {{- end }}
         {{- end }}
 
+        # Values from env
+        {{- if .Values.extraEnv }}
+        {{- range $k, $v := mergeOverwrite .Values.extraEnv .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
       resources: {{- toYaml .Values.resources | nindent 8 }}

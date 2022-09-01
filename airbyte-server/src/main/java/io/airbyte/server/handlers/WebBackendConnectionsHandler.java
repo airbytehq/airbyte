@@ -177,6 +177,8 @@ public class WebBackendConnectionsHandler {
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
+        .scheduleType(connectionRead.getScheduleType())
+        .scheduleData(connectionRead.getScheduleData())
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
@@ -360,30 +362,6 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-
-    ConnectionRead connectionRead;
-    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-
-    if (needReset) {
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
-          // streams, instead of all
-          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
-      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-    }
-    return buildWebBackendConnectionRead(connectionRead);
-  }
-
-  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
-    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
@@ -495,6 +473,8 @@ public class WebBackendConnectionsHandler {
     connectionCreate.operationIds(operationIds);
     connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
+    connectionCreate.scheduleType(webBackendConnectionCreate.getScheduleType());
+    connectionCreate.scheduleData(webBackendConnectionCreate.getScheduleData());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
@@ -514,6 +494,8 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
+    connectionUpdate.scheduleType(webBackendConnectionUpdate.getScheduleType());
+    connectionUpdate.scheduleData(webBackendConnectionUpdate.getScheduleData());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
     connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
@@ -534,6 +516,8 @@ public class WebBackendConnectionsHandler {
         .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
+        .scheduleType(webBackendConnectionSearch.getScheduleType())
+        .scheduleData(webBackendConnectionSearch.getScheduleData())
         .status(webBackendConnectionSearch.getStatus());
   }
 

@@ -10,7 +10,7 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
 
     implementation 'io.debezium:debezium-api:1.4.2.Final'
-    implementation 'io.debezium:debezium-embedded:1.4.2.Final'
+    implementation ('io.debezium:debezium-embedded:1.4.2.Final') { exclude group: 'org.slf4j', module: 'slf4j-log4j12' }
     implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'

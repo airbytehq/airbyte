@@ -23,6 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyYAML requests
       - name: Launch Integration Tests
-        run: python ./tools/bin/ci_integration_workflow_launcher.py base-normalization source:beta source:GA destination:beta destination:GA
+        run: python ./tools/bin/ci_integration_workflow_launcher.py base-normalization source-acceptance-test source:beta source:GA destination:beta destination:GA
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
