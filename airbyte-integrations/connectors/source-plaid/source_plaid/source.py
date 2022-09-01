@@ -55,7 +55,7 @@ class BalanceStream(PlaidStream):
             datetime.datetime.strftime(self.start_date, "%y-%m-%dT%H:%M:%SZ"),
             "%y-%m-%dT%H:%M:%S%z",
         )
-        options = AccountsBalanceGetRequestOptions(min_last_updated_datetime = min_last_updated_datetime)
+        options = AccountsBalanceGetRequestOptions(min_last_updated_datetime=min_last_updated_datetime)
         getRequest = AccountsBalanceGetRequest(access_token=self.access_token, options=options)
         balance_response = self.client.accounts_balance_get(getRequest)
         for balance in balance_response["accounts"]:
