@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
 import io.airbyte.api.model.generated.CatalogDiff;
@@ -56,6 +57,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -355,19 +357,14 @@ public class ConnectionsHandler {
     }
   }
 
-  private static Map<StreamDescriptor, AirbyteStreamAndConfiguration> getDescriptorToStreamAndConfigMap(final AirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
-        .collect(Collectors.toMap(
-            s -> new StreamDescriptor().name(s.getStream().getName()).namespace(s.getStream().getNamespace()),
-            s -> s));
-  }
-
   /**
    * Given an existing AirbyteCatalog and a patch AirbyteCatalog, return a new catalog consisting of
    * all streams from the patch catalog, plus any remaining streams from the existing catalog.
+   * Preserves the order of any streams that were present in the existing catalog, and adds new
+   * streams from the patch in the order they were provided.
    */
   private static AirbyteCatalog toPatchedAirbyteCatalog(final AirbyteCatalog existing, final AirbyteCatalog patch) {
+
     final Map<StreamDescriptor, AirbyteStreamAndConfiguration> existingDescriptorToStreamAndConfig = getDescriptorToStreamAndConfigMap(existing);
     final Map<StreamDescriptor, AirbyteStreamAndConfiguration> patchDescriptorToStreamAndConfig = getDescriptorToStreamAndConfigMap(patch);
 
@@ -380,7 +377,85 @@ public class ConnectionsHandler {
                 // if a stream is present in both the existing map and the patch map, keep the patched value
                 (existingVal, patchedVal) -> patchedVal));
 
-    return new AirbyteCatalog().streams(merged.values().stream().toList());
+    final List<AirbyteStreamAndConfiguration> sortedMergedStreams = sortStreamsForPatchedCatalog(merged.values().stream().toList(), existing, patch);
+
+    return new AirbyteCatalog().streams(sortedMergedStreams);
+  }
+
+  private static Map<StreamDescriptor, AirbyteStreamAndConfiguration> getDescriptorToStreamAndConfigMap(final AirbyteCatalog catalog) {
+    return catalog.getStreams()
+        .stream()
+        .collect(Collectors.toMap(
+            s -> getStreamDescriptorForStream(s.getStream()),
+            s -> s));
+  }
+
+  private static StreamDescriptor getStreamDescriptorForStream(final AirbyteStream stream) {
+    return new StreamDescriptor().name(stream.getName()).namespace(stream.getNamespace());
+  }
+
+  private static Map<StreamDescriptor, Integer> getStreamPositionMap(final AirbyteCatalog catalog) {
+    final Map<StreamDescriptor, Integer> positions = new HashMap<>();
+    for (int i = 0; i < catalog.getStreams().size(); i++) {
+      positions.put(getStreamDescriptorForStream(catalog.getStreams().get(i).getStream()), i);
+    }
+    return positions;
+  }
+
+  /**
+   * Given an unsorted list of streams, the original catalog, and the patch catalog, returns a sorted
+   * list of streams where existing stream positions are preserved, and new streams from the patch are
+   * added in the order they were listed in the patch.
+   */
+  private static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> mergedStreams,
+                                                                                  final AirbyteCatalog existing,
+                                                                                  final AirbyteCatalog patch) {
+
+    final Map<StreamDescriptor, Integer> originalStreamDescriptorPositions = getStreamPositionMap(existing);
+    final Map<StreamDescriptor, Integer> patchStreamDescriptorPositions = getStreamPositionMap(patch);
+
+    return mergedStreams.stream().sorted((stream1, stream2) -> {
+      final StreamDescriptor stream1Descriptor = getStreamDescriptorForStream(stream1.getStream());
+      final StreamDescriptor stream2Descriptor = getStreamDescriptorForStream(stream2.getStream());
+
+      final Integer stream1OriginalPosition = originalStreamDescriptorPositions.get(stream1Descriptor);
+      final Integer stream2OriginalPosition = originalStreamDescriptorPositions.get(stream2Descriptor);
+
+      final Integer stream1PatchPosition = patchStreamDescriptorPositions.get(stream1Descriptor);
+      final Integer stream2PatchPosition = patchStreamDescriptorPositions.get(stream2Descriptor);
+
+      // if both streams were present in the original, preserve their order regardless of whether they are
+      // present in the patch too
+      if (stream1OriginalPosition != null && stream2OriginalPosition != null) {
+        return stream1OriginalPosition.compareTo(stream2OriginalPosition); // lower position will come first in the result
+      }
+
+      // if stream1 is present in the original but stream2 isn't, stream1 should come first
+      if (stream1OriginalPosition != null) {
+        return -1; // returning -1 selects the left-hand argument to come first, ie stream1
+      }
+
+      // likewise, if stream2 is in the original but stream1 isn't, stream2 shoudl come first
+      if (stream2OriginalPosition != null) {
+        return 1;
+      }
+
+      // at this point, neither stream was in the original, so mirror the above logic for the patch
+      if (stream1PatchPosition != null && stream2PatchPosition != null) {
+        return stream1PatchPosition.compareTo(stream2PatchPosition);
+      }
+
+      if (stream1PatchPosition != null) {
+        return -1;
+      }
+
+      if (stream2PatchPosition != null) {
+        return 1;
+      }
+
+      // should not be possible to reach this case so throw a run-time exception
+      throw new RuntimeException("Reach a state that should be impossible, indicating a bug!");
+    }).collect(Collectors.toList());
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
