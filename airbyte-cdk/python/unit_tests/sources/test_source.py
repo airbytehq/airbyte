@@ -10,11 +10,22 @@ from typing import Any, Mapping, MutableMapping
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteGlobalState,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pydantic import ValidationError
 
 
 class MockSource(Source):
@@ -93,18 +104,184 @@ def abstract_source(mocker):
     return MockAbstractSource()
 
 
-def test_read_state(source):
-    state = {"updated_at": "yesterday"}
-
+@pytest.mark.parametrize(
+    "test_name, incoming_state, expected_state, expected_error",
+    [
+        (
+            "test_incoming_stream_state",
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"created_at": "2009-07-19"},
+                        "stream_descriptor": {"name": "movies", "namespace": "public"},
+                    },
+                }
+            ],
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                    ),
+                )
+            ],
+            None,
+        ),
+        (
+            "test_incoming_multiple_stream_states",
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"created_at": "2009-07-19"},
+                        "stream_descriptor": {"name": "movies", "namespace": "public"},
+                    },
+                },
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"id": "villeneuve_denis"},
+                        "stream_descriptor": {"name": "directors", "namespace": "public"},
+                    },
+                },
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"created_at": "1995-12-27"},
+                        "stream_descriptor": {"name": "actors", "namespace": "public"},
+                    },
+                },
+            ],
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                    ),
+                ),
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="directors", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"id": "villeneuve_denis"}),
+                    ),
+                ),
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "1995-12-27"}),
+                    ),
+                ),
+            ],
+            None,
+        ),
+        (
+            "test_incoming_global_state",
+            [
+                {
+                    "type": "GLOBAL",
+                    "global": {
+                        "shared_state": {"shared_key": "shared_val"},
+                        "stream_states": [
+                            {"stream_state": {"created_at": "2009-07-19"}, "stream_descriptor": {"name": "movies", "namespace": "public"}}
+                        ],
+                    },
+                }
+            ],
+            [
+                AirbyteStateMessage.parse_obj(
+                    {
+                        "type": AirbyteStateType.GLOBAL,
+                        "global": AirbyteGlobalState(
+                            shared_state=AirbyteStateBlob.parse_obj({"shared_key": "shared_val"}),
+                            stream_states=[
+                                AirbyteStreamState(
+                                    stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
+                                    stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                                )
+                            ],
+                        ),
+                    }
+                ),
+            ],
+            None,
+        ),
+        (
+            "test_incoming_legacy_state",
+            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
+                )
+            ],
+            None,
+        ),
+        ("test_empty_incoming_stream_state", [], [], None),
+        ("test_none_incoming_state", None, [], None),
+        ("test_empty_incoming_legacy_state", {}, [], None),
+        (
+            "test_invalid_stream_state_invalid_type",
+            [
+                {
+                    "type": "NOT_REAL",
+                    "stream": {
+                        "stream_state": {"created_at": "2009-07-19"},
+                        "stream_descriptor": {"name": "movies", "namespace": "public"},
+                    },
+                }
+            ],
+            None,
+            ValidationError,
+        ),
+        (
+            "test_invalid_stream_state_missing_descriptor",
+            [{"type": "STREAM", "stream": {"stream_state": {"created_at": "2009-07-19"}}}],
+            None,
+            ValidationError,
+        ),
+        (
+            "test_invalid_global_state_missing_streams",
+            [{"type": "GLOBAL", "global": {"shared_state": {"shared_key": "shared_val"}}}],
+            None,
+            ValidationError,
+        ),
+        (
+            "test_invalid_global_state_streams_not_list",
+            [
+                {
+                    "type": "GLOBAL",
+                    "global": {
+                        "shared_state": {"shared_key": "shared_val"},
+                        "stream_states": {
+                            "stream_state": {"created_at": "2009-07-19"},
+                            "stream_descriptor": {"name": "movies", "namespace": "public"},
+                        },
+                    },
+                }
+            ],
+            None,
+            ValidationError,
+        ),
+    ],
+)
+def test_read_state(source, test_name, incoming_state, expected_state, expected_error):
     with tempfile.NamedTemporaryFile("w") as state_file:
-        state_file.write(json.dumps(state))
+        state_file.write(json.dumps(incoming_state))
         state_file.flush()
-        actual = source.read_state(state_file.name)
-        assert state == actual
+        if expected_error:
+            with pytest.raises(expected_error):
+                source.read_state(state_file.name)
+        else:
+            actual = source.read_state(state_file.name)
+            assert actual == expected_state
 
 
 def test_read_state_nonexistent(source):
-    assert {} == source.read_state("")
+    assert [] == source.read_state("")
 
 
 def test_read_catalog(source):

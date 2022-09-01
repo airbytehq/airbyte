@@ -6,11 +6,10 @@
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from typing import Any, Dict, Generic, Iterable, Mapping, MutableMapping, TypeVar
+from typing import Any, Generic, Iterable, List, Mapping, MutableMapping, TypeVar, Union
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
@@ -39,15 +38,22 @@ class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]
         """
 
 
-class Source(DefaultConnectorMixin, BaseSource[Mapping[str, Any], MutableMapping[str, Any], ConfiguredAirbyteCatalog], ABC):
+class Source(
+    DefaultConnectorMixin,
+    BaseSource[Mapping[str, Any], Union[List[AirbyteStateMessage], MutableMapping[str, Any]], ConfiguredAirbyteCatalog],
+    ABC,
+):
     # can be overridden to change an input state
-    def read_state(self, state_path: str) -> Dict[str, Any]:
+    def read_state(self, state_path: str) -> List[AirbyteStateMessage]:
         if state_path:
             state_obj = json.loads(open(state_path, "r").read())
-        else:
-            state_obj = {}
-        state = defaultdict(dict, state_obj)
-        return state
+            if not state_obj:
+                return []
+            elif isinstance(state_obj, List):
+                return [AirbyteStateMessage.parse_obj(state) for state in state_obj]
+            else:
+                return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
+        return []
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
