@@ -14,7 +14,8 @@
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
         "type": "string",
-        "title": "Host"
+        "title": "Host",
+        "order": 1
       },
       "port": {
         "description": "Port of the database.",
@@ -23,35 +24,47 @@
         "maximum": 65536,
         "default": 5439,
         "examples": ["5439"],
-        "title": "Port"
+        "title": "Port",
+        "order": 2
       },
       "username": {
         "description": "Username to use to access the database.",
         "type": "string",
-        "title": "Username"
+        "title": "Username",
+        "order": 3
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
-        "title": "Password"
+        "title": "Password",
+        "order": 4
       },
       "database": {
         "description": "Name of the database.",
         "type": "string",
-        "title": "Database"
+        "title": "Database",
+        "order": 5
       },
       "schema": {
         "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
         "default": "public",
-        "title": "Default Schema"
+        "title": "Default Schema",
+        "order": 6
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 7
       },
       "uploading_method": {
         "title": "Uploading Method",
         "type": "object",
         "description": "The method how the data will be uploaded to the database.",
+        "order": 8,
         "oneOf": [
           {
             "title": "Standard",
