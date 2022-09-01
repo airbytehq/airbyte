@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.0-alpha",
+  "version": "0.40.3",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -17,6 +17,8 @@
     "storybook": "start-storybook -p 9009 --quiet",
     "build:storybook": "build-storybook -o 'build/storybook'",
     "lint": "eslint --ext js,ts,tsx src",
+    "stylelint": "stylelint \"**/*.{css,scss}\"",
+    "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
@@ -119,6 +121,11 @@
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
     "storybook-addon-mock": "^2.4.1",
+    "stylelint": "^14.9.1",
+    "stylelint-config-css-modules": "^4.1.0",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-standard": "^26.0.0",
+    "stylelint-config-standard-scss": "^5.0.0",
     "tar": "^6.1.11",
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",

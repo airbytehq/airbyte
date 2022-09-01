@@ -105,7 +105,6 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      LOGGER.info("Creating docker job ID: {}", jobId);
       final List<String> cmd = Lists.newArrayList(
           "docker",
           "run",
@@ -117,6 +116,7 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
       final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+      LOGGER.info("Creating docker container = {} with resources {}", containerName, resourceRequirements);
       cmd.add("--name");
       cmd.add(containerName);
 
