@@ -24,6 +24,7 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { ConnectionOrPartialConnection } from "hooks/services/Connection/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -228,9 +229,7 @@ const getInitialNormalization = (
 };
 
 const useInitialValues = (
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">),
+  connection: ConnectionOrPartialConnection,
   destDefinition: DestinationDefinitionSpecificationRead,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {

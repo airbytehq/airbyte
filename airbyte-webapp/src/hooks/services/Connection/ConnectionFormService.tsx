@@ -21,10 +21,12 @@ import {
 import { useFormChangeTrackerService, useUniqueFormId } from "../FormChangeTracker";
 import { ModalCancel } from "../Modal";
 
+export type ConnectionOrPartialConnection =
+  | WebBackendConnectionRead
+  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+
 export interface ConnectionServiceProps {
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+  connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   onAfterSubmit?: () => void;
