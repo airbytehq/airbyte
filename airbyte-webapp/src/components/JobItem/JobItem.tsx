@@ -48,7 +48,7 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const didSucceed = didJobSucceed(job);
 
   const onExpand = () => {
-    setIsOpen(!isOpen);
+    setIsOpen((prevIsOpen) => !prevIsOpen);
   };
 
   const onDetailsToggled = useCallback(() => {
