@@ -1,4 +1,4 @@
-name: Cleanup old GH action workflow runs
+name: Cleanup old GH workflow runs
 
 on: 
   schedule:
