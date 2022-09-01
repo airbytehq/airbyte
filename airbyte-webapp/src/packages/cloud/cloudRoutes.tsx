@@ -27,8 +27,6 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
-import { useConfig } from "./services/config";
-import useFullStory from "./services/thirdParty/fullstory/useFullStory";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { DefaultView } from "./views/DefaultView";
@@ -137,8 +135,6 @@ const MainViewRoutes = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, providers } = useAuthService();
-  const config = useConfig();
-  useFullStory(config.fullstory, config.fullstory.enabled, user);
 
   const { search } = useLocation();
 
