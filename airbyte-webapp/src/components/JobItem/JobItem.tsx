@@ -11,6 +11,7 @@ import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
 import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
+import styles from "./JobItem.module.scss";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -20,13 +21,6 @@ const Item = styled.div<{ isFailed: boolean }>`
   &:hover {
     background: ${({ theme, isFailed }) => (isFailed ? theme.dangerTransparentColor : theme.greyColor0)};
   }
-`;
-
-const LoadLogs = styled.div`
-  background: ${({ theme }) => theme.whiteColor};
-  text-align: center;
-  padding: 6px 0;
-  min-height: 58px;
 `;
 
 interface JobItemProps {
@@ -74,9 +68,9 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
         <div>
           <Suspense
             fallback={
-              <LoadLogs>
-                <Spinner />
-              </LoadLogs>
+              <div className={styles.logsLoadingContainer}>
+                <Spinner small />
+              </div>
             }
           >
             {isOpen && (

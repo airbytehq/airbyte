@@ -63,7 +63,7 @@ resources:
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
-extraEnv: {}
+extraEnv: []
 secrets: {}
-
+env_vars: {}
 
