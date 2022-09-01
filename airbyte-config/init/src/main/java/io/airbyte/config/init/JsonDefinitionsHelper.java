@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class PatchingHelpers {
+public class JsonDefinitionsHelper {
 
   public static JsonNode addMissingTombstoneField(final JsonNode definitionJson) {
     final JsonNode currTombstone = definitionJson.get("tombstone");

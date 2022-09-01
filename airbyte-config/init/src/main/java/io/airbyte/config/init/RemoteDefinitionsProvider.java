@@ -4,7 +4,7 @@
 
 package io.airbyte.config.init;
 
-import static io.airbyte.config.init.PatchingHelpers.addMissingTombstoneField;
+import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneField;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;

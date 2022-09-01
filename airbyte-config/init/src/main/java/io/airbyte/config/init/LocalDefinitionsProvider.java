@@ -4,9 +4,9 @@
 
 package io.airbyte.config.init;
 
-import static io.airbyte.config.init.PatchingHelpers.addMissingCustomField;
-import static io.airbyte.config.init.PatchingHelpers.addMissingPublicField;
-import static io.airbyte.config.init.PatchingHelpers.addMissingTombstoneField;
+import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingCustomField;
+import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingPublicField;
+import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneField;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
