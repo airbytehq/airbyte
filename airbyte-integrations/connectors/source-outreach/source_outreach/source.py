@@ -62,7 +62,7 @@ class OutreachStream(HttpStream, ABC):
         for element in data:
             relationships: Dict[str, List[int]] = dict()
             for r_type, relations in element.get("relationships").items():
-                relationships[f"rel_{r_type}"] = []
+                relationships[f"{r_type}"] = []
                 if relations.get("data"):  # Manage None and pass empty data. Some relationships only have links we do not handle these.
                     data = relations.get("data", [])
 
@@ -70,7 +70,7 @@ class OutreachStream(HttpStream, ABC):
                         # instead of having [{'type': 'sequenceState', 'id': 1}] we have {'type': 'sequenceState', 'id': 1}
                         data = [data]
 
-                    relationships[f"rel_{r_type}"] = [e.get("id") for e in data]
+                    relationships[f"{r_type}"] = [e.get("id") for e in data]
 
             yield {**element.get("attributes"), **{self.primary_key: element[self.primary_key], **relationships}}
 

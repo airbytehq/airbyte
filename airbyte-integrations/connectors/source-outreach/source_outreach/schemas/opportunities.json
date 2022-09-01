@@ -337,7 +337,7 @@
     "custom59": {
       "type": ["null", "string"]
     },
-    "custom6":, {
+    "custom6": {
       "type": ["null", "string"]
     },
     "custom60": {
@@ -370,7 +370,7 @@
     "custom69": {
       "type": ["null", "string"]
     },
-    "custom7":, {
+    "custom7": {
       "type": ["null", "string"]
     },
     "custom70": {
@@ -403,7 +403,7 @@
     "custom79": {
       "type": ["null", "string"]
     },
-    "custom8":, {
+    "custom8": {
       "type": ["null", "string"]
     },
     "custom80": {
@@ -436,7 +436,7 @@
     "custom89": {
       "type": ["null", "string"]
     },
-    "custom9":, {
+    "custom9": {
       "type": ["null", "string"]
     },
     "custom90": {
@@ -472,7 +472,10 @@
     "description": {
       "type": ["null", "string"]
     },
-    "externalCreatedAt": null,
+    "externalCreatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "healthCategory": {
       "type": ["null", "string"]
     },
@@ -491,7 +494,7 @@
     "mapStatus": {
       "type": ["null", "string"]
     },
-    "name":, {
+    "name": {
       "type": ["null", "string"]
     },
     "nextStep": {
@@ -500,7 +503,7 @@
     "opportunityType": {
       "type": ["null", "string"]
     },
-    "probability":, {
+    "probability": {
       "type": ["null", "integer"]
     },
     "prospectingRepId": {
