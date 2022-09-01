@@ -38,18 +38,6 @@ logger = logging.getLogger("airbyte")
 
 
 class SourceFacebookMarketing(AbstractSource):
-    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
-        source_spec = self.spec(logging.getLogger("airbyte"))
-        end_date = source_spec.connectionSpecification["properties"]["end_date"]
-        # We highlight here that "end_date" is not a simple "string" field it's an extended type with "format" modifier.
-        # If "end_date" is provided as an empty string we can treat this case as missed value.
-        if end_date["type"] == "string" and "format" in end_date:
-            if config.get("end_date") == "":
-                config.pop("end_date")
-        config_path = os.path.join(temp_dir, "config.json")
-        self.write_config(config, config_path)
-        return config
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -57,6 +45,8 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        if config.get("end_date") == "":
+            config.pop("end_date")
         config = ConnectorConfig.parse_obj(config)
         if pendulum.instance(config.end_date) < pendulum.instance(config.start_date):
             raise ValueError("end_date must be equal or after start_date.")
@@ -73,6 +63,8 @@ class SourceFacebookMarketing(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of the stream instances
         """
+        if config.get("end_date") == "":
+            config.pop("end_date")
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)
 
         config.start_date = validate_start_date(config.start_date)
