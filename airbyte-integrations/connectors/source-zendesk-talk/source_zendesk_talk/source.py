@@ -49,12 +49,12 @@ class SourceZendeskTalk(AbstractSource):
         # new authentication flow
         auth = config["credentials"]
         if auth:
-            if auth["credentials"] == "oauth2.0":
+            if auth["auth_type"] == "oauth2.0":
                 return TokenAuthenticator(token=auth["access_token"])
-            elif auth["credentials"] == "api_token":
+            elif auth["auth_type"] == "api_token":
                 return HTTPBasicAuth(username=f'{auth["email"]}/token', password=auth["api_token"])
             else:
-                raise Exception(f"Not implemented authorization method: {auth['credentials']}")
+                raise Exception(f"Not implemented authorization method: {auth['auth_type']}")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)

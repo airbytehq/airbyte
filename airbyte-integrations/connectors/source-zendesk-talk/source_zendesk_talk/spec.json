@@ -30,7 +30,7 @@
             "required": ["email", "api_token"],
             "additionalProperties": true,
             "properties": {
-              "credentials": {
+              "auth_type": {
                 "type": "string",
                 "const": "api_token"
               },
@@ -53,7 +53,7 @@
             "required": ["access_token"],
             "additionalProperties": true,
             "properties": {
-              "credentials": {
+              "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
                 "order": 0
@@ -72,7 +72,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials", "credentials"],
+    "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
