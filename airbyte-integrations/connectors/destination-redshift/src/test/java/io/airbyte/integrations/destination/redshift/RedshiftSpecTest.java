@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.redshift;
+package io.airbyte.integrations.destination.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,7 +38,7 @@ public class RedshiftSpecTest {
   static void init() throws IOException {
     configText = MoreResources.readResource("config-test.json");
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "spec-test"), "schema.json", spec).toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -80,8 +80,8 @@ public class RedshiftSpecTest {
 
   @Test
   void testSchemaMissing() {
-    ((ObjectNode) config).remove("schemas");
-    assertTrue(validator.test(schema, config));
+    ((ObjectNode) config).remove("schema");
+    assertFalse(validator.test(schema, config));
   }
 
   @Test
@@ -97,7 +97,7 @@ public class RedshiftSpecTest {
 
   @Test
   void testJdbcAdditionalProperty() throws Exception {
-    final ConnectorSpecification spec = new RedshiftSource().spec();
+    final ConnectorSpecification spec = new RedshiftDestination().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
 
