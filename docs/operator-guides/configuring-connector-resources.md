@@ -2,7 +2,7 @@
 
 As noted in [Workers & Jobs](../understanding-airbyte/jobs.md), there are four different types of jobs.
 
-Although it is possible to configure resources for all four jobs, we focus on Sync jobs as it is the most heavily run job.
+Although it is possible to configure resources for all four jobs, we focus on Sync jobs as it is the most frequently run job.
 
 There are three different ways to configure connector resource requirements for a Sync:
 1. Instance-wide - applies to all containers in a Sync.
