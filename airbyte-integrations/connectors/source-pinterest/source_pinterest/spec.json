@@ -36,7 +36,127 @@
         "title": "Start Date",
         "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to 2020-07-28.",
         "examples": ["2020-07-28"]
+      },
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": ["credentials"],
+            "properties": {
+              "credentials": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your OAuth application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Refresh Token to obtain new Access Token, when it's expired.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Access Token",
+            "required": ["credentials", "access_token"],
+            "properties": {
+              "credentials": {
+                "type": "string",
+                "const": "access_token",
+                "enum": ["access_token"],
+                "default": "access_token",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "The Access Token to make authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+        ]
       }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "credentials"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subdomain": {
+            "type": "string",
+            "path_in_connector_config": ["subdomain"]
+          }
+        }
+
     }
   }
 }
