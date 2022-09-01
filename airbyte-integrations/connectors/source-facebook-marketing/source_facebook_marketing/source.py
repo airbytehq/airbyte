@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
+import pendulum
 import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
@@ -38,7 +39,10 @@ class SourceFacebookMarketing(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
         if config.get("end_date") == "":
             config.pop("end_date")
-        return ConnectorConfig.parse_obj(config)
+        config = ConnectorConfig.parse_obj(config)
+        config.start_date = pendulum.instance(config.start_date)
+        config.end_date = pendulum.instance(config.end_date)
+        return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
