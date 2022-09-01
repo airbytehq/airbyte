@@ -54,6 +54,8 @@ class SourceAmazonAds(AbstractSource):
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+        else:
+            config["start_date"] = None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
