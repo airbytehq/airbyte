@@ -56,6 +56,7 @@ class SourceAmazonAds(AbstractSource):
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
         else:
             config["start_date"] = None
+        return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -64,7 +65,7 @@ class SourceAmazonAds(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            self._validate_and_transform(config)
+            config = self._validate_and_transform(config)
         except Exception as e:
             return False, str(e)
         # Check connection by sending list of profiles request. Its most simple
@@ -80,7 +81,7 @@ class SourceAmazonAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
-        self._validate_and_transform(config)
+        config = self._validate_and_transform(config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
         # All data for individual Amazon Ads stream divided into sets of data for
