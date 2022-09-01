@@ -1,0 +1,62 @@
+name: klarna-push-container-image
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - airbyte-fork/airbyte-integrations/connectors/airbyte-source-klarna/**
+
+jobs:
+  push-container-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      image: airbyte/source-klarna
+      tag: dev
+      latest-tag: latest
+      artifact-registry-location: europe-west1-docker.pkg.dev
+      artifact-repository: ark-kapital-production/airbyte-ark-custom
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/551968177555/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: connectors-github-runner@ark-kapital-production.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v0
+
+      - name: Build image
+        run: docker build -t ${{ env.image }}:${{ env.tag }} source-klarna
+
+      - name: Tag image
+        run: |
+          BRANCH_NAME=$(echo '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9]/-/g')
+          GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          docker tag ${{ env.image }}:${{ env.tag }} ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }}:$BRANCH_NAME
+          docker tag ${{ env.image }}:${{ env.tag }} ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }}:${{ env.tag }}
+          docker tag ${{ env.image }}:${{ env.tag }} ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }}:$GITHUB_SHA_SHORT
+
+      - name: Configure docker credentials helper
+        run: gcloud auth configure-docker ${{ env.artifact-registry-location }}
+
+      - name: Push dev image
+        run: |
+          docker push ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }} --all-tags
+
+      - name: Push main image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          VERSION=$(docker image inspect --format='{{ index .Config.Labels "io.airbyte.version"}}' ${{ env.image }}:${{ env.tag }})
+          docker tag ${{ env.image }}:${{ env.tag }} ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }}:$VERSION
+          docker tag ${{ env.image }}:${{ env.tag }} ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }}:${{ env.latest-tag }}
+          docker push ${{ env.artifact-registry-location }}/${{ env.artifact-repository }}/${{ env.image }} --all-tags
+
+
+
+
+
