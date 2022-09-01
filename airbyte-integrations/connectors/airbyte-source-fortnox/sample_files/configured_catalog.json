@@ -1,0 +1,69 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "company_information",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "CompanyInformation": {
+              "type": "object",
+              "Address": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "CountryCode": {
+                "type": "string"
+              },
+              "DatabaseNumber": {
+                "type": "integer"
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "OrganizationNumber": {
+                "type": "string"
+              },
+              "VisitAddress": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VisitCity": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VisitCountryCode": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VisitZipCode": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "ZipCode": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

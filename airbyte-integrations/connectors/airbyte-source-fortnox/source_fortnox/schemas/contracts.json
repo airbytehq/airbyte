@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "required": [
+    "CustomerNumber",
+    "PeriodEnd"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Continuous": {
+      "type": "boolean"
+    },
+    "ContractLength": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Currency": {
+      "type": "string"
+    },
+    "CustomerName": {
+      "type": "string"
+    },
+    "CustomerNumber": {
+      "type": "string"
+    },
+    "DocumentNumber": {
+      "type": "string"
+    },
+    "Invoiceinterval": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "InvoicesRemaining": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "LastInvoiceDate": {
+      "type": "string"
+    },
+    "PeriodStart": {
+      "type": "string",
+      "format": "date"
+    },
+    "PeriodEnd": {
+      "type": "string",
+      "format": "date"
+    },
+    "Status": {
+      "type": "string"
+    },
+    "TemplateNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Total": {
+      "type": "number",
+      "format": "double"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

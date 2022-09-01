@@ -1,0 +1,82 @@
+{
+  "title": "voucher_details",
+  "type": "object",
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Comments": {
+      "type": ["null", "string"]
+    },
+    "CostCenter": {
+      "type": "string"
+    },
+    "Project": {
+      "type": ["null","string"]
+    },
+    "ReferenceNumber": {
+      "type": "string"
+    },
+    "ReferenceType": {
+      "type": "string",
+      "enum": [
+        "INVOICE",
+        "SUPPLIERINVOICE",
+        "INVOICEPAYMENT",
+        "SUPPLIERPAYMENT",
+        "MANUAL",
+        "CASHINVOICE",
+        "ACCRUAL"
+      ]
+    },
+    "TransactionDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "VoucherNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "VoucherRows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Account": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "CostCenter": {
+            "type": "string"
+          },
+          "Credit": {
+            "type": "number"
+          },
+          "Debit": {
+            "type": "number"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Project": {
+            "type": ["null","string"]
+          },
+          "Removed": {
+            "type": "boolean"
+          },
+          "TransactionInformation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "VoucherSeries": {
+      "type": "string"
+    },
+    "Year": {
+      "type": "integer",
+      "format": "int32"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,115 @@
+{
+  "title": "accounts",
+  "type": "object",
+  "required": [
+    "Description",
+    "Number"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Active": {
+      "type": "boolean"
+    },
+    "BalanceBroughtForward": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "double"
+    },
+    "CostCenter": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CostCenterSettings": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "Description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "Number": {
+      "type": "integer",
+      "format": "int32",
+      "minimum": 1000,
+      "maximum": 9999
+    },
+    "Project": {
+      "type": "string"
+    },
+    "ProjectSettings": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "SRU": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Year": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "VATCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "BalanceCarriedForward": {
+      "type": "number",
+      "format": "double"
+    },
+    "TransactionInformation": {
+      "type": "string"
+    },
+    "TransactionInformationSettings": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "QuantitySettings": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "QuantityUnit": {
+      "type": "string"
+    },
+    "OpeningQuantities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Project": {
+            "type": "string"
+          },
+          "Balance": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

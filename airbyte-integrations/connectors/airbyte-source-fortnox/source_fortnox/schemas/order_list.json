@@ -1,0 +1,54 @@
+{
+  "title": "order_list",
+  "type": "object",
+  "required": [
+    "CustomerNumber"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Cancelled": {
+      "type": "boolean"
+    },
+    "Currency": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 3
+    },
+    "CustomerName": {
+      "type": "string"
+    },
+    "DeliveryDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "DocumentNumber": {
+      "type": "string"
+    },
+    "ExternalInvoiceReference1": {
+      "type": "string"
+    },
+    "ExternalInvoiceReference2": {
+      "type": "string"
+    },
+    "OrderDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "OrderType": {
+      "type": "string"
+    },
+    "Project": {
+      "type": "string"
+    },
+    "Sent": {
+      "type": "boolean"
+    },
+    "Total": {
+      "type": "number",
+      "format": "double"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

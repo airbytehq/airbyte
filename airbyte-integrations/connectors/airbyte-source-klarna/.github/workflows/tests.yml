@@ -1,0 +1,25 @@
+name: tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          cd source-klarna
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install '.[tests]'
+
+      - name: Unit tests
+        run: |
+          cd source-klarna
+          python -m pytest unit_tests

@@ -1,0 +1,317 @@
+{
+  "title": "orders",
+  "type": "object",
+  "required": [
+    "DocumentNumber"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "@urlTaxReductionList": {
+      "type": "string"
+    },
+    "AdministrationFee": {
+      "type": "number",
+      "format": "double"
+    },
+    "AdministrationFeeVAT": {
+      "type": "number",
+      "format": "double"
+    },
+    "Address1": {
+      "type": "string"
+    },
+    "Address2": {
+      "type": "string"
+    },
+    "BasisTaxReduction": {
+      "type": ["null", "number"],
+      "format": "double"
+    },
+    "Cancelled": {
+      "type": "boolean"
+    },
+    "City": {
+      "type": "string"
+    },
+    "Comments": {
+      "type": "string"
+    },
+    "ContributionPercent": {
+      "type": "number",
+      "format": "double"
+    },
+    "ContributionValue": {
+      "type": "number",
+      "format": "double"
+    },
+    "CopyRemarks": {
+      "type": "boolean"
+    },
+    "Country": {
+      "type": "string"
+    },
+    "CostCenter": {
+      "type": "string"
+    },
+    "Currency": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 3
+    },
+    "CurrencyRate": {
+      "type": "number",
+      "format": "double"
+    },
+    "CurrencyUnit": {
+      "type": "number",
+      "format": "double"
+    },
+    "CustomerName": {
+      "type": "string"
+    },
+    "CustomerNumber": {
+      "type": "string"
+    },
+    "DeliveryAddress1": {
+      "type": "string"
+    },
+    "DeliveryAddress2": {
+      "type": "string"
+    },
+    "DeliveryCity": {
+      "type": "string"
+    },
+    "DeliveryCountry": {
+      "type": "string"
+    },
+    "DeliveryDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "DeliveryName": {
+      "type": "string"
+    },
+    "DeliveryZipCode": {
+      "type": "string"
+    },
+    "DocumentNumber": {
+      "type": "string"
+    },
+    "ExternalInvoiceReference1": {
+      "type": "string"
+    },
+    "ExternalInvoiceReference2": {
+      "type": "string"
+    },
+    "Freight": {
+      "type": "number",
+      "format": "double"
+    },
+    "FreightVAT": {
+      "type": "number",
+      "format": "double"
+    },
+    "Gross": {
+      "type": "number",
+      "format": "double"
+    },
+    "HouseWork": {
+      "type": "boolean"
+    },
+    "InvoiceReference": {
+      "type": "string"
+    },
+    "Language": {
+      "type": "string"
+    },
+    "Net": {
+      "type": "number",
+      "format": "double"
+    },
+    "NotCompleted": {
+      "type": "boolean"
+    },
+    "OfferReference": {
+      "type": "string"
+    },
+    "OrderDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "OrderRows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "AccountNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ArticleNumber": {
+            "type": "string"
+          },
+          "CostCenter": {
+            "type": ["null", "string"]
+          },
+          "DeliveredQuantity": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "DiscountType": {
+            "type": "string",
+            "enum": [
+              "AMOUNT",
+              "PERCENT"
+            ]
+          },
+          "HouseWork": {
+            "type": "boolean"
+          },
+          "HouseWorkHoursToReport": {
+            "type": ["null", "integer"],
+            "format": "int32"
+          },
+          "HouseWorkType": {
+            "type": ["null", "string"],
+            "enum": [
+              "CONSTRUCTION",
+              "ELECTRICITY",
+              "GLASSMETALWORK",
+              "GROUNDDRAINAGEWORK",
+              "MASONRY",
+              "PAINTINGWALLPAPERING",
+              "MOVINGSERVICES",
+              "ITSERVICES",
+              "CLEANING",
+              "TEXTILECLOTHING",
+              "SNOWPLOWING",
+              "GARDENING",
+              "BABYSITTING",
+              "OTHERCARE",
+              "OTHERCOSTS",
+              null
+            ]
+          },
+          "OrderedQuantity": {
+            "type": "string"
+          },
+          "Price": {
+            "type": "number",
+            "format": "double"
+          },
+          "Project": {
+            "type": "string"
+          },
+          "Total": {
+            "type": "number",
+            "format": "double"
+          },
+          "Unit": {
+            "type": "string"
+          },
+          "VAT": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
+    "OrganisationNumber": {
+      "type": "string"
+    },
+    "OurReference": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "Phone1": {
+      "type": "string"
+    },
+    "Phone2": {
+      "type": "string"
+    },
+    "PriceList": {
+      "type": "string"
+    },
+    "PrintTemplate": {
+      "type": "string"
+    },
+    "Project": {
+      "type": "string"
+    },
+    "Remarks": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "RoundOff": {
+      "type": "number",
+      "format": "double"
+    },
+    "Sent": {
+      "type": "boolean"
+    },
+    "TaxReduction": {
+      "type": ["null", "number"],
+      "format": "double"
+    },
+    "TaxReductionType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "rot",
+        "rut",
+        "green"
+      ]
+    },
+    "TermsOfDelivery": {
+      "type": "string"
+    },
+    "TermsOfPayment": {
+      "type": "string"
+    },
+    "Total": {
+      "type": "number",
+      "format": "double"
+    },
+    "TotalToPay": {
+      "type": "number",
+      "format": "double"
+    },
+    "TotalVat": {
+      "type": "number",
+      "format": "double"
+    },
+    "VATIncluded": {
+      "type": "boolean"
+    },
+    "WayOfDelivery": {
+      "type": "string"
+    },
+    "YourReference": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "YourOrderNumber": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 75
+    },
+    "ZipCode": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

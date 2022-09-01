@@ -1,0 +1,35 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Klarna Spec
+  type: object
+  required:
+    - region
+    - playground
+    - username
+    - password
+    - ark_salt
+  additionalProperties: false
+  properties:
+    region:
+      type: string
+      enum:
+        - eu
+        - us
+        - oc
+      description: Base url region (For playground eu https://docs.klarna.com/klarna-payments/api/payments-api/#tag/API-URLs). Supported 'eu', 'us', 'oc'
+    playground:
+      type: boolean
+      description: Propertie defining if connector is used against playground or production environment
+      default: false
+    username:
+      type: string
+      description: Consists of your Merchant ID (eid) - a unique number that identifies your e-store, combined with a random string (https://developers.klarna.com/api/#authentication)
+    password:
+      type: string
+      description: A string which is associated with your Merchant ID and is used to authorize use of Klarna's APIs (https://developers.klarna.com/api/#authentication)
+      airbyte_secret: true
+    ark_salt:
+      type: string
+      description: Salt used for hashing
+      airbyte_secret: true

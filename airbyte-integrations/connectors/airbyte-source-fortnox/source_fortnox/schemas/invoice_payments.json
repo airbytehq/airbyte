@@ -1,0 +1,131 @@
+{
+  "title": "invoice_payments",
+  "type": "object",
+  "required": [
+    "InvoiceNumber"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Amount": {
+      "type": "number",
+      "format": "double"
+    },
+    "AmountCurrency": {
+      "type": "number",
+      "format": "double"
+    },
+    "Booked": {
+      "type": "boolean"
+    },
+    "Currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "CurrencyRate": {
+      "type": "number",
+      "format": "double"
+    },
+    "CurrencyUnit": {
+      "type": "number",
+      "format": "double"
+    },
+    "ExternalInvoiceReference1": {
+      "type": "string"
+    },
+    "ExternalInvoiceReference2": {
+      "type": "string"
+    },
+    "InvoiceCustomerName": {
+      "type": "string"
+    },
+    "InvoiceCustomerNumber": {
+      "type": "string"
+    },
+    "InvoiceNumber": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "int32"
+    },
+    "InvoiceDueDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "InvoiceOCR": {
+      "type": "string"
+    },
+    "InvoiceTotal": {
+      "type": "string"
+    },
+    "ModeOfPayment": {
+      "type": "string"
+    },
+    "ModeOfPaymentAccount": {
+      "type": "integer",
+      "format": "int32",
+      "minimum": 1000,
+      "maximum": 9999
+    },
+    "Number": {
+      "type": "string"
+    },
+    "PaymentDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "VoucherNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "VoucherSeries": {
+      "type": "string"
+    },
+    "VoucherYear": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Source": {
+      "type": "string"
+    },
+    "WriteOffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "AccountNumber": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1000,
+            "maximum": 9999
+          },
+          "CostCenter": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "Description": {
+            "type": "string"
+          },
+          "TransactionInformation": {
+            "type": "string"
+          },
+          "Project": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,306 @@
+{
+  "type": "object",
+  "required": [
+    "order_id"
+  ],
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "fraud_status": {
+      "type": "string"
+    },
+    "order_amount": {
+      "type": "number"
+    },
+    "original_order_amount": {
+      "type": "number"
+    },
+    "captured_amount": {
+      "type": "number"
+    },
+    "refunded_amount": {
+      "type": "number"
+    },
+    "remaining_authorized_amount": {
+      "type": "number"
+    },
+    "purchase_currency": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string"
+    },
+    "order_lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "quantity_unit": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "total_amount": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total_discount_amount": {
+            "type": "number"
+          },
+          "tax_rate": {
+            "type": "number"
+          },
+          "total_tax_amount": {
+            "type": "number"
+          },
+          "subscription": {
+            "type": "object",
+            "properties": {
+              "interval": {
+                "type": "string"
+              },
+              "interval_count": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "klarna_reference": {
+      "type": "string"
+    },
+    "billing_address": {
+      "type": "object",
+      "properties": {
+        "street_address": {
+          "type": "string",
+          "hashed": true
+        },
+        "street_address2": {
+          "type": "string",
+          "hashed": true
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "hashed": true
+        },
+        "phone": {
+          "type": "string",
+          "hashed": true
+        }
+      }
+    },
+    "shipping_address": {
+      "type": "object",
+      "properties": {
+        "street_address": {
+          "type": "string",
+          "hashed": true
+        },
+        "street_address2": {
+          "type": "string",
+          "hashed": true
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "hashed": true
+        },
+        "phone": {
+          "type": "string",
+          "hashed": true
+        }
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "purchase_country": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "captures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "capture_id": {
+            "type": "string"
+          },
+          "klarna_reference": {
+            "type": "string"
+          },
+          "captured_amount": {
+            "type": "number"
+          },
+          "captured_at": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "order_lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reference": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "number"
+                },
+                "quantity_unit": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "total_amount": {
+                  "type": "number"
+                },
+                "unit_price": {
+                  "type": "number"
+                },
+                "total_discount_amount": {
+                  "type": "number"
+                },
+                "tax_rate": {
+                  "type": "number"
+                },
+                "total_tax_amount": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "refunded_amount": {
+            "type": "number"
+          },
+          "billing_address": {
+            "type": "object",
+            "properties": {
+              "street_address": {
+                "type": "string",
+                "hashed": true
+              },
+              "street_address2": {
+                "type": "string",
+                "hashed": true
+              },
+              "city": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "hashed": true
+              },
+              "phone": {
+                "type": "string",
+                "hashed": true
+              }
+            }
+          },
+          "shipping_address": {
+            "type": "object",
+            "properties": {
+              "street_address": {
+                "type": "string",
+                "hashed": true
+              },
+              "street_address2": {
+                "type": "string",
+                "hashed": true
+              },
+              "city": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "hashed": true
+              },
+              "phone": {
+                "type": "string",
+                "hashed": true
+              }
+            }
+          },
+          "shipping_info": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      }
+    },
+    "refunds": {
+      "type": "array",
+      "items": {}
+    },
+    "initial_payment_method": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

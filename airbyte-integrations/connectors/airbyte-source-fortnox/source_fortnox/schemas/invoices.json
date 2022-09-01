@@ -1,0 +1,542 @@
+{
+  "title": "invoices",
+  "type": "object",
+  "required": [
+    "CustomerNumber"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "@urlTaxReductionList": {
+      "type": "string"
+    },
+    "AdministrationFee": {
+      "type": "number",
+      "format": "double"
+    },
+    "AdministrationFeeVAT": {
+      "type": "number",
+      "format": "double"
+    },
+    "Address1": {
+      "type": "string"
+    },
+    "Address2": {
+      "type": "string"
+    },
+    "Balance": {
+      "type": "number",
+      "format": "double"
+    },
+    "BasisTaxReduction": {
+      "type": "number",
+      "format": "double"
+    },
+    "Booked": {
+      "type": "boolean"
+    },
+    "Cancelled": {
+      "type": "boolean"
+    },
+    "City": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "Comments": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "ContractReference": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "ContributionPercent": {
+      "type": "number",
+      "format": "double"
+    },
+    "ContributionValue": {
+      "type": "number",
+      "format": "double"
+    },
+    "Country": {
+      "type": "string"
+    },
+    "CostCenter": {
+      "type": "string"
+    },
+    "Credit": {
+      "type": "string"
+    },
+    "CreditInvoiceReference": {
+      "type": "string"
+    },
+    "Currency": {
+      "type": "string"
+    },
+    "CurrencyRate": {
+      "type": [
+        "number",
+        "string"
+      ],
+      "format": "double"
+    },
+    "CurrencyUnit": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "CustomerNumber": {
+      "type": "string"
+    },
+    "DeliveryAddress1": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "DeliveryAddress2": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "DeliveryCity": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "DeliveryCountry": {
+      "type": "string"
+    },
+    "DeliveryDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "DeliveryName": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "DeliveryZipCode": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "DocumentNumber": {
+      "type": "string"
+    },
+    "DueDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "EDIInformation": {
+      "type": "object",
+      "properties": {
+        "EDIGlobalLocationNumber": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 13
+        },
+        "EDIGlobalLocationNumberDelivery": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 13
+        },
+        "EDIInvoiceExtra1": {
+          "type": "string"
+        },
+        "EDIInvoiceExtra2": {
+          "type": "string"
+        },
+        "EDIOurElectronicReference": {
+          "type": "string"
+        },
+        "EDIYourElectronicReference": {
+          "type": "string"
+        },
+        "EDIStatus": {
+          "type": "string"
+        }
+      }
+    },
+    "EmailInformation": {
+      "type": "object",
+      "properties": {
+        "EmailAddressFrom": {
+          "type": "string"
+        },
+        "EmailAddressTo": {
+          "type": "string"
+        },
+        "EmailAddressCC": {
+          "type": "string"
+        },
+        "EmailAddressBCC": {
+          "type": "string"
+        },
+        "EmailSubject": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "EmailBody": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 20000
+        }
+      }
+    },
+    "EUQuarterlyReport": {
+      "type": "boolean"
+    },
+    "ExternalInvoiceReference1": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 80
+    },
+    "ExternalInvoiceReference2": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 80
+    },
+    "Freight": {
+      "type": "number",
+      "format": "double"
+    },
+    "FreightVAT": {
+      "type": "number",
+      "format": "double"
+    },
+    "Gross": {
+      "type": "number",
+      "format": "double"
+    },
+    "HouseWork": {
+      "type": "boolean"
+    },
+    "InvoiceDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "InvoicePeriodStart": {
+      "type": "string",
+      "format": "date"
+    },
+    "InvoicePeriodEnd": {
+      "type": "string",
+      "format": "date"
+    },
+    "InvoicePeriodReference": {
+      "type": "string"
+    },
+    "InvoiceRows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "AccountNumber": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1000,
+            "maximum": 9999
+          },
+          "ArticleNumber": {
+            "type": "string"
+          },
+          "ContributionPercent": {
+            "type": "string"
+          },
+          "ContributionValue": {
+            "type": "string"
+          },
+          "CostCenter": {
+            "type": "string"
+          },
+          "DeliveredQuantity": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "DiscountType": {
+            "type": "string",
+            "enum": [
+              "AMOUNT",
+              "PERCENT"
+            ]
+          },
+          "HouseWork": {
+            "type": "boolean"
+          },
+          "HouseWorkHoursToReport": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 999
+          },
+          "HouseWorkType": {
+            "type": "string",
+            "enum": [
+              "CONSTRUCTION",
+              "ELECTRICITY",
+              "GLASSMETALWORK",
+              "GROUNDDRAINAGEWORK",
+              "MASONRY",
+              "PAINTINGWALLPAPERING",
+              "HVAC",
+              "MAJORAPPLIANCEREPAIR",
+              "MOVINGSERVICES",
+              "ITSERVICES",
+              "CLEANING",
+              "TEXTILECLOTHING",
+              "SNOWPLOWING",
+              "GARDENING",
+              "BABYSITTING",
+              "OTHERCARE",
+              "OTHERCOSTS",
+              "SOLARCELLS",
+              "STORAGESELFPRODUCEDELECTRICITY",
+              "CHARGINGSTATIONELECTRICVEHICLE",
+              "HOMEMAINTENANCE",
+              "FURNISHING",
+              "TRANSPORTATIONSERVICES",
+              "WASHINGANDCAREOFCLOTHING"
+            ]
+          },
+          "Price": {
+            "type": "number",
+            "format": "double"
+          },
+          "PriceExcludingVAT": {
+            "type": "number",
+            "format": "double"
+          },
+          "Project": {
+            "type": "string"
+          },
+          "RowId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "StockPointCode": {
+            "type": "string"
+          },
+          "Total": {
+            "type": "number",
+            "format": "double"
+          },
+          "TotalExcludingVAT": {
+            "type": "number",
+            "format": "double"
+          },
+          "Unit": {
+            "type": "string"
+          },
+          "VAT": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "InvoiceType": {
+      "type": "string",
+      "enum": [
+        "INVOICE",
+        "AGREEMENTINVOICE",
+        "INTRESTINVOICE",
+        "SUMMARYINVOICE",
+        "CASHINVOICE"
+      ]
+    },
+    "Labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "Language": {
+      "type": "string",
+      "enum": [
+        "SV",
+        "EN"
+      ]
+    },
+    "LastRemindDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "Net": {
+      "type": "number",
+      "format": "double"
+    },
+    "NotCompleted": {
+      "type": "boolean"
+    },
+    "NoxFinans": {
+      "type": "boolean"
+    },
+    "OCR": {
+      "type": "string"
+    },
+    "OfferReference": {
+      "type": "string"
+    },
+    "OrderReference": {
+      "type": "string"
+    },
+    "OrganisationNumber": {
+      "type": "string"
+    },
+    "OurReference": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "PaymentWay": {
+      "type": "string"
+    },
+    "Phone1": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "Phone2": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "PriceList": {
+      "type": "string"
+    },
+    "PrintTemplate": {
+      "type": "string"
+    },
+    "Project": {
+      "type": "string"
+    },
+    "WarehouseReady": {
+      "type": "boolean"
+    },
+    "OutboundDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "Remarks": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "Reminders": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "RoundOff": {
+      "type": "number",
+      "format": "double"
+    },
+    "Sent": {
+      "type": "boolean"
+    },
+    "TaxReduction": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "TermsOfDelivery": {
+      "type": "string"
+    },
+    "TermsOfPayment": {
+      "type": "string"
+    },
+    "TimeBasisReference": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Total": {
+      "type": "number",
+      "format": "double"
+    },
+    "TotalToPay": {
+      "type": "number",
+      "format": "double"
+    },
+    "TotalVAT": {
+      "type": "number",
+      "format": "double"
+    },
+    "VATIncluded": {
+      "type": "boolean"
+    },
+    "VoucherNumber": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "int32"
+    },
+    "VoucherSeries": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "VoucherYear": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "int32"
+    },
+    "WayOfDelivery": {
+      "type": "string"
+    },
+    "YourOrderNumber": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 75
+    },
+    "YourReference": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "ZipCode": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1024
+    },
+    "AccountingMethod": {
+      "type": "string",
+      "enum": [
+        "ACCRUAL",
+        "CASH"
+      ]
+    },
+    "TaxReductionType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "rot",
+        "rut",
+        "green"
+      ]
+    },
+    "FinalPayDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

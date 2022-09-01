@@ -1,0 +1,36 @@
+{
+  "title": "financial_years",
+  "type": "object",
+  "required": [
+    "FromDate",
+    "ToDate"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Id": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "FromDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "ToDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "AccountingMethod": {
+      "type": "string",
+      "enum": [
+        "ACCRUAL",
+        "CASH"
+      ]
+    },
+    "accountCharts": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,60 @@
+{
+  "title": "salary_transactions",
+  "type": "object",
+  "required": [
+    "Date",
+    "EmployeeId",
+    "SalaryCode"
+  ],
+  "properties": {
+    "EmployeeId": {
+      "type": "string"
+    },
+    "SalaryCode": {
+      "type": "string"
+    },
+    "SalaryRow": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date"
+    },
+    "Number": {
+      "type": "number"
+    },
+    "Amount": {
+      "type": "number"
+    },
+    "Total": {
+      "type": "number"
+    },
+    "Expense": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 6
+    },
+    "VAT": {
+      "type": "number"
+    },
+    "TextRow": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 40
+    },
+    "CostCenter": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Project": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

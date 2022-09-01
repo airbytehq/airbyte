@@ -1,0 +1,52 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/fortnox",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Fortnox Spec",
+    "type": "object",
+    "required": ["url", "project_code", "username", "password"],
+    "additionalProperties": false,
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "URL for service handling tokens.",
+        "title": "URL"
+      },
+      "project_code": {
+        "type": "string",
+        "description": "The project_code (aka. client animal).",
+        "title": "Project Code"
+      },
+      "username": {
+        "type": "string",
+        "description": "Username for basic auth to credentials service.",
+        "title": "Username",
+        "default": "airbyte"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for basic auth to credentials service.",
+        "title": "Password",
+        "airbyte_secret": true
+      },
+      "package": {
+        "type": "string",
+        "description": "Fortnox package used to distinguish which tenant packet is used.",
+        "title": "package"
+      },
+      "is_dev_env": {
+        "type": "boolean",
+        "description": "Limits pulled data - only one page with handful of resources. Use only for testing purposes.",
+        "title": "Is development environment?",
+        "default": false
+      },
+      "ark_salt": {
+        "type": "string",
+        "description": "Salt used for hashing",
+        "title": "Salt",
+        "airbyte_secret": true,
+        "default": "2SkHaOi6sQ0MeGfUnKNk88x"
+      }
+    }
+  }
+}

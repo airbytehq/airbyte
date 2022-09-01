@@ -1,0 +1,41 @@
+{
+  "title": "company_information",
+  "type": "object",
+  "properties": {
+    "Address": {
+      "type": "string"
+    },
+    "City": {
+      "type": "string"
+    },
+    "CountryCode": {
+      "type": "string"
+    },
+    "DatabaseNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "CompanyName": {
+      "type": "string"
+    },
+    "OrganizationNumber": {
+      "type": "string"
+    },
+    "VisitAddress": {
+      "type": "string"
+    },
+    "VisitCity": {
+      "type": "string"
+    },
+    "VisitCountryCode": {
+      "type": "string"
+    },
+    "VisitZipCode": {
+      "type": "string"
+    },
+    "ZipCode": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

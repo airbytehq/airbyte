@@ -1,0 +1,124 @@
+{
+  "title": "supplier_invoice_payments",
+  "type": "object",
+  "required": [
+    "InvoiceNumber"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Amount": {
+      "type": "number",
+      "format": "double"
+    },
+    "AmountCurrency": {
+      "type": "number",
+      "format": "double"
+    },
+    "Booked": {
+      "type": "boolean"
+    },
+    "Currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "CurrencyRate": {
+      "type": "number",
+      "format": "double"
+    },
+    "CurrencyUnit": {
+      "type": "number",
+      "format": "double"
+    },
+    "Information": {
+      "type": "string"
+    },
+    "InvoiceNumber": {
+      "type": "string"
+    },
+    "InvoiceDueDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "InvoiceOCR": {
+      "type": "string"
+    },
+    "InvoiceSupplierName": {
+      "type": "string"
+    },
+    "InvoiceSupplierNumber": {
+      "type": "string"
+    },
+    "InvoiceTotal": {
+      "type": "string"
+    },
+    "ModeOfPayment": {
+      "type": "string"
+    },
+    "Number": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "PaymentDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "Source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "direct",
+        "file"
+      ]
+    },
+    "VoucherNumber": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "VoucherSeries": {
+      "type": "string"
+    },
+    "VoucherYear": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "WriteOffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "AccountNumber": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1000,
+            "maximum": 9999
+          },
+          "CostCenter": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "Description": {
+            "type": "string"
+          },
+          "TransactionInformation": {
+            "type": "string"
+          },
+          "Project": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

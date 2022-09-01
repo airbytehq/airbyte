@@ -1,0 +1,19 @@
+{
+  "title": "expenses",
+  "type": "object",
+  "required": [
+    "Account",
+    "Code",
+    "Text"
+  ],
+  "properties": {
+    "Code": {
+      "type": "string"
+    },
+    "Account": {
+      "type": "integer",
+      "format": "int32"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

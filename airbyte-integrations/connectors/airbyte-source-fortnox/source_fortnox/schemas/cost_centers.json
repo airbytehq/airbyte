@@ -1,0 +1,30 @@
+{
+  "title": "cost_centers",
+  "type": "object",
+  "required": [
+    "Code",
+    "Description"
+  ],
+  "properties": {
+    "@url": {
+      "type": "string"
+    },
+    "Code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6
+    },
+    "Description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2147483647
+    },
+    "Note": {
+      "type": "string"
+    },
+    "Active": {
+      "type": "boolean"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}
