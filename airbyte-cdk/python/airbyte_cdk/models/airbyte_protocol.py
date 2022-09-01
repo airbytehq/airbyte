@@ -45,7 +45,6 @@ class AirbyteStateType(Enum):
 class StreamDescriptor(BaseModel):
     class Config:
         extra = Extra.allow
-        frozen = True
 
     name: str
     namespace: Optional[str] = None
