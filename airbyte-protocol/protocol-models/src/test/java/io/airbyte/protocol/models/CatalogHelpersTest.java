@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
 class CatalogHelpersTest {
@@ -149,6 +151,14 @@ class CatalogHelpersTest {
 
     assertEquals(1, streamDescriptors.size());
     assertEquals("one", streamDescriptors.get(0).getName());
+  }
+
+  @Test
+  void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
+    CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
+        Jsons.deserialize(MoreResources.readResource("companies_schema.json"))).stream().collect(
+        Collectors.toMap(Pair::getLeft, Pair::getRight));
+    }
   }
 
 }
