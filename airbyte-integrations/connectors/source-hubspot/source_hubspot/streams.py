@@ -1523,11 +1523,12 @@ class Products(CRMObjectIncrementalStream):
     scopes = {"e-commerce"}
 
 
-class Tickets(CRMObjectIncrementalStream):
+class Tickets(CRMSearchStream):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
     primary_key = "id"
     scopes = {"tickets"}
+    last_modified_field = "hs_lastmodifieddate"
 
 
 class Quotes(CRMObjectIncrementalStream):
