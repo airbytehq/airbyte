@@ -1,6 +1,5 @@
 import { FormikHelpers } from "formik";
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { Subject } from "rxjs";
 
 import { DropDownRow } from "components";
 
@@ -28,6 +27,7 @@ export type ConnectionOrPartialConnection =
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  formId?: string;
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   onAfterSubmit?: () => void;
   onFrequencySelect?: (item: DropDownRow.IDataItem) => void;
@@ -37,6 +37,7 @@ export interface ConnectionServiceProps {
 const useConnectionForm = ({
   connection,
   mode,
+  formId,
   onSubmit,
   onAfterSubmit,
   onFrequencySelect,
@@ -47,7 +48,7 @@ const useConnectionForm = ({
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
-  const formId = useUniqueFormId();
+  formId = useUniqueFormId(formId);
 
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
@@ -70,8 +71,15 @@ const useConnectionForm = ({
         await onSubmit(formValues);
 
         formikHelpers.resetForm({ values });
-        clearFormChange(formId);
+        if (formId) {
+          // formId is never undefined here, but this is safer than `!`
+          clearFormChange(formId);
+        } else {
+          // This should never be hit.
+          throw new Error("Somehow this form does not have an id");
+        }
 
+        console.log(onAfterSubmit?.toString());
         onAfterSubmit?.();
       } catch (e) {
         if (!(e instanceof ModalCancel)) {
@@ -85,8 +93,6 @@ const useConnectionForm = ({
   const errorMessage = useMemo(() => (submitError ? createFormErrorMessage(submitError) : null), [submitError]);
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
-  const formDirty = new Subject<boolean>();
-
   return {
     initialValues,
     destDefinition,
@@ -95,7 +101,6 @@ const useConnectionForm = ({
     errorMessage,
     frequencies,
     formId,
-    formDirty,
     onFormSubmit,
     onAfterSubmit,
     onFrequencySelect,

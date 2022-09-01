@@ -1,5 +1,5 @@
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useEffect } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -94,7 +94,6 @@ export type ConnectionFormMode = "create" | "edit" | "readonly";
 export interface ConnectionFormProps {
   className?: string;
   successMessage?: React.ReactNode;
-  onFormDirtyChanges?: (dirty: boolean) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
@@ -106,28 +105,11 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   successMessage,
   canSubmitUntouchedForm,
   additionalSchemaControl,
-  onFormDirtyChanges,
 }) => {
-  const {
-    initialValues,
-    formId,
-    mode,
-    onFormSubmit,
-    errorMessage,
-    frequencies,
-    onFrequencySelect,
-    onCancel,
-    formDirty,
-  } = useConnectionFormService();
+  const { initialValues, formId, mode, onFormSubmit, errorMessage, frequencies, onFrequencySelect, onCancel } =
+    useConnectionFormService();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
-
-  useEffect(() => {
-    const sub = formDirty.subscribe({
-      next: (dirty) => onFormDirtyChanges?.(dirty),
-    });
-    return () => sub.unsubscribe();
-  }, [formDirty, onFormDirtyChanges]);
 
   return (
     <Formik
@@ -139,7 +121,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
-          {formDirty.next(dirty)}
           {mode === "create" && (
             <Section>
               <Field name="name">

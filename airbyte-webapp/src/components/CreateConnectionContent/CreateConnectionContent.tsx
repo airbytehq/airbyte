@@ -1,6 +1,6 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense } from "react";
+import React, { Suspense, useCallback, useRef } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
@@ -16,7 +16,7 @@ import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHo
 import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
-import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnectionContent.module.scss";
@@ -33,6 +33,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   afterSubmitConnection,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
+  const newConnection = useRef<WebBackendConnectionRead | null>(null);
   const analyticsService = useAnalyticsService();
   const { push } = useRouter();
 
@@ -48,42 +49,60 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     catalogId,
   };
 
-  const onSubmitConnectionStep = async (values: ValuesProps) => {
-    const createdConnection = await createConnection({
-      values,
-      source,
-      destination,
-      sourceDefinition: {
-        sourceDefinitionId: source?.sourceDefinitionId ?? "",
-      },
-      destinationDefinition: {
-        name: destination?.name ?? "",
-        destinationDefinitionId: destination?.destinationDefinitionId ?? "",
-      },
-      sourceCatalogId: catalogId,
-    });
-
-    // This is a bit of a hack. I wanted to get away from our previous way of handling this
-    // but our form dirty tracking needs a second to catch up w/ the form reset + submit.
-    setTimeout(() => push(`../../connections/${createdConnection.connectionId}`), 1000);
-  };
-
-  const onFrequencySelect = (item: IDataItem | null) => {
-    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
-
-    if (item) {
-      analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
-        actionDescription: "Frequency selected",
-        frequency: item.label,
-        connector_source_definition: source?.sourceName,
-        connector_source_definition_id: source?.sourceDefinitionId,
-        connector_destination_definition: destination?.destinationName,
-        connector_destination_definition_id: destination?.destinationDefinitionId,
-        available_streams: connection.syncCatalog.streams.length,
-        enabled_streams: enabledStreams,
+  const onSubmitConnectionStep = useCallback(
+    async (values: ValuesProps) => {
+      const createdConnection = await createConnection({
+        values,
+        source,
+        destination,
+        sourceDefinition: {
+          sourceDefinitionId: source?.sourceDefinitionId ?? "",
+        },
+        destinationDefinition: {
+          name: destination?.name ?? "",
+          destinationDefinitionId: destination?.destinationDefinitionId ?? "",
+        },
+        sourceCatalogId: catalogId,
       });
-    }
-  };
+
+      console.log(afterSubmitConnection?.toString());
+      // We need the new connection ID to know where to go.
+      newConnection.current = createdConnection;
+    },
+    [afterSubmitConnection, catalogId, createConnection, destination, source]
+  );
+
+  const onAfterSubmit = useCallback(
+    () => afterSubmitConnection?.() ?? push(`../../connections/${newConnection.current?.connectionId}`),
+    [afterSubmitConnection, newConnection, push]
+  );
+
+  const onFrequencySelect = useCallback(
+    (item: IDataItem | null) => {
+      const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+      if (item) {
+        analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
+          actionDescription: "Frequency selected",
+          frequency: item.label,
+          connector_source_definition: source?.sourceName,
+          connector_source_definition_id: source?.sourceDefinitionId,
+          connector_destination_definition: destination?.destinationName,
+          connector_destination_definition_id: destination?.destinationDefinitionId,
+          available_streams: connection.syncCatalog.streams.length,
+          enabled_streams: enabledStreams,
+        });
+      }
+    },
+    [
+      analyticsService,
+      connection.syncCatalog.streams,
+      destination?.destinationDefinitionId,
+      destination?.destinationName,
+      source?.sourceDefinitionId,
+      source?.sourceName,
+    ]
+  );
 
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
@@ -103,7 +122,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         connection={connection}
         mode="create"
         onSubmit={onSubmitConnectionStep}
-        onAfterSubmit={afterSubmitConnection}
+        onAfterSubmit={onAfterSubmit}
         onFrequencySelect={onFrequencySelect}
       >
         <ConnectionForm
