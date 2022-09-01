@@ -2,9 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, MutableMapping, Union
+from typing import Any, List, Mapping, MutableMapping, Union
 
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType
 
 
 class ConnectorStateManager:
@@ -23,8 +23,16 @@ class ConnectorStateManager:
         else:
             self.legacy = {}
 
+    def get_stream_state(self, namespace: str, stream_name: str) -> AirbyteStateBlob:
+        # todo implement in upcoming PRs
+        pass
+
     def get_legacy_state(self) -> MutableMapping[str, Any]:
         return self.legacy
+
+    def update_state_for_stream(self, namespace: str, stream_name: str, value: Mapping[str, Any]):
+        # todo implement in upcoming PRs
+        pass
 
     @staticmethod
     def is_valid_legacy_state(state: List[AirbyteStateMessage]) -> bool:
