@@ -6,6 +6,8 @@ import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -14,6 +16,7 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { SourceForm } from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
+  useTrackPage(PAGE_TRACKING_CODES.SOURCE_NEW);
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 

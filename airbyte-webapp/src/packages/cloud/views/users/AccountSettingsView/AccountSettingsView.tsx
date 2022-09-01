@@ -5,6 +5,8 @@ import styled from "styled-components";
 
 import { LoadingButton } from "components";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
@@ -19,6 +21,7 @@ const AccountSettingsView: React.FC = () => {
   const authService = useAuthService();
   const { mutateAsync: logout, isLoading: isLoggingOut } = useMutation(() => authService.logout());
 
+  useTrackPage(PAGE_TRACKING_CODES.SETTINGS_ACCOUNT);
   return (
     <>
       <NameSection />

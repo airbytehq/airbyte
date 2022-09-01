@@ -4,6 +4,9 @@ import styled from "styled-components";
 
 import { H1, H3 } from "components";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+
 import WorkspacesList from "./components/WorkspacesList";
 
 const MainContent = styled.div`
@@ -25,6 +28,7 @@ const Subtitle = styled(H3)`
 `;
 
 const WorkspacesPage: React.FC = () => {
+  useTrackPage(PAGE_TRACKING_CODES.WORKSPACES);
   return (
     <MainContent>
       <Logo src="/cloud-main-logo.svg" width={186} />

@@ -6,6 +6,8 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -26,6 +28,7 @@ const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const { query, replace } = useRouter();
+  useTrackPage(PAGE_TRACKING_CODES.LOGIN);
 
   return (
     <div>

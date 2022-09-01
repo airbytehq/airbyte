@@ -3,6 +3,8 @@ import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import { SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import useConnector from "hooks/services/useConnector";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -10,6 +12,8 @@ import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/con
 import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
+  useTrackPage(PAGE_TRACKING_CODES.SETTINGS_SOURCE);
+
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 

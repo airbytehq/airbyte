@@ -6,6 +6,8 @@ import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 
@@ -15,6 +17,7 @@ import DestinationsTable from "./components/DestinationsTable";
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
   const { destinations } = useDestinationList();
+  useTrackPage(PAGE_TRACKING_CODES.DESTINATION_LIST);
 
   const onCreateDestination = () => push(`${RoutePaths.DestinationNew}`);
 

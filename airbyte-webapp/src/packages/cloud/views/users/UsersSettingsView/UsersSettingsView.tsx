@@ -6,6 +6,8 @@ import { useToggle } from "react-use";
 import { Button, H5, LoadingButton } from "components";
 import Table from "components/Table";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { User } from "packages/cloud/lib/domain/users";
@@ -41,6 +43,8 @@ const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ w
 };
 
 export const UsersSettingsView: React.FC = () => {
+  useTrackPage(PAGE_TRACKING_CODES.SETTINGS_ACCESS_MANAGEMENT);
+
   const [modalIsOpen, toggleModal] = useToggle(false);
   const { workspaceId } = useCurrentWorkspace();
 

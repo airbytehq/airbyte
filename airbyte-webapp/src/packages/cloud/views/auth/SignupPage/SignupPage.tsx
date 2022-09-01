@@ -4,6 +4,9 @@ import { FormattedMessage } from "react-intl";
 import { Text } from "components/base/Text";
 import HeadTitle from "components/HeadTitle";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+
 import { OAuthLogin } from "../OAuthLogin";
 import { Disclaimer, SignupForm } from "./components/SignupForm";
 import SpecialBlock from "./components/SpecialBlock";
@@ -14,6 +17,7 @@ interface SignupPageProps {
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
+  useTrackPage(PAGE_TRACKING_CODES.SIGNUP);
   return (
     <div>
       <HeadTitle titles={[{ id: "login.signup" }]} />

@@ -10,6 +10,8 @@ import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
+import { useTrackPage } from "hooks/services/Analytics";
+import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -24,6 +26,7 @@ import DestinationConnectionTable from "./components/DestinationConnectionTable"
 import DestinationSettings from "./components/DestinationSettings";
 
 const DestinationItemPage: React.FC = () => {
+  useTrackPage(PAGE_TRACKING_CODES.DESTINATION_ITEM);
   const { params, push } = useRouter<unknown, { id: string; "*": string }>();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
