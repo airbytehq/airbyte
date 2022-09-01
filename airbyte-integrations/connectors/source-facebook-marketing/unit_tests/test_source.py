@@ -45,9 +45,10 @@ class TestSourceFacebookMarketing:
     def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
         config["start_date"] = "2019-10-10T00:00:00"
         config["end_date"] = "2019-10-09T00:00:00"
-
-        with pytest.raises(ValueError, match="end_date must be equal or after start_date."):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
+        assert SourceFacebookMarketing().check_connection(logger_mock, config=config) == (
+            False,
+            "end_date must be equal or after start_date.",
+        )
 
     def test_check_connection_empty_config(self, api, logger_mock):
         config = {}

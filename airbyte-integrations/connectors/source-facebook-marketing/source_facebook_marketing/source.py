@@ -3,12 +3,9 @@
 #
 
 import logging
-import os
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
-import pendulum
 import requests
-from airbyte_cdk.connector import _WriteConfigProtocol
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -38,6 +35,11 @@ logger = logging.getLogger("airbyte")
 
 
 class SourceFacebookMarketing(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        if config.get("end_date") == "":
+            config.pop("end_date")
+        return ConnectorConfig.parse_obj(config)
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -45,11 +47,10 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        if config.get("end_date") == "":
-            config.pop("end_date")
-        config = ConnectorConfig.parse_obj(config)
-        if pendulum.instance(config.end_date) < pendulum.instance(config.start_date):
-            raise ValueError("end_date must be equal or after start_date.")
+        config = self._validate_and_transform(config)
+        if config.end_date < config.start_date:
+            return False, "end_date must be equal or after start_date."
+
         try:
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
@@ -63,10 +64,7 @@ class SourceFacebookMarketing(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of the stream instances
         """
-        if config.get("end_date") == "":
-            config.pop("end_date")
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)
-
+        config = self._validate_and_transform(config)
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
