@@ -61,7 +61,6 @@ class RemoteDefinitionsProviderTest {
     assertEquals("https://docs.airbyte.io/integrations/sources/stripe", stripeSource.getDocumentationUrl());
     assertEquals("stripe.svg", stripeSource.getIcon());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
-    assertEquals(false, stripeSource.getTombstone());
   }
 
   @Test
@@ -77,7 +76,6 @@ class RemoteDefinitionsProviderTest {
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
-    assertEquals(false, s3Destination.getTombstone());
   }
 
   @Test
@@ -136,18 +134,6 @@ class RemoteDefinitionsProviderTest {
         .setBody("not json");
     webServer.enqueue(notJson);
     assertThrows(RuntimeException.class, () -> {
-      new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
-    });
-  }
-
-  @Test
-  void testInvalidCatalogSchema() {
-    final MockResponse invalidSchema = new MockResponse().setResponseCode(200)
-        .addHeader("Content-Type", "application/json; charset=utf-8")
-        .addHeader("Cache-Control", "no-cache")
-        .setBody("{\"foo\":\"bar\"}");
-    webServer.enqueue(invalidSchema);
-    assertThrows(IOException.class, () -> {
       new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
     });
   }

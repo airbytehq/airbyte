@@ -4,11 +4,8 @@
 
 package io.airbyte.config.init;
 
-import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneField;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -50,11 +47,13 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
 
   // TODO will be called automatically by the dependency injection framework on object creation
   public void initialize() throws InterruptedException, IOException {
-    final JsonNode catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
-    this.sourceDefinitions =
-        parseDefinitions(catalog, "sources", StandardSourceDefinition.class, SeedType.STANDARD_SOURCE_DEFINITION.getIdName());
-    this.destinationDefinitions =
-        parseDefinitions(catalog, "destinations", StandardDestinationDefinition.class, SeedType.STANDARD_DESTINATION_DEFINITION.getIdName());
+    final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
+    this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
+        StandardSourceDefinition::getSourceDefinitionId,
+        source -> source));
+    this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
+        StandardDestinationDefinition::getDestinationDefinitionId,
+        source -> source));
   }
 
   @Override
@@ -85,7 +84,7 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
     return new ArrayList<>(this.destinationDefinitions.values());
   }
 
-  private static JsonNode getRemoteDefinitionCatalog(URI catalogUrl, Duration timeout) throws IOException, InterruptedException {
+  private static CombinedConnectorCatalog getRemoteDefinitionCatalog(URI catalogUrl, Duration timeout) throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder(catalogUrl).timeout(timeout).header("accept", "application/json").build();
 
     final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -93,26 +92,7 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
       throw new IOException(
           "getRemoteDefinitionCatalog request ran into status code error: " + response.statusCode() + " with message: " + response.getClass());
     }
-    return Jsons.deserialize(response.body());
-  }
-
-  private static <T> Map<UUID, T> parseDefinitions(final JsonNode catalog,
-                                                   final String catalogKey,
-                                                   final Class<T> outputModel,
-                                                   final String definitionIdField)
-      throws IOException {
-    final JsonNode catalogElementNode = catalog.get(catalogKey);
-    if (catalogElementNode == null) {
-      throw new IOException("The catalog schema is invalid: Missing \"" + catalogKey + "\" key");
-    }
-    final List<JsonNode> catalogElements = MoreIterators.toList(catalogElementNode.elements());
-    return catalogElements.stream().collect(Collectors.toMap(
-        json -> UUID.fromString(json.get(definitionIdField).asText()),
-        json -> Jsons.object(addMissingFields(json), outputModel)));
-  }
-
-  private static JsonNode addMissingFields(JsonNode element) {
-    return addMissingTombstoneField(element);
+    return Jsons.deserialize(response.body(), CombinedConnectorCatalog.class);
   }
 
 }
