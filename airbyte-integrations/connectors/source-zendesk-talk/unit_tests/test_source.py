@@ -1,3 +1,4 @@
+import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -68,6 +69,34 @@ def test_streams(mocker, patch_base_class_oauth20):
     config_mock = mocker.MagicMock()
     config_mock.__getitem__.side_effect = patch_base_class_oauth20["config"].__getitem__
 
-    streams = source.streams(config_mock)
+    all_streams = source.streams(config_mock)
+
     expected_streams_number = 13
-    assert len(streams) == expected_streams_number
+    streams = filter(lambda s: s.__class__.__name__ in [
+        "AccountOverview",
+        "Addresses",
+        "AgentsActivity",
+        "AgentsOverview",
+        "CurrentQueueActivity",
+        "Greetings",
+        "GreetingCategories",
+        "IVRMenus",
+        "IVRRoutes",
+        "IVRs",
+        "PhoneNumbers",
+    ], all_streams)
+
+    incremental_streams = filter(lambda s: s.__class__.__name__ in [
+        "Calls",
+        "CallLegs",
+    ], all_streams)
+
+    assert len(all_streams) == expected_streams_number
+
+    for s in incremental_streams:
+        assert s._start_date == pendulum.parse(patch_base_class_oauth20["config"]["start_date"])
+        assert s._subdomain == "airbyte-subdomain"
+
+    for s in streams:
+        assert s._subdomain == "airbyte-subdomain"
+
