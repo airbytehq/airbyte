@@ -7536,6 +7536,9 @@
         client_id:
           type: "string"
           description: "Client Id of our Primetric client"
+          airbyte_secret: true
+          examples:
+          - "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"
         client_secret:
           type: "string"
           description: "The Client Secret for our Primetric client."

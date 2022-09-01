@@ -19,5 +19,6 @@ connectionSpecification:
       title: Client ID
       description: The Client ID of your Primetric developer application.
       pattern: ^[a-zA-Z0-9]+$
+      airbyte_secret: true
       examples: [ "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj" ]
       order: 1
