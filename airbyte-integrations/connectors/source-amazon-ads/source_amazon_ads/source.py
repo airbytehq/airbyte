@@ -4,11 +4,9 @@
 
 
 import logging
-import os
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from airbyte_cdk.connector import _WriteConfigProtocol
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -41,21 +39,15 @@ CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
-    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
-        if not config.get("region"):
-            source_spec = self.spec(logging.getLogger("airbyte"))
-            default_region = source_spec.connectionSpecification["properties"]["region"]["default"]
-            config["region"] = default_region
-        config_path = os.path.join(temp_dir, "config.json")
-        self.write_config(config, config_path)
-        return config
-
     def _validate_and_transform(self, config: Mapping[str, Any]):
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
         else:
             config["start_date"] = None
+        if not config.get("region"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
