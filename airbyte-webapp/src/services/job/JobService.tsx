@@ -40,6 +40,14 @@ export const useListJobs = (listParams: JobListRequestBody) => {
   return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
 };
 
+export const useListJobsOnce = (listParams: JobListRequestBody) => {
+  const service = useGetJobService();
+  const result = useQuery(jobsKeys.list(`once-${listParams.configId}`, listParams.pagination), () =>
+    service.list(listParams)
+  );
+  return { jobs: result.data?.jobs };
+};
+
 export const useGetJob = (id: number, enabled = true) => {
   const service = useGetJobService();
 

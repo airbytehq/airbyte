@@ -7,11 +7,16 @@ import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
-import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
+import { useLinkedJobOffset } from "components/JobItem/attemptLinkUtils";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
-import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import {
+  ConnectionStatus,
+  JobListRequestBody,
+  JobWithAttemptsRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -22,7 +27,7 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
-const JOB_PAGE_SIZE_BUTTON_INCREMENT = 25;
+const JOB_PAGE_SIZE_INCREMENT = 25;
 
 enum ActionType {
   RESET = "reset_connection",
@@ -49,13 +54,17 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
 
 const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [activeJob, setActiveJob] = useState<ActiveJob>();
-  const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_BUTTON_INCREMENT);
+  const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
-  const { jobId: linkedJobId } = useAttemptLink();
-
-  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
+  const listJobsParams: JobListRequestBody = {
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+  };
+  const linkedJobOffset = useLinkedJobOffset(listJobsParams);
+  console.log(`linkedJobOffset: ${linkedJobOffset}`);
+
+  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
+    ...listJobsParams,
     pagination: {
       pageSize: jobPageSize,
     },
@@ -63,31 +72,15 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
   const moreJobPagesAvailable = jobs.length === jobPageSize;
 
-  // Increase page size if the linked job ID is not in the current page of jobs.
-  // This assumes that jobs are fetched in descending order of job ID.
   useEffect(() => {
-    // if there is no linked job ID or it is not a valid number, do nothing
-    const linkedJobIdNum = Number(linkedJobId);
-    if (isNaN(linkedJobIdNum)) {
-      return;
+    console.log(`(inside useEffect) linkedJobOffset: ${linkedJobOffset}`);
+    if (linkedJobOffset) {
+      const nearestPageSizeIncrementMultiple =
+        (Math.floor(linkedJobOffset / JOB_PAGE_SIZE_INCREMENT) + 1) * JOB_PAGE_SIZE_INCREMENT;
+      console.log(`setting job page size to: ${nearestPageSizeIncrementMultiple}`);
+      setJobPageSize(nearestPageSizeIncrementMultiple);
     }
-
-    // get all job ids, filtering out any jobs that don't have an id
-    const jobIds = jobs.flatMap((job) => (job.job?.id ? [job.job?.id] : []));
-    const minJobId = Math.min(...jobIds);
-
-    // if linked job ID
-    if (linkedJobIdNum < minJobId && moreJobPagesAvailable) {
-      setJobPageSize((prevJobPageSize) => {
-        console.log(
-          `Could not find linkedJobIdNum ${linkedJobIdNum} in current job page size of ${prevJobPageSize}. Doubling to ${
-            prevJobPageSize * 2
-          }.`
-        );
-        return prevJobPageSize * 2;
-      });
-    }
-  }, [jobs, linkedJobId, moreJobPagesAvailable]);
+  }, [linkedJobOffset]);
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -143,7 +136,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   };
 
   const onLoadMoreJobs = () => {
-    setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_BUTTON_INCREMENT);
+    setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_INCREMENT);
 
     analyticsService.track(Namespace.CONNECTION, Action.LOAD_MORE_JOBS, {
       actionDescription: "Load more jobs button was clicked",

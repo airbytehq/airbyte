@@ -1,9 +1,11 @@
+import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { AttemptRead } from "core/request/AirbyteClient";
+import { AttemptRead, JobListRequestBody } from "core/request/AirbyteClient";
+import { useListJobsOnce } from "services/job/JobService";
 
 const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
-// const INITIAL_JOB_PAGE_SIZE = 25;
+const INITIAL_JOB_PAGE_SIZE = 25;
 
 /**
  * Create and returns a link for a specific job and (optionally) attempt.
@@ -36,37 +38,43 @@ export const useAttemptLink = () => {
   return parseAttemptLink(hash);
 };
 
-// export const useLinkedJobOffset = (jobs: JobWithAttemptsRead[], initialListParams: number) => {
-//   const { jobs } = useListJobs({ ...listParams, pagination: { pageSize: jobPageSize } });
+export const useLinkedJobOffset = (listJobsParams: JobListRequestBody) => {
+  const [jobPageSize, setJobPageSize] = useState(INITIAL_JOB_PAGE_SIZE);
+  const { jobs } = useListJobsOnce({ ...listJobsParams, pagination: { pageSize: jobPageSize } });
+  const { jobId: linkedJobId } = useAttemptLink();
 
-//   const { jobId: linkedJobId } = useAttemptLink();
-//   const linkedJobIdNum = Number(linkedJobId);
+  return useMemo(() => {
+    console.log(`useLinkedJobOffset -- jobPageSize: ${jobPageSize}`);
 
-//   // if there is no linked job ID or it is not a valid number, do nothing
-//   if (isNaN(linkedJobIdNum)) {
-//     return null;
-//   }
+    if (jobs === undefined) {
+      return null;
+    }
 
-//   // get all job ids, filtering out any jobs that don't have an id
-//   const jobIds = jobs.flatMap((job) => (job.job?.id ? [job.job?.id] : []));
-//   const minJobId = Math.min(...jobIds);
+    const linkedJobIdNum = Number(linkedJobId);
+    const moreJobPagesAvailable = jobs.length === jobPageSize;
 
-//   if (linkedJobIdNum < minJobId && moreJobPagesAvailable) {
-//     // setJobPageSize((prevJobPageSize) => {
-//     //   console.log(
-//     //     `Could not find linkedJobIdNum ${linkedJobIdNum} in current job page size of ${prevJobPageSize}. Doubling to ${
-//     //       prevJobPageSize * 2
-//     //     }.`
-//     //   );
-//     //   return prevJobPageSize * 2;
-//     // });
+    // if there is no linked job ID or it is not a valid number, do nothing
+    if (isNaN(linkedJobIdNum)) {
+      return null;
+    }
 
-//     const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
-//       configId: connection.connectionId,
-//       configTypes: ["sync", "reset_connection"],
-//       pagination: {
-//         pageSize: jobPageSize,
-//       },
-//     });
-//   }
-// };
+    // get all job ids, filtering out any jobs that don't have an id
+    const jobIds = jobs.flatMap((job) => (job.job?.id ? [job.job?.id] : []));
+    const linkedJobIndex = jobIds.indexOf(linkedJobIdNum);
+    if (linkedJobIndex !== -1) {
+      return linkedJobIndex;
+    }
+
+    const minJobId = Math.min(...jobIds);
+    if (linkedJobIdNum < minJobId && moreJobPagesAvailable) {
+      const pageSizeIncrease = minJobId - linkedJobIdNum;
+      setJobPageSize((prevJobPageSize) => {
+        console.log(
+          `Could not find linkedJobIdNum ${linkedJobIdNum} in current job page size of ${prevJobPageSize}. Increasing by ${pageSizeIncrease}.`
+        );
+        return pageSizeIncrease;
+      });
+    }
+    return null;
+  }, [jobs, linkedJobId, jobPageSize]);
+};
