@@ -1,6 +1,6 @@
 [
   {
-    "schemaName": "multiple_records_with_same_name",
+    "schemaName": "anyof_with_same_name",
     "namespace": "namespace1",
     "appendAirbyteFields": true,
     "jsonSchema": {
@@ -63,7 +63,7 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "multiple_records_with_same_name",
+      "name": "anyof_with_same_name",
       "namespace": "namespace1",
       "fields": [
         {
