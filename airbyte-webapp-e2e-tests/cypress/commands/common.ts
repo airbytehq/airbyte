@@ -21,3 +21,7 @@ export const clearApp = () => {
   cy.clearLocalStorage();
   cy.clearCookies();
 }
+
+export const fillEmail = (email: string) => {
+  cy.get("input[name=email]").type(email);
+}
