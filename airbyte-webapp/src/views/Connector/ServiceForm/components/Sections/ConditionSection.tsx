@@ -76,7 +76,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
   );
 
   const label = (
-    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}:`} optional={false} />
+    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}`} optional={false} />
   );
 
   return (
