@@ -23,7 +23,6 @@ export interface ControlLabelsProps {
 const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
   <div className={className(styles.controlContainer, props.className)}>
     <Label
-      className={styles.label}
       error={props.error}
       success={props.success}
       message={props.message}
