@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - airbyte-fork/airbyte-integrations/connectors/airbyte-source-${{ env.CONNECTOR }}/**
+      - airbyte-fork/airbyte-integrations/connectors/source-${{ env.CONNECTOR }}/**
 
 
 
