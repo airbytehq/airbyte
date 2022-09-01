@@ -345,7 +345,7 @@ jobs:
             fetch-depth: 0
 
         - name: Install dependencies
-          run: cd && airbyte-webapp && npm install
+          run: cd airbyte-webapp && npm install
 
         - name: Publish Storybook to Chromatic
           uses: chromaui/action@v1
