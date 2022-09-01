@@ -16,6 +16,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -147,6 +148,8 @@ public class EnvConfigs implements Configs {
 
   public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
+
+  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -321,6 +324,12 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public URI getRemoteConnectorCatalogUrl() {
+    // Default to reuse the job database
+    return URI.create(getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL));
   }
 
   // Docker Only

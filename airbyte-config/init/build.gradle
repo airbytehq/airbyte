@@ -10,6 +10,9 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
 task copyScripts(type: Copy) {
