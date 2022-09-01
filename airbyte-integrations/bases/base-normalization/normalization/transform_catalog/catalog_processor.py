@@ -69,7 +69,7 @@ class CatalogProcessor:
             )
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = self.destination_type == DestinationType.MYSQL
+            truncate = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
@@ -116,7 +116,7 @@ class CatalogProcessor:
 
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = destination_type == DestinationType.MYSQL
+            truncate = destination_type == DestinationType.MYSQL or destination_type == DestinationType.TIDB
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
