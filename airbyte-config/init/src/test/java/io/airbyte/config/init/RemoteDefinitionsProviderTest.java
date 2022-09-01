@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 
 class RemoteDefinitionsProviderTest {
 
-  private static MockWebServer webServer;
+  private MockWebServer webServer;
   private static MockResponse validCatalogResponse;
   private static URI catalogUrl;
   private static JsonNode jsonCatalog;
