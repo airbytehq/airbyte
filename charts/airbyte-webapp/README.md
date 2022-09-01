@@ -22,7 +22,6 @@ Helm chart to deploy airbyte-webapp
 | extraEnv | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| fullstory.enabled | bool | `false` |  |
 | global.configMapName | string | `""` |  |
 | global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
