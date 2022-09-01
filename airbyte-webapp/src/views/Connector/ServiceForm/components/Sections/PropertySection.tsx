@@ -33,16 +33,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     return (
       <LabeledSwitch
         {...field}
-        label={
-          <PropertyLabel
-            className={styles.switchLabel}
-            property={property}
-            label={labelText}
-            touched={meta.touched}
-            error={meta.error}
-            optional={false}
-          />
-        }
+        label={<PropertyLabel className={styles.switchLabel} property={property} label={labelText} optional={false} />}
         value={field.value ?? property.default}
         disabled={disabled}
       />

@@ -2,22 +2,22 @@ import React from "react";
 
 import { TextWithHTML } from "components";
 
-import { FormBaseItem } from "core/form/types";
-
 import styles from "./LabelInfo.module.scss";
+import { JSONSchema7Type } from "json-schema";
 
 interface IProps {
-  property: FormBaseItem;
   label: React.ReactNode;
+  examples?: JSONSchema7Type;
+  description?: string;
 }
 
-const LabelInfo: React.FC<IProps> = ({ property, label }) => {
+const LabelInfo: React.FC<IProps> = ({ label, examples, description }) => {
   const constructExamples = () => {
-    if (!property.examples) {
+    if (!examples) {
       return null;
     }
 
-    const examplesArray = Array.isArray(property.examples) ? property.examples : [property.examples];
+    const examplesArray = Array.isArray(examples) ? examples : [examples];
 
     return (
       <>
@@ -32,12 +32,10 @@ const LabelInfo: React.FC<IProps> = ({ property, label }) => {
     );
   };
 
-  const description = property.description ? <TextWithHTML text={property.description} /> : null;
-
   return (
     <>
       <h4 className={styles.descriptionHeader}>{label}</h4>
-      {description}
+      {description && <TextWithHTML text={description} />}
       {constructExamples()}
     </>
   );

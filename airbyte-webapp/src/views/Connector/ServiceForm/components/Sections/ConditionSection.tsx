@@ -11,6 +11,7 @@ import { isDefined } from "utils/common";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
+import { PropertyLabel } from "../Property/PropertyLabel";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 
@@ -24,7 +25,7 @@ const GroupLabel = styled(Label)`
 `;
 
 const ConditionControls = styled.div`
-  padding-top: 25px;
+  padding-top: 20px;
 `;
 
 interface ConditionSectionProps {
@@ -73,16 +74,18 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       })),
     [formField.conditions]
   );
-  const label = formField.title || formField.fieldKey;
+
+  const label = (
+    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}:`} optional={false} />
+  );
 
   return (
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
-      description={formField.description}
       fullWidthTitle
       title={
         <div className={styles.sectionTitle}>
-          {label ? <GroupLabel>{label}:</GroupLabel> : null}
+          {label ? <GroupLabel>{label}</GroupLabel> : null}
           <DropDown
             className={styles.sectionTitleDropdown}
             options={options}
