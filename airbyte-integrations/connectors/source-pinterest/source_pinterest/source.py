@@ -289,15 +289,16 @@ class AdAnalytics(PinterestAnalyticsStream):
 class SourcePinterest(AbstractSource):
     @staticmethod
     def get_authenticator(config):
-        user_pass = (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+        credentials = config.get("credentials")
+        user_pass = (credentials.get("client_id") + ":" + credentials.get("client_secret")).encode("ascii")
         auth = "Basic " + standard_b64encode(user_pass).decode("ascii")
 
         return Oauth2Authenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
-            client_secret=config.get("client_secret"),
-            client_id=config.get("client_id"),
+            client_secret=credentials.get("client_secret"),
+            client_id=credentials.get("client_id"),
             refresh_access_token_headers={"Authorization": auth},
-            refresh_token=config.get("refresh_token"),
+            refresh_token=credentials.get("refresh_token"),
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
