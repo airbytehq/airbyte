@@ -193,6 +193,7 @@ definitions:
         enum:
           - system_error
           - config_error
+          - non_fatal
   AirbyteConnectionStatus:
     type: object
     description: Airbyte connection status

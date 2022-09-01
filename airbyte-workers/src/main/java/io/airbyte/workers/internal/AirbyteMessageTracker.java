@@ -14,11 +14,13 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage.Type;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
@@ -250,8 +252,11 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public AirbyteTraceMessage getFirstSourceErrorTraceMessage() {
-    if (!sourceErrorTraceMessages.isEmpty()) {
-      return sourceErrorTraceMessages.get(0);
+    final List<AirbyteTraceMessage> fatalSourceErrorTraceMessages = sourceErrorTraceMessages.stream()
+        .filter(m -> m.getType() == Type.ERROR && m.getError().getFailureType() != FailureType.NON_FATAL)
+        .collect(Collectors.toList());
+    if (!fatalSourceErrorTraceMessages.isEmpty()) {
+      return fatalSourceErrorTraceMessages.get(0);
     } else {
       return null;
     }
@@ -259,8 +264,11 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public AirbyteTraceMessage getFirstDestinationErrorTraceMessage() {
-    if (!destinationErrorTraceMessages.isEmpty()) {
-      return destinationErrorTraceMessages.get(0);
+    final List<AirbyteTraceMessage> fatalDestinationErrorTraceMessages = destinationErrorTraceMessages.stream()
+        .filter(m -> m.getType() == Type.ERROR && m.getError().getFailureType() != FailureType.NON_FATAL)
+        .collect(Collectors.toList());
+    if (!fatalDestinationErrorTraceMessages.isEmpty()) {
+      return fatalDestinationErrorTraceMessages.get(0);
     } else {
       return null;
     }
