@@ -96,7 +96,7 @@ describe("auth button", () => {
       const done = true;
       const { run, loading } = baseUseFormikOauthAdapterValues;
 
-      return { done, run, loading };
+      return { done, run, loading, hasRun: done };
     });
 
     render(
