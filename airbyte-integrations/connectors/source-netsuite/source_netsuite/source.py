@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from netsuitesdk import NetSuiteConnection
+
 from source_netsuite.streams import (
     Accounts,
     Classifications,
@@ -32,7 +33,8 @@ from source_netsuite.streams import (
 
 
 class SourceNetsuiteSoap(AbstractSource):
-    def get_netsuite_connector(self, config: Mapping[str, Any]) -> NetSuiteConnection:
+    @staticmethod
+    def get_netsuite_connector(config: Mapping[str, Any]) -> NetSuiteConnection:
         return NetSuiteConnection(
             account=config["realm"],
             consumer_key=config["consumer_key"],
