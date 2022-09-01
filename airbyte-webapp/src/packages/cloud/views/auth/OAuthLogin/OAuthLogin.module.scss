@@ -1,0 +1,79 @@
+@use "../../../../../scss/variables" as vars;
+@use "../../../../../scss/colors";
+
+.separator {
+  display: flex;
+  margin: vars.$spacing-xl 0;
+  font-size: 16px;
+  text-align: center;
+  font-weight: bold;
+  color: colors.$grey-800;
+  text-transform: uppercase;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1 1;
+    border-bottom: 1px solid colors.$grey-300;
+    margin: auto;
+  }
+
+  &::before {
+    margin-right: vars.$spacing-md;
+  }
+
+  &::after {
+    margin-left: vars.$spacing-md;
+  }
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: vars.$spacing-sm;
+}
+
+.spinner {
+  text-align: center;
+}
+
+.google {
+  background: colors.$white;
+  border: 1px solid colors.$grey-300;
+}
+
+.github {
+  background: #333;
+  color: colors.$white;
+}
+
+.google,
+.github {
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  width: 100%;
+  margin: vars.$spacing-sm auto;
+  padding: vars.$spacing-md;
+  gap: vars.$spacing-md;
+  border-radius: vars.$border-radius-sm;
+  border: none;
+  transition: all vars.$transition;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    box-shadow: 0 1px 3px rgba(53, 53, 66, 20%), 0 1px 2px rgba(53, 53, 66, 12%), 0 1px 1px rgba(53, 53, 66, 14%);
+  }
+
+  & > img {
+    height: 24px;
+  }
+}
+
+.error {
+  margin-top: vars.$spacing-lg;
+  color: colors.$red;
+}

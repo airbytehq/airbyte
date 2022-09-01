@@ -4,7 +4,7 @@ import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -30,8 +30,6 @@ const ConnectionItemPage: React.FC = () => {
 
   const { source, destination } = connection;
 
-  const frequency = getFrequencyConfig(connection.schedule);
-
   const onAfterSaveSchema = () => {
     analyticsService.track(Namespace.CONNECTION, Action.EDIT_SCHEMA, {
       actionDescription: "Connection saved with catalog changes",
@@ -39,7 +37,7 @@ const ConnectionItemPage: React.FC = () => {
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.type,
+      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
     });
   };
 

@@ -5,6 +5,7 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
@@ -21,8 +22,9 @@ interface SourceSettingsProps {
 const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
-
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+  const formId = useUniqueFormId();
+  const { clearFormChange } = useFormChangeTrackerService();
 
   useEffect(() => {
     return () => {
@@ -44,11 +46,15 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
       sourceId: currentSource.sourceId,
     });
 
-  const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
+  const onDelete = async () => {
+    clearFormChange(formId);
+    await deleteSource({ connectionsWithSource, source: currentSource });
+  };
 
   return (
     <div className={styles.content}>
       <ConnectorCard
+        formId={formId}
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
         onSubmit={onSubmit}
