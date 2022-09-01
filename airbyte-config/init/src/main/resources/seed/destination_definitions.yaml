@@ -320,4 +320,5 @@
   dockerRepository: airbyte/destination-tidb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/tidb
+  icon: tidb.svg
   releaseStage: alpha
