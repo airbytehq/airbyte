@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC
 from collections import OrderedDict
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -12,10 +11,9 @@ import zeep
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from netsuitesdk import NetSuiteConnection
-from netsuitesdk.api.base import ApiBase
 
 
-class NetsuiteSoapStream(HttpStream, ApiBase, ABC):
+class NetsuiteSoapStream(HttpStream):
     def __init__(self, nc: NetSuiteConnection, name: str, config: dict, concurrency_limit: int = 1):
         self.config = config
         super().__init__()

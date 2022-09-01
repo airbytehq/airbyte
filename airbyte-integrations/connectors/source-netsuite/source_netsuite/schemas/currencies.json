@@ -35,17 +35,11 @@
                 "type": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "internalId"
-              ]
+              }
             }
           ]
         }
-      },
-      "required": [
-        "recordRef"
-      ]
+      }
     },
     "isInactive": {
       "type": "boolean"
