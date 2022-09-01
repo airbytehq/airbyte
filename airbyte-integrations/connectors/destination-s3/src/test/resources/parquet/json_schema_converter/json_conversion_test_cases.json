@@ -9,43 +9,13 @@
         "object"
       ],
       "properties": {
-        "address": {
+        "same_record_name_field": {
           "type": [
             "null",
             "object"
           ],
           "properties": {
-            "city": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "country": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "line1": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "line2": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "postal_code": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "state": {
+            "sub_field_1": {
               "type": [
                 "null",
                 "string"
@@ -53,7 +23,7 @@
             }
           }
         },
-        "sources": {
+        "any_of_field": {
           "anyOf": [
             {
               "type": [
@@ -61,55 +31,17 @@
                 "object"
               ],
               "properties": {
-                "owner": {
+                "same_record_name_field": {
                   "type": [
                     "null",
                     "object"
                   ],
                   "properties": {
-                    "address": {
+                    "sub_field_2": {
                       "type": [
                         "null",
-                        "object"
-                      ],
-                      "properties": {
-                        "line2": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "state": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "city": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "postal_code": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "country": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "line1": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        }
-                      }
+                        "string"
+                      ]
                     }
                   }
                 }
@@ -122,9 +54,9 @@
     "jsonObject": {
       "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
       "_airbyte_emitted_at": 1234567890,
-      "address": null,
-      "sources": {
-        "owner": null,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
         "_airbyte_additional_properties": null
       },
       "_airbyte_additional_properties": null
@@ -149,56 +81,16 @@
           }
         },
         {
-          "name": "address",
+          "name": "same_record_name_field",
           "type": [
             "null",
             {
               "type": "record",
-              "name": "address",
+              "name": "same_record_name_field",
               "namespace": "",
               "fields": [
                 {
-                  "name": "city",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "default": null
-                },
-                {
-                  "name": "country",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "default": null
-                },
-                {
-                  "name": "line1",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "default": null
-                },
-                {
-                  "name": "line2",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "default": null
-                },
-                {
-                  "name": "postal_code",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "default": null
-                },
-                {
-                  "name": "state",
+                  "name": "sub_field_1",
                   "type": [
                     "null",
                     "string"
@@ -222,93 +114,28 @@
           "default": null
         },
         {
-          "name": "sources",
+          "name": "any_of_field",
           "type": [
             "null",
             {
               "type": "record",
-              "name": "sources",
+              "name": "any_of_field",
               "namespace": "",
               "fields": [
                 {
-                  "name": "owner",
+                  "name": "same_record_name_field",
                   "type": [
                     "null",
                     {
                       "type": "record",
-                      "name": "owner",
-                      "namespace": "sources",
+                      "name": "same_record_name_field",
+                      "namespace": "any_of_field",
                       "fields": [
                         {
-                          "name": "address",
+                          "name": "sub_field_2",
                           "type": [
                             "null",
-                            {
-                              "type": "record",
-                              "name": "address",
-                              "namespace": "sources.owner",
-                              "fields": [
-                                {
-                                  "name": "line2",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "state",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "city",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "postal_code",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "country",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "line1",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
-                                  "default": null
-                                },
-                                {
-                                  "name": "_airbyte_additional_properties",
-                                  "type": [
-                                    "null",
-                                    {
-                                      "type": "map",
-                                      "values": "string"
-                                    }
-                                  ],
-                                  "default": null
-                                }
-                              ]
-                            }
+                            "string"
                           ],
                           "default": null
                         },
@@ -360,9 +187,9 @@
     "avroObject": {
       "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
       "_airbyte_emitted_at": 1234567890,
-      "address": null,
-      "sources": {
-        "owner": null,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
         "_airbyte_additional_properties": null
       },
       "_airbyte_additional_properties": null
