@@ -6,7 +6,22 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_pinterest.source import PinterestStream
+from source_pinterest.source import (
+    AdAccountAnalytics,
+    AdAccounts,
+    AdAnalytics,
+    AdGroupAnalytics,
+    AdGroups,
+    Ads,
+    BoardPins,
+    Boards,
+    BoardSectionPins,
+    BoardSections,
+    CampaignAnalytics,
+    Campaigns,
+    PinterestStream,
+    PinterestSubStream,
+)
 
 
 @pytest.fixture
@@ -15,6 +30,12 @@ def patch_base_class(mocker):
     mocker.patch.object(PinterestStream, "path", "v0/example_endpoint")
     mocker.patch.object(PinterestStream, "primary_key", "test_primary_key")
     mocker.patch.object(PinterestStream, "__abstractmethods__", set())
+    #
+    mocker.patch.object(PinterestSubStream, "path", "v0/example_endpoint")
+    mocker.patch.object(PinterestSubStream, "primary_key", "test_primary_key")
+    mocker.patch.object(PinterestSubStream, "next_page_token", None)
+    mocker.patch.object(PinterestSubStream, "parse_response", {})
+    mocker.patch.object(PinterestSubStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -72,3 +93,45 @@ def test_backoff_time(patch_base_class):
     stream = PinterestStream(config=MagicMock())
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    ("stream_cls, slice, expected"),
+    [
+        (Boards(MagicMock()), None, "boards"),
+        (AdAccounts(MagicMock()), None, "ad_accounts"),
+        (BoardSections(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/sections"),
+        (BoardPins(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/pins"),
+        (
+            BoardSectionPins(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "boards/234/sections/123/pins",
+        ),
+        (AdAccountAnalytics(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/analytics"),
+        (Campaigns(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/campaigns"),
+        (
+            CampaignAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/campaigns/analytics",
+        ),
+        (AdGroups(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ad_groups"),
+        (
+            AdGroupAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/ad_groups/analytics",
+        ),
+        (Ads(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ads"),
+        (
+            AdAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/ads/analytics",
+        ),
+    ],
+)
+def test_path(patch_base_class, stream_cls, slice, expected):
+    stream = stream_cls
+    if slice:
+        result = stream.path(stream_slice=slice)
+    else:
+        result = stream.path()
+    assert result == expected
