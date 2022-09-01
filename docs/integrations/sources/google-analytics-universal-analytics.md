@@ -19,38 +19,21 @@ To set up Google Sheets as a source in Airbyte Cloud:
 7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
 8. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
 
-<!---
-Edit from here
---->
+### For Airbyte Open Source
 
-**For Airbyte Open Source:**
+To set up Google Sheets as a source in Airbyte Open Source:
 
-There are 2 options of setting up authorization for this source:
-
-* Create service account specifically for Airbyte and authorize with JWT. Select `JWT authorization` from the `Authentication mechanism` dropdown list.
-* Use your Google account and authorize over Google's OAuth on connection setup. Select `Default OAuth2.0 authorization` from dropdown list.
-
-#### Create a Service Account
-
-First, you need to select existing or create a new project in the Google Developers Console:
-
-1. Sign in to the Google Account you are using for Google Analytics as an admin.
-2. Go to the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts).
-3. Click `Create service account`.
-4. Create a JSON key file for the service user. The contents of this file will be provided as the `credentials_json` in the UI when authorizing GA after you grant permissions \(see below\).
-
-#### Add service account to the Google Analytics account
-
-Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Read & Analyze permissions](https://support.google.com/analytics/answer/2884495).
-
-#### Enable the APIs
-
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user. Enable the API for your account. You can set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user. Enable the API for your account.
-
-<!---
-Edit till here
---->
+1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user and enable the Reporting API for your account. Then go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user and enable the API for your account. 
+2. Go to the Airbyte UI and click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown. 
+4. Enter a name for the Google Analytics connector. 
+5. Authenticate your Google account via OAuth or Service Account Key Authentication:
+    - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
+    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API and grant [Read and Analyze permissions](https://support.google.com/analytics/answer/2884495).
+6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
+8. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports) 
+9. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
 
 ## Supported sync modes
 
