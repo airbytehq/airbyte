@@ -1,4 +1,4 @@
-# Google Analytics (v4)
+# Google Analytics 4 (GA4)
 
 This page guides you through the process of setting up the Google Analytics source connector.
 
