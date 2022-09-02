@@ -23,7 +23,7 @@ describe("Connection main actions", () => {
   });
 
   it("Update connection", () => {
-    cy.intercept("/api/v1/web_backend/connections/updateNew").as("updateConnection");
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
 
@@ -37,6 +37,7 @@ describe("Connection main actions", () => {
     fillOutDestinationPrefix('auto_test');
 
     submitButtonClick();
+
     cy.wait("@updateConnection").then((interception) => {
       assert.isNotNull(interception.response?.statusCode, '200');    
     });
@@ -48,9 +49,7 @@ describe("Connection main actions", () => {
   });
 
   it("Update connection (pokeAPI)", () => {
-    cy.intercept({
-      method: "POST",
-      url: "/api/v1/web_backend/connections/updateNew"}).as("updateConnection");
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     createTestConnection("Test update connection PokeAPI source cypress", "Test update connection Local JSON destination cypress");
 
@@ -60,7 +59,7 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule('Every 5 minutes');
+    selectSchedule('Every hour');
     fillOutDestinationPrefix('auto_test');
     setupDestinationNamespaceCustomFormat('_test');
     selectFullAppendSyncMode();
@@ -78,9 +77,9 @@ describe("Connection main actions", () => {
         namespaceFormat: '${SOURCE_NAMESPACE}_test',
         status: 'active',
       });
-      expect(interception.request.body.schedule).to.contain({
-        units: 5,
-        timeUnit: 'minutes'
+      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+        units: 1,
+        timeUnit: 'hours'
       });
 
       const streamToUpdate = interception.request.body.syncCatalog.streams[0];
