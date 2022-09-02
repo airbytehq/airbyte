@@ -62,6 +62,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   private static final String HIERARCHYID = "hierarchyid";
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -413,6 +414,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
