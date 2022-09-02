@@ -73,7 +73,9 @@ airbyte:
       minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
   internal:
     api:
-      auth-header: ${AIRBYTE_API_AUTH_HEADER_NAME}
+      auth-header:
+        name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
+        value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
   local:
     docker-mount: ${LOCAL_DOCKER_MOUNT}
@@ -188,53 +190,12 @@ airbyte:
     docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
     root: ${WORKSPACE_ROOT}
 
-datasources:
-  config:
-    connection-test-query: SELECT 1
-    connection-timeout: 30000
-    idle-timeout: 600000
-    maximum-pool-size: 10
-    url: ${DATABASE_URL}
-    driverClassName: org.postgresql.Driver
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
-  jobs:
-    connection-test-query: SELECT 1
-    connection-timeout: 30000
-    idle-timeout: 600000
-    maximum-pool-size: 10
-    url: ${DATABASE_URL}
-    driverClassName: org.postgresql.Driver
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
-
 docker:
   network: ${DOCKER_NETWORK:host}
 
 endpoints:
   all:
     enabled: true
-
-flyway:
-  enabled: true
-  datasources:
-    config:
-      enabled: false
-      locations:
-        - 'classpath:io/airbyte/db/instance/configs/migrations'
-    jobs:
-      enabled: false
-      locations:
-        - 'classpath:io/airbyte/db/instance/jobs/migrations'
-
-jooq:
-  datasources:
-    config:
-      jackson-converter-enabled: true
-      sql-dialect: POSTGRES
-    jobs:
-      jackson-converter-enabled: true
-      sql-dialect: POSTGRES
 
 temporal:
   cloud:

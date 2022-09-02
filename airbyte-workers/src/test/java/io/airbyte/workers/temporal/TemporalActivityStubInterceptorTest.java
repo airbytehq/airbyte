@@ -24,8 +24,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Test suite for the {@link TemporalActivityStubInterceptor} class.
@@ -33,6 +31,8 @@ import org.mockito.stubbing.Answer;
 class TemporalActivityStubInterceptorTest {
 
   private static final String ACTIVITY_OPTIONS = "activityOptions";
+
+  private static final String GENERATOR_FUNCTION_BEAN_NAME = "defaultTemporalActivityStubGeneratorFunction";
 
   @Test
   void testExecutionOfValidWorkflowWithActivities() throws Exception {
@@ -47,7 +47,7 @@ class TemporalActivityStubInterceptorTest {
 
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn(GENERATOR_FUNCTION_BEAN_NAME);
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
@@ -77,7 +77,7 @@ class TemporalActivityStubInterceptorTest {
 
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn(GENERATOR_FUNCTION_BEAN_NAME);
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
@@ -114,7 +114,7 @@ class TemporalActivityStubInterceptorTest {
 
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn(GENERATOR_FUNCTION_BEAN_NAME);
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
@@ -148,7 +148,7 @@ class TemporalActivityStubInterceptorTest {
 
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn(GENERATOR_FUNCTION_BEAN_NAME);
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
