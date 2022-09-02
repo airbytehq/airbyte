@@ -9,6 +9,7 @@ import { ConfigContext, defaultConfig } from "config";
 import { ServicesProvider } from "core/servicesProvider";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
 interface WrapperProps {
   children?: React.ReactElement;
@@ -25,13 +26,15 @@ export async function render<
       <TestWrapper>
         <ConfigContext.Provider value={{ config: defaultConfig }}>
           <FeatureService features={defaultFeatures}>
-            <ServicesProvider>
-              <QueryClientProvider client={queryClient}>
-                <MemoryRouter>
-                  <Suspense fallback={<div>'fallback content'</div>}>{children}</Suspense>
-                </MemoryRouter>
-              </QueryClientProvider>
-            </ServicesProvider>
+            <AnalyticsProvider>
+              <ServicesProvider>
+                <QueryClientProvider client={queryClient}>
+                  <MemoryRouter>
+                    <Suspense fallback={<div>'fallback content'</div>}>{children}</Suspense>
+                  </MemoryRouter>
+                </QueryClientProvider>
+              </ServicesProvider>
+            </AnalyticsProvider>
           </FeatureService>
         </ConfigContext.Provider>
       </TestWrapper>
