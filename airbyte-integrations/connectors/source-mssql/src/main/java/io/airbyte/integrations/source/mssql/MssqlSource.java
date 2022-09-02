@@ -245,21 +245,27 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly selected (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (String schema : schemas) {
-        LOGGER.debug("Discovering schema: {}", schema);
-        internals.addAll(super.discoverInternal(database, schema));
-      }
-      for (TableInfo<CommonField<JDBCType>> info : internals) {
+      // process explicitly filtered (from UI) schemas
+      List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
+              .stream()
+              .filter(this::isTableInRequestedSchema)
+              .toList();
+      for (TableInfo<CommonField<JDBCType>> info : resultInternals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
-      return internals;
+      return resultInternals;
     } else {
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return super.discoverInternal(database);
+      return internals;
     }
+  }
+
+  private boolean isTableInRequestedSchema(TableInfo<CommonField<JDBCType>> tableInfo) {
+    return schemas
+            .stream()
+            .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
@@ -396,11 +402,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
-      try {
-        Thread.sleep(2000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
           props, catalog, true);
