@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:8.0.0'
         // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
         // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
         // Since api generation is only used in the airbyte-api module and the base gradle files
