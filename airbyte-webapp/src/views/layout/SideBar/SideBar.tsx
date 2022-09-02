@@ -1,5 +1,6 @@
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu } from "@headlessui/react";
 import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -16,10 +17,8 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
-import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
-import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
@@ -36,12 +35,6 @@ const Bar = styled.nav`
   justify-content: space-between;
   position: relative;
   z-index: 9999;
-`;
-
-const Menu = styled.ul`
-  padding: 0;
-  margin: 20px 0 0;
-  width: 100%;
 `;
 
 const Text = styled.div`
@@ -80,7 +73,7 @@ const SideBar: React.FC = () => {
         <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
-        <Menu>
+        <div className={styles.menu}>
           {workspace.displaySetupWizard ? (
             <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
@@ -115,9 +108,9 @@ const SideBar: React.FC = () => {
               </Text>
             </NavLink>
           </li>
-        </Menu>
+        </div>
       </div>
-      <Menu>
+      <div className={styles.menu}>
         <li>
           <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <HelpIcon icon={faRocket} />
@@ -126,17 +119,40 @@ const SideBar: React.FC = () => {
             </Text>
           </a>
         </li>
+
         <li>
-          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
-                <DocsIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.resources" />
-                </Text>
-              </div>
-            )}
-          </SidebarPopout>
+          {/* <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>*/}
+          {/*  {({ onOpen, isOpen }) => (*/}
+          {/*    <div className={getPopoutStyles(isOpen)} onClick={onOpen}>*/}
+          {/*      <DocsIcon />*/}
+          {/*      <Text>*/}
+          {/*        <FormattedMessage id="sidebar.resources" />*/}
+          {/*      </Text>*/}
+          {/*    </div>*/}
+          {/*  )}*/}
+          {/* </SidebarPopout>*/}
+          <Menu>
+            <Menu.Button>More</Menu.Button>
+            <Menu.Items>
+              <Menu.Item>
+                {({ active }) => (
+                  <a className={`${active && "bg-blue-500"}`} href="/account-settings">
+                    Account settings
+                  </a>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <a className={`${active && "bg-blue-500"}`} href="/account-settings">
+                    Documentation
+                  </a>
+                )}
+              </Menu.Item>
+              <Menu.Item disabled>
+                <span className="opacity-75">Invite a friend (coming soon!)</span>
+              </Menu.Item>
+            </Menu.Items>
+          </Menu>
         </li>
 
         <li>
@@ -155,7 +171,7 @@ const SideBar: React.FC = () => {
             <Version primary />
           </li>
         ) : null}
-      </Menu>
+      </div>
     </Bar>
   );
 };

@@ -1,0 +1,43 @@
+@use "../../../../../scss/colors";
+
+.navBar {
+  z-index: 9999;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100px;
+  min-width: 65px;
+  background-color: colors.$dark-blue;
+  padding: 23px 3px 15px 4px;
+  text-align: center;
+}
+
+.menu {
+  width: 100%;
+  padding: 0;
+  margin: 20px 0 0;
+}
+
+.workspaceButton {
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  height: 21px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  margin-top: 13px;
+  padding: 0 8px;
+  line-height: 21px;
+  font-size: 9px;
+  font-weight: 400;
+  color: colors.$white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.text {
+  margin-top: 7px;
+}

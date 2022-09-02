@@ -1,0 +1,73 @@
+@use "../../../../scss/colors";
+
+.sideBarMenu {
+  position: relative;
+}
+
+.button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  margin-top: 7px;
+  cursor: pointer;
+  border-radius: 12px;
+  line-height: 15px;
+  color: colors.$grey-30;
+  font-weight: normal;
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease-out;
+
+  span {
+    margin-top: 7px;
+  }
+
+  &.open {
+    background-color: colors.$dark-blue-800;
+  }
+
+  &:hover {
+    background-color: colors.$dark-blue-800;
+  }
+}
+
+.items {
+  position: absolute;
+  left: 100%;
+  bottom: 0;
+  min-width: 260px;
+  margin: 0 0 14px 12px;
+  padding: 4px 0;
+  border-radius: 4px;
+  background-color: colors.$white;
+  box-shadow: 0 8px 10px 0 rgb(11 10 26 / 4%), 0 3px 14px 0 rgb(11 10 26 / 8%), 0 5px 5px 0 rgb(11 10 26 / 12%);
+
+  .item a,
+  .item div {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 42px;
+    padding: 0 16px;
+    text-decoration: none;
+    color: colors.$dark-blue;
+    font-size: 14px;
+    font-weight: 500;
+
+    span {
+      display: flex;
+      align-items: center;
+      width: 34px;
+      font-size: 22px;
+    }
+
+    &:hover {
+      background-color: colors.$grey-50;
+    }
+  }
+}
