@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-workers')
 
     runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
