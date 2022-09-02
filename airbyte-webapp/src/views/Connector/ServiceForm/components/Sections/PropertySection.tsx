@@ -1,5 +1,6 @@
 import { useField } from "formik";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { LabeledSwitch } from "components";
 
@@ -8,6 +9,7 @@ import { FormBaseItem } from "core/form/types";
 import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
 import { PropertyLabel } from "../Property/PropertyLabel";
+import { PropertyError } from "./PropertyError";
 import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
@@ -40,8 +42,13 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     );
   }
 
+  const displayError = !!meta.error && meta.touched;
+
+  const errorValues = meta.error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
+  const errorMessage = <FormattedMessage id={meta.error} values={errorValues} />;
+
   return (
-    <PropertyLabel property={property} label={labelText} touched={meta.touched} error={meta.error}>
+    <PropertyLabel property={property} label={labelText}>
       <Control
         property={property}
         name={propertyPath}
@@ -49,7 +56,9 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
         removeUnfinishedFlow={removeUnfinishedFlow}
         unfinishedFlows={unfinishedFlows}
         disabled={disabled}
+        error={displayError}
       />
+      {displayError && <PropertyError>{errorMessage}</PropertyError>}
     </PropertyLabel>
   );
 };

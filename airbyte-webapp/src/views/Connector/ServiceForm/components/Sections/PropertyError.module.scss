@@ -1,0 +1,5 @@
+@use "../../../../../scss/colors";
+
+.errorMessage {
+  color: colors.$red-400;
+}

@@ -15,6 +15,7 @@ interface ControlProps {
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   disabled?: boolean;
+  error?: boolean;
 }
 
 export const Control: React.FC<ControlProps> = ({
@@ -24,6 +25,7 @@ export const Control: React.FC<ControlProps> = ({
   removeUnfinishedFlow,
   unfinishedFlows,
   disabled,
+  error,
 }) => {
   const [field, meta, form] = useField(name);
 
@@ -80,7 +82,7 @@ export const Control: React.FC<ControlProps> = ({
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} />;
+    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
@@ -89,9 +91,16 @@ export const Control: React.FC<ControlProps> = ({
       <ConfirmationControl
         component={
           property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} />
+            <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />
           ) : (
-            <Input {...field} autoComplete="off" value={value ?? ""} type="password" disabled={disabled} />
+            <Input
+              {...field}
+              autoComplete="off"
+              value={value ?? ""}
+              type="password"
+              disabled={disabled}
+              error={error}
+            />
           )
         }
         showButtons={isFormInEditMode}
@@ -113,5 +122,5 @@ export const Control: React.FC<ControlProps> = ({
   }
   const inputType = property.type === "integer" ? "number" : "text";
 
-  return <Input {...field} autoComplete="off" type={inputType} value={value ?? ""} disabled={disabled} />;
+  return <Input {...field} autoComplete="off" type={inputType} value={value ?? ""} disabled={disabled} error={error} />;
 };

@@ -12,9 +12,7 @@ import Button from "../Button";
 type IStyleProps = InputProps & { theme: Theme };
 
 const getBackgroundColor = (props: IStyleProps) => {
-  if (props.error) {
-    return props.theme.greyColor10;
-  } else if (props.light) {
+  if (props.light) {
     return props.theme.whiteColor;
   }
 
@@ -103,6 +101,7 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
     <InputContainer
       className={classNames("input-container", { "input-container--focused": focused })}
       data-testid="input-container"
+      error={props.error}
     >
       <InputComponent
         data-testid="input"

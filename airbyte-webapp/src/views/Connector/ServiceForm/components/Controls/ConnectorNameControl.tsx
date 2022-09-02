@@ -7,6 +7,7 @@ import { Input } from "components";
 import { FormBaseItem } from "core/form/types";
 
 import { PropertyLabel } from "../Property/PropertyLabel";
+import { PropertyError } from "../Sections/PropertyError";
 
 interface ConnnectorNameControlProps {
   property: FormBaseItem;
@@ -18,27 +19,32 @@ export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ pro
   const { formatMessage } = useIntl();
   const [field, fieldMeta] = useField(property.path);
 
+  const displayError = !!fieldMeta.error && fieldMeta.touched;
+
   return (
     <PropertyLabel
-      property={{
-        ...property,
-        description: formatMessage({
-          id: `form.${formType}Name.message`,
-        }),
-      }}
+      property={property}
       label={<FormattedMessage id={`form.${formType}Name`} />}
-      touched={fieldMeta.touched}
-      error={fieldMeta.error}
+      description={formatMessage({
+        id: `form.${formType}Name.message`,
+      })}
     >
       <Input
         {...field}
-        error={!!fieldMeta.error && fieldMeta.touched}
+        error={displayError}
         type="text"
         placeholder={formatMessage({
           id: `form.${formType}Name.placeholder`,
         })}
         disabled={disabled}
       />
+      {displayError && (
+        <PropertyError>
+          {formatMessage({
+            id: fieldMeta.error,
+          })}
+        </PropertyError>
+      )}
     </PropertyLabel>
   );
 };

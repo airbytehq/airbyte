@@ -13,7 +13,6 @@ export interface ControlLabelsProps {
   success?: boolean;
   nextLine?: boolean;
   message?: React.ReactNode;
-  errorMessage?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
   infoMessage?: React.ReactNode;
@@ -40,7 +39,6 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
           Optional
         </Text>
       )}
-      {props.errorMessage && <Text className={styles.errorMessage}>{props.errorMessage}</Text>}
     </Label>
     {props.children}
   </div>
