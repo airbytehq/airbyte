@@ -49,8 +49,6 @@ models:
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental
-        # schema change test isn't supported in Firebolt yet
-        +on_schema_change: ignore
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table

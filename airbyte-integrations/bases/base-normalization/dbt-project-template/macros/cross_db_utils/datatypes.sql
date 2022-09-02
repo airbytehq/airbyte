@@ -45,7 +45,7 @@
 {%- endmacro -%}
 
 {% macro firebolt__type_json() %}
-    STRING
+    string
 {% endmacro %}
 
 {# string ------------------------------------------------- #}
@@ -67,7 +67,7 @@
 {%- endmacro -%}
 
 {%- macro firebolt__type_string() -%}
-    STRING
+    string
 {%- endmacro -%}
 
 {#-- TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/dbt-labs/dbt-core/issues/5238) and we've upgraded to the latest version of dbt --#}
@@ -97,7 +97,7 @@
 {% endmacro %}
 
 {% macro firebolt__type_float() %}
-    FLOAT
+    float
 {% endmacro %}
 
 {# int  ------------------------------------------------- #}
@@ -122,7 +122,7 @@
 {% endmacro %}
 
 {% macro firebolt__type_int() %}
-    INT
+    int
 {% endmacro %}
 
 {# bigint ------------------------------------------------- #}
@@ -143,7 +143,7 @@
 {% endmacro %}
 
 {% macro firebolt__type_bigint() %}
-    BIGINT
+    bigint
 {% endmacro %}
 
 {# numeric ------------------------------------------------- --#}
@@ -160,7 +160,7 @@
 {% endmacro %}
 
 {% macro firebolt__type_numeric() %}
-    DOUBLE
+    double
 {% endmacro %}
 
 {# very_large_integer --------------------------------------- --#}
@@ -194,7 +194,7 @@ so this macro needs to be called very_large_integer.
 {% endmacro %}
 
 {% macro firebolt__type_very_large_integer() %}
-    DECIMAL(38)
+    decimal(38)
 {% endmacro %}
 
 {# timestamp ------------------------------------------------- --#}
@@ -217,7 +217,7 @@ so this macro needs to be called very_large_integer.
 {% endmacro %}
 
 {% macro firebolt__type_timestamp() %}
-    DATETIME
+    datetime
 {% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -261,7 +261,7 @@ so this macro needs to be called very_large_integer.
 {%- endmacro -%}
 
 {% macro firebolt__type_timestamp_with_timezone() %}
-    STRING
+    string
 {% endmacro %}
 
 
@@ -324,7 +324,7 @@ so this macro needs to be called very_large_integer.
 {% endmacro %}
 
 {% macro firebolt__type_time_without_timezone() %}
-    STRING
+    string
 {% endmacro %}
 
 {# time with time zone  -------------------------------------------------     #}
@@ -370,7 +370,7 @@ so this macro needs to be called very_large_integer.
 {%- endmacro -%}
 
 {% macro firebolt__type_time_with_timezone() %}
-    STRING
+    string
 {% endmacro %}
 
 {# date  -------------------------------------------------     #}
@@ -396,5 +396,5 @@ so this macro needs to be called very_large_integer.
 {% endmacro %}
 
 {% macro firebolt__type_date() %}
-    DATE
+    date
 {% endmacro %}
