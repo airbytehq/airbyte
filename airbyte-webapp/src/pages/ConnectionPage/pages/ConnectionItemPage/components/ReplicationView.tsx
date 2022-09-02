@@ -1,6 +1,6 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
@@ -109,81 +109,67 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
-  const saveConnection = useCallback(
-    async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
-      if (!connection) {
-        // onSubmit should only be called while the catalog isn't currently refreshing at the moment,
-        // which is the only case when `connection` would be `undefined`.
-        return;
-      }
-      const initialSyncSchema = connection.syncCatalog;
-      const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
+  const saveConnection = async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
+    if (!connection) {
+      // onSubmit should only be called while the catalog isn't currently refreshing at the moment,
+      // which is the only case when `connection` would be `undefined`.
+      return;
+    }
+    const initialSyncSchema = connection.syncCatalog;
+    const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
-      await updateConnection({
-        ...connectionAsUpdate,
-        ...values,
-        connectionId,
-        // Use the name and status from the initial connection because
-        // The status can be toggled and the name can be changed in-between refreshing the schema
-        name: initialConnection.name,
-        status: initialConnection.status || "",
-        skipReset,
-      });
-
-      setSaved(true);
-      if (!equal(values.syncCatalog, initialSyncSchema)) {
-        onAfterSaveSchema();
-      }
-
-      if (activeUpdatingSchemaMode) {
-        setActiveUpdatingSchemaMode(false);
-      }
-    },
-    [
-      activeUpdatingSchemaMode,
-      connection,
+    await updateConnection({
+      ...connectionAsUpdate,
+      ...values,
       connectionId,
-      initialConnection.name,
-      initialConnection.status,
-      onAfterSaveSchema,
-      updateConnection,
-    ]
-  );
+      // Use the name and status from the initial connection because
+      // The status can be toggled and the name can be changed in-between refreshing the schema
+      name: initialConnection.name,
+      status: initialConnection.status || "",
+      skipReset,
+    });
 
-  const onSubmitForm = useCallback(
-    async (values: ValuesProps): Promise<void> => {
-      // Detect whether the catalog has any differences in its enabled streams compared to the original one.
-      // This could be due to user changes (e.g. in the sync mode) or due to new/removed
-      // streams due to a "refreshed source schema".
-      const hasCatalogChanged = !equal(
-        values.syncCatalog.streams.filter((s) => s.config?.selected),
-        initialConnection.syncCatalog.streams.filter((s) => s.config?.selected)
-      );
-      // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
-      // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update
-      // endpoint.
-      if (hasCatalogChanged) {
-        const stateType = await connectionService.getStateType(connectionId);
-        const result = await openModal<boolean>({
-          title: formatMessage({ id: "connection.resetModalTitle" }),
-          size: "md",
-          content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
-        });
-        if (result.type === "canceled") {
-          throw new ModalCancel();
-        }
-        // Save the connection taking into account the correct skipRefresh value from the dialog choice.
-        await saveConnection(values, { skipReset: !result.reason });
-      } else {
-        // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
-        await saveConnection(values, { skipReset: true });
+    setSaved(true);
+    if (!equal(values.syncCatalog, initialSyncSchema)) {
+      onAfterSaveSchema();
+    }
+
+    if (activeUpdatingSchemaMode) {
+      setActiveUpdatingSchemaMode(false);
+    }
+  };
+
+  const onSubmitForm = async (values: ValuesProps): Promise<void> => {
+    // Detect whether the catalog has any differences in its enabled streams compared to the original one.
+    // This could be due to user changes (e.g. in the sync mode) or due to new/removed
+    // streams due to a "refreshed source schema".
+    const hasCatalogChanged = !equal(
+      values.syncCatalog.streams.filter((s) => s.config?.selected),
+      initialConnection.syncCatalog.streams.filter((s) => s.config?.selected)
+    );
+    // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
+    // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update
+    // endpoint.
+    if (hasCatalogChanged) {
+      const stateType = await connectionService.getStateType(connectionId);
+      const result = await openModal<boolean>({
+        title: formatMessage({ id: "connection.resetModalTitle" }),
+        size: "md",
+        content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
+      });
+      if (result.type === "canceled") {
+        throw new ModalCancel();
       }
-    },
-    [connectionId, connectionService, formatMessage, initialConnection.syncCatalog.streams, openModal, saveConnection]
-  );
+      // Save the connection taking into account the correct skipRefresh value from the dialog choice.
+      await saveConnection(values, { skipReset: !result.reason });
+    } else {
+      // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
+      await saveConnection(values, { skipReset: true });
+    }
+  };
 
   // TODO: Move this into the service next
-  const refreshSourceSchema = useCallback(async () => {
+  const refreshSourceSchema = async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
     const { catalogDiff, syncCatalog } = await refreshCatalog();
@@ -196,9 +182,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         ),
       });
     }
-  }, [formatMessage, openModal, refreshCatalog]);
+  };
 
-  const onRefreshSourceSchema = useCallback(async () => {
+  const onRefreshSourceSchema = async () => {
     if (formDirty) {
       // The form is dirty so we show a warning before proceeding.
       openConfirmationModal({
@@ -214,12 +200,12 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       // The form is not dirty so we can directly refresh the source schema.
       refreshSourceSchema();
     }
-  }, [closeConfirmationModal, formDirty, openConfirmationModal, refreshSourceSchema]);
+  };
 
-  const onCancelConnectionFormEdit = useCallback(() => {
+  const onCancelConnectionFormEdit = () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(false);
-  }, []);
+  };
 
   return (
     <Content>

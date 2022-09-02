@@ -64,13 +64,15 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         sourceCatalogId: catalogId,
       });
 
-      clearFormChange(formId);
-
-      push(`../../connections/${createdConnection.connectionId}`);
-
-      // We need the new connection ID to know where to go.
+      // We only want to go to the new connection if we _do not_ have an after submit action.
+      if (!afterSubmitConnection) {
+        // We have to clear the form change to prevent the dirty-form tracking modal from appearing.
+        clearFormChange(formId);
+        // This is the "default behavior", go to the created connection.
+        push(`../../connections/${createdConnection.connectionId}`);
+      }
     },
-    [catalogId, clearFormChange, createConnection, destination, formId, push, source]
+    [afterSubmitConnection, catalogId, clearFormChange, createConnection, destination, formId, push, source]
   );
 
   if (schemaErrorStatus) {
