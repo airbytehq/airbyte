@@ -31,7 +31,7 @@ public class ApiClientBeanFactory {
 
   @Singleton
   public AirbyteApiClient airbyteApiClient(
-                                           @Value("${airbyte.internal.api.auth-header}") final String airbyteApiAuthHeaderName,
+                                           @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
                                            @Named("internalApiAuthToken") final String internalApiAuthToken,
                                            @Named("internalApiScheme") final String internalApiScheme,
@@ -70,15 +70,16 @@ public class ApiClientBeanFactory {
   @Singleton
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
-                                     @Value("${airbyte.internal.api.auth-header}") final String airbyteApiAuthHeaderName,
+                                     @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
-                                     @Value("${airbyte.data.plan.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
+                                     @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
                                      final WorkerPlane workerPlane) {
     if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
-      return airbyteApiAuthHeaderName;
+      return airbyteApiAuthHeaderValue;
     } else if (WorkerPlane.DATA_PLANE.equals(workerPlane)) {
       try {
         final Date now = new Date();
