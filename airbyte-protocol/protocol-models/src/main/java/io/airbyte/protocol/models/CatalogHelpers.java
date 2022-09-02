@@ -335,9 +335,6 @@ public class CatalogHelpers {
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
         .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
-    // 1. is the method correct?
-    // 2. is our stored catalog correct?
-    // 3. how wide is this?
     final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
         .stream()
         .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
