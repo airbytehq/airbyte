@@ -1,4 +1,5 @@
 import { User as FirebaseUser } from "firebase/auth";
+import Cookies from "js-cookie";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
@@ -97,6 +98,11 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       news: userData.news ?? false,
     });
 
+    const previousAnonymousId = Cookies.get("ajs_anonymous_id");
+    if (previousAnonymousId) {
+      analytics.setAnonymousId(previousAnonymousId);
+    }
+
     analytics.track(Namespace.USER, Action.CREATE, {
       actionDescription: "New user registered",
       user_id: firebaseUser.uid,
@@ -105,6 +111,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       // Which login provider was used, e.g. "password", "google.com", "github.com"
       provider: firebaseUser.providerData[0]?.providerId,
       ...getUtmFromStorage(),
+      ...(previousAnonymousId && { anonymousId: previousAnonymousId }),
     });
 
     return user;

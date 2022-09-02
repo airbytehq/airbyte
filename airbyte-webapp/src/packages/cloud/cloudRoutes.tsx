@@ -22,6 +22,7 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
+import { setSegmentAnonymousIdCookie } from "utils/cookiesUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -140,6 +141,7 @@ export const Routing: React.FC = () => {
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
+    setSegmentAnonymousIdCookie(search);
   });
 
   const analyticsContext = useMemo(
