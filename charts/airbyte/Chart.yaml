@@ -61,3 +61,7 @@ dependencies:
     name: pod-sweeper
     repository: "https://airbytehq.github.io/helm-charts/"
     version: placeholder
+  - condition: metrics.enabled
+    name: metrics
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
