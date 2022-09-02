@@ -24,11 +24,11 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
-import { ConnectionOrPartialConnection } from "hooks/services/Connection/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
+import { ConnectionOrPartialConnection } from "./ConnectionForm";
 
 export interface FormikConnectionFormValues {
   name?: string;

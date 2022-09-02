@@ -13,8 +13,7 @@ import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";

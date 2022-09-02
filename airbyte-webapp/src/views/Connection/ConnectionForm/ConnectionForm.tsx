@@ -118,7 +118,11 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
-interface ConnectionFormProps {
+export type ConnectionOrPartialConnection =
+  | WebBackendConnectionRead
+  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+
+export interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
   additionBottomControls?: React.ReactNode;
@@ -132,12 +136,10 @@ interface ConnectionFormProps {
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+  connection: ConnectionOrPartialConnection;
 }
 
-const ConnectionForm: React.FC<ConnectionFormProps> = ({
+export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onCancel,
   className,
@@ -387,6 +389,3 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     </Formik>
   );
 };
-
-export type { ConnectionFormProps };
-export default ConnectionForm;
