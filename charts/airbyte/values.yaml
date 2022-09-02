@@ -260,9 +260,6 @@ webapp:
   api:
     url: /api/v1/
 
-  ## @param webapp.fullstory.enabled Whether or not to enable fullstory
-  fullstory:
-    enabled: false
 
   ## @param webapp.extraEnv [array] Additional env vars for webapp pod(s).
   ## Example:

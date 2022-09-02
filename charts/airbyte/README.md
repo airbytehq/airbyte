@@ -176,7 +176,6 @@ Helm chart to deploy airbyte
 | webapp.extraEnv                                    | list   | `[]`                        |             |
 | webapp.extraVolumeMounts                           | list   | `[]`                        |             |
 | webapp.extraVolumes                                | list   | `[]`                        |             |
-| webapp.fullstory.enabled                           | bool   | `false`                     |             |
 | webapp.image.pullPolicy                            | string | `"IfNotPresent"`            |             |
 | webapp.image.repository                            | string | `"airbyte/webapp"`          |             |
 | webapp.image.tag                                   | string | `"0.40.3"`                  |             |
