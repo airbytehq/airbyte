@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -46,17 +47,20 @@ public class WorkspaceCleaner {
     final Date oldestAllowed = getDateFromDaysAgo(maxAgeFilesInDays);
     log.info("Deleting files older than {} days ({})", maxAgeFilesInDays, oldestAllowed);
 
+    final AtomicInteger counter = new AtomicInteger(0);
     Files.walk(workspaceRoot)
         .map(Path::toFile)
         .filter(f -> new AgeFileFilter(oldestAllowed).accept(f))
         .forEach(file -> {
-          log.info("Deleting file: " + file.toString());
+          log.debug("Deleting file: " + file.toString());
           FileUtils.deleteQuietly(file);
+          counter.incrementAndGet();
           final File parentDir = file.getParentFile();
           if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
             FileUtils.deleteQuietly(parentDir);
           }
         });
+    log.info("deleted {} files", counter.get());
   }
 
   private static Date getDateFromDaysAgo(final long daysAgo) {
