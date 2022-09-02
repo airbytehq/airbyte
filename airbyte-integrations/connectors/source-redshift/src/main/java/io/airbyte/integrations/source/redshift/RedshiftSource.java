@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   private List<String> schemas;
 
@@ -121,6 +123,11 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
               .tableName(json.get("tablename").asText())
               .build();
         }));
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {
