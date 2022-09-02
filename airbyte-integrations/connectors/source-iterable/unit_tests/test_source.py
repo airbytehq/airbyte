@@ -4,8 +4,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from source_iterable.api import Lists
 from source_iterable.source import SourceIterable
+from source_iterable.streams import Lists
 
 
 def test_source_streams(config):
