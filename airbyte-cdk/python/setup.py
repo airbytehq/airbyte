@@ -44,7 +44,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "backoff",
-        "dataclasses-jsonschema~=2.15.1",
+        "dataclasses-jsonschema==2.15.1",  # pinned to the last working version for us temporarily while we fix
         "dpath~=2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
