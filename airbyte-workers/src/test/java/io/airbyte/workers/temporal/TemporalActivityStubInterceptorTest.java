@@ -101,12 +101,9 @@ class TemporalActivityStubInterceptorTest {
     final ActivityOptions activityOptions = mock(ActivityOptions.class);
     final TestActivity testActivity = mock(TestActivity.class);
     final TemporalActivityStubGeneratorFunction generatorFunction = mock(TemporalActivityStubGeneratorFunction.class);
-    when(generatorFunction.apply(any())).thenAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
-        activityStubInitializationCounter.incrementAndGet();
-        return testActivity;
-      }
+    when(generatorFunction.apply(any())).thenAnswer(invocation -> {
+      activityStubInitializationCounter.incrementAndGet();
+      return testActivity;
     });
 
     final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
