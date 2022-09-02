@@ -53,7 +53,7 @@ import io.airbyte.workers.temporal.scheduling.testsyncworkflow.PersistFailureSyn
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.ReplicateFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SourceAndDestinationFailureSyncWorkflow;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGenerationOptions;
+import io.airbyte.workers.temporal.support.DefaultTemporalActivityStubGeneratorFunction;
 import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.BeanRegistration;
@@ -202,7 +202,7 @@ class ConnectionManagerWorkflowTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> mock(o.getActivityStubClass());
+    final TemporalActivityStubGeneratorFunction generatorFunction = new DefaultTemporalActivityStubGeneratorFunction();
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
     when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
