@@ -1,4 +1,4 @@
-import { createTestDestination, deleteDestination, updateDestination } from "commands/destination";
+import { createLocalJsonDestination, deleteDestination, updateDestination } from "commands/destination";
 import { initialSetupCompleted } from "commands/workspaces";
 
 describe("Destination main actions", () => {
@@ -7,13 +7,13 @@ describe("Destination main actions", () => {
   });
 
   it("Create new destination", () => {
-    createTestDestination("Test destination cypress");
+    createLocalJsonDestination("Test destination cypress", "/local");
 
     cy.url().should("include", `/destination/`);
   });
 
   it("Update destination", () => {
-    createTestDestination("Test destination cypress for update");
+    createLocalJsonDestination("Test destination cypress for update", "/local");
     updateDestination("Test destination cypress for update", "connectionConfiguration.destination_path", "/local/my-json");
 
     cy.get("div[data-id='success-result']").should("exist");
@@ -21,7 +21,7 @@ describe("Destination main actions", () => {
   });
 
   it("Delete destination", () => {
-    createTestDestination("Test destination cypress for delete");
+    createLocalJsonDestination("Test destination cypress for delete", "/local");
     deleteDestination("Test destination cypress for delete");
 
     cy.visit("/destination");
