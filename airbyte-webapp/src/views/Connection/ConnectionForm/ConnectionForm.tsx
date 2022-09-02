@@ -125,7 +125,6 @@ export type ConnectionOrPartialConnection =
 export interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
-  additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
@@ -146,7 +145,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onDropDownSelect,
   mode,
   successMessage,
-  additionBottomControls,
   canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
@@ -375,7 +373,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onEndEditTransformation={toggleEditingTransformation}
               />
               <CreateControls
-                additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
                 errorMessage={
