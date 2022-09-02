@@ -147,7 +147,6 @@ class ArchiveHandlerTest {
     jobPersistence.setVersion(VERSION.serialize());
 
     workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    workspaceHelper.initialize();
 
     archiveHandler = new ArchiveHandler(
         VERSION,
