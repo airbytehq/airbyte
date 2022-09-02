@@ -128,6 +128,7 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | ------- |
+| 0.2.1 | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
 | 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
 | 0.1.5 | 2022-07-25 | [14996](https://github.com/airbytehq/airbyte/pull/14996) | Removed additionalProperties:false from spec |
 | 0.1.4 | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
