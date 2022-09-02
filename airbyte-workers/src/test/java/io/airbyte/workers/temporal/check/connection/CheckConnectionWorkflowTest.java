@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.temporal.TemporalProxyHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGenerationOptions;
+import io.airbyte.workers.temporal.support.DefaultTemporalActivityStubGeneratorFunction;
 import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
@@ -39,7 +39,7 @@ class CheckConnectionWorkflowTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> mock(o.getActivityStubClass());
+    final TemporalActivityStubGeneratorFunction generatorFunction = new DefaultTemporalActivityStubGeneratorFunction();
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
     when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -99,7 +100,6 @@ class SyncWorkflowTest {
   void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     syncControlPlaneWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncControlPlaneWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncDataPlaneWorker = testEnv.newWorker(DATA_PLANE_TASK_QUEUE);
     client = testEnv.getWorkflowClient();
 
@@ -122,10 +122,6 @@ class SyncWorkflowTest {
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
-
-    routerService = mock(RouterService.class);
-    doReturn(DATA_PLANE_TASK_QUEUE).when(routerService).getTaskQueue(sync.getConnectionId());
-
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
 
     longActivityOptions = ActivityOptions.newBuilder()
@@ -145,6 +141,8 @@ class SyncWorkflowTest {
             .build())
         .build();
 
+    routerService = mock(RouterService.class);
+    when(routerService.getTaskQueue(any())).thenReturn(DATA_PLANE_TASK_QUEUE);
     multiCloudTemporalActivityStubGeneratorFunction = new MultiCloudTemporalActivityStubGeneratorFunction();
     multiCloudTemporalActivityStubGeneratorFunction.setRouterService(routerService);
 
@@ -160,14 +158,18 @@ class SyncWorkflowTest {
     when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(shortActivityOptions);
     final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("multiCloudTemporalActivityStubGeneratorFunction");
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(multiCloudTemporalActivityStubGeneratorFunction);
     temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration),
         List.of(generatorFunctionBeanRegistration));
 
-    final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+    syncControlPlaneWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+  }
+
+  @AfterEach
+  public void tearDown() {
+    testEnv.close();
   }
 
   // bundle up all the temporal worker setup / execution into one method.
@@ -303,7 +305,7 @@ class SyncWorkflowTest {
 
   private static void verifyRouteToTaskQueue(final RouterService routerService,
                                              final UUID connectionId) {
-    verify(routerService).getTaskQueue(connectionId);
+    verify(routerService, times(4)).getTaskQueue(connectionId);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
@@ -339,11 +341,6 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         resourceRequirements,
         operatorDbtInput);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    testEnv.close();
   }
 
 }
