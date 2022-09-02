@@ -79,7 +79,7 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
               onEscape={onEscape}
               onEnter={onEnter}
               disabled={loading}
-              defaultFocus
+              autoFocus
             />
           </div>
         </div>
