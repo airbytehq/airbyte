@@ -43,6 +43,7 @@ import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -58,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Slf4j
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
   @Inject

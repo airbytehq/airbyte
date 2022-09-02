@@ -21,6 +21,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +31,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
   @Inject
