@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Test suite for the {@link TemporalActivityStubInterceptor} class.
@@ -64,7 +67,6 @@ class TemporalActivityStubInterceptorTest {
   @Test
   void testExecutionOfValidWorkflowWithActivitiesThatThrows() throws Exception {
     final ActivityOptions activityOptions = mock(ActivityOptions.class);
-    final TestActivity testActivity = mock(TestActivity.class);
     final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> mock(o.getActivityStubClass());
 
     final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
@@ -79,7 +81,7 @@ class TemporalActivityStubInterceptorTest {
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class,
+    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ErrorTestWorkflowImpl.class,
         List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
 
     final ErrorTestWorkflowImpl errorTestWorkflowImpl = new ErrorTestWorkflowImpl();
@@ -98,7 +100,14 @@ class TemporalActivityStubInterceptorTest {
     final AtomicInteger activityStubInitializationCounter = new AtomicInteger(0);
     final ActivityOptions activityOptions = mock(ActivityOptions.class);
     final TestActivity testActivity = mock(TestActivity.class);
-    final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> testActivity;
+    final TemporalActivityStubGeneratorFunction generatorFunction = mock(TemporalActivityStubGeneratorFunction.class);
+    when(generatorFunction.apply(any())).thenAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        activityStubInitializationCounter.incrementAndGet();
+        return testActivity;
+      }
+    });
 
     final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -146,7 +155,7 @@ class TemporalActivityStubInterceptorTest {
     when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
     when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class,
+    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(InvalidTestWorkflowImpl.class,
         List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
 
     final InvalidTestWorkflowImpl invalidTestWorklowImpl = new InvalidTestWorkflowImpl();
