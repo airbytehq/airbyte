@@ -18,6 +18,7 @@ import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.flyway.FlywayConfigurationProperties;
 import java.io.IOException;
@@ -41,18 +42,21 @@ public class DatabaseBeanFactory {
   private static final String INSTALLED_BY = "WorkerApp";
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("configDatabase")
   public Database configDatabase(@Named("config") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("jobsDatabase")
   public Database jobsDatabase(@Named("jobs") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("configFlyway")
   public Flyway configFlyway(@Named("config") final FlywayConfigurationProperties configFlywayConfigurationProperties,
                              @Named("config") final DataSource configDataSource,
@@ -68,6 +72,7 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("jobsFlyway")
   public Flyway jobsFlyway(@Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties,
                            @Named("jobs") final DataSource jobsDataSource,
@@ -83,33 +88,39 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase,
                                              final JsonSecretsProcessor jsonSecretsProcessor) {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public ConfigRepository configRepository(@Named("configPersistence") final ConfigPersistence configPersistence,
                                            @Named("configDatabase") final Database configDatabase) {
     return new ConfigRepository(configPersistence, configDatabase);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobDatabase) {
     return new DefaultJobPersistence(jobDatabase);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public StatePersistence statePersistence(@Named("configDatabase") final Database configDatabase) {
     return new StatePersistence(configDatabase);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public StreamResetPersistence streamResetPersistence(@Named("configDatabase") final Database configDatabase) {
     return new StreamResetPersistence(configDatabase);
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("configsDatabaseMigrationCheck")
   public DatabaseMigrationCheck configsDatabaseMigrationCheck(@Named("config") final DSLContext dslContext,
                                                               @Named("configFlyway") final Flyway configsFlyway,
@@ -122,6 +133,7 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("jobsDatabaseMigrationCheck")
   public DatabaseMigrationCheck jobsDatabaseMigrationCheck(@Named("jobs") final DSLContext dslContext,
                                                            @Named("jobsFlyway") final Flyway jobsFlyway,
@@ -133,6 +145,7 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("jobsDatabaseAvailabilityCheck")
   public JobsDatabaseAvailabilityCheck jobsDatabaseAvailabilityCheck(@Named("jobs") final DSLContext dslContext) {
     return new JobsDatabaseAvailabilityCheck(dslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);

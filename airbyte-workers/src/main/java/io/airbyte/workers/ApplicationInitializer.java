@@ -45,6 +45,7 @@ import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -69,33 +70,33 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private AirbyteVersion airbyteVersion;
   @Inject
   @Named("checkConnectionActivities")
-  private List<Object> checkConnectionActivities;
+  private Optional<List<Object>> checkConnectionActivities;
   @Inject
   @Named("configsDatabaseMigrationCheck")
-  private DatabaseMigrationCheck configsDatabaseMigrationCheck;
+  private Optional<DatabaseMigrationCheck> configsDatabaseMigrationCheck;
   @Inject
-  private ConfigRepository configRepository;
+  private Optional<ConfigRepository> configRepository;
   @Inject
   @Named("connectionManagerActivities")
-  private List<Object> connectionManagerActivities;
+  private Optional<List<Object>> connectionManagerActivities;
   @Inject
   private DeploymentMode deploymentMode;
   @Inject
   @Named("discoverActivities")
-  private List<Object> discoverActivities;
+  private Optional<List<Object>> discoverActivities;
   @Inject
   @Named(TaskExecutors.IO)
   private ExecutorService executorService;
   @Inject
   @Named("jobsDatabaseMigrationCheck")
-  private DatabaseMigrationCheck jobsDatabaseMigrationCheck;
+  private Optional<DatabaseMigrationCheck> jobsDatabaseMigrationCheck;
   @Inject
   @Named("jobsDatabaseAvailabilityCheck")
-  private JobsDatabaseAvailabilityCheck jobsDatabaseAvailabilityCheck;
+  private Optional<JobsDatabaseAvailabilityCheck> jobsDatabaseAvailabilityCheck;
   @Inject
-  private JobPersistence jobPersistence;
+  private Optional<JobPersistence> jobPersistence;
   @Inject
-  private LogConfigs logConfigs;
+  private Optional<LogConfigs> logConfigs;
   @Value("${airbyte.worker.check.max-workers}")
   private Integer maxCheckWorkers;
   @Value("${airbyte.worker.discover.max-workers}")
@@ -116,10 +117,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private boolean shouldRunSyncWorkflows;
   @Inject
   @Named("specActivities")
-  private List<Object> specActivities;
+  private Optional<List<Object>> specActivities;
   @Inject
   @Named("syncActivities")
-  private List<Object> syncActivities;
+  private Optional<List<Object>> syncActivities;
   @Inject
   private TemporalProxyHelper temporalProxyHelper;
   @Inject
@@ -129,7 +130,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Value("${airbyte.temporal.worker.ports}")
   private Set<Integer> temporalWorkerPorts;
   @Inject
-  private TrackingStrategy trackingStrategy;
+  private Optional<TrackingStrategy> trackingStrategy;
   @Inject
   private WorkerEnvironment workerEnvironment;
   @Inject
@@ -150,7 +151,12 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
         log.info("Skipping Control Plane dependency initialization.");
       }
 
-      log.info("Application initialized.");
+      registerWorkerFactory(workerFactory, new MaxWorkersConfig(maxCheckWorkers, maxDiscoverWorkers, maxSpecWorkers, maxSyncWorkers));
+
+      log.info("Starting worker factory...");
+      workerFactory.start();
+
+      log.info("Application initialized (mode = {}).", workerPlane);
     } catch (final DatabaseCheckException | ExecutionException | InterruptedException | IOException | TimeoutException e) {
       log.error("Unable to initialize application.", e);
       throw new IllegalStateException(e);
@@ -164,7 +170,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
 
     // Configure logging client
-    LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs,
+    LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(Path.of(workspaceRoot)));
 
     if (WorkerEnvironment.KUBERNETES.equals(workerEnvironment)) {
@@ -177,28 +183,23 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void initializeControlPlaneDependencies() throws DatabaseCheckException, IOException {
     // Ensure that the Configuration database has been migrated to the latest version
     log.info("Checking config database flyway migration version...");
-    configsDatabaseMigrationCheck.check();
+    configsDatabaseMigrationCheck.orElseThrow().check();
 
     // Ensure that the Jobs database has been migrated to the latest version
     log.info("Checking jobs database flyway migration version...");
-    jobsDatabaseMigrationCheck.check();
+    jobsDatabaseMigrationCheck.orElseThrow().check();
 
     // Ensure that the Jobs database is available
     log.info("Checking jobs database availability...");
-    jobsDatabaseAvailabilityCheck.check();
+    jobsDatabaseAvailabilityCheck.orElseThrow().check();
 
     TrackingClientSingleton.initialize(
-        trackingStrategy,
-        new Deployment(deploymentMode, jobPersistence.getDeployment().orElseThrow(),
+        trackingStrategy.orElseThrow(),
+        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
             workerEnvironment),
         airbyteRole,
         airbyteVersion,
-        configRepository);
-
-    registerWorkerFactory(workerFactory, new MaxWorkersConfig(maxCheckWorkers, maxDiscoverWorkers, maxSpecWorkers, maxSyncWorkers));
-
-    log.info("Starting worker factory...");
-    workerFactory.start();
+        configRepository.orElseThrow());
   }
 
   private void registerWorkerFactory(final WorkerFactory workerFactory, final MaxWorkersConfig maxWorkersConfiguration) {
@@ -229,7 +230,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkersConfig.getMaxCheckWorkers()));
     checkConnectionWorker
         .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
-    checkConnectionWorker.registerActivitiesImplementations(checkConnectionActivities.toArray(new Object[] {}));
+    checkConnectionWorker.registerActivitiesImplementations(checkConnectionActivities.orElseThrow().toArray(new Object[] {}));
+    log.info("Check Connection Workflow registered.");
   }
 
   private void registerConnectionManager(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
@@ -237,7 +239,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
     connectionUpdaterWorker
         .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
-    connectionUpdaterWorker.registerActivitiesImplementations(connectionManagerActivities.toArray(new Object[] {}));
+    connectionUpdaterWorker.registerActivitiesImplementations(connectionManagerActivities.orElseThrow().toArray(new Object[] {}));
+    log.info("Connection Manager Workflow registered.");
   }
 
   private void registerDiscover(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
@@ -245,19 +248,22 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
         factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkersConfig.getMaxDiscoverWorkers()));
     discoverWorker
         .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
-    discoverWorker.registerActivitiesImplementations(discoverActivities.toArray(new Object[] {}));
+    discoverWorker.registerActivitiesImplementations(discoverActivities.orElseThrow().toArray(new Object[] {}));
+    log.info("Discover Workflow registered.");
   }
 
   private void registerGetSpec(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkersConfig.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SpecWorkflowImpl.class));
-    specWorker.registerActivitiesImplementations(specActivities.toArray(new Object[] {}));
+    specWorker.registerActivitiesImplementations(specActivities.orElseThrow().toArray(new Object[] {}));
+    log.info("Get Spec Workflow registered.");
   }
 
   private void registerSync(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
-    syncWorker.registerActivitiesImplementations(syncActivities.toArray(new Object[] {}));
+    syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
+    log.info("Sync Workflow registered.");
   }
 
   private WorkerOptions getWorkerOptions(final int max) {

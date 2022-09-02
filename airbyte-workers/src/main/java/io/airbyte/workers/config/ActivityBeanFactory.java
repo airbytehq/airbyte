@@ -41,6 +41,7 @@ import javax.inject.Singleton;
 public class ActivityBeanFactory {
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("checkConnectionActivities")
   public List<Object> checkConnectionActivities(
                                                 final CheckConnectionActivity checkConnectionActivity) {
@@ -48,6 +49,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("connectionManagerActivities")
   public List<Object> connectionManagerActivities(
                                                   final GenerateInputActivity generateInputActivity,
@@ -71,6 +73,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("discoverActivities")
   public List<Object> discoverActivities(
                                          final DiscoverCatalogActivity discoverCatalogActivity) {
@@ -78,6 +81,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("specActivities")
   public List<Object> specActivities(
                                      final SpecActivity specActivity) {
@@ -141,6 +145,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("specActivityOptions")
   public ActivityOptions specActivityOptions() {
     return ActivityOptions.newBuilder()

@@ -5,6 +5,8 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -19,7 +21,6 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
@@ -32,7 +33,6 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,8 +62,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private WorkerEnvironment workerEnvironment;
   @Inject
   private LogConfigs logConfigs;
-  @Inject
-  private JobPersistence jobPersistence;
   @Value("${airbyte.version}")
   private String airbyteVersion;
   @Value("${micronaut.server.port}")
@@ -144,8 +142,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                          final JobRunConfig jobRunConfig,
                                                                                                                          final Supplier<ActivityExecutionContext> activityContext)
-      throws IOException {
-    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+      throws ApiException {
+    final JobIdRequestBody id = new JobIdRequestBody();
+    id.setId(Long.valueOf(jobRunConfig.getJobId()));
+    final var jobScope =  airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);
     return () -> new NormalizationLauncherWorker(
         connectionId,

@@ -13,6 +13,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.workers.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +195,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("checkWorkerConfigs")
   public WorkerConfigs checkWorkerConfigs(
                                           final WorkerEnvironment workerEnvironment,
@@ -254,6 +256,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("discoverWorkerConfigs")
   public WorkerConfigs discoverWorkerConfigs(
                                              final WorkerEnvironment workerEnvironment,
@@ -314,6 +317,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("specWorkerConfigs")
   public WorkerConfigs specWorkerConfigs(
                                          final WorkerEnvironment workerEnvironment,
