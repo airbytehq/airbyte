@@ -345,6 +345,7 @@ jobs:
           token: ${{ needs.find_valid_pat.outputs.pat }}
           workingDir: ./airbyte-webapp/
           storybookBuildDir: build/storybook/
+          exitOnceUploaded: true
 
 
   frontend-test:
