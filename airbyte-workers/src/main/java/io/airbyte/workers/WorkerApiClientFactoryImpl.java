@@ -31,7 +31,7 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
     // isn't needed
     final var scheme = configs.getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE) ? "http" : "https";
 
-    log.debug("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
+    log.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
         scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader);
 
     this.airbyteApiClient = new AirbyteApiClient(
