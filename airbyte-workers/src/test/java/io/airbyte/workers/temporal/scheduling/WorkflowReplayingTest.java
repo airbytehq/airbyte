@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.support.DefaultTemporalActivityStubGeneratorFunction;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;
@@ -39,12 +40,17 @@ class WorkflowReplayingTest {
             .build())
         .build();
 
-    final BeanIdentifier beanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration beanRegistration = mock(BeanRegistration.class);
-    when(beanIdentifier.getName()).thenReturn("shortActivityOptions");
-    when(beanRegistration.getIdentifier()).thenReturn(beanIdentifier);
-    when(beanRegistration.getBean()).thenReturn(activityOptions);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(beanRegistration));
+    final BeanIdentifier shortActivitiesBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration shortActivityOptionsBeanRegistration = mock(BeanRegistration.class);
+    when(shortActivitiesBeanIdentifier.getName()).thenReturn("shortActivityOptions");
+    when(shortActivityOptionsBeanRegistration.getIdentifier()).thenReturn(shortActivitiesBeanIdentifier);
+    when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
+    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
+    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
+    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
+    when(generatorFunctionBeanRegistration.getBean()).thenReturn(new DefaultTemporalActivityStubGeneratorFunction());
+    temporalProxyHelper = new TemporalProxyHelper(List.of(shortActivityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
   }
 
   @Test
