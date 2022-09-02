@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.NormalizationInput;
@@ -52,6 +53,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   @Override
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
+    LineGobbler.startSection("DEFAULT NORMALIZATION");
 
     try (normalizationRunner) {
       LOGGER.info("Running normalization.");
@@ -92,6 +94,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     }
 
     LOGGER.info("Normalization summary: {}", summary);
+    LineGobbler.endSection("DEFAULT NORMALIZATION");
 
     return summary;
   }

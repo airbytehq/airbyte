@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -117,6 +118,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @Override
   public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+    LineGobbler.startSection("REPLICATION");
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
     // that is independent of workflow executions.
@@ -293,6 +295,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         metricReporter.trackStateMetricTrackerError();
       }
 
+      LineGobbler.endSection("REPLICATION");
       return output;
     } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
