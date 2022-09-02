@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.15"
+- dockerImage: "airbyte/destination-bigquery:1.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -495,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.15"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -1563,7 +1563,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-gcs:0.2.10"
+- dockerImage: "airbyte/destination-gcs:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -2763,7 +2763,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.6"
+- dockerImage: "airbyte/destination-mongodb:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
@@ -2773,7 +2773,6 @@
       required:
       - "database"
       - "auth_type"
-      additionalProperties: true
       properties:
         instance_type:
           description: "MongoDb instance to connect to. For MongoDB Atlas and Replica\
@@ -2841,7 +2840,6 @@
                 description: "A replica set name."
                 order: 1
           - title: "MongoDB Atlas"
-            additionalProperties: false
             required:
             - "instance"
             - "cluster_url"
@@ -2867,7 +2865,6 @@
           description: "Authorization type."
           oneOf:
           - title: "None"
-            additionalProperties: false
             description: "None."
             required:
             - "authorization"
@@ -2877,7 +2874,6 @@
                 type: "string"
                 const: "none"
           - title: "Login/Password"
-            additionalProperties: false
             description: "Login/Password."
             required:
             - "authorization"
@@ -3302,7 +3298,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.22"
+- dockerImage: "airbyte/destination-postgres:0.3.23"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3868,7 +3864,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.48"
+- dockerImage: "airbyte/destination-redshift:0.3.49"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -4132,7 +4128,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.14"
+- dockerImage: "airbyte/destination-s3:0.3.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -4562,7 +4558,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.34"
+- dockerImage: "airbyte/destination-snowflake:0.4.35"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
