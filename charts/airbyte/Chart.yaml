@@ -21,7 +21,7 @@ version: 0.39.36
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.40.3"
+appVersion: "0.40.4"
 
 dependencies:
   - name: common
@@ -59,5 +59,9 @@ dependencies:
     version: placeholder
   - condition: pod-sweeper.enabled
     name: pod-sweeper
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: placeholder
+  - condition: metrics.enabled
+    name: metrics
     repository: "https://airbytehq.github.io/helm-charts/"
     version: placeholder
