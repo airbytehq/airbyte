@@ -70,8 +70,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ github.run_id }}-publisher
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   start-publish-image-runner-1:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 1
@@ -94,8 +92,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ github.run_id }}-publisher
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   start-publish-image-runner-2:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 2
@@ -118,8 +114,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ github.run_id }}-publisher
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   start-publish-image-runner-3:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 3
@@ -142,8 +136,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ github.run_id }}-publisher
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   start-publish-image-runner-4:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 4
@@ -166,8 +158,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ github.run_id }}-publisher
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   preprocess-matrix:
     needs: start-publish-image-runner-0
     runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
