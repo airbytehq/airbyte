@@ -57,3 +57,7 @@ dependencies:
     name: pod-sweeper
     repository: "file://../airbyte-pod-sweeper"
     version: 0.39.36
+  - condition: metrics.enabled
+    name: metrics
+    repository: "file://../airbyte-metrics"
+    version: 0.39.36
