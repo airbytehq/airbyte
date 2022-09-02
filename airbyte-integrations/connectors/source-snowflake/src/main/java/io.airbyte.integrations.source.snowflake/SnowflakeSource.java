@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   public static final String DRIVER_CLASS = DatabaseDriver.SNOWFLAKE.getDriverClassName();
   public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
@@ -85,6 +87,11 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {

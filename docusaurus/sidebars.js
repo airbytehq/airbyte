@@ -112,6 +112,7 @@ module.exports = {
         'operator-guides/upgrading-airbyte',
         'operator-guides/reset',
         'operator-guides/configuring-airbyte-db',
+        'operator-guides/configuring-connector-resources',
         'operator-guides/browsing-output-logs',
         'operator-guides/using-the-airflow-airbyte-operator',
         'operator-guides/using-prefect-task',
@@ -323,7 +324,7 @@ module.exports = {
       type: 'category',
       label: 'Release Notes',
       items: [
-         'release_notes/august_2022',
+         'release_notes/july_2022',
       ],
     },
   ],
