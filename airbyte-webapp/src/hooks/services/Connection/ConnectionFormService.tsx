@@ -55,9 +55,11 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
 
       setSubmitError(null);
       try {
+        // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
         await onSubmit(formValues);
 
         formikHelpers.resetForm({ values });
+        // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
         clearFormChange(formId);
 
         onAfterSubmit?.();
