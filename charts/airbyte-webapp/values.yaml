@@ -140,14 +140,6 @@ api:
 fullstory:
   enabled: false
 
-## @param webapp.extraEnv [array] Additional env vars for webapp pod(s).
-## Example:
-##
-## extraEnv:
-## - name: SAMPLE_ENV_VAR
-##   value: "key=sample-value"
-extraEnv: []
-
 ## @param webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
 ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumeMounts:
@@ -172,10 +164,73 @@ extraVolumeMounts: []
 ##
 extraVolumes: []
 
+## @param extraContainer [array] Additional container for server pod(s)
+## Example:
+# extraContainers:
+#   - name: otel_collector
+#     image: somerepo/someimage:sometag
+#     args: [
+#         "--important-args"
+#     ]
+#     ports:
+#       - containerPort: 443
+#     volumeMounts:
+#       - name: volumeMountCool
+#         mountPath: /some/path
+#         readOnly: true
 extraContainers: []
 
+## @param extraInitContainers [array] Additional init containers for server pod(s)
+## Example:
+# extraInitContainers:
+#   - name: sleepy
+#     image: alpine
+#     command: ['sleep', '60']
+
+extraInitContainers: []
+
+## @param extraEnv [array] Supply extra env variables to main container using full notation
+## Example: (With default env vars and values taken from generated config map)
+# extraEnv:
+#   - name: POSTGRES_USER
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_USER
+#   - name: POSTGRES_PWD
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_PASSWORD
+#   - name: DYNAMIC_CONFIG_FILE_PATH
+#     value: "config/dynamicconfig/development.yaml"
+#   - name: DB
+#     value: "postgresql"
+#   - name: DB_PORT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: DATABASE_PORT
+#   - name: POSTGRES_SEEDS
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: DATABASE_HOST
+##
+extraEnv: []
+## @param secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
 secrets: {}
 
-
+## @param env_vars [object] Supply extra env variables to main container using simplified notation
+## Example:
+## env_vars:
+##   DATABASE_HOST: airbyte-db
+##   DATABASE_PORT: 5432
 env_vars: {}
+
+
 

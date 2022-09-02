@@ -33,14 +33,6 @@ dependencies:
     tags:
       - bitnami-common
     version: 1.x.x
-  - condition: postgresql.enabled
-    name: postgresql
-    version: 10.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: global.logs.minio.enabled
-    name: minio
-    version: 11.x.x
-    repository: https://charts.bitnami.com/bitnami
   - condition: airbyte-bootloader.enabled
     name: airbyte-bootloader
     repository: "file://../airbyte-bootloader"

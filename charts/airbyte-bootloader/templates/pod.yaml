@@ -53,8 +53,8 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
+              name: {{ .Values.global.database.secretName | default (printf "%s-airbyte-secrets" .Release.Name ) }}
+              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -63,7 +63,7 @@ spec:
         - name: DATABASE_USER
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-secrets" .Release.Name) }}
+              name: {{ .Values.global.secretName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
         {{- end }}
         # Values from secret
@@ -91,3 +91,17 @@ spec:
         {{- end }}
 
       resources: {{- toYaml .Values.resources | nindent 8 }}
+{{- if .Values.extraVolumeMounts }}
+      volumeMounts:
+{{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+{{- end }}
+{{- if .Values.extraContainers }}
+{{ toYaml .Values.extraContainers | indent 4 }}
+{{- end }}
+{{- if .Values.global.extraContainers }}
+{{ toYaml .Values.global.extraContainers | indent 4 }}
+{{- end }}
+{{- if .Values.extraVolumes }}
+  volumes:
+{{- toYaml .Values.extraVolumes | nindent 2 }}
+{{- end }}

@@ -1,17 +1,25 @@
 ## @section Global Parameters
 
-## @param global.imageRegistry Global Docker image registry
-##
+## @param global Global params that are overwritten with umbrella chart
 global:
+  ## @param imageRegistry image registry override
   imageRegistry: ""
+  ## @param serviceAccountName Service Account name override
   serviceAccountName: &service-account-name "airbyte-admin"
+  ## @param deploymentMode Deployment mode, whether or not render the default env vars and volumes in deployment spec
   deploymentMode: "oss"
 
-  secretName: ""
+
+  ## @param database [object] Object used to overrite database configuration(to use external DB)
+  ## @param database.secretName secret name where DB creds are stored
+  ## @param database.secretValue secret value for database password
+  ## @param database.host Database host override
+  ## @param database.port Database port override
   database:
+    secretName: ""
     secretValue: ""
-    host: ""
-    port: ""
+    host: "example.com"
+    port: "5432"
   logs:
     ## @param logs.accessKey.password Logs Access Key
     ## @param logs.accessKey.existingSecret

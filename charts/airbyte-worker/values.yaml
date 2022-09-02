@@ -198,15 +198,7 @@ affinity: {}
 log:
   level: "INFO"
 
-## @param worker.extraEnv [array] Additional env vars for worker pod(s).
-## Example:
-##
-## extraEnv:
-## - name: JOB_KUBE_TOLERATIONS
-##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
-extraEnv: []
 
-secrets: {}
 
 ## @param worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
 ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -224,6 +216,71 @@ extraVolumeMounts: []
 ##
 extraVolumes: []
 
+## @param extraContainer [array] Additional container for server pod(s)
+## Example:
+# extraContainers:
+#   - name: otel_collector
+#     image: somerepo/someimage:sometag
+#     args: [
+#         "--important-args"
+#     ]
+#     ports:
+#       - containerPort: 443
+#     volumeMounts:
+#       - name: volumeMountCool
+#         mountPath: /some/path
+#         readOnly: true
 extraContainers: []
 
+## @param extraInitContainers [array] Additional init containers for server pod(s)
+## Example:
+# extraInitContainers:
+#   - name: sleepy
+#     image: alpine
+#     command: ['sleep', '60']
+
+extraInitContainers: []
+
+## @param extraEnv [array] Supply extra env variables to main container using full notation
+## Example: (With default env vars and values taken from generated config map)
+# extraEnv:
+#   - name: AIRBYTE_VERSION
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: AIRBYTE_VERSION
+#   - name: API_URL
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: API_URL
+#   - name: TRACKING_STRATEGY
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: TRACKING_STRATEGY
+#   - name: FULLSTORY
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: FULLSTORY
+#   - name: INTERNAL_API_HOST
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: INTERNAL_API_HOST
+##
+extraEnv: []
+## @param secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+## @param env_vars [object] Supply extra env variables to main container using simplified notation
+## Example:
+## env_vars:
+##   DATABASE_HOST: airbyte-db
+##   DATABASE_PORT: 5432
 env_vars: {}

@@ -1,0 +1,24 @@
+dependencies:
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  version: 1.17.1
+- name: airbyte-bootloader
+  repository: file://../airbyte-bootloader
+  version: 0.39.36
+- name: temporal
+  repository: file://../airbyte-temporal
+  version: 0.39.36
+- name: webapp
+  repository: file://../airbyte-webapp
+  version: 0.39.36
+- name: server
+  repository: file://../airbyte-server
+  version: 0.39.36
+- name: worker
+  repository: file://../airbyte-worker
+  version: 0.39.36
+- name: pod-sweeper
+  repository: file://../airbyte-pod-sweeper
+  version: 0.39.36
+digest: sha256:6c0c926864a3596771658c0ee1251151a8c78f2bc10fe60a1cf624261969bcc5
+generated: "2022-09-02T14:22:29.924635+03:00"

@@ -50,7 +50,7 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $fullName }}-svc
+                name: {{ .Release.Name }}-airbyte-webapp-svc
                 port:
                   number: {{ $svcPort }}
               {{- else }}
