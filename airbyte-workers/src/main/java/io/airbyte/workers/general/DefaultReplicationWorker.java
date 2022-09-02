@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -248,7 +249,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
-      LOGGER.info("sync summary: {}", summary);
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
@@ -294,6 +294,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       if (messageTracker.getUnreliableStateTimingMetrics()) {
         metricReporter.trackStateMetricTrackerError();
       }
+
+      final ObjectMapper mapper = new ObjectMapper();
+      LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
+      LOGGER.info("failures: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(failures));
 
       LineGobbler.endSection("REPLICATION");
       return output;

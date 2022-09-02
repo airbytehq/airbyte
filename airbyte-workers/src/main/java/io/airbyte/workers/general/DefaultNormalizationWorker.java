@@ -53,10 +53,9 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   @Override
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
-    LineGobbler.startSection("DEFAULT NORMALIZATION");
 
     try (normalizationRunner) {
-      LOGGER.info("Running normalization.");
+      LineGobbler.startSection("DEFAULT NORMALIZATION");
       normalizationRunner.start();
 
       Path normalizationRoot = null;
