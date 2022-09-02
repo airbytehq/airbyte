@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public JdbcSource() {
     super(DatabaseDriver.POSTGRESQL.getDriverClassName(), AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
@@ -33,11 +32,6 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
-  }
-
-  @Override
-  protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {
