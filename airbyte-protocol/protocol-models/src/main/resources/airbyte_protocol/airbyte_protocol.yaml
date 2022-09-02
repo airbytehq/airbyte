@@ -207,7 +207,7 @@ definitions:
         description: A user-friendly message from the caller
         type: string
       data:
-        description: An additional information that the caller wishes to log
+        description: An additional information that the caller wishes to log.  This information will be shown to end-users along with message
         type: object
   AirbyteConnectionStatus:
     type: object
