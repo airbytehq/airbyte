@@ -5,6 +5,8 @@
 package io.airbyte.db.instance.configs.migrations;
 
 import static org.jooq.impl.DSL.currentOffsetDateTime;
+import static org.jooq.impl.DSL.foreignKey;
+import static org.jooq.impl.DSL.primaryKey;
 import static org.jooq.impl.DSL.unique;
 
 import java.time.OffsetDateTime;
@@ -36,19 +38,19 @@ public class V0_40_3_003__CreateSyncStats extends BaseJavaMigration {
   private static void createSyncStatsTable(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<Integer> attemptId = DSL.field("attempt_id", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> recordsEmitted = DSL.field("records_emitted", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> bytesEmitted = DSL.field("bytes_emitted", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> sourceStateMessagesEmitted = DSL.field("source_state_messages_emitted", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> destinationStateMessagesEmitted = DSL.field("destination_state_messages_emitted", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> recordsCommitted = DSL.field("records_committed", SQLDataType.INTEGER.nullable(false));
+    final Field<Integer> recordsEmitted = DSL.field("records_emitted", SQLDataType.INTEGER.nullable(true));
+    final Field<Integer> bytesEmitted = DSL.field("bytes_emitted", SQLDataType.INTEGER.nullable(true));
+    final Field<Integer> sourceStateMessagesEmitted = DSL.field("source_state_messages_emitted", SQLDataType.INTEGER.nullable(true));
+    final Field<Integer> destinationStateMessagesEmitted = DSL.field("destination_state_messages_emitted", SQLDataType.INTEGER.nullable(true));
+    final Field<Integer> recordsCommitted = DSL.field("records_committed", SQLDataType.INTEGER.nullable(true));
     final Field<Integer> meanSecondsBeforeSourceStateMessageEmitted =
-        DSL.field("mean_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(false));
+        DSL.field("mean_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(true));
     final Field<Integer> maxSecondsBeforeSourceStateMessageEmitted =
-        DSL.field("max_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(false));
+        DSL.field("max_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(true));
     final Field<Integer> meanSecondsBetweenStateMessageEmittedandCommitted =
-        DSL.field("mean_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(false));
+        DSL.field("mean_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(true));
     final Field<Integer> maxSecondsBetweenStateMessageEmittedandCommitted =
-        DSL.field("max_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(false));
+        DSL.field("max_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(true));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =
@@ -58,7 +60,7 @@ public class V0_40_3_003__CreateSyncStats extends BaseJavaMigration {
         .columns(id, attemptId, recordsEmitted, bytesEmitted, sourceStateMessagesEmitted, destinationStateMessagesEmitted, recordsCommitted,
             meanSecondsBeforeSourceStateMessageEmitted, maxSecondsBeforeSourceStateMessageEmitted, meanSecondsBetweenStateMessageEmittedandCommitted,
             maxSecondsBetweenStateMessageEmittedandCommitted, createdAt, updatedAt)
-        .constraints(unique(attemptId))
+        .constraints(primaryKey(id), foreignKey(attemptId).references("attempts", "id").onDeleteCascade())
         .execute();
 
     ctx.createIndex("attempt_id_idx").on("sync_stats", "attempt_id").execute();
