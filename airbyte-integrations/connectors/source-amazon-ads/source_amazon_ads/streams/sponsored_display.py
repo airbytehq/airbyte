@@ -17,6 +17,7 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
         super().__init__(*args, **kwargs)
 
     primary_key = "campaignId"
+    state_filter = None
     model = DisplayCampaign
 
     def path(self, **kwargs) -> str:

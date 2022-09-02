@@ -71,13 +71,15 @@
         }
       },
       "state_filter": {
-        "title": "State Filter (Optional)",
-        "description": "Description here",
-        "order": 9,
-        "type": "array",
+        "title": "State Filter",
+        "description": "Reflects the state of the Display Campaign stream as enabled, paused, or archived. If you do not populate this field, it will be ignored completely",
         "items": {
-          "type": "string"
-        }
+          "type": "string",
+          "enum": ["enabled", "paused", "archived"]
+        },
+        "type": "array",
+        "uniqueItems": "true",
+        "order": 9
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
