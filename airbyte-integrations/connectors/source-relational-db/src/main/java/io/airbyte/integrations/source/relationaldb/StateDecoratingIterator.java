@@ -32,23 +32,23 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private String maxCursor;
   private boolean hasEmittedFinalState;
 
-  /*
-   * These parameters are for intermediate state message emission. We can emit an intermediate state when the
-   * following two conditions are met.
+  /**
+   * These parameters are for intermediate state message emission. We can emit an intermediate state
+   * when the following two conditions are met.
    * <p/>
-   * 1. The records are sorted by the cursor field. This is true when {@code stateEmissionFrequency > 0}.
-   * This logic is guaranteed in {@code AbstractJdbcSource#queryTableIncremental}, in which an "ORDER
-   * BY" clause is appended to the SQL query if {@code stateEmissionFrequency > 0}.
+   * 1. The records are sorted by the cursor field. This is true when {@code stateEmissionFrequency} >
+   * 0. This logic is guaranteed in {@code AbstractJdbcSource#queryTableIncremental}, in which an
+   * "ORDER BY" clause is appended to the SQL query if {@code stateEmissionFrequency} > 0.
    * <p/>
-   * 2. There is a cursor value that is "ready" for emission. A cursor value is "ready" if there is no more record
-   * with the same value. We cannot emit a cursor at will, because there may be more than one record with the same
-   * cursor value. If we emit a cursor ignoring this condition, should the sync fail right after the emission,
-   * the next sync may skip some records with the same cursor value due to the query "WHERE cursor_field > cursor"
-   * in {@code AbstractJdbcSource#queryTableIncremental}.
+   * 2. There is a cursor value that is ready for emission. A cursor value is "ready" if there is no
+   * more record with the same value. We cannot emit a cursor at will, because there may be multiple
+   * records with the same cursor value. If we emit a cursor ignoring this condition, should the sync
+   * fail right after the emission, the next sync may skip some records with the same cursor value due
+   * to "WHERE cursor_field > cursor" in {@code AbstractJdbcSource#queryTableIncremental}.
    * <p/>
-   * The {@code intermediateStateMessage} is set to the latest state message that is ready for emission. For every
-   * {@code stateEmissionFrequency} messages, {@code emitIntermediateState} is set to true and the latest "ready"
-   * state will be emitted in the next {@code computeNext} call.
+   * The {@code intermediateStateMessage} is set to the latest state message that is ready for
+   * emission. For every {@code stateEmissionFrequency} messages, {@code emitIntermediateState} is set
+   * to true and the latest "ready" state will be emitted in the next {@code computeNext} call.
    */
   private final int stateEmissionFrequency;
   private int totalRecordCount = 0;
@@ -63,9 +63,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @param initialCursor name of the initial cursor column
    * @param cursorType ENUM type of primitive values that can be used as a cursor for checkpointing
    * @param stateEmissionFrequency If larger than 0, the records are sorted by the cursor field, and
-   *        intermediate states will be emitted for every {@code stateEmissionFrequency} records. The order of
-   *        the records is guaranteed in {@code AbstractJdbcSource#queryTableIncremental}, in which
-   *        an "ORDER BY" clause is appended to the SQL query if {@code stateEmissionFrequency} > 0.
+   *        intermediate states will be emitted for every {@code stateEmissionFrequency} records. The
+   *        order of the records is guaranteed in {@code AbstractJdbcSource#queryTableIncremental}, in
+   *        which an "ORDER BY" clause is appended to the SQL query if {@code stateEmissionFrequency}
+   *        > 0.
    */
   public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
                                  final StateManager stateManager,
