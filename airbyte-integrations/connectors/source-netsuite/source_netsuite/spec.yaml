@@ -13,8 +13,8 @@ connectionSpecification:
   properties:
     realm:
       type: string
-      description: Netsuite realm e.g. 2344535  (followed by _SB# if it is a sandbox)
-      pattern: ^\d{7}([_,S,B,0-9]{4})?$
+      description: Netsuite realm e.g. 2344535 or 2344535_SB1 if it is sandbox
+      airbyte_secret: true
     consumer_key:
       type: string
       description: Consumer key associated with your integration
