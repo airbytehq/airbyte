@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
-import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
 import javax.inject.Singleton;
@@ -23,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class SyncWorkflowImpl implements SyncWorkflow {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
@@ -92,10 +92,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                                         final StandardSyncOutput syncOutput) {
 
     return normalizationActivity.generateNormalizationInput(syncInput, syncOutput);
-  }
-
-  private ActivityOptions setTaskQueue(final ActivityOptions activityOptions, final String taskQueue) {
-    return ActivityOptions.newBuilder(activityOptions).setTaskQueue(taskQueue).build();
   }
 
 }

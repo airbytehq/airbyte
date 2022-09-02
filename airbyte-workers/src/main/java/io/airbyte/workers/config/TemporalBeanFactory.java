@@ -18,6 +18,7 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -32,11 +33,13 @@ import javax.inject.Singleton;
 public class TemporalBeanFactory {
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public TrackingClient trackingClient() {
     return TrackingClientSingleton.get();
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
@@ -63,6 +66,7 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public TemporalWorkerRunFactory temporalWorkerRunFactory(
                                                            @Value("${airbyte.version}") final String airbyteVersion,
                                                            final FeatureFlags featureFlags,

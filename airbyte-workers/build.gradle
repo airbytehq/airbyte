@@ -114,7 +114,7 @@ run {
 
     environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
     environment 'AIRBYTE_VERSION', env.VERSION
-    environment 'MICRONAUT_ENVIRONMENTS', 'local'
+    environment 'MICRONAUT_ENVIRONMENTS', 'local,control'
 }
 
 task copyGeneratedTar(type: Copy) {

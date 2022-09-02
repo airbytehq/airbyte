@@ -17,6 +17,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   @Inject
