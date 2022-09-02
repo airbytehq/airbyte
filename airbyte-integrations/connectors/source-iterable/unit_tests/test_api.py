@@ -10,63 +10,55 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_iterable.api import Campaigns, CampaignsMetrics, Channels, Events, Lists, ListUsers, MessageTypes, Metadata, Templates, Users
 
 
-@pytest.fixture(name="config")
-def config_fixture():
-    config = {"api_key": 123, "start_date": "2019-10-10T00:00:00"}
-    return config
-
-
 @pytest.mark.parametrize(
-    "stream,expected_path",
+    "stream,date,slice,expected_path",
     [
-        (Lists, "lists"),
-        (Campaigns, "campaigns"),
-        (Channels, "channels"),
-        (Events, "export/userEvents"),
-        (MessageTypes, "messageTypes"),
-        (Metadata, "metadata"),
+        (Lists, False, {}, "lists"),
+        (Campaigns, False, {}, "campaigns"),
+        (Channels, False, {}, "channels"),
+        (Events, False, {}, "export/userEvents"),
+        (MessageTypes, False, {}, "messageTypes"),
+        (Metadata, False, {}, "metadata"),
+        (ListUsers, False, {"list_id": 1}, "lists/getUsers?listId=1"),
+        (CampaignsMetrics, True, {}, "campaigns/metrics"),
+        (Templates, True, {}, "templates"),
     ],
 )
-def test_path(config, stream, expected_path):
-    assert stream(authenticator=NoAuth()).path() == expected_path
+def test_path(config, stream, date, slice, expected_path):
+    args = {"authenticator": NoAuth()}
+    if date:
+        args["start_date"] = "2019-10-10T00:00:00"
 
-
-@pytest.mark.parametrize(
-    "stream,expected_path",
-    [
-        (CampaignsMetrics, "campaigns/metrics"),
-        (Templates, "templates"),
-    ],
-)
-def test_path2(config, stream, expected_path):
-    assert stream(authenticator=NoAuth(), start_date="2019-10-10T00:00:00").path() == expected_path
+    assert stream(**args).path(stream_slice=slice) == expected_path
 
 
 def test_campaigns_metrics_csv():
-    csv_string = """a,b,c,d
-1, 2,, 3
-6,, 1, 2
-"""
-
+    csv_string = "a,b,c,d\n1, 2,,3\n6,,1, 2\n"
     output = [{"a": 1, "b": 2, "d": 3}, {"a": 6, "c": 1, "d": 2}]
 
     assert CampaignsMetrics._parse_csv_string_to_dict(csv_string) == output
 
 
-def test_list_users_get_list_id():
-    url = "http://google.com?listId=1&another=another"
-    ListUsers._get_list_id(url) == 1
+@pytest.mark.parametrize(
+    "url,id",
+    [
+        ("http://google.com?listId=1&another=another", 1),
+        ("http://google.com?another=another", None),
+    ],
+)
+def test_list_users_get_list_id(url, id):
+    assert ListUsers._get_list_id(url) == id
 
 
 def test_campaigns_metrics_request_params():
-    s = CampaignsMetrics(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
-    params = s.request_params(stream_slice={"campaign_ids": "c101"}, stream_state=None)
+    stream = CampaignsMetrics(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    params = stream.request_params(stream_slice={"campaign_ids": "c101"}, stream_state=None)
     assert params == {"campaignId": "c101", "startDateTime": "2019-10-10T00:00:00"}
 
 
 def test_events_request_params():
-    s = Events(authenticator=NoAuth())
-    params = s.request_params(stream_slice={"email": "a@a.a"}, stream_state=None)
+    stream = Events(authenticator=NoAuth())
+    params = stream.request_params(stream_slice={"email": "a@a.a"}, stream_state=None)
     assert params == {"email": "a@a.a", "includeCustomEvents": "true"}
 
 

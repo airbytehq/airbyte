@@ -76,6 +76,7 @@ def test_email_stream(catalog, time_mock):
     "catalog, days_duration, days_per_minute_rate",
     [
         ("email_send", 10, 200),
+        # tests are commented because they take a lot of time for completion
         # ("email_send", 100, 200000),
         # ("email_send", 10000, 200000),
         # ("email_click", 1000, 20),

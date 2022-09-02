@@ -9,7 +9,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
@@ -259,7 +261,13 @@ class IterableExportStreamAdjustableRange(IterableExportStream):
                     start_time = now
                 break
             except ChunkedEncodingError:
-                self.logger.warn("ChunkedEncodingError occured, decrease days range and try again")
+                self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
                 stream_slice = self._adjustable_generator.reduce_range()
         else:
             raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
+
+
+class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All child stream share the same 'events' schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("events")

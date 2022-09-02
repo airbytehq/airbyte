@@ -10,9 +10,12 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from source_iterable.iterable_streams import IterableExportStreamAdjustableRange, IterableExportStreamRanged, IterableStream
+from source_iterable.iterable_streams import (
+    IterableExportEventsStreamAdjustableRange,
+    IterableExportStreamAdjustableRange,
+    IterableExportStreamRanged,
+    IterableStream,
+)
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -175,11 +178,6 @@ class EmailSubscribe(IterableExportStreamAdjustableRange):
 class EmailUnsubscribe(IterableExportStreamAdjustableRange):
     data_field = "emailUnsubscribe"
 
-
-class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange):
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(EmailBounce)).get_schema("events")
 
 class PushSend(IterableExportEventsStreamAdjustableRange):
     data_field = "pushSend"
