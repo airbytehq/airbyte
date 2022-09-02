@@ -2,10 +2,17 @@ import { renderHook } from "@testing-library/react-hooks";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { NormalizationType } from "core/domain/connection";
-import { ConnectionScheduleTimeUnit, OperationRead } from "core/request/AirbyteClient";
+import {
+  ConnectionScheduleTimeUnit,
+  DestinationDefinitionSpecificationRead,
+  OperationRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
+import mockConnection from "hooks/services/Connection/mockConnection.json";
+import mockDestinationDefinition from "hooks/services/Connection/mockDestinationDefinition.json";
 import { TestWrapper as wrapper } from "utils/testutils";
 
-import { mapFormPropsToOperation, useFrequencyDropdownData } from "./formConfig";
+import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } from "./formConfig";
 
 describe("#useFrequencyDropdownData", () => {
   it("should return only default frequencies when no additional frequency is provided", () => {
@@ -159,4 +166,43 @@ describe("#mapFormPropsToOperation", () => {
       normalization,
     ]);
   });
+});
+
+describe("#useInitialValues", () => {
+  it("should generate initial values w/ no edit mode", () => {
+    const { result } = renderHook(() =>
+      useInitialValues(
+        mockConnection as WebBackendConnectionRead,
+        mockDestinationDefinition as DestinationDefinitionSpecificationRead
+      )
+    );
+    expect(result).toMatchSnapshot();
+  });
+
+  it("should generate initial values w/ edit mode: false", () => {
+    const { result } = renderHook(() =>
+      useInitialValues(
+        mockConnection as WebBackendConnectionRead,
+        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
+        false
+      )
+    );
+    expect(result).toMatchSnapshot();
+  });
+
+  it("should generate initial values w/ edit mode: true", () => {
+    const { result } = renderHook(() =>
+      useInitialValues(
+        mockConnection as WebBackendConnectionRead,
+        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
+        true
+      )
+    );
+    expect(result).toMatchSnapshot();
+  });
+
+  // This is a low-priority test
+  it.todo(
+    "should test for supportsDbt+initialValues.transformations and supportsNormalization+initialValues.normalization"
+  );
 });
