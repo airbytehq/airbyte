@@ -1,3 +1,6 @@
+### This Chart.yaml file is used for local testing purposes
+### If you want to test the chart before creating PR, rename this file into Chart.yaml and test the deployment
+
 apiVersion: v2
 name: airbyte
 description: Helm chart to deploy airbyte
