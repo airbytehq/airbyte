@@ -1,7 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -24,7 +24,6 @@ const getBackgroundColor = (props: IStyleProps) => {
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
-  defaultFocus?: boolean;
 }
 
 const InputContainer = styled.div<InputProps>`
@@ -83,46 +82,76 @@ const VisibilityButton = styled(Button)`
   border: none;
 `;
 
-const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ...props }) => {
+const Input: React.FC<InputProps> = ({ ...props }) => {
   const { formatMessage } = useIntl();
+
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [isContentVisible, setIsContentVisible] = useToggle(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const inputSelectionStartRef = useRef<number | null>(null);
+
+  const [isContentVisible, toggleIsContentVisible] = useToggle(false);
   const [focused, setFocused] = useState(false);
 
   const isPassword = props.type === "password";
   const isVisibilityButtonVisible = isPassword && !props.disabled;
   const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
 
-  useEffect(() => {
-    if (defaultFocus && inputRef.current !== null) {
-      inputRef.current.focus();
+  const focusOnInputElement = useCallback(() => {
+    if (!inputRef.current) {
+      return;
     }
-  }, [inputRef, defaultFocus]);
+
+    const { current: element } = inputRef;
+    const selectionStart = inputSelectionStartRef.current ?? inputRef.current?.value.length;
+
+    element.focus();
+
+    if (selectionStart) {
+      // Update input cursor position to where it was before
+      window.setTimeout(() => {
+        element.setSelectionRange(selectionStart, selectionStart);
+      }, 0);
+    }
+  }, []);
+
+  const onContainerFocus: React.FocusEventHandler<HTMLDivElement> = () => {
+    setFocused(true);
+  };
+
+  const onContainerBlur: React.FocusEventHandler<HTMLDivElement> = (event) => {
+    if (isVisibilityButtonVisible && event.target === inputRef.current) {
+      // Save the previous selection
+      inputSelectionStartRef.current = inputRef.current.selectionStart;
+    }
+
+    setFocused(false);
+
+    if (isPassword) {
+      window.setTimeout(() => {
+        if (document.activeElement !== inputRef.current && document.activeElement !== buttonRef.current) {
+          toggleIsContentVisible(false);
+          inputSelectionStartRef.current = null;
+        }
+      }, 0);
+    }
+  };
 
   return (
     <InputContainer
       className={classNames("input-container", { "input-container--focused": focused })}
       data-testid="input-container"
+      onFocus={onContainerFocus}
+      onBlur={onContainerBlur}
     >
-      <InputComponent
-        data-testid="input"
-        {...props}
-        ref={inputRef}
-        type={type}
-        isPassword={isPassword}
-        onFocus={(event) => {
-          setFocused(true);
-          onFocus?.(event);
-        }}
-        onBlur={(event) => {
-          setFocused(false);
-          onBlur?.(event);
-        }}
-      />
+      <InputComponent data-testid="input" {...props} ref={inputRef} type={type} isPassword={isPassword} />
       {isVisibilityButtonVisible ? (
         <VisibilityButton
+          ref={buttonRef}
           iconOnly
-          onClick={() => setIsContentVisible()}
+          onClick={() => {
+            toggleIsContentVisible();
+            focusOnInputElement();
+          }}
           type="button"
           aria-label={formatMessage({
             id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
