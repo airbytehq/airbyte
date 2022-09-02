@@ -7,6 +7,7 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
+import { PropertyLabel } from "../Property/PropertyLabel";
 import { SectionContainer } from "./common";
 import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
@@ -64,13 +65,12 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     };
   }, [items, formField.properties]);
 
+  const label = (
+    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}`} optional={false} />
+  );
+
   return (
-    <GroupControls
-      name={path}
-      key={`form-variable-fields-${formField?.fieldKey}`}
-      title={formField.title || formField.fieldKey}
-      description={formField.description}
-    >
+    <GroupControls name={path} key={`form-variable-fields-${formField?.fieldKey}`} title={label}>
       <SectionContainer>
         <FieldArray
           name={path}
