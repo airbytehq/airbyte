@@ -70,7 +70,10 @@ mainClassName = 'io.airbyte.workers.WorkerApp'
 
 application {
     mainClass = mainClassName
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+//    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0', '-javaagent:/app/dd-java-agent.jar', '-Ddd.profiling.enabled=true',
+                                 '-XX:FlightRecorderOptions=stackdepth=256', '-Ddd.trace.sample.rate=1', '-Ddd.service=airbyte-cloud-server',
+                                 '-Ddd.trace.request_header.tags=User-Agent:http.useragent']
 }
 
 task copyGeneratedTar(type: Copy) {

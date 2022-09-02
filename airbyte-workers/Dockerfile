@@ -1,7 +1,6 @@
-ARG JDK_VERSION=19-slim-bullseye
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}
-FROM ${JDK_IMAGE} AS worker
+#FROM ${JDK_IMAGE} AS worker
 
+FROM airbyte/java-datadog-tracer-base:2.0 as datadog
 ARG DOCKER_BUILD_ARCH=amd64
 
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
