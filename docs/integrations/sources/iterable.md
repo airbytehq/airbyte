@@ -89,17 +89,17 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                    |
-|:--------|:-----------| :-----       |:---------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
 | 0.1.17  | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams                                                   |
 | 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                               |
-| 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description                                  |
-| 0.1.14  | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Update `Events` stream to use `export/userEvents` endpoint                 |
-| 0.1.13  | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091) | Adjust slice ranges for email streams                                      |
-| 0.1.12  | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780) | Split EmailSend stream into slices to fix premature connection close error |
-| 0.1.11  | 2021-11-03 | [7619](https://github.com/airbytehq/airbyte/pull/7619) | Bugfix type error while incrementally loading the `Templates` stream       |
-| 0.1.10  | 2021-11-03 | [7591](https://github.com/airbytehq/airbyte/pull/7591) | Optimize export streams memory consumption for large requests              |
-| 0.1.9   | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Enable campaign_metrics stream                                             |
-| 0.1.8   | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: campaign_metrics, events                                  |
-| 0.1.7   | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242) | Updated schema for: campaigns, lists, templates, metadata                  |
+| 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                  |
+| 0.1.14  | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380)   | Update `Events` stream to use `export/userEvents` endpoint                 |
+| 0.1.13  | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091)   | Adjust slice ranges for email streams                                      |
+| 0.1.12  | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780)   | Split EmailSend stream into slices to fix premature connection close error |
+| 0.1.11  | 2021-11-03 | [7619](https://github.com/airbytehq/airbyte/pull/7619)   | Bugfix type error while incrementally loading the `Templates` stream       |
+| 0.1.10  | 2021-11-03 | [7591](https://github.com/airbytehq/airbyte/pull/7591)   | Optimize export streams memory consumption for large requests              |
+| 0.1.9   | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Enable campaign_metrics stream                                             |
+| 0.1.8   | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Add new streams: campaign_metrics, events                                  |
+| 0.1.7   | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242)   | Updated schema for: campaigns, lists, templates, metadata                  |
 
