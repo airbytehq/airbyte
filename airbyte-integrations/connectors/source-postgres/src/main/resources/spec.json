@@ -153,9 +153,25 @@
                 "multiline": true,
                 "order": 1
               },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client Certificate (Optional)",
+                "description": "Client certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key (Optional)",
+                "description": "Client key",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
               "client_key_password": {
                 "type": "string",
-                "title": "Client Key Password (Optional)",
+                "title": "Client key password (Optional)",
                 "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -166,12 +182,7 @@
             "title": "verify-full",
             "additionalProperties": false,
             "description": "Verify-full SSL mode.",
-            "required": [
-              "mode",
-              "ca_certificate",
-              "client_certificate",
-              "client_key"
-            ],
+            "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -190,7 +201,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client Certificate",
+                "title": "Client Certificate (Optional)",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -198,7 +209,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client Key",
+                "title": "Client Key (Optional)",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,

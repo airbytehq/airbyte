@@ -545,7 +545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.12"
+- dockerImage: "airbyte/source-amplitude:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -900,7 +900,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.10"
+- dockerImage: "airbyte/source-bing-ads:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -1213,7 +1213,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.12"
+- dockerImage: "airbyte/source-clickhouse:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1390,7 +1390,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.16"
+- dockerImage: "airbyte/source-cockroachdb:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -1857,7 +1857,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.60"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.61"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -1939,8 +1939,7 @@
                 type: "array"
                 items:
                   title: "ValidEnums"
-                  description: "Generic enumeration.\n\nDerive from this class to\
-                    \ define new enumerations."
+                  description: "An enumeration."
                   enum:
                   - "account_currency"
                   - "account_id"
@@ -2079,8 +2078,7 @@
                 type: "array"
                 items:
                   title: "ValidBreakdowns"
-                  description: "Generic enumeration.\n\nDerive from this class to\
-                    \ define new enumerations."
+                  description: "An enumeration."
                   enum:
                   - "ad_format_asset"
                   - "age"
@@ -2113,8 +2111,7 @@
                 type: "array"
                 items:
                   title: "ValidActionBreakdowns"
-                  description: "Generic enumeration.\n\nDerive from this class to\
-                    \ define new enumerations."
+                  description: "An enumeration."
                   enum:
                   - "action_canvas_component_name"
                   - "action_carousel_card_id"
@@ -4016,7 +4013,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.14"
+- dockerImage: "airbyte/source-db2:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -5273,7 +5270,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.16"
+- dockerImage: "airbyte/source-mssql:0.4.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -6048,7 +6045,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.6.5"
+- dockerImage: "airbyte/source-mysql:0.6.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -6710,7 +6707,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.20"
+- dockerImage: "airbyte/source-oracle:0.3.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -6964,7 +6961,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-orb:0.1.2"
+- dockerImage: "airbyte/source-orb:0.1.3"
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
@@ -6973,7 +6970,7 @@
       type: "object"
       required:
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_key:
           type: "string"
@@ -7399,7 +7396,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-plaid:0.3.1"
+- dockerImage: "airbyte/source-plaid:0.3.2"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
     connectionSpecification:
@@ -7410,7 +7407,7 @@
       - "api_key"
       - "client_id"
       - "plaid_env"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         access_token:
           type: "string"
@@ -7503,7 +7500,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.4"
+- dockerImage: "airbyte/source-postgres:1.0.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7665,9 +7662,23 @@
                 airbyte_secret: true
                 multiline: true
                 order: 1
+              client_certificate:
+                type: "string"
+                title: "Client Certificate (Optional)"
+                description: "Client certificate"
+                airbyte_secret: true
+                multiline: true
+                order: 2
+              client_key:
+                type: "string"
+                title: "Client Key (Optional)"
+                description: "Client key"
+                airbyte_secret: true
+                multiline: true
+                order: 3
               client_key_password:
                 type: "string"
-                title: "Client Key Password (Optional)"
+                title: "Client key password (Optional)"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -7678,8 +7689,6 @@
             required:
             - "mode"
             - "ca_certificate"
-            - "client_certificate"
-            - "client_key"
             properties:
               mode:
                 type: "string"
@@ -7697,14 +7706,14 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate"
+                title: "Client Certificate (Optional)"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key"
+                title: "Client Key (Optional)"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
@@ -8035,7 +8044,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.7"
+- dockerImage: "airbyte/source-recharge:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -8103,7 +8112,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.12"
+- dockerImage: "airbyte/source-redshift:0.3.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -8163,6 +8172,13 @@
           type: "string"
           airbyte_secret: true
           order: 6
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 7
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8635,7 +8651,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.13"
+- dockerImage: "airbyte/source-salesforce:1.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -8838,7 +8854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.12"
+- dockerImage: "airbyte/source-sendgrid:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -9021,7 +9037,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.15"
+- dockerImage: "airbyte/source-slack:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
@@ -9061,7 +9077,7 @@
           default: []
           items:
             type: "string"
-            min-item: 0
+            minLength: 0
           title: "Channel name filter"
           description: "A channel name list (without leading '#' char) which limit\
             \ the channels from which you'd like to sync. Empty list means no filter."
@@ -9277,7 +9293,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.19"
+- dockerImage: "airbyte/source-snowflake:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -9875,7 +9891,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.2.0"
+- dockerImage: "airbyte/source-tidb:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
@@ -9890,6 +9906,7 @@
       properties:
         host:
           description: "Hostname of the database."
+          title: "Host"
           type: "string"
           order: 0
         port:
@@ -9909,6 +9926,7 @@
           order: 2
         username:
           description: "Username to use to access the database."
+          title: "Username"
           type: "string"
           order: 3
         password:
@@ -10034,7 +10052,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.14"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -10268,7 +10286,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.6"
+- dockerImage: "airbyte/source-twilio:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
@@ -10279,7 +10297,7 @@
       - "account_sid"
       - "auth_token"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         account_sid:
           title: "Account ID"
@@ -10315,7 +10333,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-typeform:0.1.8"
+- dockerImage: "airbyte/source-typeform:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
     connectionSpecification:
@@ -11007,7 +11025,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.5"
+- dockerImage: "airbyte/source-sentry:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sentry"
     connectionSpecification:

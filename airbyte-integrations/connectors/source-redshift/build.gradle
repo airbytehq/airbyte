@@ -25,6 +25,8 @@ dependencies {
     testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
+    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+    testImplementation project(":airbyte-json-validation")
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
