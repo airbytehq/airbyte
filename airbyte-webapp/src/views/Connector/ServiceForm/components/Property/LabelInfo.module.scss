@@ -1,7 +1,7 @@
 @use "../../../../../scss/colors";
 
 .descriptionHeader {
-  margin-top: 0px;
+  margin-top: 0;
   margin-bottom: 5px;
 }
 
@@ -20,8 +20,7 @@
 
 .exampleContainer {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
   row-gap: 7px;
   column-gap: 7px;
 }
@@ -29,7 +28,7 @@
 .exampleItem {
   width: max-content;
   max-width: 100%;
-  padding: 3px 5px 3px 5px;
+  padding: 3px 5px;
   background-color: colors.$dark-blue-400;
   border-radius: 3px;
 }
