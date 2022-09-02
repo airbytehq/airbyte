@@ -79,10 +79,10 @@ public class TemporalActivityStubInterceptor<T> {
    *         be initialized.
    */
   @RuntimeType
-  public Object execute(@This final T workflowImplInstance, @SuperCall final Callable<Object> call, @AllArguments final Object[] args)
+  public Object execute(@This final T workflowImplInstance, @SuperCall final Callable<Object> call, @AllArguments final Object... args)
       throws Exception {
     // Initialize the activity stubs, if not already done, before execution of the workflow method
-    initializeActivityStubs(workflowImplClass, workflowImplInstance, availableActivityOptions, args);
+    initializeActivityStubs(workflowImplClass, workflowImplInstance, args);
     return call.call();
   }
 
@@ -92,16 +92,15 @@ public class TemporalActivityStubInterceptor<T> {
    *
    * @param workflowImplClass The target class of the proxy.
    * @param workflowInstance The workflow instance that may contain Temporal activity stub fields.
-   * @param activityOptions The collection of {@link ActivityOptions} beans configured in the
+   * @param methodArguments The collection of {@link ActivityOptions} beans configured in the
    *        application context.
    */
   private void initializeActivityStubs(final Class<T> workflowImplClass,
                                        final T workflowInstance,
-                                       final Collection<BeanRegistration<ActivityOptions>> activityOptions,
-                                       final Object[] methodArguments) {
+                                       final Object... methodArguments) {
     for (final Field field : workflowImplClass.getDeclaredFields()) {
       if (field.isAnnotationPresent(TemporalActivityStub.class)) {
-        initializeActivityStub(workflowInstance, field, activityOptions, methodArguments);
+        initializeActivityStub(workflowInstance, field, methodArguments);
       }
     }
   }
@@ -113,13 +112,12 @@ public class TemporalActivityStubInterceptor<T> {
    * @param workflowInstance The Temporal workflow instance that contains the Temporal activity stub
    *        field.
    * @param activityStubField The field that represents the Temporal activity stub.
-   * @param activityOptions The collection of {@link ActivityOptions} beans configured in the
+   * @param methodArguments The collection of {@link ActivityOptions} beans configured in the
    *        application context.
    */
   private void initializeActivityStub(final T workflowInstance,
                                       final Field activityStubField,
-                                      final Collection<BeanRegistration<ActivityOptions>> activityOptions,
-                                      final Object[] methodArguments) {
+                                      final Object... methodArguments) {
     try {
       log.debug("Attempting to initialize Temporal activity stub for activity '{}' on workflow '{}'...", activityStubField.getType(),
           workflowInstance.getClass().getName());
@@ -197,7 +195,7 @@ public class TemporalActivityStubInterceptor<T> {
    * @return The {@link TemporalActivityStubGenerationOptions} to be used to generate a Temporal
    *         activity stub.
    */
-  private TemporalActivityStubGenerationOptions getGenerationOptions(final Field activityStubField, final Object[] methodArguments) {
+  private TemporalActivityStubGenerationOptions getGenerationOptions(final Field activityStubField, final Object... methodArguments) {
     final ActivityOptions activityOptions = getActivityOptions(activityStubField);
     final Class<?> activityStubClass = activityStubField.getType();
     final String workflowVersionChangedId = getWorkflowVersionChangeId(activityStubField);

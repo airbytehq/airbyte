@@ -6,6 +6,7 @@ package io.airbyte.workers.config;
 
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -27,6 +28,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             value = "")
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
@@ -35,6 +37,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             value = "TESTING_CONFIG_DB_TABLE")
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("secretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
@@ -43,6 +46,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             value = "GOOGLE_SECRET_MANAGER")
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("secretPersistence")
   public SecretPersistence googleSecretPersistence(@Value("${airbyte.secret.store.gcp.credentials}") final String credentials,
                                                    @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
@@ -52,6 +56,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             value = "VAULT")
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   @Named("secretPersistence")
   public SecretPersistence vaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
@@ -60,8 +65,15 @@ public class SecretPersistenceBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
   public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
+  }
+
+  @Singleton
+  @Requires(env = "data")
+  public SecretsHydrator secretsHydrator() {
+    return new NoOpSecretsHydrator();
   }
 
 }

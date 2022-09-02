@@ -8,6 +8,7 @@ import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
+import io.micronaut.context.annotation.Requires;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Slf4j
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class RecordMetricActivityImpl implements RecordMetricActivity {
 
   @Inject

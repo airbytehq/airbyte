@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import io.micronaut.context.annotation.Requires;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +30,7 @@ import lombok.AllArgsConstructor;
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @AllArgsConstructor
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class ConnectionHelper {
 
   @Inject

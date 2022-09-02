@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Requires;
 import java.time.Duration;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Singleton
+@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
 public class WorkflowConfigActivityImpl implements WorkflowConfigActivity {
 
   @Property(name = "airbyte.workflow.failure.restart-delay",
