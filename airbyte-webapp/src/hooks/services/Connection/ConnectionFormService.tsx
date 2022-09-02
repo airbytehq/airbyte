@@ -5,7 +5,7 @@ import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/A
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { ConnectionFormMode, ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
@@ -15,8 +15,9 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { useFormChangeTrackerService, useUniqueFormId } from "../FormChangeTracker";
+import { useFormChangeTrackerService } from "../FormChangeTracker";
 import { ModalCancel } from "../Modal";
+import { ValuesProps } from "../useConnectionHook";
 
 export type ConnectionOrPartialConnection =
   | WebBackendConnectionRead
@@ -25,8 +26,8 @@ export type ConnectionOrPartialConnection =
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  formId?: string;
-  onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
+  formId: string;
+  onSubmit: (values: ValuesProps) => Promise<void>;
   onAfterSubmit?: () => void;
   onCancel?: () => void;
 }
@@ -35,7 +36,6 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
-  formId = useUniqueFormId(formId);
 
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
@@ -58,13 +58,7 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
         await onSubmit(formValues);
 
         formikHelpers.resetForm({ values });
-        if (formId) {
-          // formId is never undefined here, but this is safer than `!`
-          clearFormChange(formId);
-        } else {
-          // This should never be hit.
-          throw new Error("Somehow this form does not have an id");
-        }
+        clearFormChange(formId);
 
         onAfterSubmit?.();
       } catch (e) {

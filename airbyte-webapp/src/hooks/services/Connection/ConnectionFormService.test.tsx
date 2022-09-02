@@ -70,6 +70,7 @@ describe("ConnectionFormService", () => {
       initialProps: {
         connection: mockConnection as WebBackendConnectionRead,
         mode: "create",
+        formId: Math.random().toString(),
         onSubmit,
         onAfterSubmit,
         onCancel,
@@ -110,6 +111,7 @@ describe("ConnectionFormService", () => {
       initialProps: {
         connection: mockConnection as WebBackendConnectionRead,
         mode: "create",
+        formId: Math.random().toString(),
         onSubmit,
         onAfterSubmit,
         onCancel,
@@ -136,6 +138,7 @@ describe("ConnectionFormService", () => {
       initialProps: {
         connection: mockConnection as WebBackendConnectionRead,
         mode: "create",
+        formId: Math.random().toString(),
         onSubmit,
         onAfterSubmit,
         onCancel,

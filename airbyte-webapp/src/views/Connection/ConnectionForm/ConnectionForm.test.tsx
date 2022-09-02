@@ -75,7 +75,12 @@ jest.mock("services/workspaces/WorkspacesService", () => {
 const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionFormServiceProvider mode={mode} connection={connection} onSubmit={jest.fn()}>
+      <ConnectionFormServiceProvider
+        mode={mode}
+        connection={connection}
+        formId={Math.random().toString()}
+        onSubmit={jest.fn()}
+      >
         <ConnectionForm />
       </ConnectionFormServiceProvider>
     </ConfirmationModalService>

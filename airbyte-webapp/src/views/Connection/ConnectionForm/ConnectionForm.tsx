@@ -87,11 +87,6 @@ const FormContainer = styled(Form)`
   gap: 10px;
 `;
 
-export interface ConnectionFormSubmitResult {
-  onSubmitComplete?: () => void;
-  submitCancelled?: boolean;
-}
-
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
 export interface ConnectionFormProps {

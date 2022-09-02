@@ -1,6 +1,6 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useCallback, useRef } from "react";
+import React, { Suspense, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
@@ -9,11 +9,12 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
-import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnectionContent.module.scss";
@@ -30,8 +31,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   afterSubmitConnection,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
-  const newConnection = useRef<WebBackendConnectionRead | null>(null);
   const { push } = useRouter();
+
+  const formId = useUniqueFormId();
+  const { clearFormChange } = useFormChangeTrackerService();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
@@ -61,15 +64,13 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         sourceCatalogId: catalogId,
       });
 
-      // We need the new connection ID to know where to go.
-      newConnection.current = createdConnection;
-    },
-    [catalogId, createConnection, destination, source]
-  );
+      clearFormChange(formId);
 
-  const onAfterSubmit = useCallback(
-    () => afterSubmitConnection?.() ?? push(`../../connections/${newConnection.current?.connectionId}`),
-    [afterSubmitConnection, newConnection, push]
+      push(`../../connections/${createdConnection.connectionId}`);
+
+      // We need the new connection ID to know where to go.
+    },
+    [catalogId, clearFormChange, createConnection, destination, formId, push, source]
   );
 
   if (schemaErrorStatus) {
@@ -89,8 +90,9 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       <ConnectionFormServiceProvider
         connection={connection}
         mode="create"
+        formId={formId}
         onSubmit={onSubmitConnectionStep}
-        onAfterSubmit={onAfterSubmit}
+        onAfterSubmit={afterSubmitConnection}
       >
         <ConnectionForm
           additionalSchemaControl={

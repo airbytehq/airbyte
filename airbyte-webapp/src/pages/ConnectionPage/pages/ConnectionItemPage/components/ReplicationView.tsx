@@ -23,7 +23,6 @@ import {
 import { equal } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
-import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -152,7 +151,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   );
 
   const onSubmitForm = useCallback(
-    async (values: ValuesProps): Promise<void | ConnectionFormSubmitResult> => {
+    async (values: ValuesProps): Promise<void> => {
       // Detect whether the catalog has any differences in its enabled streams compared to the original one.
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
       // streams due to a "refreshed source schema".
