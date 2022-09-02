@@ -13,8 +13,6 @@ import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -49,9 +47,6 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    // getting subdomain value from user's config
-    final String subdomain = getConfigValueUnsafe(inputOAuthConfiguration, "subdomain");
-
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("pinterest.com")
@@ -64,10 +59,6 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
         .addParameter("state", getState());
 
     try {
-      // applying optional parameter of subdomain, if there is any value
-      if (!subdomain.isEmpty()) {
-        builder.addParameter("subdomain", subdomain);
-      }
       return builder.build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -98,7 +89,7 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractOAuthOutput(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
-      throw new IOException("Failed to complete PayPal OAuth flow", e);
+      throw new IOException("Failed to complete Pinterest OAuth flow", e);
     }
   }
 
