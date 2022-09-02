@@ -30,7 +30,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.jdbc.JdbcUtils;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -130,32 +129,32 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
         .constraints(primaryKey(id))
         .execute();
     LOGGER.info("workspace table created");
-//    final List<ConfigWithMetadata<StandardWorkspace>> configsWithMetadata = listConfigsWithMetadata(ConfigSchema.STANDARD_WORKSPACE,
-//        StandardWorkspace.class,
-//        ctx);
-//
-//    for (final ConfigWithMetadata<StandardWorkspace> configWithMetadata : configsWithMetadata) {
-//      final StandardWorkspace standardWorkspace = configWithMetadata.getConfig();
-//      ctx.insertInto(DSL.table("workspace"))
-//          .set(id, standardWorkspace.getWorkspaceId())
-//          .set(customerId, standardWorkspace.getCustomerId())
-//          .set(name, standardWorkspace.getName())
-//          .set(slug, standardWorkspace.getSlug())
-//          .set(email, standardWorkspace.getEmail())
-//          .set(initialSetupComplete, standardWorkspace.getInitialSetupComplete())
-//          .set(anonymousDataCollection, standardWorkspace.getAnonymousDataCollection())
-//          .set(sendNewsletter, standardWorkspace.getNews())
-//          .set(sendSecurityUpdates, standardWorkspace.getSecurityUpdates())
-//          .set(displaySetupWizard, standardWorkspace.getDisplaySetupWizard())
-//          .set(tombstone, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
-//          .set(notifications, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
-//          .set(firstSyncComplete, standardWorkspace.getFirstCompletedSync())
-//          .set(feedbackComplete, standardWorkspace.getFeedbackDone())
-//          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
-//          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
-//          .execute();
-//    }
-//    LOGGER.info("workspace table populated with " + configsWithMetadata.size() + " records");
+    final List<ConfigWithMetadata<StandardWorkspace>> configsWithMetadata = listConfigsWithMetadata(ConfigSchema.STANDARD_WORKSPACE,
+        StandardWorkspace.class,
+        ctx);
+
+    for (final ConfigWithMetadata<StandardWorkspace> configWithMetadata : configsWithMetadata) {
+      final StandardWorkspace standardWorkspace = configWithMetadata.getConfig();
+      ctx.insertInto(DSL.table("workspace"))
+          .set(id, standardWorkspace.getWorkspaceId())
+          .set(customerId, standardWorkspace.getCustomerId())
+          .set(name, standardWorkspace.getName())
+          .set(slug, standardWorkspace.getSlug())
+          .set(email, standardWorkspace.getEmail())
+          .set(initialSetupComplete, standardWorkspace.getInitialSetupComplete())
+          .set(anonymousDataCollection, standardWorkspace.getAnonymousDataCollection())
+          .set(sendNewsletter, standardWorkspace.getNews())
+          .set(sendSecurityUpdates, standardWorkspace.getSecurityUpdates())
+          .set(displaySetupWizard, standardWorkspace.getDisplaySetupWizard())
+          .set(tombstone, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
+          .set(notifications, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
+          .set(firstSyncComplete, standardWorkspace.getFirstCompletedSync())
+          .set(feedbackComplete, standardWorkspace.getFeedbackDone())
+          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
+          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
+          .execute();
+    }
+    LOGGER.info("workspace table populated with " + configsWithMetadata.size() + " records");
   }
 
   private static void createAndPopulateActorDefinition(final DSLContext ctx) {
@@ -190,51 +189,51 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     LOGGER.info("actor_definition table created");
 
-//    final List<ConfigWithMetadata<StandardSourceDefinition>> sourceDefinitionsWithMetadata = listConfigsWithMetadata(
-//        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-//        StandardSourceDefinition.class,
-//        ctx);
-//
-//    for (final ConfigWithMetadata<StandardSourceDefinition> configWithMetadata : sourceDefinitionsWithMetadata) {
-//      final StandardSourceDefinition standardSourceDefinition = configWithMetadata.getConfig();
-//      ctx.insertInto(DSL.table("actor_definition"))
-//          .set(id, standardSourceDefinition.getSourceDefinitionId())
-//          .set(name, standardSourceDefinition.getName())
-//          .set(dockerRepository, standardSourceDefinition.getDockerRepository())
-//          .set(dockerImageTag, standardSourceDefinition.getDockerImageTag())
-//          .set(documentationUrl, standardSourceDefinition.getDocumentationUrl())
-//          .set(icon, standardSourceDefinition.getIcon())
-//          .set(actorType, ActorType.source)
-//          .set(sourceType, standardSourceDefinition.getSourceType() == null ? null
-//              : Enums.toEnum(standardSourceDefinition.getSourceType().value(), SourceType.class).orElseThrow())
-//          .set(spec, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
-//          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
-//          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
-//          .execute();
-//    }
-//    LOGGER.info("actor_definition table populated with " + sourceDefinitionsWithMetadata.size() + " source definition records");
+    final List<ConfigWithMetadata<StandardSourceDefinition>> sourceDefinitionsWithMetadata = listConfigsWithMetadata(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class,
+        ctx);
 
-//    final List<ConfigWithMetadata<StandardDestinationDefinition>> destinationDefinitionsWithMetadata = listConfigsWithMetadata(
-//        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-//        StandardDestinationDefinition.class,
-//        ctx);
-//
-//    for (final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata : destinationDefinitionsWithMetadata) {
-//      final StandardDestinationDefinition standardDestinationDefinition = configWithMetadata.getConfig();
-//      ctx.insertInto(DSL.table("actor_definition"))
-//          .set(id, standardDestinationDefinition.getDestinationDefinitionId())
-//          .set(name, standardDestinationDefinition.getName())
-//          .set(dockerRepository, standardDestinationDefinition.getDockerRepository())
-//          .set(dockerImageTag, standardDestinationDefinition.getDockerImageTag())
-//          .set(documentationUrl, standardDestinationDefinition.getDocumentationUrl())
-//          .set(icon, standardDestinationDefinition.getIcon())
-//          .set(actorType, ActorType.destination)
-//          .set(spec, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
-//          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
-//          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
-//          .execute();
-//    }
-//    LOGGER.info("actor_definition table populated with " + destinationDefinitionsWithMetadata.size() + " destination definition records");
+    for (final ConfigWithMetadata<StandardSourceDefinition> configWithMetadata : sourceDefinitionsWithMetadata) {
+      final StandardSourceDefinition standardSourceDefinition = configWithMetadata.getConfig();
+      ctx.insertInto(DSL.table("actor_definition"))
+          .set(id, standardSourceDefinition.getSourceDefinitionId())
+          .set(name, standardSourceDefinition.getName())
+          .set(dockerRepository, standardSourceDefinition.getDockerRepository())
+          .set(dockerImageTag, standardSourceDefinition.getDockerImageTag())
+          .set(documentationUrl, standardSourceDefinition.getDocumentationUrl())
+          .set(icon, standardSourceDefinition.getIcon())
+          .set(actorType, ActorType.source)
+          .set(sourceType, standardSourceDefinition.getSourceType() == null ? null
+              : Enums.toEnum(standardSourceDefinition.getSourceType().value(), SourceType.class).orElseThrow())
+          .set(spec, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
+          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
+          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
+          .execute();
+    }
+    LOGGER.info("actor_definition table populated with " + sourceDefinitionsWithMetadata.size() + " source definition records");
+
+    final List<ConfigWithMetadata<StandardDestinationDefinition>> destinationDefinitionsWithMetadata = listConfigsWithMetadata(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class,
+        ctx);
+
+    for (final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata : destinationDefinitionsWithMetadata) {
+      final StandardDestinationDefinition standardDestinationDefinition = configWithMetadata.getConfig();
+      ctx.insertInto(DSL.table("actor_definition"))
+          .set(id, standardDestinationDefinition.getDestinationDefinitionId())
+          .set(name, standardDestinationDefinition.getName())
+          .set(dockerRepository, standardDestinationDefinition.getDockerRepository())
+          .set(dockerImageTag, standardDestinationDefinition.getDockerImageTag())
+          .set(documentationUrl, standardDestinationDefinition.getDocumentationUrl())
+          .set(icon, standardDestinationDefinition.getIcon())
+          .set(actorType, ActorType.destination)
+          .set(spec, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
+          .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
+          .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
+          .execute();
+    }
+    LOGGER.info("actor_definition table populated with " + destinationDefinitionsWithMetadata.size() + " destination definition records");
   }
 
   private static void createAndPopulateActor(final DSLContext ctx) {
@@ -733,24 +732,22 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   static <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig airbyteConfigType,
                                                                  final Class<T> clazz,
                                                                  final DSLContext ctx) {
-//    final Field<String> configId = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
-//    final Field<String> configType = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
-//    final Field<OffsetDateTime> createdAt =
-//        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-//    final Field<OffsetDateTime> updatedAt =
-//        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-//    final Field<JSONB> configBlob = DSL.field("config_blob", SQLDataType.JSONB.nullable(false));
-//    final Result<Record> results = ctx.select(asterisk()).from(DSL.table("airbyte_configs")).where(configType.eq(airbyteConfigType.name())).fetch();
-//
-//    return results.stream().map(record -> new ConfigWithMetadata<>(
-//        record.get(configId),
-//        record.get(configType),
-//        record.get(createdAt).toInstant(),
-//        record.get(updatedAt).toInstant(),
-//        Jsons.deserialize(record.get(configBlob).data(), clazz)))
-//        .collect(Collectors.toList());
+    final Field<String> configId = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
+    final Field<String> configType = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<JSONB> configBlob = DSL.field("config_blob", SQLDataType.JSONB.nullable(false));
+    final Result<Record> results = ctx.select(asterisk()).from(DSL.table("airbyte_configs")).where(configType.eq(airbyteConfigType.name())).fetch();
 
-    return Collections.emptyList();
+    return results.stream().map(record -> new ConfigWithMetadata<>(
+        record.get(configId),
+        record.get(configType),
+        record.get(createdAt).toInstant(),
+        record.get(updatedAt).toInstant(),
+        Jsons.deserialize(record.get(configBlob).data(), clazz)))
+        .collect(Collectors.toList());
   }
 
   public enum SourceType implements EnumType {
