@@ -70,7 +70,7 @@ class ContainerOrchestratorAcceptanceTests {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
-            .setPort(8002)
+            .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
