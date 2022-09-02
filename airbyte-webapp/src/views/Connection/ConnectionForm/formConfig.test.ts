@@ -1,8 +1,8 @@
 import { renderHook } from "@testing-library/react-hooks";
+import { TestWrapper as wrapper } from "test-utils/testutils";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { ConnectionScheduleTimeUnit } from "core/request/AirbyteClient";
-import { TestWrapper as wrapper } from "utils/testutils";
 
 import { useFrequencyDropdownData } from "./formConfig";
 
