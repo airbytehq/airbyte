@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -41,8 +42,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     snConfig = Jsons
         .deserialize(IOs.readFile(Path.of("secrets/config.json")));
     // due to case sensitiveness in SnowflakeDB
-    SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
-    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
+    SCHEMA_NAME = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
+    SCHEMA_NAME2 = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
