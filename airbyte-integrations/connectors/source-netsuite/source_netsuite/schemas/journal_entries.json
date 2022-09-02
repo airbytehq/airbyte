@@ -9,10 +9,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -30,17 +30,17 @@
       ]
     },
     "tranDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "currency": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -61,7 +61,7 @@
       "type": "number"
     },
     "tranId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reversalDate": {
       "type": ["null", "string"]
@@ -97,10 +97,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -136,11 +136,11 @@
       "type": ["null", "string"]
     },
     "createdDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "customForm": {
@@ -156,7 +156,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

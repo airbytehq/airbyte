@@ -62,7 +62,22 @@
       "format": "date-time"
     },
     "category": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "title": {
       "type": ["null", "string"]
@@ -131,7 +146,22 @@
       "type": ["null", "string"]
     },
     "expenseAccount": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "payablesAccount": {
       "type": ["null", "string"]

@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "entityId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "altName": {
       "type": ["null", "string"]
@@ -33,16 +33,16 @@
       "type": ["null", "string"]
     },
     "companyName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "entityStatus": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -60,16 +60,31 @@
       ]
     },
     "parent": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "phone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "fax": {
       "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "url": {
       "type": ["null", "string"]
@@ -121,16 +136,16 @@
       "type": ["null", "string"]
     },
     "emailPreference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subsidiary": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -154,13 +169,43 @@
       "type": ["null", "string"]
     },
     "territory": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "contribPct": {
       "type": ["null", "string"]
     },
     "partner": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "salesGroup": {
       "type": ["null", "string"]
@@ -181,7 +226,7 @@
       "type": ["null", "string"]
     },
     "creditHoldOverride": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "monthlyClosing": {
       "type": ["null", "string"]
@@ -244,10 +289,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -302,7 +347,7 @@
           "format": "date-time"
     },
     "alcoholRecipientType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "endDate": {
           "type": ["null","string"],
@@ -333,10 +378,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -381,10 +426,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -408,10 +453,10 @@
       "type": ["null", "string"]
     },
     "defaultOrderPriority": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "webLead": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "referrer": {
       "type": ["null", "string"]
@@ -452,7 +497,7 @@
       "type": ["null", "string"]
     },
     "stage": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "emailTransactions": {
       "type": "boolean"
@@ -521,7 +566,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

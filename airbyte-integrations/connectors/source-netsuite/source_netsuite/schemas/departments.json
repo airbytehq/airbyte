@@ -3,34 +3,49 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "includeChildren": {
       "type": "boolean"
     },
     "parent": {
-      "type": "string"
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "isInactive": {
       "type": "boolean"
     },
     "classTranslationList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subsidiaryList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

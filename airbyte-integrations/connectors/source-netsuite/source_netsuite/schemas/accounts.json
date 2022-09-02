@@ -3,131 +3,167 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "acctType": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "unitsType": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "unit": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "acctNumber": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "acctName": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "legalName": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "includeChildren": {
       "type": "boolean"
     },
     "currency": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": "string"
+          "type":["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type":["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type":["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type":["null", "string"]
         }
       },
-      "additionalProperties": true,
-      "required": [
-        "name",
-        "internalId",
-        "externalId",
-        "type"
-      ]
+      "additionalProperties": true
     },
     "exchangeRate": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "generalRate": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "parent": {
-      "type": "string"
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "cashFlowRate": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "billableExpensesAcct": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "deferralAcct": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "curDocNum": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "isInactive": {
       "type": "boolean"
     },
     "department": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "class": {
-      "type": "string"
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "location": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "restrictToAccountingBookList": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "inventory": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "eliminate": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "subsidiaryList": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "category1099misc": {
-      "type": "string"
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "localizationsList": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "openingBalance": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "tranDate": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "revalue": {
       "type": "boolean"
     },
     "customFieldList": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type":["null", "string"]
     },
     "externalId": {
-      "type": "string"
+      "type":["null", "string"]
     }
   },
   "additionalProperties": true,
   "required": [
-    "acctType",
-    "acctNumber",
-    "acctName",
     "internalId"
   ]
 }

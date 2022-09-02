@@ -6,10 +6,25 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "parent": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "isInactive": {
       "type": "boolean"
@@ -30,10 +45,10 @@
       "type": ["null", "string"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "mainAddress": {
       "type": "object",
@@ -42,10 +57,10 @@
           "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "attention": {
           "type": ["null", "string"]
@@ -69,7 +84,7 @@
           "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
           "type": ["null", "string"]
@@ -110,7 +125,7 @@
       "type": ["null", "string"]
     },
     "legalName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isElimination": {
       "type": "boolean"
@@ -134,7 +149,7 @@
           "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -173,7 +188,7 @@
       "type": ["null", "string"]
     },
     "edition": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "federalIdNumber": {
       "type": ["null", "string"]
@@ -209,10 +224,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -239,7 +254,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

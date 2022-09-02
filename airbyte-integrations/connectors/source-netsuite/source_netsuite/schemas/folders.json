@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "department": {
       "type": ["null", "string"]
@@ -33,10 +33,25 @@
       "type": ["null", "string"]
     },
     "parent": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "folderType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "class": {
       "type": ["null", "string"]
@@ -48,7 +63,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

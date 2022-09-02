@@ -3,46 +3,46 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "createdDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "lastModifiedDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "nexus": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subsidiaryTaxRegNum": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxRegOverride": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxDetailsOverride": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customForm": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "billAddressList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "account": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -57,16 +57,16 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -81,16 +81,16 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -105,16 +105,16 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -126,25 +126,25 @@
       ]
     },
     "nextApprover": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "vatRegNum": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "postingPeriod": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -156,73 +156,73 @@
       ]
     },
     "tranDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "currencyName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "billingAddress": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "exchangeRate": {
       "type": "number"
     },
     "entityTaxRegNum": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxPointDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "terms": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "dueDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "discountDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tranId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "userTotal": {
       "type": "number"
     },
     "discountAmount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxTotal": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "paymentHold": {
       "type": "boolean"
     },
     "memo": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tax2Total": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "creditLimit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "availableVendorCredit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "currency": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -234,52 +234,52 @@
       ]
     },
     "class": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "department": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "location": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "landedCostMethod": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "landedCostPerLine": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "transactionNumber": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "expenseList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "accountingBookDetailList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "itemList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "landedCostsList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "purchaseOrderList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxDetailsList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

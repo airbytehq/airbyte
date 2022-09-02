@@ -6,16 +6,16 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "attachFrom": {
       "type": ["null", "string"]
     },
     "mediaTypeName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "fileType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "content": {
       "type": ["null", "string"]
@@ -24,10 +24,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -48,7 +48,7 @@
       "type": "number"
     },
     "url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "urlComponent": {
       "type": ["null", "string"]
@@ -57,7 +57,7 @@
       "type": ["null", "string"]
     },
     "textFileEncoding": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
       "type": ["null", "string"]
@@ -75,13 +75,13 @@
       "type": "boolean"
     },
     "class": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bundleable": {
       "type": ["null", "string"]
     },
     "department": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "hideInBundle": {
       "type": "boolean"
@@ -93,10 +93,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -114,7 +114,7 @@
       ]
     },
     "caption": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "storeDisplayThumbnail": {
       "type": ["null", "string"]
@@ -137,7 +137,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

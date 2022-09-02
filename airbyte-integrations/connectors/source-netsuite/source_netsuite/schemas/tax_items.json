@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "itemId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "displayName": {
       "type": ["null", "string"]
@@ -15,7 +15,7 @@
       "type": ["null", "string"]
     },
     "rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "taxType": {
       "type": ["null", "string"]
@@ -96,7 +96,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

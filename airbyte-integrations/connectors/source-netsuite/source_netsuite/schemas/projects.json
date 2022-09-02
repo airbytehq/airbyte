@@ -9,13 +9,13 @@
       "type": ["null", "string"]
     },
     "entityId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "altName": {
       "type": ["null", "string"]
     },
     "companyName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "phoneticName": {
       "type": ["null", "string"]
@@ -24,10 +24,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -51,10 +51,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -107,10 +107,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -190,10 +190,10 @@
       "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "emailPreference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "openingBalance": {
       "type": ["null", "string"]
@@ -208,10 +208,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalId": {
           "type": ["null", "string"]
@@ -229,7 +229,7 @@
       ]
     },
     "jobBillingType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "billingSchedule": {
       "type": ["null", "string"]
@@ -331,7 +331,7 @@
       "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

@@ -6,22 +6,22 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "dateDriven": {
       "type": ["null", "string"]
     },
     "daysUntilNetDue": {
-      "type": "integer"
+      "type": ["null","integer"]
     },
     "discountPercent": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "daysUntilExpiry": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "dayOfMonthNetDue": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "dueNextMonthIfWithinDays": {
       "type": ["null", "string"]
@@ -39,7 +39,7 @@
       "type": "boolean"
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": ["null", "string"]

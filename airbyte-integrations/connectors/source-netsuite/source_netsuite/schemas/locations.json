@@ -3,73 +3,88 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "parent": {
-      "type": "string"
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type":["null", "string"]
+        },
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
     },
     "includeChildren": {
       "type": "boolean"
     },
     "subsidiaryList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isInactive": {
       "type": "boolean"
     },
     "tranPrefix": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "mainAddress": {
       "type": "object",
       "properties": {
         "nullFieldList": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "internalId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "attention": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addressee": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addrPhone": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addr1": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addr2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addr3": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "addrText": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "override": {
           "type": "boolean"
         },
         "customFieldList": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "additionalProperties": true,
@@ -92,76 +107,76 @@
       ]
     },
     "returnAddress": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "locationType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "timeZone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "latitude": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "longitude": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "logo": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "useBins": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "makeInventoryAvailable": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "makeInventoryAvailableStore": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "geolocationMethod": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "autoAssignmentRegionSetting": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "nextPickupCutOffTime": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bufferStock": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "allowStorePickup": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "storePickupBufferStock": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "dailyShippingCapacity": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "totalShippingCapacity": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "includeLocationRegionsList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "excludeLocationRegionsList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "businessHoursList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "classTranslationList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFieldList": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "internalId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,
