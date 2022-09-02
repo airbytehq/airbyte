@@ -157,7 +157,7 @@ const SideBar: React.FC = () => {
             </span>
           </SidebarPopoutNew>
         </div>
-        <li>
+        <div>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <IfFeatureEnabled feature={FeatureItem.AllowUpdateConnectors}>
               <React.Suspense fallback={null}>
@@ -169,7 +169,7 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.settings" />
             </span>
           </NavLink>
-        </li>
+        </div>
       </div>
     </nav>
   );
