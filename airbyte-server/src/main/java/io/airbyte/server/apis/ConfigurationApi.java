@@ -196,7 +196,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    workspaceHelper.initialize();
 
     schedulerHandler = new SchedulerHandler(
         configRepository,

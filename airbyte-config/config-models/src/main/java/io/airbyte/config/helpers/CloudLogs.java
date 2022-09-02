@@ -50,6 +50,9 @@ public interface CloudLogs {
       case GCS -> {
         return new GcsLogs(new DefaultGcsClientFactory(configs.getStorageConfigs().getGcsConfig()));
       }
+      case NONE -> {
+        return null;
+      }
     }
 
     throw new RuntimeException("Error no cloud credentials configured..");

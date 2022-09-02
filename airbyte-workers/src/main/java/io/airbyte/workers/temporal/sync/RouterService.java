@@ -4,8 +4,10 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.core.util.StringUtils;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
@@ -15,7 +17,7 @@ import javax.inject.Singleton;
 @Singleton
 public class RouterService {
 
-  private static final String MVP_DATA_PLANE_TASK_QUEUE = "MVP_DATA_PLANE";
+  static final String MVP_DATA_PLANE_TASK_QUEUE = "MVP_DATA_PLANE";
 
   @Value("${airbyte.data.plane.connection-ids-mvp}")
   private String connectionIdsForMvpDataPlane;
@@ -25,14 +27,22 @@ public class RouterService {
    * usage in the MVP Data Plane. This will be replaced by a proper Router Service in the future.
    */
   public String getTaskQueue(final UUID connectionId) {
-    if (getConnectionIdsForMvpDataPlane().contains(connectionId.toString())) {
-      return MVP_DATA_PLANE_TASK_QUEUE;
+    if (connectionId != null) {
+      if (getConnectionIdsForMvpDataPlane().contains(connectionId.toString())) {
+        return MVP_DATA_PLANE_TASK_QUEUE;
+      }
     }
     return TemporalJobType.SYNC.name();
   }
 
   private Set<String> getConnectionIdsForMvpDataPlane() {
-    return Arrays.stream(connectionIdsForMvpDataPlane.split(",")).collect(Collectors.toSet());
+    return StringUtils.isNotEmpty(connectionIdsForMvpDataPlane) ? Arrays.stream(connectionIdsForMvpDataPlane.split(",")).collect(Collectors.toSet())
+        : Set.of();
+  }
+
+  @VisibleForTesting
+  void setConnectionIdsForMvpDataPlane(final String connectionIdsForMvpDataPlane) {
+    this.connectionIdsForMvpDataPlane = connectionIdsForMvpDataPlane;
   }
 
 }
