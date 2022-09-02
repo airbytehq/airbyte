@@ -72,7 +72,7 @@ application {
     mainClass = mainClassName
 //    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0', '-javaagent:/app/dd-java-agent.jar', '-Ddd.profiling.enabled=true',
-                                 '-XX:FlightRecorderOptions=stackdepth=256', '-Ddd.trace.sample.rate=1', '-Ddd.service=airbyte-cloud-server',
+                                 '-XX:FlightRecorderOptions=stackdepth=256', '-Ddd.trace.sample.rate=1', '-Ddd.service=airbyte-worker',
                                  '-Ddd.trace.request_header.tags=User-Agent:http.useragent']
 }
 
