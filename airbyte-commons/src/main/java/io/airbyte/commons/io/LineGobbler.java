@@ -34,8 +34,7 @@ public class LineGobbler implements VoidCallable {
   }
 
   public static void gobble(final String message) {
-    final InputStream stringAsSteam = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
-    gobble(stringAsSteam, LOGGER::info);
+    gobble(message, LOGGER::info);
   }
 
   /**
