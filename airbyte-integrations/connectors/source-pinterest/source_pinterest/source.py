@@ -292,7 +292,7 @@ class SourcePinterest(AbstractSource):
         config = config.get("credentials") or config
         credentials_base64_encoded = standard_b64encode(
             (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
-        ).decode("acii")
+        ).decode("ascii")
         auth = f"Basic {credentials_base64_encoded}"
 
         return Oauth2Authenticator(
