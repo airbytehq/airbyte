@@ -158,7 +158,5 @@ class CatalogHelpersTest {
     CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
         Jsons.deserialize(MoreResources.readResource("companies_schema.json"))).stream().collect(
         Collectors.toMap(Pair::getLeft, Pair::getRight));
-    }
   }
-
 }
