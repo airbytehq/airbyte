@@ -290,8 +290,10 @@ class SourcePinterest(AbstractSource):
     @staticmethod
     def get_authenticator(config):
         config = config.get("credentials") or config
-        user_pass = (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
-        auth = "Basic " + standard_b64encode(user_pass).decode("ascii")
+        credentials_base64_encoded = standard_b64encode(
+            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+        ).decode("acii")
+        auth = f"Basic {credentials_base64_encoded}"
 
         return Oauth2Authenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
