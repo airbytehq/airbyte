@@ -43,7 +43,7 @@ public class TemporalProxyHelper {
   /**
    * Cache of already generated proxies to reduce the cost of creating and loading the proxies.
    */
-  private static final TypeCache<Class<?>> WORKFLOW_PROXY_CACHE = new TypeCache<>();
+  private final TypeCache<Class<?>> WORKFLOW_PROXY_CACHE = new TypeCache<>();
 
   /**
    * Collection of available {@link ActivityOptions} beans which will be used to initialize Temporal
