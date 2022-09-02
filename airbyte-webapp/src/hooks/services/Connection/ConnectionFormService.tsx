@@ -1,8 +1,6 @@
 import { FormikHelpers } from "formik";
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
-import { DropDownRow } from "components";
-
 import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -30,19 +28,10 @@ export interface ConnectionServiceProps {
   formId?: string;
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   onAfterSubmit?: () => void;
-  onFrequencySelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
 }
 
-const useConnectionForm = ({
-  connection,
-  mode,
-  formId,
-  onSubmit,
-  onAfterSubmit,
-  onFrequencySelect,
-  onCancel,
-}: ConnectionServiceProps) => {
+const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, onCancel }: ConnectionServiceProps) => {
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -100,7 +89,6 @@ const useConnectionForm = ({
     formId,
     onFormSubmit,
     onAfterSubmit,
-    onFrequencySelect,
     onCancel,
   };
 };

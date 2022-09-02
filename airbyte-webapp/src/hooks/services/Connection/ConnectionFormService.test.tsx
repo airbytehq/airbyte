@@ -56,13 +56,11 @@ describe("ConnectionFormService", () => {
 
   const onSubmit = jest.fn();
   const onAfterSubmit = jest.fn();
-  const onFrequencySelect = jest.fn();
   const onCancel = jest.fn();
 
   beforeEach(() => {
     onSubmit.mockReset();
     onAfterSubmit.mockReset();
-    onFrequencySelect.mockReset();
     onCancel.mockReset();
   });
 
@@ -74,7 +72,6 @@ describe("ConnectionFormService", () => {
         mode: "create",
         onSubmit,
         onAfterSubmit,
-        onFrequencySelect,
         onCancel,
       },
     });
@@ -115,7 +112,6 @@ describe("ConnectionFormService", () => {
         mode: "create",
         onSubmit,
         onAfterSubmit,
-        onFrequencySelect,
         onCancel,
       },
     });
@@ -142,7 +138,6 @@ describe("ConnectionFormService", () => {
         mode: "create",
         onSubmit,
         onAfterSubmit,
-        onFrequencySelect,
         onCancel,
       },
     });

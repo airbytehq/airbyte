@@ -1,13 +1,16 @@
 import { Field, FieldProps, Form, Formik } from "formik";
-import React from "react";
+import React, { useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { Card, ControlLabels, DropDown, H5, Input } from "components";
+import { IDataItem } from "components/base/DropDown/components/Option";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleDataBasicSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
@@ -106,8 +109,37 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   canSubmitUntouchedForm,
   additionalSchemaControl,
 }) => {
-  const { initialValues, formId, mode, onFormSubmit, errorMessage, frequencies, onFrequencySelect, onCancel } =
+  const { initialValues, formId, mode, onFormSubmit, errorMessage, frequencies, onCancel, connection } =
     useConnectionFormService();
+  const analyticsService = useAnalyticsService();
+
+  const onFrequencySelect = useCallback(
+    (item: IDataItem | null) => {
+      const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+      if (item) {
+        analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
+          actionDescription: "Frequency selected",
+          frequency: item.label,
+          connector_source_definition: connection.source.sourceName,
+          connector_source_definition_id: connection.source.sourceDefinitionId,
+          connector_destination_definition: connection.destination.destinationName,
+          connector_destination_definition_id: connection.destination.destinationDefinitionId,
+          available_streams: connection.syncCatalog.streams.length,
+          enabled_streams: enabledStreams,
+        });
+      }
+    },
+    [
+      analyticsService,
+      connection.destination.destinationDefinitionId,
+      connection.destination.destinationName,
+      connection.source.sourceDefinitionId,
+      connection.source.sourceName,
+      connection.syncCatalog.streams,
+    ]
+  );
+
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
 
@@ -177,7 +209,11 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       error={!!meta.error && meta.touched}
                       options={frequencies}
                       onChange={(item) => {
-                        onFrequencySelect?.(item);
+                        // This was only passed in for the create view
+                        // Do we want it for all?
+                        if (mode === "create") {
+                          onFrequencySelect(item);
+                        }
                         setFieldValue(field.name, item.value);
                       }}
                     />

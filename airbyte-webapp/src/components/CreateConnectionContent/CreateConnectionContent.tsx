@@ -4,13 +4,10 @@ import React, { Suspense, useCallback, useRef } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
-import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
@@ -34,7 +31,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const newConnection = useRef<WebBackendConnectionRead | null>(null);
-  const analyticsService = useAnalyticsService();
   const { push } = useRouter();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
@@ -65,43 +61,15 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         sourceCatalogId: catalogId,
       });
 
-      console.log(afterSubmitConnection?.toString());
       // We need the new connection ID to know where to go.
       newConnection.current = createdConnection;
     },
-    [afterSubmitConnection, catalogId, createConnection, destination, source]
+    [catalogId, createConnection, destination, source]
   );
 
   const onAfterSubmit = useCallback(
     () => afterSubmitConnection?.() ?? push(`../../connections/${newConnection.current?.connectionId}`),
     [afterSubmitConnection, newConnection, push]
-  );
-
-  const onFrequencySelect = useCallback(
-    (item: IDataItem | null) => {
-      const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
-
-      if (item) {
-        analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
-          actionDescription: "Frequency selected",
-          frequency: item.label,
-          connector_source_definition: source?.sourceName,
-          connector_source_definition_id: source?.sourceDefinitionId,
-          connector_destination_definition: destination?.destinationName,
-          connector_destination_definition_id: destination?.destinationDefinitionId,
-          available_streams: connection.syncCatalog.streams.length,
-          enabled_streams: enabledStreams,
-        });
-      }
-    },
-    [
-      analyticsService,
-      connection.syncCatalog.streams,
-      destination?.destinationDefinitionId,
-      destination?.destinationName,
-      source?.sourceDefinitionId,
-      source?.sourceName,
-    ]
   );
 
   if (schemaErrorStatus) {
@@ -123,7 +91,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         mode="create"
         onSubmit={onSubmitConnectionStep}
         onAfterSubmit={onAfterSubmit}
-        onFrequencySelect={onFrequencySelect}
       >
         <ConnectionForm
           additionalSchemaControl={
