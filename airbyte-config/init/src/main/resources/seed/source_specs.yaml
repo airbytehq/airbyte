@@ -9891,7 +9891,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.2.0"
+- dockerImage: "airbyte/source-tidb:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
@@ -9906,6 +9906,7 @@
       properties:
         host:
           description: "Hostname of the database."
+          title: "Host"
           type: "string"
           order: 0
         port:
@@ -9925,6 +9926,7 @@
           order: 2
         username:
           description: "Username to use to access the database."
+          title: "Username"
           type: "string"
           order: 3
         password:
