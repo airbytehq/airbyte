@@ -344,6 +344,7 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ needs.find_valid_pat.outputs.pat }}
           workingDir: ./airbyte-webapp/
+          storybookBuildDir: build/storybook/
 
 
   frontend-test:
