@@ -60,12 +60,39 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 * [Metadata](https://api.iterable.com/api/docs#metadata_list_tables)
 * [Templates](https://api.iterable.com/api/docs#templates_getTemplates)
 * [Users](https://api.iterable.com/api/docs#export_exportDataJson)
+* [PushSend](https://api.iterable.com/api/docs#export_exportDataJson)
+* [PushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
+* [PushOpen](https://api.iterable.com/api/docs#export_exportDataJson)
+* [PushUninstall](https://api.iterable.com/api/docs#export_exportDataJson)
+* [PushBounce](https://api.iterable.com/api/docs#export_exportDataJson)
+* [WebPushSend](https://api.iterable.com/api/docs#export_exportDataJson)
+* [WebPushClick](https://api.iterable.com/api/docs#export_exportDataJson)
+* [WebPushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppSend](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppOpen](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppClick](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppClose](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppDelete](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppDelivery](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InAppSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InboxSession](https://api.iterable.com/api/docs#export_exportDataJson)
+* [InboxMessageImpression](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsSend](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsBounce](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsClick](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsReceived](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
+* [SmsUsageInfo](https://api.iterable.com/api/docs#export_exportDataJson)
+* [Purchase](https://api.iterable.com/api/docs#export_exportDataJson)
+* [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson)
+* [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson)
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                    |
 |:--------|:-----------| :-----       |:---------------------------------------------------------------------------|
-| 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                             |
+| 0.1.17  | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams                                                   |
+| 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                               |
 | 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description                                  |
 | 0.1.14  | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Update `Events` stream to use `export/userEvents` endpoint                 |
 | 0.1.13  | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091) | Adjust slice ranges for email streams                                      |
