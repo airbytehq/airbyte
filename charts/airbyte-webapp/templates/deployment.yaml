@@ -60,6 +60,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: INTERNAL_API_HOST
+        - name: FULLSTORY
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: FULLSTORY
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
