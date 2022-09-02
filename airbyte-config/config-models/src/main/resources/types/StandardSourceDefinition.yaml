@@ -62,3 +62,6 @@ properties:
     format: date
   resourceRequirements:
     "$ref": ActorDefinitionResourceRequirements.yaml
+  protocolVersion:
+    type: string
+    description: the Airbyte Protocol version supported by the connector
