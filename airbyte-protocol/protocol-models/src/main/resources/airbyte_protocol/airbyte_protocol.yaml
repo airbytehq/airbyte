@@ -166,12 +166,16 @@ definitions:
         type: string
         enum:
           - ERROR
+          - NOTIFICATION
       emitted_at:
         description: "the time in ms that the message was emitted"
         type: number
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      notification:
+        description: "notification trace message: the notification object"
+        "$ref": "#/definitions/AirbyteNotificationTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
     additionalProperties: true
@@ -193,6 +197,18 @@ definitions:
         enum:
           - system_error
           - config_error
+  AirbyteNotificationTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - message
+    properties:
+      message:
+        description: A user-friendly message from the caller
+        type: string
+      data:
+        description: An additional information that the caller wishes to log
+        type: object
   AirbyteConnectionStatus:
     type: object
     description: Airbyte connection status

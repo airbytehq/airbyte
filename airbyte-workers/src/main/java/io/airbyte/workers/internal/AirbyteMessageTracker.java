@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteNotificationTraceMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -217,6 +218,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
+      case NOTIFICATION -> handleEmittedNotificationTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
   }
@@ -227,6 +229,14 @@ public class AirbyteMessageTracker implements MessageTracker {
     } else if (connectorType.equals(ConnectorType.SOURCE)) {
       sourceErrorTraceMessages.add(errorTraceMessage);
     }
+  }
+
+  private void handleEmittedNotificationTrace(final AirbyteTraceMessage notificationTraceMessage, final ConnectorType connectorType) {
+    final AirbyteNotificationTraceMessage notification = notificationTraceMessage.getNotification();
+    final String logMessage =
+        "[" + connectorType + " Notification] " + notification.getMessage()
+            + notification.getData() != null ? " -> " + Jsons.serialize(notification.getData()) : "";
+    log.info(logMessage);
   }
 
   private short getStreamIndex(final String streamName) {
