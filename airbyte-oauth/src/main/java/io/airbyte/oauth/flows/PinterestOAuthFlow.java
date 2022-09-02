@@ -7,9 +7,11 @@ package io.airbyte.oauth.flows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -103,8 +105,6 @@ public class PinterestOAuthFlow extends BaseOAuth2Flow {
                                                               String clientSecret,
                                                               String authCode,
                                                               String redirectUrl) {
-    final String authorization = Base64.getEncoder()
-        .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
     return ImmutableMap.<String, String>builder()
         // required
         .put("grant_type", "authorization_code")
