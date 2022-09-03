@@ -54,6 +54,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject                                                                                                   |
 |:--------|:-----------| :-----       |:----------------------------------------------------------------------------------------------------------|
+| 0.3.14  | 2022-09-01 | [16258](https://github.com/airbytehq/airbyte/pull/16258) | Emit state messages more frequently |
 | 0.3.13  | 2022-05-25 |  | Added JDBC URL params                                                                                     |
 | 0.3.12  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.3.11  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                            |
