@@ -1,12 +1,18 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables";
 
-.details {
+.container {
   font-size: 12px;
   line-height: 15px;
   color: colors.$grey;
 }
 
-.truncate {
+.details > *:not(:last-child)::after {
+  content: "|";
+  padding: 0 variables.$spacing-sm;
+}
+
+.failedMessage {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
