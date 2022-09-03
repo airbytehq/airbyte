@@ -87,7 +87,7 @@
           }
         ]
       },
-      "replication": {
+      "replication_method": {
         "type": "object",
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
@@ -97,9 +97,9 @@
           {
             "title": "Standard",
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["replication_type"],
+            "required": ["method"],
             "properties": {
-              "replication_type": {
+              "method": {
                 "type": "string",
                 "const": "STANDARD",
                 "enum": ["STANDARD"],
@@ -111,9 +111,9 @@
           {
             "title": "Logical Replication (CDC)",
             "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-            "required": ["replication_type"],
+            "required": ["method"],
             "properties": {
-              "replication_type": {
+              "method": {
                 "type": "string",
                 "const": "CDC",
                 "enum": ["CDC"],
