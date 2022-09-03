@@ -4,6 +4,8 @@ connector_image: airbyte/source-pinterest:dev
 tests:
   spec:
     - spec_path: "source_pinterest/spec.json"
+      # TODO: remove backward compatibility config once updated to newer version
+      # because of OAuth2.0 support implementation the specs are different
       backward_compatibility_tests_config:
         disable_for_version: "0.1.2"
   connection:
