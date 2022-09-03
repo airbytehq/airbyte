@@ -5273,7 +5273,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.17"
+- dockerImage: "airbyte/source-mssql:0.4.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5374,7 +5374,7 @@
                 description: "Specifies the host name of the server. The value of\
                   \ this property must match the subject property of the certificate."
                 order: 7
-        replication:
+        replication_method:
           type: "object"
           title: "Replication Method"
           description: "The replication method used for extracting data from the database.\
@@ -5389,9 +5389,9 @@
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
-            - "replication_type"
+            - "method"
             properties:
-              replication_type:
+              method:
                 type: "string"
                 const: "STANDARD"
                 enum:
@@ -5402,9 +5402,9 @@
             description: "CDC uses {TBC} to detect inserts, updates, and deletes.\
               \ This needs to be configured on the source database itself."
             required:
-            - "replication_type"
+            - "method"
             properties:
-              replication_type:
+              method:
                 type: "string"
                 const: "CDC"
                 enum:
