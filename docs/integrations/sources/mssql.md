@@ -306,6 +306,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
+| 0.4.18  | 2022-09-03 | [14910](https://github.com/airbytehq/airbyte/pull/14910) | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |
 | 0.4.17  | 2022-09-01 | [16261](https://github.com/airbytehq/airbyte/pull/16261) | Emit state messages more frequently |
 | 0.4.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.4.15  | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
