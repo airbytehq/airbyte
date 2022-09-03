@@ -145,7 +145,7 @@ def test_source_streams(config, stream_len):
 
 
 def test_source_spec():
-    spec = SourceTiktokMarketing().spec()
+    spec = SourceTiktokMarketing().spec(logger=None)
     assert isinstance(spec, ConnectorSpecification)
 
 

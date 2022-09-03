@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.81
+- Fix regression in `_checkpoint_state` arg
+
+## Unreleased
+- Update Airbyte Protocol model to support protocol_version
+
 ## 0.1.80
 - Add NoAuth to declarative registry and auth parse bug fix
 
