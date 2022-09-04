@@ -9,5 +9,5 @@ AlloyDB combines the best of Google with one of the most popular open-source dat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.1   | 2022-09-05 | []()   | Initial commit. Based on source-postgres v.1.0.7
+| 0.0.1   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7
 

@@ -19,9 +19,9 @@ public class AlloyDbSource {
   private static final Logger LOGGER = LoggerFactory.getLogger(AlloyDbSource.class);
 
   /**
-   * AlloyDB for PostgreSQL is a fully managed PostgreSQL-compatible database service.
-   * So the source-postgres connector is used under the hood.
-   * For more details pleas check the https://cloud.google.com/alloydb
+   * AlloyDB for PostgreSQL is a fully managed PostgreSQL-compatible database service. So the
+   * source-postgres connector is used under the hood. For more details please check the
+   * https://cloud.google.com/alloydb
    */
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource();
