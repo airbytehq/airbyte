@@ -12,16 +12,14 @@ interface MainPageWithScrollProps {
   children?: React.ReactNode;
 }
 
-const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, children }) => {
+export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, children }) => {
   return (
     <div className={styles.page}>
       <div>
         {headTitle}
         {pageTitle}
       </div>
-      <div className={styles.contentContainer}>
-        <div className={styles.content}>{children}</div>
-      </div>
+      <div className={styles.content}>{children}</div>
     </div>
   );
 };
