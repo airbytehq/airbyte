@@ -24,6 +24,7 @@ class PinterestStream(HttpStream, ABC):
     primary_key = "id"
     data_fields = ["items"]
     raise_on_http_errors = True
+    max_rate_limit_exceeded = False
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
@@ -60,17 +61,23 @@ class PinterestStream(HttpStream, ABC):
         """
 
         data = response.json()
-        exceeded_rate_limit = False
 
         if isinstance(data, dict):
-            exceeded_rate_limit = data.get("code") == 8
+            self.max_rate_limit_exceeded = data.get("code") == 8
 
-        if not exceeded_rate_limit:
+        if not self.max_rate_limit_exceeded:
             for data_field in self.data_fields:
                 data = data.get(data_field, [])
 
             for record in data:
                 yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        # when max rate limit exceeded, we should skip the stream.
+        if response.status_code == 429 and response.json().get("code") == 8:
+            self.logger.error(f"For stream {self.name} max rate limit exceeded.")
+            setattr(self, "raise_on_http_errors", False)
+        return 500 <= response.status_code < 600
 
 
 class PinterestSubStream(HttpSubStream):
@@ -89,12 +96,12 @@ class PinterestSubStream(HttpSubStream):
                 yield {"parent": record, "sub_parent": stream_slice}
 
 
-class Boards(PinterestStream):
+class Boards(PinterestStream):    
     def path(self, **kwargs) -> str:
         return "boards"
 
 
-class AdAccounts(PinterestStream):
+class AdAccounts(PinterestStream):    
     def path(self, **kwargs) -> str:
         return "ad_accounts"
 
@@ -195,12 +202,6 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     data_fields = []
     granularity = "DAY"
     analytics_target_ids = None
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 429:
-            self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            setattr(self, "raise_on_http_errors", False)
-        return 500 <= response.status_code < 600
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

@@ -3,9 +3,9 @@
 connector_image: airbyte/source-pinterest:dev
 tests:
   spec:
+      # TODO: remove backward compatibility checks once updated to version `>0.1.3`
+      # because for OAuth2.0 implementation the specs are different
     - spec_path: "source_pinterest/spec.json"
-      # TODO: remove backward compatibility config once updated to newer version
-      # because of OAuth2.0 support implementation the specs are different
       backward_compatibility_tests_config:
         disable_for_version: "0.1.2"
   connection:
@@ -16,12 +16,32 @@ tests:
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
   discovery:
+      # TODO: remove backward compatibility checks once updated to version `>0.1.3`
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.2"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.2"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+      # empty streams could be produced because of very low rate limits
+      empty_streams: [
+        "ad_account_analytics",
+        "ad_accounts",
+        "ad_analytics",
+        "ad_group_analytics",
+        "ad_groups",
+        "ads",
+        "board_pins",
+        "board_section_pins",
+        "board_sections",
+        "boards",
+        "campaign_analytics",
+        "campaigns",
+        "user_account_analytics",
+      ]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
