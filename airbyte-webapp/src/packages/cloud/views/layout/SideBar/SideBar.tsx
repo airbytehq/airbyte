@@ -29,7 +29,7 @@ import { RoutePaths } from "../../../../../pages/routePaths";
 
 const Bar = styled.nav`
   width: 100px;
-  min-width: 65px;
+  min-width: fit-content;
   height: 100%;
   background: ${({ theme }) => theme.darkPrimaryColor};
   padding: 23px 3px 15px 4px;
