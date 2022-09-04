@@ -2,23 +2,40 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
+from copy import deepcopy
+
 import pydantic
 import pytest
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
+from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig
+
+from .utils import command_check
 
 
 @pytest.fixture(name="config")
 def config_fixture():
     config = {
-        "account_id": 123,
+        "account_id": "123",
         "access_token": "TOKEN",
-        "start_date": "2019-10-10T00:00:00",
-        "end_date": "2020-10-10T00:00:00",
+        "start_date": "2019-10-10T00:00:00Z",
+        "end_date": "2020-10-10T00:00:00Z",
     }
 
     return config
+
+
+@pytest.fixture
+def config_gen(config):
+    def inner(**kwargs):
+        new_config = deepcopy(config)
+        # WARNING, no support deep dictionaries
+        new_config.update(kwargs)
+        return {k: v for k, v in new_config.items() if v is not ...}
+
+    return inner
 
 
 @pytest.fixture(name="api")
@@ -45,9 +62,10 @@ class TestSourceFacebookMarketing:
     def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
         config["start_date"] = "2019-10-10T00:00:00"
         config["end_date"] = "2019-10-09T00:00:00"
-
-        with pytest.raises(ValueError, match="end_date must be equal or after start_date."):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
+        assert SourceFacebookMarketing().check_connection(logger_mock, config=config) == (
+            False,
+            "end_date must be equal or after start_date.",
+        )
 
     def test_check_connection_empty_config(self, api, logger_mock):
         config = {}
@@ -95,3 +113,22 @@ class TestSourceFacebookMarketing:
         assert SourceFacebookMarketing()._update_insights_streams(
             insights=config.custom_insights, default_args=insights_args, streams=streams
         )
+
+
+def test_check_config(config_gen, requests_mock):
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
+
+    source = SourceFacebookMarketing()
+    assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
+
+    status = command_check(source, config_gen(start_date="2019-99-10T00:00:00Z"))
+    assert status.status == Status.FAILED
+
+    status = command_check(source, config_gen(end_date="2019-99-10T00:00:00Z"))
+    assert status.status == Status.FAILED
+
+    with pytest.raises(Exception):
+        assert command_check(source, config_gen(start_date=...))
+
+    assert command_check(source, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
+    assert command_check(source, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
