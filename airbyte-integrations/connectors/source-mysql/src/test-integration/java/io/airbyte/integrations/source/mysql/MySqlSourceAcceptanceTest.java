@@ -13,7 +13,6 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -41,14 +40,16 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "STANDARD")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", replicationMethod)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
