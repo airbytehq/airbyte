@@ -24,7 +24,7 @@ class GreenHouseSlicer(StreamSlicer):
     def __post_init__(self, options: Mapping[str, Any]):
         self._state = {}
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState, *args, **kwargs) -> Iterable[StreamSlice]:
         yield {self.request_cursor_field: stream_state.get(self.cursor_field, self.START_DATETIME)}
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
