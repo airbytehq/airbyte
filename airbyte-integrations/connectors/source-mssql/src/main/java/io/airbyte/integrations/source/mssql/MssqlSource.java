@@ -250,9 +250,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly filtered (from UI) schemas
       List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
-              .stream()
-              .filter(this::isTableInRequestedSchema)
-              .toList();
+          .stream()
+          .filter(this::isTableInRequestedSchema)
+          .toList();
       for (TableInfo<CommonField<JDBCType>> info : resultInternals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
@@ -265,8 +265,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   private boolean isTableInRequestedSchema(TableInfo<CommonField<JDBCType>> tableInfo) {
     return schemas
-            .stream()
-            .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
+        .stream()
+        .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
