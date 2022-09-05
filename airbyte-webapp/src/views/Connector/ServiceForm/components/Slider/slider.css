@@ -1,0 +1,16 @@
+/* Override default Slider styles:
+ this is one of ways how to override slider style without adding them to global style file
+*/
+/* stylelint-disable selector-class-pattern */
+.slick-list {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  user-select: none;
+}
+
+.slick-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
