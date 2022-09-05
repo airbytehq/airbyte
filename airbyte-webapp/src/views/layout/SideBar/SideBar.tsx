@@ -21,7 +21,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
-import SidebarDropdownMenu from "./components/SidebarDropdownMenu";
+import { SidebarDropdownMenu } from "./components/SidebarDropdownMenu";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";

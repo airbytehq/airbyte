@@ -28,7 +28,7 @@ import { RoutePaths } from "../../../../../pages/routePaths";
 import ChatIcon from "../../../../../views/layout/SideBar/components/ChatIcon";
 import DocsIcon from "../../../../../views/layout/SideBar/components/DocsIcon";
 import RecipesIcon from "../../../../../views/layout/SideBar/components/RecipesIcon";
-import SidebarDropdownMenu from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
+import { SidebarDropdownMenu } from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
 import StatusIcon from "../../../../../views/layout/SideBar/components/StatusIcon";
 import styles from "./SideBar.module.scss";
 

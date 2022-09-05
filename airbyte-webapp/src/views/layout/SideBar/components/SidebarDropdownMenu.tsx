@@ -4,7 +4,7 @@ import React from "react";
 
 import styles from "./SidebarDropdownMenu.module.scss";
 
-const SidebarDropdownMenu: React.FC<{
+export const SidebarDropdownMenu: React.FC<{
   children: React.ReactNode;
   options?: React.ReactNode[];
 }> = ({ children, options }) => {
@@ -25,5 +25,3 @@ const SidebarDropdownMenu: React.FC<{
     </Menu>
   );
 };
-
-export default SidebarDropdownMenu;
