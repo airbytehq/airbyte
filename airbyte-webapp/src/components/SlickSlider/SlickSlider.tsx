@@ -24,7 +24,8 @@ export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettingsO
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label="prev slide"
+      aria-label="previous slide"
+      data-testid="previous-slide-btn"
     >
       <FontAwesomeIcon icon={faChevronLeft} className={classnames(className)} {...restProps} />
     </div>
@@ -38,6 +39,7 @@ export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettingsO
       role="button"
       tabIndex={0}
       aria-label="next slide"
+      data-testid="next-slide-btn"
     >
       <FontAwesomeIcon icon={faChevronRight} className={classnames(className)} {...restProps} />
     </div>
