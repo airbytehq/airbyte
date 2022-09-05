@@ -19,6 +19,7 @@ from google.oauth2 import service_account
 import google.auth.transport.requests
 import requests
 import json
+from math import floor
 
 class Helpers(object):
     url_base = "https://firestore.googleapis.com/v1/"
@@ -77,14 +78,14 @@ class FirestoreStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         timestamp_state: Optional[datetime] = stream_state.get(self.cursor_key)
-        timestamp_value = timestamp_state.timestamp() if timestamp_state else None
-        return {
+        timestamp_value = Helpers.parse_date(timestamp_state).isoformat() if timestamp_state else None
+        body = {
             "structuredQuery": {
                 "from": [{"collectionId": self.collection_name, "allDescendants": True}],
                 "where": {
                     "fieldFilter": {
-                        "field": {"fieldPath": "authorization.updated_at"},
-                        "op": "GREATER_THAN_OR_EQUAL",
+                        "field": {"fieldPath": self.cursor_key },
+                        "op": "GREATER_THAN",
                         "value": {
                             "timestampValue": timestamp_value,
                         },
@@ -97,6 +98,8 @@ class FirestoreStream(HttpStream, ABC):
                 "startAt": {"values": [next_page_token], "before": False} if next_page_token else None,
             }
         }
+        print(body)
+        return body
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json = response.json()
@@ -137,7 +140,7 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_key: self._cursor_value} if self._cursor_value else {}
+        return { self.cursor_key: self._cursor_value.iosformat() } if self._cursor_value else {}
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
@@ -161,8 +164,7 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
-            self._cursor_value = max(record["fields"][self.cursor_key]["timestampValue"], self._cursor_value)
-
+            self._cursor_value = max(Helpers.parse_date(record["fields"][self.cursor_key]["timestampValue"]), self._cursor_value)
 
 class Collection(IncrementalFirestoreStream):
     project_id: str
