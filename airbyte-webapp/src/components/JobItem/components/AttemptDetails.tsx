@@ -31,7 +31,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
 
   const formatBytes = (bytes?: number) => {
     if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
+      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
     }
 
     const k = 1024;
@@ -69,37 +69,34 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   const isFailed = attempt.status === Status.FAILED;
 
   return (
-    <div className={classNames(styles.details, className)}>
-      <div>
-        <span>{formatBytes(attempt?.bytesSynced)} | </span>
+    <div className={classNames(styles.container, className)}>
+      <div className={styles.details}>
+        <span>{formatBytes(attempt?.totalStats?.bytesEmitted)}</span>
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
             values={{ count: attempt.totalStats?.recordsEmitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           <FormattedMessage
             id="sources.countCommittedRecords"
             values={{ count: attempt.totalStats?.recordsCommitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           {hours ? <FormattedMessage id="sources.hour" values={{ hour: hours }} /> : null}
           {hours || minutes ? <FormattedMessage id="sources.minute" values={{ minute: minutes }} /> : null}
           <FormattedMessage id="sources.second" values={{ second: seconds }} />
         </span>
-        {configType ? (
+        {configType && (
           <span>
-            {" "}
-            | <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
+            <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
           </span>
-        ) : null}
+        )}
       </div>
       {isFailed && (
-        <div className={styles.truncate}>
+        <div className={styles.failedMessage}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",
