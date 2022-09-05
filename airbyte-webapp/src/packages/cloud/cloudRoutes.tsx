@@ -6,7 +6,6 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -153,7 +152,6 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
-  useTrackPageAnalytics();
 
   if (!inited) {
     return <LoadingPage />;
