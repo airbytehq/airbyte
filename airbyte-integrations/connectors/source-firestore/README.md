@@ -7,7 +7,6 @@ For information about how to use this connector within Airbyte, see [the documen
 
 - `google_application_credentials`: JSON credentials for a service account with Cloud Datastore User permissions
 - `project_id`: Firebase project id
-- `collection_name`: The name of the Firestore collection
 
 ## Local development
 

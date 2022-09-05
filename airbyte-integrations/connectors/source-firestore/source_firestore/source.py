@@ -19,7 +19,6 @@ from google.oauth2 import service_account
 import google.auth.transport.requests
 import requests
 import json
-from math import floor
 
 class Helpers(object):
     url_base = "https://firestore.googleapis.com/v1/"
@@ -55,7 +54,7 @@ class FirestoreStream(HttpStream, ABC):
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
         super().__init__(authenticator=authenticator)
-        self._cursor_value = ""
+        self._cursor_value = None
         self.collection_name = collection_name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -64,7 +63,7 @@ class FirestoreStream(HttpStream, ABC):
             return None
         if self.cursor_key is None:
             return {"stringValue": documents[len(documents) - 1]["name"]}
-        return documents[len(documents) - 1]["fields"][self.cursor_key]
+        return { "timestampValue": documents[len(documents) - 1][self.cursor_key] }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -79,7 +78,7 @@ class FirestoreStream(HttpStream, ABC):
     ) -> Optional[Mapping]:
         timestamp_state: Optional[datetime] = stream_state.get(self.cursor_key)
         timestamp_value = Helpers.parse_date(timestamp_state).isoformat() if timestamp_state else None
-        body = {
+        return {
             "structuredQuery": {
                 "from": [{"collectionId": self.collection_name, "allDescendants": True}],
                 "where": {
@@ -98,17 +97,17 @@ class FirestoreStream(HttpStream, ABC):
                 "startAt": {"values": [next_page_token], "before": False} if next_page_token else None,
             }
         }
-        print(body)
-        return body
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json = response.json()
+        data = response.json()
         results = []
-        for entry in json:
+        for entry in data:
             if "document" in entry:
-                result = entry["document"]
-                if self.cursor_field:
-                    result[self.cursor_field] = entry["document"]["fields"][self.cursor_field]["timestampValue"]
+                result = {
+                    "name": entry["document"]["name"],
+                    "json_data": json.dumps(entry["document"]["fields"]),
+                    self.cursor_field: entry["document"]["fields"][self.cursor_field]["timestampValue"] if self.cursor_field else None
+                }
                 results.append(result)
         return iter(results)
 
@@ -120,7 +119,8 @@ class FirestoreStream(HttpStream, ABC):
             "required": ["name"],
             "properties": {
                 "name": { "type": ["string"] },
-                self.cursor_field: { "type": ["null", "string"]}
+                self.cursor_field: { "type": ["null", "string"] },
+                "json_data": { "type": ["string"] }
             },
         }
 
@@ -140,7 +140,7 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return { self.cursor_key: self._cursor_value.iosformat() } if self._cursor_value else {}
+        return { self.cursor_key: self._cursor_value.isoformat() } if self._cursor_value else {}
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
@@ -164,7 +164,8 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
-            self._cursor_value = max(Helpers.parse_date(record["fields"][self.cursor_key]["timestampValue"]), self._cursor_value)
+            record_date = Helpers.parse_date(record[self.cursor_key])
+            self._cursor_value = max(record_date, self._cursor_value) if self._cursor_value else record_date
 
 class Collection(IncrementalFirestoreStream):
     project_id: str
