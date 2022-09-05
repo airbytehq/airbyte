@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -11,7 +12,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests.auth import HTTPBasicAuth
-
 from source_zendesk_talk.streams import (
     AccountOverview,
     Addresses,
