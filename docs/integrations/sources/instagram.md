@@ -101,7 +101,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 0.1.10  | 2022-09-05 | [XXXX](https://github.com/airbytehq/airbyte/pull/XXXX) | Update to latest version of the CDK (v0.1.81)                                                                   |
+| 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                   |
 | 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification                                       |
 | 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354) | added check for empty state and fixed tests.                                                                    |
 | 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805) | Add support for previous format of STATE.                                                                       |
