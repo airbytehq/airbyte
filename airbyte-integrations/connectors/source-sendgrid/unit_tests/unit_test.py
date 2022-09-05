@@ -109,7 +109,7 @@ def test_stream_state():
         [GlobalSuppressions, "https://api.sendgrid.com/v3/suppression/unsubscribes", ["name", "id", "contact_count", "_metadata"]],
     ),
 )
-def test_list(
+def test_read_records(
     stream_class,
     url,
     expected,
