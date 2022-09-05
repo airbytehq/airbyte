@@ -7,8 +7,7 @@ import HeadTitle from "components/HeadTitle";
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
@@ -29,7 +28,7 @@ const ConnectionItemPage: React.FC = () => {
   const [isStatusUpdating, setStatusUpdating] = useState(false);
   const analyticsService = useAnalyticsService();
 
-  useTrackPage(PAGE_TRACKING_CODES.CONNECTIONS_ITEM);
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
   const { source, destination } = connection;
 
   const onAfterSaveSchema = () => {

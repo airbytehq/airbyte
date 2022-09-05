@@ -2,8 +2,7 @@ import React from "react";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
@@ -17,7 +16,7 @@ interface SettingsViewProps {
 const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
-  useTrackPage(PAGE_TRACKING_CODES.CONNECTIONS_ITEM_SETTINGS);
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
   const onDelete = () => deleteConnection(connection);
 
   return (

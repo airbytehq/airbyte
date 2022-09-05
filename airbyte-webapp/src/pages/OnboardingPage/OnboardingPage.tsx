@@ -8,8 +8,7 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
-import { useAnalyticsService, useTrackPage } from "hooks/services/Analytics/useAnalyticsService";
+import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
@@ -64,7 +63,7 @@ const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
-  useTrackPage(PAGE_TRACKING_CODES.ONBOARDING);
+  useTrackPage(PageTrackingCodes.ONBOARDING);
 
   const { push } = useRouterHook();
 

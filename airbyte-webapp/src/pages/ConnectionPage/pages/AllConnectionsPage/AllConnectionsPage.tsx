@@ -5,8 +5,7 @@ import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 
-import { useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
@@ -17,7 +16,7 @@ import ConnectionsTable from "./components/ConnectionsTable";
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
-  useTrackPage(PAGE_TRACKING_CODES.CONNECTIONS_LIST);
+  useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 

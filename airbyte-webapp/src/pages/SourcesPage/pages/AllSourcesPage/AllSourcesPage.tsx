@@ -6,8 +6,7 @@ import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
-import { useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 
@@ -17,7 +16,7 @@ import SourcesTable from "./components/SourcesTable";
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
   const { sources } = useSourceList();
-  useTrackPage(PAGE_TRACKING_CODES.SOURCE_LIST);
+  useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const onCreateSource = () => push(`${RoutePaths.SourceNew}`);
   return sources.length ? (
     <MainPageWithScroll

@@ -5,8 +5,7 @@ import styled from "styled-components";
 
 import { Button, LabeledInput, LoadingButton } from "components";
 
-import { useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveWorkspace,
@@ -35,7 +34,7 @@ const Buttons = styled.div`
 
 export const WorkspaceSettingsView: React.FC = () => {
   const { formatMessage } = useIntl();
-  useTrackPage(PAGE_TRACKING_CODES.SETTINGS_WORKSPACE);
+  useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();

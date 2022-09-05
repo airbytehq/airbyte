@@ -3,8 +3,7 @@ import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
-import { useTrackPage } from "hooks/services/Analytics";
-import { PAGE_TRACKING_CODES } from "hooks/services/Analytics/pageTrackingCodes";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useConnector from "hooks/services/useConnector";
 import {
   useDestinationDefinitionList,
@@ -15,7 +14,7 @@ import { useDestinationList } from "../../../../hooks/services/useDestinationHoo
 import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
-  useTrackPage(PAGE_TRACKING_CODES.SETTINGS_DESTINATION);
+  useTrackPage(PageTrackingCodes.SETTINGS_DESTINATION);
 
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const { formatMessage } = useIntl();
