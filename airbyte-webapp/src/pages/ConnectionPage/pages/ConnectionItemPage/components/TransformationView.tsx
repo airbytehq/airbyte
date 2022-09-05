@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { ContentCard, H4 } from "components";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -125,6 +126,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
 
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
   const { supportsNormalization } = definition;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 

@@ -34,6 +34,7 @@
     "@monaco-editor/react": "^4.4.5",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
+    "@types/segment-analytics": "^0.0.34",
     "classnames": "^2.3.1",
     "dayjs": "^1.11.3",
     "firebase": "^9.8.2",

@@ -12,7 +12,7 @@ import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
-import { useAnalyticsService } from "hooks/services/Analytics";
+import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
@@ -47,10 +47,10 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
 };
 
 const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
-
   const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
