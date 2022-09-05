@@ -41,6 +41,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
 
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
                                                           final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
@@ -81,7 +83,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    boolean isSsl = !config.has("ssl") || config.get("ssl").asBoolean();
+    final boolean isSsl = !config.has("ssl") || config.get("ssl").asBoolean();
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse:%s://%s:%s/%s",
         isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -107,6 +109,11 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("system", "information_schema", "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

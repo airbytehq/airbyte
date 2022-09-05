@@ -151,7 +151,7 @@ export const Routing: React.FC = () => {
     [user]
   );
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId, { providers });
+  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 
   if (!inited) {
     return <LoadingPage />;
