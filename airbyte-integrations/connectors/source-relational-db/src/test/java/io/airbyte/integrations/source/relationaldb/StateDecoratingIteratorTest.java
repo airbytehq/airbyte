@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.relationaldb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,6 +74,7 @@ class StateDecoratingIteratorTest {
 
   private Iterator<AirbyteMessage> createExceptionIterator() {
     return new Iterator<AirbyteMessage>() {
+
       final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
           RECORD_MESSAGE_2, RECORD_MESSAGE_3);
 
@@ -88,7 +88,8 @@ class StateDecoratingIteratorTest {
         if (internalMessageIterator.hasNext()) {
           return internalMessageIterator.next();
         } else {
-          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a SQLException is thrown and wrapped in
+          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a
+          // SQLException is thrown and wrapped in
           // StreamingJdbcDatabase#tryAdvance
           throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
         }
@@ -186,10 +187,12 @@ class StateDecoratingIteratorTest {
         1);
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
-    // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the condition of "ready"
+    // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the
+    // condition of "ready"
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_3, iterator.next());
-    // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the frequency minimum of 1 record
+    // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the
+    // frequency minimum of 1 record
     assertEquals(STATE_MESSAGE_2, iterator.next());
     // no further records to read since Exception was caught above and marked iterator as endOfData()
     assertFalse(iterator.hasNext());
@@ -210,8 +213,10 @@ class StateDecoratingIteratorTest {
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_3, iterator.next());
-    // since stateEmission is not set to emit frequently, this will catch the error but not emit state message since it wasn't in a ready state
-    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by marking iterator as endOfData()
+    // since stateEmission is not set to emit frequently, this will catch the error but not emit state
+    // message since it wasn't in a ready state
+    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by
+    // marking iterator as endOfData()
     assertFalse(iterator.hasNext());
   }
 
