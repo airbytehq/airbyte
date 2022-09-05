@@ -36,6 +36,10 @@ class Helpers(object):
     def get_collections_list_url(project_id: str) -> str:
         return f"{Helpers.get_project_url(project_id)}/databases/(default)/documents:listCollectionIds"
 
+    @staticmethod
+    def parse_date(date: str) -> datetime:
+        return datetime.fromisoformat(date.replace("Z", "+00:00"))
+
 # Basic full refresh stream
 class FirestoreStream(HttpStream, ABC):
     url_base = Helpers.url_base
@@ -137,7 +141,8 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_key, self.start_date)
+        new_cursor_value = value.get(self.cursor_key, self.start_date)
+        self._cursor_value = Helpers.parse_date(new_cursor_value) if isinstance(new_cursor_value, str) else new_cursor_value
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -167,7 +172,7 @@ class Collection(IncrementalFirestoreStream):
         super().__init__(authenticator, collection_name=collection_name)
         self.collection_name = collection_name
         self.project_id = config["project_id"]
-        self.start_date = datetime.fromisoformat(config["start_date"].replace("Z", "+00:00")) if "start_date" in config else None
+        self.start_date = Helpers.parse_date(config["start_date"]) if "start_date" in config else None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
