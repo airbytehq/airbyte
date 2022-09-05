@@ -403,11 +403,11 @@
 - name: Greenhouse
   sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Harness
   sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
   dockerRepository: farosai/airbyte-harness-source
