@@ -3,14 +3,29 @@
 #
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from source_sendgrid.source import SourceSendgrid
-from source_sendgrid.streams import Messages, SendgridStream
+from source_sendgrid.streams import (
+    Blocks,
+    Campaigns,
+    Contacts,
+    GlobalSuppressions,
+    Lists,
+    Messages,
+    Segments,
+    SendgridStream,
+    SendgridStreamIncrementalMixin,
+    SendgridStreamOffsetPagination,
+    SuppressionGroupMembers,
+    SuppressionGroups,
+    Templates,
+)
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
 
@@ -52,3 +67,60 @@ def test_messages_stream_request_params(mock_pendulum_now):
         request_params
         == "query=last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T13%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222022-01-01T00%3A00%3A00Z%22&limit=1000"
     )
+
+
+def test_streams():
+    streams = SourceSendgrid().streams(config={"apikey": "wrong.api.key123", "start_time": FAKE_NOW})
+
+    assert len(streams) == 15
+
+
+@patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set())
+def test_pagination(mocker):
+    stream = SendgridStreamOffsetPagination()
+    state = {}
+    response = requests.Response()
+    mocker.patch.object(response, "json", return_value={None: 1})
+    mocker.patch.object(response, "request", return_value=MagicMock())
+    next_page_token = stream.next_page_token(response)
+    request_params = stream.request_params(stream_state=state, next_page_token=next_page_token)
+    assert request_params == {"limit": 50}
+
+
+@patch.multiple(SendgridStreamIncrementalMixin, __abstractmethods__=set())
+def test_stream_state():
+    stream = SendgridStreamIncrementalMixin(start_time=FAKE_NOW)
+    state = {}
+    request_params = stream.request_params(stream_state=state)
+    assert request_params == {"end_time": pendulum.now().int_timestamp, "start_time": FAKE_NOW}
+
+
+@pytest.mark.parametrize(
+    "stream_class, url , expected",
+    (
+        [Templates, "https://api.sendgrid.com/v3/templates", []],
+        [Lists, "https://api.sendgrid.com/v3/marketing/lists", []],
+        [Campaigns, "https://api.sendgrid.com/v3/marketing/campaigns", []],
+        [Contacts, "https://api.sendgrid.com/v3/marketing/contacts", []],
+        [Segments, "https://api.sendgrid.com/v3/marketing/segments", []],
+        [Blocks, "https://api.sendgrid.com/v3/suppression/blocks", ["name", "id", "contact_count", "_metadata"]],
+        [SuppressionGroupMembers, "https://api.sendgrid.com/v3/asm/suppressions", ["name", "id", "contact_count", "_metadata"]],
+        [SuppressionGroups, "https://api.sendgrid.com/v3/asm/groups", ["name", "id", "contact_count", "_metadata"]],
+        [GlobalSuppressions, "https://api.sendgrid.com/v3/suppression/unsubscribes", ["name", "id", "contact_count", "_metadata"]],
+    ),
+)
+def test_list(
+    stream_class,
+    url,
+    expected,
+    requests_mock,
+):
+    try:
+        stream = stream_class(start_time=FAKE_NOW)
+    except TypeError:
+        stream = stream_class()
+    requests_mock.get("https://api.sendgrid.com/v3/marketing", json={})
+    requests_mock.get(url, json={"name": "test", "id": "id", "contact_count": 20, "_metadata": {"self": "self"}})
+    records = list(stream.read_records(sync_mode=SyncMode))
+
+    assert records == expected
