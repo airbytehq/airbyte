@@ -12,10 +12,10 @@ import "./slider.css";
 
 interface SlickSliderProps {
   title?: string;
-  sliderSettingsOverride?: SliderProps;
+  sliderSettings?: SliderProps;
 }
 
-export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettingsOverride, children }) => {
+export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings, children }) => {
   const PrevArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
     <div
       className={classnames(styles.leftArrow, {
@@ -56,9 +56,9 @@ export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettingsO
       slidesToScroll: 2,
       prevArrow: <PrevArrow />,
       nextArrow: <NextArrow />,
-      ...sliderSettingsOverride,
+      ...sliderSettings,
     }),
-    [sliderSettingsOverride]
+    [sliderSettings]
   );
 
   return (
