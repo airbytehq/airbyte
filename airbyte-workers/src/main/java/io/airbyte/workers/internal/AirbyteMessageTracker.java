@@ -235,7 +235,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     final AirbyteNotificationTraceMessage notification = notificationTraceMessage.getNotification();
     final String logMessage =
         "[" + connectorType + " NOTIFICATION] " + notification.getMessage()
-            + notification.getData() != null ? " -> " + Jsons.serialize(notification.getData()) : "";
+            + (notification.getData() != null ? " -> " + Jsons.serialize(notification.getData()) : "");
     log.info(logMessage);
   }
 
