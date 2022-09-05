@@ -679,7 +679,7 @@
 - name: OpenWeather
   sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerRepository: airbyte/source-openweather
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/openweather
   sourceType: api
   releaseStage: alpha

@@ -6592,7 +6592,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-openweather:0.1.5"
+- dockerImage: "airbyte/source-openweather:0.1.6"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -6603,7 +6603,7 @@
       - "appid"
       - "lat"
       - "lon"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         lat:
           title: "Latitude"
