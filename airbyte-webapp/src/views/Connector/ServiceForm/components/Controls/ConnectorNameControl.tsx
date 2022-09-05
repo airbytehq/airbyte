@@ -6,13 +6,13 @@ import { Input, ControlLabels } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-interface ConnnectorNameControlProps {
+interface ConnectorNameControlProps {
   property: FormBaseItem;
   formType: "source" | "destination";
   disabled?: boolean;
 }
 
-export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ property, formType, disabled }) => {
+export const ConnectorNameControl: React.FC<ConnectorNameControlProps> = ({ property, formType, disabled }) => {
   const { formatMessage } = useIntl();
   const [field, fieldMeta] = useField(property.path);
 
