@@ -96,12 +96,16 @@ class PinterestSubStream(HttpSubStream):
                 yield {"parent": record, "sub_parent": stream_slice}
 
 
-class Boards(PinterestStream):    
+class Boards(PinterestStream):
+    use_cache = True
+        
     def path(self, **kwargs) -> str:
         return "boards"
 
 
-class AdAccounts(PinterestStream):    
+class AdAccounts(PinterestStream):
+    use_cache = True
+        
     def path(self, **kwargs) -> str:
         return "ad_accounts"
 

@@ -92,7 +92,7 @@
       "type": ["null", "string"]
     },
     "ad_account_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "campaign_id": {
       "type": ["null", "string"]
