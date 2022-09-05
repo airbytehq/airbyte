@@ -2763,7 +2763,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.6"
+- dockerImage: "airbyte/destination-mongodb:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
@@ -2773,7 +2773,6 @@
       required:
       - "database"
       - "auth_type"
-      additionalProperties: true
       properties:
         instance_type:
           description: "MongoDb instance to connect to. For MongoDB Atlas and Replica\
@@ -2841,7 +2840,6 @@
                 description: "A replica set name."
                 order: 1
           - title: "MongoDB Atlas"
-            additionalProperties: false
             required:
             - "instance"
             - "cluster_url"
@@ -2867,7 +2865,6 @@
           description: "Authorization type."
           oneOf:
           - title: "None"
-            additionalProperties: false
             description: "None."
             required:
             - "authorization"
@@ -2877,7 +2874,6 @@
                 type: "string"
                 const: "none"
           - title: "Login/Password"
-            additionalProperties: false
             description: "Login/Password."
             required:
             - "authorization"
