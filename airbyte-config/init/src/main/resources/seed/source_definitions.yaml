@@ -9,7 +9,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database

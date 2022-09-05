@@ -10,10 +10,6 @@ import io.airbyte.integrations.source.postgres.PostgresSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This file will soon be removed. Any change to this file should also be duplicated to
- * AlloydbSource.java in the source-alloydb module.
- */
 public class AlloyDbSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AlloyDbSource.class);
@@ -25,9 +21,9 @@ public class AlloyDbSource {
    */
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource();
-    LOGGER.info("starting source: {}", PostgresSource.class);
+    LOGGER.info("starting source: AlloyDB for {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresSource.class);
+    LOGGER.info("completed source: AlloyDB for {}", PostgresSource.class);
   }
 
 }
