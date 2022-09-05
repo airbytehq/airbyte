@@ -7,7 +7,7 @@ export class AnalyticsService {
 
   alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
-  page = (name: string): void => this.getSegmentAnalytics()?.page?.(name);
+  page = (name: string): void => this.getSegmentAnalytics()?.page?.(name, { ...this.context });
 
   reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
