@@ -4,3 +4,14 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom/extend-expect";
 import "@testing-library/jest-dom";
+
+// fix for react-slick
+global.matchMedia =
+  global.matchMedia ||
+  function () {
+    return {
+      matches: false,
+      addListener() {},
+      removeListener() {},
+    };
+  };
