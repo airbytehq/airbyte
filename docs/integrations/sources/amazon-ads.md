@@ -90,6 +90,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.19 | 2022-08-31 | [16191](https://github.com/airbytehq/airbyte/pull/16191)    | Improved connector's input configuration validation                                                               |
 | 0.1.18 | 2022-08-25 | [15951](https://github.com/airbytehq/airbyte/pull/15951)    | Skip API error "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."                     |
 | 0.1.17 | 2022-08-24 | [15921](https://github.com/airbytehq/airbyte/pull/15921)    | Skip API error "Report date is too far in the past."                                                              |
 | 0.1.16 | 2022-08-23 | [15822](https://github.com/airbytehq/airbyte/pull/15822)    | Set default value for 'region' if needed                                                                          |

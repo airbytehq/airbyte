@@ -8,6 +8,7 @@ from datetime import timedelta
 from functools import partial
 from unittest import mock
 
+import pendulum
 import pytest
 import responses
 from airbyte_cdk.models import SyncMode
@@ -16,6 +17,7 @@ from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
+from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
@@ -339,10 +341,10 @@ def test_display_report_stream_slices_incremental(config):
 def test_get_start_date(config):
     profiles = make_profiles()
 
-    config["start_date"] = "2021-07-10"
+    config["start_date"] = pendulum.from_format("2021-07-10", CONFIG_DATE_FORMAT).date()
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 7, 10)
-    config["start_date"] = "2021-05-10"
+    config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
 
@@ -368,7 +370,7 @@ def test_stream_slices_different_timezones(config):
 
 def test_stream_slices_lazy_evaluation(config):
     with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
-        config["start_date"] = "2021-05-10"
+        config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
         profile1 = Profile(profileId=1, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
         profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
 
@@ -491,7 +493,7 @@ def test_read_incremental_without_records_start_date(config):
     )
 
     profiles = make_profiles()
-    config["start_date"] = "2020-12-25"
+    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
@@ -514,7 +516,7 @@ def test_read_incremental_with_records_start_date(config):
     )
 
     profiles = make_profiles()
-    config["start_date"] = "2020-12-25"
+    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:

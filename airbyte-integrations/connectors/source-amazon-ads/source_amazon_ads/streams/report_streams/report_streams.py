@@ -96,7 +96,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
-    CONFIG_DATE_FORMAT = "YYYY-MM-DD"
     cursor_field = "reportDate"
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
@@ -106,10 +105,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._model = self._generate_model()
         self.report_wait_timeout = config.get("report_wait_timeout", 30)
         self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
-        # Set start date from config file
-        self._start_date = config.get("start_date")
-        if self._start_date:
-            self._start_date = pendulum.from_format(self._start_date, self.CONFIG_DATE_FORMAT).date()
+        self._start_date: Optional[Date] = config.get("start_date")
         super().__init__(config, profiles)
 
     @property
