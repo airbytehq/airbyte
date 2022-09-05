@@ -9,7 +9,7 @@
         "default_cursor_field": ["applied_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["applied_at"],
       "destination_sync_mode": "overwrite"
@@ -23,45 +23,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "close_reasons",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "degrees",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "departments",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -73,7 +37,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -87,7 +51,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -101,7 +65,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -115,7 +79,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -129,57 +93,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "custom_fields",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "demographics_question_sets",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "demographics_questions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "demographics_answer_options",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -191,7 +107,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -205,33 +121,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "demographics_question_sets_questions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "demographics_answers_answer_options",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -243,7 +135,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -257,45 +149,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "sources",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "rejection_reasons",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "jobs_openings",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -307,7 +163,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
@@ -321,7 +177,7 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
