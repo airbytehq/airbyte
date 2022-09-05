@@ -42,8 +42,8 @@ export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
   const [errorCode, setErrorCode] = useState<string>();
   const [isLoading, setLoading] = useState(false);
 
-  const isGitHubLoginEnabled = useExperiment("authPage.oauth.github", false);
-  const isGoogleLoginEnabled = useExperiment("authPage.oauth.google", false);
+  const isGitHubLoginEnabled = useExperiment("authPage.oauth.github", true);
+  const isGoogleLoginEnabled = useExperiment("authPage.oauth.google", true);
   const isGitHubEnabledOnSignUp = useExperiment("authPage.oauth.github.signUpPage", true);
   const isGoogleEnabledOnSignUp = useExperiment("authPage.oauth.google.signUpPage", true);
 

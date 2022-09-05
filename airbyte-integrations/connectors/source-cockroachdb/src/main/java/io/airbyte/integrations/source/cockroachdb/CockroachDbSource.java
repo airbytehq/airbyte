@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
@@ -133,6 +134,11 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     return new CockroachJdbcDatabase(database, sourceOperations);
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(final JdbcDatabase database) {

@@ -1,13 +1,13 @@
-import { Action, EventParams, Namespace, SegmentAnalytics } from "./types";
+import { Action, EventParams, Namespace } from "./types";
 
 export class AnalyticsService {
   constructor(private context: Record<string, unknown>, private version?: string) {}
 
-  private getSegmentAnalytics = (): SegmentAnalytics | undefined => window.analytics;
+  private getSegmentAnalytics = (): SegmentAnalytics.AnalyticsJS | undefined => window.analytics;
 
   alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
-  page = (name: string): void => this.getSegmentAnalytics()?.page?.(name);
+  page = (name: string): void => this.getSegmentAnalytics()?.page?.(name, { ...this.context });
 
   reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
