@@ -8,9 +8,7 @@
       "type" : "string"
     },
     "rag_ratings" : {
-      "type" : [
-        "array"
-      ],
+      "type" : "array",
       "items" : {
         "type" : [
           "null",

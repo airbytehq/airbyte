@@ -7,7 +7,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "created_at" : {
               "type" : [
@@ -52,16 +53,19 @@
               "format" : "date-time"
             },
             "status" : {
-              "type" : [
-                "null",
-                "integer"
+              "type" : "integer",
+              "enum" : [
+                0,
+                1,
+                2
               ]
             },
             "employee_id" : {
               "type" : [
                 "null",
                 "string"
-              ]
+              ],
+              "format" : "uuid"
             },
             "label" : {
               "type" : [
@@ -96,14 +100,19 @@
             "project_role_id" : {
               "type" : [
                 "null",
-                "integer"
-              ]
+                "string"
+              ],
+              "format" : "uuid"
             },
             "hash_tag_ids" : {
-              "type" : [
-                "null",
-                "array"
-              ]
+              "type" : "array",
+              "items" : {
+                "type" : [
+                  "null",
+                  "string"
+                ],
+                "format" : "uuid"
+              }
             },
             "color" : {
               "type" : [
@@ -115,13 +124,15 @@
               "type" : [
                 "null",
                 "string"
-              ]
+              ],
+              "format" : "uuid"
             },
             "project_phase_id" : {
               "type" : [
                 "null",
                 "string"
-              ]
+              ],
+              "format" : "uuid"
             },
             "total_tracked" : {
               "type" : [
@@ -145,13 +156,61 @@
               "type" : [
                 "null",
                 "object"
-              ]
+              ],
+              "properties" : {
+                "start" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ],
+                  "format" : "date"
+                },
+                "end" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ],
+                  "format" : "date"
+                },
+                "tracked" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  }
+                },
+                "scheduled" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  }
+                }
+              }
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ]
+              "type" : "array",
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              }
             },
             "background" : {
               "type" : [
@@ -344,6 +403,242 @@
                 "null",
                 "boolean"
               ]
+            },
+            "financial_budget_mode" : {
+              "type" : [
+                "null",
+                "integer"
+              ]
+            },
+            "financial_client_currency" : {
+              "type" : [
+                "null",
+                "string"
+              ]
+            },
+            "financial_client_currency_exchange_rate" : {
+              "type" : [
+                "null",
+                "number"
+              ]
+            },
+            "financial_total_scheduled_income" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                }
+              }
+            },
+            "financial_total_scheduled_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "integer"
+                  ]
+                }
+              }
+            },
+            "financial_total_tracked_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "integer"
+                  ]
+                }
+              }
+            },
+            "financial_total_tracked_income" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                }
+              }
+            },
+            "financial_settled_income" : {
+              "type" : [
+                "null",
+                "object"
+              ]
+            },
+            "financial_settled_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ]
+            },
+            "financial_total_work_for_cost" : {
+              "type" : [
+                "null",
+                "integer"
+              ]
+            },
+            "financial_contractor_hour_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ]
+            },
+            "financial_hour_rate" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                }
+              }
+            },
+            "financial_employee_default_hour_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "integer"
+                  ]
+                }
+              }
+            },
+            "financial_use_default_hour_cost" : {
+              "type" : [
+                "null",
+                "object"
+              ],
+              "properties" : {
+                "amount" : {
+                  "type" : [
+                    "null",
+                    "number"
+                  ]
+                },
+                "currency" : {
+                  "type" : [
+                    "null",
+                    "string"
+                  ]
+                },
+                "exchange_rate" : {
+                  "type" : [
+                    "null",
+                    "integer"
+                  ]
+                }
+              }
+            },
+            "financial_default_hour_rate_source" : {
+              "type" : [
+                "null",
+                "integer"
+              ]
+            },
+            "financial_total_work_for_income" : {
+              "type" : [
+                "null",
+                "integer"
+              ]
             }
           },
           "supported_sync_modes" : [
@@ -370,7 +665,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "starts_at" : {
               "type" : [
@@ -441,18 +737,27 @@
               ]
             },
             "employee_id" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : [
                   "null",
                   "object"
-                ]
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -477,10 +782,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : [
-                "null",
-                "string"
-              ]
+              "type" : "string",
+              "format" : "uuid"
             },
             "nick" : {
               "type" : [
@@ -546,10 +849,7 @@
               ]
             },
             "hash_tag_ids" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : "string"
               }
@@ -567,15 +867,23 @@
               ]
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : [
                   "null",
                   "object"
-                ]
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -600,7 +908,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -627,7 +936,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -654,7 +964,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -681,7 +992,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -708,7 +1020,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "connector" : {
               "type" : "string"
@@ -741,7 +1054,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -771,10 +1085,18 @@
               "type" : "string"
             },
             "rag_type" : {
-              "type" : "integer"
+              "type" : "integer",
+              "enum" : [
+                1,
+                2
+              ]
             },
             "default_choice" : {
-              "type" : "integer"
+              "type" : "integer",
+              "enum" : [
+                1,
+                2
+              ]
             },
             "allow_undefined" : {
               "type" : "boolean"
@@ -804,13 +1126,14 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
             },
             "default_hour_rate" : {
-              "type" : "string"
+              "type" : "number"
             }
           },
           "supported_sync_modes" : [
@@ -834,7 +1157,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -864,7 +1188,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -891,7 +1216,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -918,7 +1244,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "text" : {
               "type" : "string"
@@ -945,7 +1272,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "name" : {
               "type" : "string"
@@ -1004,10 +1332,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : [
-                "null",
-                "string"
-              ]
+              "type" : "string",
+              "format" : "uuid"
             },
             "title" : {
               "type" : [
@@ -1018,29 +1344,32 @@
             "hash_tag_ids" : {
               "type" : [
                 "null",
-                "string"
-              ]
+                "array"
+              ],
+              "items" : {
+                "type" : "string"
+              }
             },
             "start_date" : {
               "type" : [
                 "null",
                 "string"
               ],
-              "format" : "date-time"
+              "format" : "date"
             },
             "end_date" : {
               "type" : [
                 "null",
                 "string"
               ],
-              "format" : "date-time"
+              "format" : "date"
             },
             "last_date" : {
               "type" : [
                 "null",
                 "string"
               ],
-              "format" : "date-time"
+              "format" : "date"
             },
             "tentative" : {
               "type" : [
@@ -1142,12 +1471,23 @@
               }
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
-                "type" : "string"
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -1172,7 +1512,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "project_id" : {
               "type" : "string"
@@ -1210,15 +1551,23 @@
               ]
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : [
                   "null",
                   "object"
-                ]
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -1242,17 +1591,14 @@
         "json_schema" : {
           "type" : "object",
           "properties" : {
-            "project_id" : {
-              "type" : "string"
-            },
             "project_url" : {
               "type" : "string"
             },
+            "project_id" : {
+              "type" : "string"
+            },
             "rag_ratings" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : [
                   "null",
@@ -1281,11 +1627,12 @@
         "json_schema" : {
           "type" : "object",
           "properties" : {
-            "uuid" : {
-              "type" : "string"
-            },
             "name" : {
               "type" : "string"
+            },
+            "uuid" : {
+              "type" : "string",
+              "format" : "uuid"
             },
             "level" : {
               "type" : "integer"
@@ -1300,10 +1647,13 @@
               "type" : "string"
             },
             "ancestors" : {
-              "type" : [
-                "null",
-                "array"
-              ]
+              "type" : "array",
+              "items" : {
+                "type" : [
+                  "null",
+                  "string"
+                ]
+              }
             },
             "has_children" : {
               "type" : [
@@ -1333,7 +1683,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "employee_id" : {
               "type" : "string"
@@ -1362,7 +1713,8 @@
               ],
               "properties" : {
                 "uuid" : {
-                  "type" : "string"
+                  "type" : "string",
+                  "format" : "uuid"
                 },
                 "name" : {
                   "type" : "string"
@@ -1371,20 +1723,29 @@
             },
             "approved_at" : {
               "type" : [
+                "null",
                 "string"
               ],
               "format" : "date-time"
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ],
+              "type" : "array",
               "items" : {
                 "type" : [
                   "null",
                   "object"
-                ]
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -1409,7 +1770,8 @@
           "type" : "object",
           "properties" : {
             "uuid" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "uuid"
             },
             "assignment_id" : {
               "type" : [
@@ -1468,10 +1830,24 @@
               ]
             },
             "custom_attributes" : {
-              "type" : [
-                "null",
-                "array"
-              ]
+              "type" : "array",
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "slug" : {
+                    "type" : "string"
+                  },
+                  "value" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              }
             }
           },
           "supported_sync_modes" : [

@@ -2,13 +2,14 @@
   "type" : "object",
   "properties" : {
     "uuid" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "text" : {
       "type" : "string"
     },
     "default_hour_rate" : {
-      "type" : "string"
+      "type" : "number"
     }
   }
 }

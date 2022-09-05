@@ -2,7 +2,8 @@
   "type" : "object",
   "properties" : {
     "uuid" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "starts_at" : {
       "type" : [
@@ -73,16 +74,11 @@
       ]
     },
     "employee_id" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "custom_attributes" : {
-      "type" : "array",
-      "items" : {
-        "type" : [
-          "null",
-          "object"
-        ]
-      }
+      "$ref" : "custom_attributes.json"
     }
   }
 }

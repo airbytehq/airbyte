@@ -5,13 +5,14 @@
       "type" : "string"
     },
     "uuid" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "level" : {
       "type" : "integer"
     },
     "desc" : {
-      "type": "string"
+      "type" : "string"
     },
     "abstract" : {
       "type" : "boolean"
@@ -20,7 +21,13 @@
       "type" : "string"
     },
     "ancestors" : {
-      "type" : "array"
+      "type" : "array",
+      "items" : {
+        "type" : [
+          "null",
+          "string"
+        ]
+      }
     },
     "has_children" : {
       "type" : [

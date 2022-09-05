@@ -2,7 +2,8 @@
   "type" : "object",
   "properties" : {
     "uuid" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "project_id" : {
       "type" : "string"
@@ -40,13 +41,7 @@
       ]
     },
     "custom_attributes" : {
-      "type" : "array",
-      "items" : {
-        "type" : [
-          "null",
-          "object"
-        ]
-      }
+      "$ref" : "custom_attributes.json"
     }
   }
 }

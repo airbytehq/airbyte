@@ -5,10 +5,18 @@
       "type" : "string"
     },
     "rag_type" : {
-      "type" : "integer"
+      "type" : "integer",
+      "enum" : [
+        1,
+        2
+      ]
     },
     "default_choice" : {
-      "type" : "integer"
+      "type" : "integer",
+      "enum" : [
+        1,
+        2
+      ]
     },
     "allow_undefined" : {
       "type" : "boolean"

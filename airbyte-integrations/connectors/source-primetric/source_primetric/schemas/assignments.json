@@ -2,7 +2,8 @@
   "type" : "object",
   "properties" : {
     "uuid" : {
-      "type" : "string"
+      "type" : "string",
+      "format" : "uuid"
     },
     "created_at" : {
       "type" : [
@@ -47,16 +48,19 @@
       "format" : "date-time"
     },
     "status" : {
-      "type" : [
-        "null",
-        "integer"
+      "type" : "integer",
+      "enum" : [
+        0,
+        1,
+        2
       ]
     },
     "employee_id" : {
       "type" : [
         "null",
         "string"
-      ]
+      ],
+      "format" : "uuid"
     },
     "label" : {
       "type" : [
@@ -92,13 +96,18 @@
       "type" : [
         "null",
         "string"
-      ]
+      ],
+      "format" : "uuid"
     },
     "hash_tag_ids" : {
-      "type" : [
-        "null",
-        "array"
-      ]
+      "type" : "array",
+      "items" : {
+        "type" : [
+          "null",
+          "string"
+        ],
+        "format" : "uuid"
+      }
     },
     "color" : {
       "type" : [
@@ -110,13 +119,15 @@
       "type" : [
         "null",
         "string"
-      ]
+      ],
+      "format" : "uuid"
     },
     "project_phase_id" : {
       "type" : [
         "null",
         "string"
-      ]
+      ],
+      "format" : "uuid"
     },
     "total_tracked" : {
       "type" : [
@@ -140,13 +151,44 @@
       "type" : [
         "null",
         "object"
-      ]
+      ],
+      "properties" : {
+        "start" : {
+          "type" : [
+            "null",
+            "string"
+          ],
+          "format" : "date"
+        },
+        "end" : {
+          "type" : [
+            "null",
+            "string"
+          ],
+          "format" : "date"
+        },
+        "tracked" : {
+          "type" : "array",
+          "items" : {
+            "type" : [
+              "null",
+              "number"
+            ]
+          }
+        },
+        "scheduled" : {
+          "type" : "array",
+          "items" : {
+            "type" : [
+              "null",
+              "number"
+            ]
+          }
+        }
+      }
     },
     "custom_attributes" : {
-      "type" : [
-        "null",
-        "array"
-      ]
+      "$ref" : "custom_attributes.json"
     },
     "background" : {
       "type" : [
@@ -338,6 +380,242 @@
       "type" : [
         "null",
         "boolean"
+      ]
+    },
+    "financial_budget_mode" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "financial_client_currency" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "financial_client_currency_exchange_rate" : {
+      "type" : [
+        "null",
+        "number"
+      ]
+    },
+    "financial_total_scheduled_income" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        }
+      }
+    },
+    "financial_total_scheduled_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "financial_total_tracked_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "financial_total_tracked_income" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        }
+      }
+    },
+    "financial_settled_income" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "financial_settled_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "financial_total_work_for_cost" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "financial_contractor_hour_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "financial_hour_rate" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        }
+      }
+    },
+    "financial_employee_default_hour_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "financial_use_default_hour_cost" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "properties" : {
+        "amount" : {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "currency" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "exchange_rate" : {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "financial_default_hour_rate_source" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "financial_total_work_for_income" : {
+      "type" : [
+        "null",
+        "integer"
       ]
     }
   }
