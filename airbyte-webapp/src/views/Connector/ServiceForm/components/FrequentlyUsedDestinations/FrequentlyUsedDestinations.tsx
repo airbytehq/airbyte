@@ -1,10 +1,10 @@
 import ConnectorCard from "components/ConnectorCard";
 import { ConnectorCardProps } from "components/ConnectorCard/ConnectorCard";
+import { SlickSlider } from "components/SlickSlider";
 
-import { SlickSlider } from "../Slider/SlickSlider";
 import styles from "./FrequentlyUsedDestinations.module.scss";
 
-interface FrequentlyUsedDestinationsProps {
+export interface FrequentlyUsedDestinationsProps {
   destinations: ConnectorCardProps[];
 }
 
