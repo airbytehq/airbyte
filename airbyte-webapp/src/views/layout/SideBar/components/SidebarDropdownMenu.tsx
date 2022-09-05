@@ -2,14 +2,14 @@ import { Menu } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
 
-import styles from "./SidebarPopoutNew.module.scss";
+import styles from "./SidebarDropdownMenu.module.scss";
 
-const SidebarPopoutNew: React.FC<{
+const SidebarDropdownMenu: React.FC<{
   children: React.ReactNode;
   options?: React.ReactNode[];
 }> = ({ children, options }) => {
   return (
-    <Menu className={styles.sideBarMenu} as="div">
+    <Menu className={styles.sidebarMenu} as="div">
       {({ open }) => (
         <>
           <Menu.Button className={classNames(styles.button, { [styles.open]: open })}>{children}</Menu.Button>
@@ -26,4 +26,4 @@ const SidebarPopoutNew: React.FC<{
   );
 };
 
-export default SidebarPopoutNew;
+export default SidebarDropdownMenu;

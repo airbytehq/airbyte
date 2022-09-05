@@ -28,7 +28,7 @@ import { RoutePaths } from "../../../../../pages/routePaths";
 import ChatIcon from "../../../../../views/layout/SideBar/components/ChatIcon";
 import DocsIcon from "../../../../../views/layout/SideBar/components/DocsIcon";
 import RecipesIcon from "../../../../../views/layout/SideBar/components/RecipesIcon";
-import SidebarPopoutNew from "../../../../../views/layout/SideBar/components/SidebarPopoutNew";
+import SidebarDropdownMenu from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
 import StatusIcon from "../../../../../views/layout/SideBar/components/StatusIcon";
 import styles from "./SideBar.module.scss";
 
@@ -100,7 +100,7 @@ const SideBar: React.FC = () => {
           </NavLink>
         </div>
         <div>
-          <SidebarPopoutNew
+          <SidebarDropdownMenu
             options={[
               <a href={config.links.docsLink} target="_blank" rel="noreferrer">
                 <span>
@@ -132,10 +132,10 @@ const SideBar: React.FC = () => {
             <span>
               <FormattedMessage id="sidebar.resources" />
             </span>
-          </SidebarPopoutNew>
+          </SidebarDropdownMenu>
         </div>
         <div>
-          <SidebarPopoutNew
+          <SidebarDropdownMenu
             options={[
               <a href={config.links.supportTicketLink} target="_blank" rel="noreferrer">
                 <span>
@@ -155,7 +155,7 @@ const SideBar: React.FC = () => {
             <span>
               <FormattedMessage id="sidebar.support" />
             </span>
-          </SidebarPopoutNew>
+          </SidebarDropdownMenu>
         </div>
         <div>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>

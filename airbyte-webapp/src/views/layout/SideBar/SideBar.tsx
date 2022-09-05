@@ -1,6 +1,6 @@
+import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Menu } from "@headlessui/react";
 import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -17,29 +17,14 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
+import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
+import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
+import SidebarDropdownMenu from "./components/SidebarDropdownMenu";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
-
-const Bar = styled.nav`
-  width: 100px;
-  min-width: 65px;
-  height: 100%;
-  background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 15px 4px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 9999;
-`;
-
-const Text = styled.div`
-  margin-top: 7px;
-`;
 
 const HelpIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -57,122 +42,110 @@ export const useCalculateSidebarStyles = () => {
   return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
 };
 
-export const getPopoutStyles = (isOpen?: boolean) => {
-  return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
-};
-
 const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
-
   const navLinkClassName = useCalculateSidebarStyles();
 
   return (
-    <Bar>
+    <nav className={styles.navBar}>
       <div>
         <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <div className={styles.menu}>
           {workspace.displaySetupWizard ? (
-            <li>
+            <div>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
-                <Text>
+                <span className={styles.text}>
                   <FormattedMessage id="sidebar.onboarding" />
-                </Text>
+                </span>
               </NavLink>
-            </li>
+            </div>
           ) : null}
-          <li>
+          <div>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
-              <Text>
+              <span className={styles.text}>
                 <FormattedMessage id="sidebar.connections" />
-              </Text>
+              </span>
             </NavLink>
-          </li>
-          <li>
+          </div>
+          <div>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
-              <Text>
+              <span className={styles.text}>
                 <FormattedMessage id="sidebar.sources" />
-              </Text>
+              </span>
             </NavLink>
-          </li>
-          <li>
+          </div>
+          <div>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
-              <Text>
+              <span className={styles.text}>
                 <FormattedMessage id="sidebar.destinations" />
-              </Text>
+              </span>
             </NavLink>
-          </li>
+          </div>
         </div>
       </div>
       <div className={styles.menu}>
-        <li>
+        <div>
           <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <HelpIcon icon={faRocket} />
-            <Text>
+            <span className={styles.text}>
               <FormattedMessage id="sidebar.update" />
-            </Text>
+            </span>
           </a>
-        </li>
-
-        <li>
-          {/* <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>*/}
-          {/*  {({ onOpen, isOpen }) => (*/}
-          {/*    <div className={getPopoutStyles(isOpen)} onClick={onOpen}>*/}
-          {/*      <DocsIcon />*/}
-          {/*      <Text>*/}
-          {/*        <FormattedMessage id="sidebar.resources" />*/}
-          {/*      </Text>*/}
-          {/*    </div>*/}
-          {/*  )}*/}
-          {/* </SidebarPopout>*/}
-          <Menu>
-            <Menu.Button>More</Menu.Button>
-            <Menu.Items>
-              <Menu.Item>
-                {({ active }) => (
-                  <a className={`${active && "bg-blue-500"}`} href="/account-settings">
-                    Account settings
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <a className={`${active && "bg-blue-500"}`} href="/account-settings">
-                    Documentation
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item disabled>
-                <span className="opacity-75">Invite a friend (coming soon!)</span>
-              </Menu.Item>
-            </Menu.Items>
-          </Menu>
-        </li>
-
-        <li>
+        </div>
+        <div>
+          <SidebarDropdownMenu
+            options={[
+              <a href={config.links.docsLink} target="_blank" rel="noreferrer">
+                <span>
+                  <DocsIcon />
+                </span>
+                <FormattedMessage id="sidebar.documentation" />
+              </a>,
+              <a href={config.links.slackLink} target="_blank" rel="noreferrer">
+                <span>
+                  <FontAwesomeIcon icon={faSlack} />
+                </span>
+                <FormattedMessage id="sidebar.joinSlack" />
+              </a>,
+              <a href={config.links.recipesLink} target="_blank" rel="noreferrer">
+                <span>
+                  <RecipesIcon />
+                </span>
+                <FormattedMessage id="sidebar.recipes" />
+              </a>,
+            ]}
+          >
+            <DocsIcon />
+            <span>
+              <FormattedMessage id="sidebar.resources" />
+            </span>
+          </SidebarDropdownMenu>
+        </div>
+        <div>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <React.Suspense fallback={null}>
               <NotificationIndicator />
             </React.Suspense>
             <SettingsIcon />
-            <Text>
+            <span className={styles.text}>
               <FormattedMessage id="sidebar.settings" />
-            </Text>
+            </span>
           </NavLink>
-        </li>
+        </div>
         {config.version ? (
-          <li>
+          <div>
             <Version primary />
-          </li>
+          </div>
         ) : null}
       </div>
-    </Bar>
+    </nav>
   );
 };
 
