@@ -18,12 +18,15 @@ const FormContainer = styled(Form)`
 `;
 
 const LoaderContainer = styled.div`
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 22px 0 23px;
 `;
 
 const LoadingMessage = styled.div`
   margin-top: 10px;
+  margin-left: 15px;
 `;
 
 interface FormRootProps {
