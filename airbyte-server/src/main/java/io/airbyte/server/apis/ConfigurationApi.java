@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
@@ -43,6 +44,7 @@ import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.HealthCheckRead;
 import io.airbyte.api.model.generated.ImportRead;
 import io.airbyte.api.model.generated.ImportRequestBody;
+import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
@@ -64,6 +66,7 @@ import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.api.model.generated.SlugRequestBody;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCoreConfig;
@@ -117,6 +120,7 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
+import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -140,9 +144,11 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
+@Slf4j
 public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   private final WorkspacesHandler workspacesHandler;
@@ -162,6 +168,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
+  private final AttemptHandler attemptHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
@@ -252,6 +259,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+    attemptHandler = new AttemptHandler(jobPersistence);
   }
 
   // WORKSPACE
@@ -709,6 +717,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
+    return execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+  }
+
+  @Override
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
     execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
@@ -823,11 +836,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
-    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnectionNew(webBackendConnectionUpdate));
-  }
-
-  @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
@@ -862,6 +870,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
+  }
+
+  @Override
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
+    return execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
   }
 
   public boolean canImportDefinitions() {

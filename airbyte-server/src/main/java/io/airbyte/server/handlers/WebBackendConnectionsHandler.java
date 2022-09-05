@@ -54,9 +54,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.server.converters.ProtocolConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ProtocolConverters;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -362,30 +362,6 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-
-    ConnectionRead connectionRead;
-    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-
-    if (needReset) {
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
-          // streams, instead of all
-          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
-      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-    }
-    return buildWebBackendConnectionRead(connectionRead);
-  }
-
-  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
-    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
@@ -423,6 +399,19 @@ public class WebBackendConnectionsHandler {
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }
+
+    /*
+     * This catalog represents the full catalog that was used to create the configured catalog. It will
+     * have all streams that were present at the time. It will have no configuration set.
+     */
+    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+        .getConnectionAirbyteCatalog(connectionId);
+    if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+      // Update the Catalog returned to include all streams, including disabled ones
+      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
+      connectionRead.setSyncCatalog(syncCatalog);
+    }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 
@@ -434,6 +423,9 @@ public class WebBackendConnectionsHandler {
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    if (webBackendConnectionCreate.getOperations() == null) {
+      return Collections.emptyList();
+    }
     final List<UUID> operationIds = new ArrayList<>();
     for (final var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
@@ -445,10 +437,17 @@ public class WebBackendConnectionsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = connectionsHandler
         .getConnection(webBackendConnectionUpdate.getConnectionId());
-    final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
+
+    // wrap operationIds in a new ArrayList so that it is modifiable below, when calling .removeAll
+    final List<UUID> originalOperationIds =
+        connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds());
+
+    final List<WebBackendOperationCreateOrUpdate> updatedOperations =
+        webBackendConnectionUpdate.getOperations() == null ? new ArrayList<>() : webBackendConnectionUpdate.getOperations();
+
     final List<UUID> operationIds = new ArrayList<>();
 
-    for (final var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
+    for (final var operationCreateOrUpdate : updatedOperations) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
         operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
@@ -457,6 +456,7 @@ public class WebBackendConnectionsHandler {
         operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
       }
     }
+
     originalOperationIds.removeAll(operationIds);
     operationsHandler.deleteOperationsForConnection(connectionRead.getConnectionId(), originalOperationIds);
     return operationIds;
