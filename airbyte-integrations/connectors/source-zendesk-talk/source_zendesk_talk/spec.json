@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Talk Spec",
     "type": "object",
-    "required": ["start_date", "subdomain", "credentials"],
+    "required": ["start_date", "subdomain"],
     "properties": {
       "start_date": {
         "type": "string",
