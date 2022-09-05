@@ -10,7 +10,7 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_iterable.iterable_streams import StreamSlice
+from source_iterable.slice_generators import StreamSlice
 from source_iterable.streams import Users
 
 

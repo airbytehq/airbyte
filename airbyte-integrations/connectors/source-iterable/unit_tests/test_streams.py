@@ -7,7 +7,7 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_iterable.api import Campaigns, CampaignsMetrics, Channels, Events, Lists, ListUsers, MessageTypes, Metadata, Templates, Users
+from source_iterable.streams import Campaigns, CampaignsMetrics, Channels, Events, Lists, ListUsers, MessageTypes, Metadata, Templates, Users
 
 
 @pytest.mark.parametrize(
