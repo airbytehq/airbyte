@@ -98,14 +98,14 @@ class PinterestSubStream(HttpSubStream):
 
 class Boards(PinterestStream):
     use_cache = True
-        
+
     def path(self, **kwargs) -> str:
         return "boards"
 
 
 class AdAccounts(PinterestStream):
     use_cache = True
-        
+
     def path(self, **kwargs) -> str:
         return "ad_accounts"
 
