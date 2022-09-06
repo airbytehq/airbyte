@@ -146,7 +146,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     final MqttConnectOptions options = new MqttConnectOptions();
     options.setAutomaticReconnect(true);
-    options.setMaxInflight(100);
+    options.setMaxInflight(1000);
 
     client.connect(options);
 
