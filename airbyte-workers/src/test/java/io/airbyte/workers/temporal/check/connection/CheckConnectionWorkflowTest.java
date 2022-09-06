@@ -7,10 +7,8 @@ package io.airbyte.workers.temporal.check.connection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.support.DefaultTemporalActivityStubGeneratorFunction;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;
@@ -38,15 +36,7 @@ class CheckConnectionWorkflowTest {
     when(activityOptionsBeanIdentifier.getName()).thenReturn("checkActivityOptions");
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
-
-    final TemporalActivityStubGeneratorFunction generatorFunction = new DefaultTemporalActivityStubGeneratorFunction();
-    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
-    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
-    when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
-
-    temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration));
   }
 
   @Test

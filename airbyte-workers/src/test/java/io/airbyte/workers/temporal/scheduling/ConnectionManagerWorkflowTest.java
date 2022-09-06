@@ -20,7 +20,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
@@ -53,8 +53,6 @@ import io.airbyte.workers.temporal.scheduling.testsyncworkflow.PersistFailureSyn
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.ReplicateFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SourceAndDestinationFailureSyncWorkflow;
-import io.airbyte.workers.temporal.support.DefaultTemporalActivityStubGeneratorFunction;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
@@ -201,15 +199,7 @@ class ConnectionManagerWorkflowTest {
     when(activityOptionsBeanIdentifier.getName()).thenReturn("shortActivityOptions");
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
-
-    final TemporalActivityStubGeneratorFunction generatorFunction = new DefaultTemporalActivityStubGeneratorFunction();
-    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
-    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
-    when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
-
-    temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration));
   }
 
   @AfterEach

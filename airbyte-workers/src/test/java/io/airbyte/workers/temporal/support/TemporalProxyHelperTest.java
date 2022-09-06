@@ -2,15 +2,13 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.workers.temporal.support;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.temporal.stubs.ValidTestWorkflowImpl;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGenerationOptions;
-import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;
@@ -44,15 +42,8 @@ class TemporalProxyHelperTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubGeneratorFunction generatorFunction = (TemporalActivityStubGenerationOptions o) -> mock(o.getActivityStubClass());
-    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("defaultTemporalActivityStubGeneratorFunction");
-    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
-    when(generatorFunctionBeanRegistration.getBean()).thenReturn(generatorFunction);
-
-    final TemporalProxyHelper temporalProxyHelper =
-        new TemporalProxyHelper(List.of(activityOptionsBeanRegistration), List.of(generatorFunctionBeanRegistration));
+    final TemporalProxyHelper temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration));
+    temporalProxyHelper.setActivityStubGenerator((c, a) -> mock(c));
 
     final Class<ValidTestWorkflowImpl> proxy = temporalProxyHelper.proxyWorkflowClass(ValidTestWorkflowImpl.class);
 
