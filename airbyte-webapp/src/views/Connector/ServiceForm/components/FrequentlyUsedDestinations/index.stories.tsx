@@ -1,4 +1,5 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Formik } from "formik";
 
 import { FrequentlyUsedDestinations } from "./FrequentlyUsedDestinations";
 
@@ -43,7 +44,9 @@ export default {
 } as ComponentMeta<typeof FrequentlyUsedDestinations>;
 
 export const Template: ComponentStory<typeof FrequentlyUsedDestinations> = (args) => (
-  <div style={{ maxWidth: 560 }}>
-    <FrequentlyUsedDestinations {...args} />
-  </div>
+  <Formik initialValues={{ serviceType: "" }} onSubmit={() => {}}>
+    <div style={{ maxWidth: 560 }}>
+      <FrequentlyUsedDestinations {...args} />
+    </div>
+  </Formik>
 );
