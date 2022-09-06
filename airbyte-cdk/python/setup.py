@@ -49,7 +49,7 @@ setup(
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
-        "pydantic~=1.10.0",
+        "pydantic~=1.10.2",
         "PyYAML~=5.4",
         "requests",
         "vcrpy",
