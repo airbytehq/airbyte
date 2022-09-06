@@ -327,8 +327,10 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
           && ((this.stacktrace.equals(rhs.stacktrace)) || ((this.stacktrace != null) && this.stacktrace.equals(rhs.stacktrace))))
           && ((this.failureOrigin.equals(rhs.failureOrigin)) || ((this.failureOrigin != null) && this.failureOrigin.equals(rhs.failureOrigin))))
           && ((this.failureType.equals(rhs.failureType)) || ((this.failureType != null) && this.failureType.equals(rhs.failureType))))
-          && ((this.internalMessage.equals(rhs.internalMessage)) || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
-          && ((this.externalMessage.equals(rhs.externalMessage)) || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
+          && ((this.internalMessage.equals(rhs.internalMessage))
+              || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
+          && ((this.externalMessage.equals(rhs.externalMessage))
+              || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
           && ((this.timestamp.equals(rhs.timestamp)) || ((this.timestamp != null) && this.timestamp.equals(rhs.timestamp))));
     }
 

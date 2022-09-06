@@ -84,7 +84,8 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
     return new ArrayList<>(this.destinationDefinitions.values());
   }
 
-  private static CombinedConnectorCatalog getRemoteDefinitionCatalog(final URI catalogUrl, final Duration timeout) throws IOException, InterruptedException {
+  private static CombinedConnectorCatalog getRemoteDefinitionCatalog(final URI catalogUrl, final Duration timeout)
+      throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder(catalogUrl).timeout(timeout).header("accept", "application/json").build();
 
     final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -95,7 +96,8 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
     return Jsons.deserialize(response.body(), CombinedConnectorCatalog.class);
   }
 
-  private static Boolean errorStatusCode(final HttpResponse<String> response){
+  private static Boolean errorStatusCode(final HttpResponse<String> response) {
     return response.statusCode() >= 400;
   }
+
 }
