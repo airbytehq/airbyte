@@ -37,6 +37,8 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
+import io.airbyte.metrics.lib.MetricsRegistry;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -425,6 +427,8 @@ public class WorkerApp {
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
 
+    // Test datadog was hooked on.
+    MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 500);
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
