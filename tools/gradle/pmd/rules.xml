@@ -102,8 +102,6 @@
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
         <exclude name="CloseResource"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="DoNotTerminateVM"/>
         <exclude name="EmptyCatchBlock"/>
         <exclude name="EmptyIfStmt"/>
         <exclude name="EmptyStatementNotInLoop"/>
