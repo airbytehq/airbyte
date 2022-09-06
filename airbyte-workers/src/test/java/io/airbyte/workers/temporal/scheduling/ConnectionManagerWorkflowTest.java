@@ -38,6 +38,8 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity.RouteToSyncTaskQueueOutput;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
@@ -123,6 +125,8 @@ class ConnectionManagerWorkflowTest {
       mock(RecordMetricActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final WorkflowConfigActivity mWorkflowConfigActivity =
       mock(WorkflowConfigActivity.class, Mockito.withSettings().withoutAnnotations());
+  private static final RouteToSyncTaskQueueActivity mRouteToSyncTaskQueueActivity =
+      mock(RouteToSyncTaskQueueActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final String EVENT = "event = ";
 
   private TestWorkflowEnvironment testEnv;
@@ -152,6 +156,7 @@ class ConnectionManagerWorkflowTest {
     Mockito.reset(mStreamResetActivity);
     Mockito.reset(mRecordMetricActivity);
     Mockito.reset(mWorkflowConfigActivity);
+    Mockito.reset(mRouteToSyncTaskQueueActivity);
 
     // default is to wait "forever"
     when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
@@ -182,6 +187,11 @@ class ConnectionManagerWorkflowTest {
 
     when(mWorkflowConfigActivity.getWorkflowRestartDelaySeconds())
         .thenReturn(WORKFLOW_FAILURE_RESTART_DELAY);
+
+    // TODO: for now, always route to default 'SYNC' task queue. Add test for routing
+    // to a different task queue
+    when(mRouteToSyncTaskQueueActivity.route(Mockito.any()))
+        .thenReturn(new RouteToSyncTaskQueueOutput(TemporalJobType.SYNC.name()));
 
     activityOptions = ActivityOptions.newBuilder()
         .setHeartbeatTimeout(Duration.ofSeconds(30))
@@ -820,7 +830,7 @@ class ConnectionManagerWorkflowTest {
       managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
       managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mConnectionDeletionActivity,
           mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-          mWorkflowConfigActivity);
+          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
 
       client = testEnv.getWorkflowClient();
       workflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
@@ -916,7 +926,7 @@ class ConnectionManagerWorkflowTest {
       managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
       managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mConnectionDeletionActivity,
           mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-          mWorkflowConfigActivity);
+          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
 
       client = testEnv.getWorkflowClient();
       workflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
@@ -1512,7 +1522,7 @@ class ConnectionManagerWorkflowTest {
     managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
     managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mConnectionDeletionActivity,
         mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-        mWorkflowConfigActivity);
+        mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
 
     client = testEnv.getWorkflowClient();
     testEnv.start();
