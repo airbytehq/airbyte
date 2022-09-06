@@ -119,6 +119,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
             pathType={cursorType}
             paths={paths}
             path={options.cursorField}
+            data-testid="cursorField"
           />
         )}
       </HeaderCell>
