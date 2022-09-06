@@ -19,12 +19,7 @@ export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, 
   });
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-    <label
-      className={labelStyle}
-      onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
-      onKeyPress={(event: React.SyntheticEvent) => event.stopPropagation()}
-    >
+    <label className={labelStyle}>
       <input
         {...props}
         className={styles.switchInput}
