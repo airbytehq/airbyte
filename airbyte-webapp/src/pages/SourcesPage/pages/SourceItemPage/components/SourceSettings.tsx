@@ -5,6 +5,7 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -26,6 +27,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
 
+  useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {
     return () => {
       setDocumentationPanelOpen(false);

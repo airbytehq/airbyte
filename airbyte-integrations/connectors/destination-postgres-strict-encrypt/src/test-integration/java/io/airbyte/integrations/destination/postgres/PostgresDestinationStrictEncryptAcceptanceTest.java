@@ -5,10 +5,13 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -17,12 +20,14 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.workers.exception.WorkerException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -157,4 +162,67 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     db.close();
   }
 
+  @Test
+  void testStrictSSLUnsecuredNoTunnel() throws WorkerException {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "prefer")
+            .build())
+         .put("tunnel_method", ImmutableMap.builder()
+             .put("tunnel_method", "NO_TUNNEL")
+             .build())
+        .build());
+
+    final var actual = runCheck(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals("Unsecured connection not allowed", actual.getMessage());
+  }
+
+  @Test
+  void testStrictSSLSecuredNoTunnel() throws WorkerException {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "require")
+            .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "NO_TUNNEL")
+            .build())
+        .build());
+
+    final var actual = runCheck(config);
+    assertEquals(Status.SUCCEEDED, actual.getStatus());
+  }
+
+  @Test
+  void testStrictSSLUnsecuredWithTunnel() throws WorkerException {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "require")
+            .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "SSH_KEY_AUTH")
+            .build())
+        .build());
+    final var actual = runCheck(config);
+    //DefaultCheckConnectionWorker is swallowing the NullPointerException
+    assertNull(actual);
+  }
 }
