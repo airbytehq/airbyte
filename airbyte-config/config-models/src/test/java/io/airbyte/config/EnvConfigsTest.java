@@ -10,6 +10,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.JobErrorReportingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -467,6 +468,18 @@ class EnvConfigsTest {
         "DEPLOYMENT_MODE", "CLOUD",
         "WORKER_ENVIRONMENT", "DOCKER");
     assertEquals(expected, config.getJobDefaultEnvMap());
+  }
+
+  @Test
+  void testRemoteConnectorCatalogUrl() {
+    envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, null);
+    assertEquals(null, config.getRemoteConnectorCatalogUrl());
+
+    envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, "");
+    assertEquals(null, config.getRemoteConnectorCatalogUrl());
+
+    envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, "https://airbyte.com");
+    assertEquals(URI.create("https://airbyte.com"), config.getRemoteConnectorCatalogUrl());
   }
 
 }

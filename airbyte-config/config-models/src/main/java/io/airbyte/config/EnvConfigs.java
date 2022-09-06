@@ -329,7 +329,12 @@ public class EnvConfigs implements Configs {
   @Override
   public URI getRemoteConnectorCatalogUrl() {
     // Default to reuse the job database
-    return URI.create(getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL));
+    final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
+    if (remoteConnectorCatalogUrl != null) {
+      return URI.create(remoteConnectorCatalogUrl);
+    } else {
+      return null;
+    }
   }
 
   // Docker Only
