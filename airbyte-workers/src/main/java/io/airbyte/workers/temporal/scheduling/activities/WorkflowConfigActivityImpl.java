@@ -17,7 +17,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class WorkflowConfigActivityImpl implements WorkflowConfigActivity {
 
   @Property(name = "airbyte.workflow.failure.restart-delay",

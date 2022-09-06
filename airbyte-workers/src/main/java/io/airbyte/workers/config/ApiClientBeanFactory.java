@@ -71,7 +71,7 @@ public class ApiClientBeanFactory {
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
                                      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
+                                     @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
