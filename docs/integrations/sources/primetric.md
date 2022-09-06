@@ -45,7 +45,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ## Getting started
 
-Primetric enables makes resource planning easier. With it you can manage your employee's skills and schedule assignment of
+Primetric facilitates resource planning. With it you can manage your employee's skills and schedule assignment of
 your employees to the right projects.
 
 ### Requirements

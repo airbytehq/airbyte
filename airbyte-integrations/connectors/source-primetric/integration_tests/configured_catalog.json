@@ -605,28 +605,8 @@
             "financial_use_default_hour_cost" : {
               "type" : [
                 "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "integer"
-                  ]
-                }
-              }
+                "boolean"
+              ]
             },
             "financial_default_hour_rate_source" : {
               "type" : [
@@ -655,7 +635,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -772,7 +752,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -898,7 +878,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -926,7 +906,7 @@
           ]
         ]
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -954,7 +934,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -982,7 +962,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1010,7 +990,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1044,7 +1024,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1072,7 +1052,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1116,7 +1096,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1147,7 +1127,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1178,7 +1158,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1206,7 +1186,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1234,7 +1214,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1262,7 +1242,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1322,7 +1302,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1502,7 +1482,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1582,7 +1562,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1618,7 +1598,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1673,7 +1653,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1760,7 +1740,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1864,7 +1844,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     }
   ]

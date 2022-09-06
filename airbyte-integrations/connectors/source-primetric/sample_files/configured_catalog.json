@@ -406,108 +406,16 @@
               ]
             },
             "financial_total_scheduled_income" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_total_scheduled_cost" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "integer"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_total_tracked_cost" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "integer"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_total_tracked_income" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_settled_income" : {
               "type" : [
@@ -534,82 +442,16 @@
               ]
             },
             "financial_hour_rate" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_employee_default_hour_cost" : {
-              "type" : [
-                "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "integer"
-                  ]
-                }
-              }
+              "$ref" : "money_object.json"
             },
             "financial_use_default_hour_cost" : {
               "type" : [
                 "null",
-                "object"
-              ],
-              "properties" : {
-                "amount" : {
-                  "type" : [
-                    "null",
-                    "number"
-                  ]
-                },
-                "currency" : {
-                  "type" : [
-                    "null",
-                    "string"
-                  ]
-                },
-                "exchange_rate" : {
-                  "type" : [
-                    "null",
-                    "integer"
-                  ]
-                }
-              }
+                "boolean"
+              ]
             },
             "financial_default_hour_rate_source" : {
               "type" : [
