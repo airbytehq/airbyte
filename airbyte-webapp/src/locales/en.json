@@ -303,6 +303,7 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
+  "destinations.frequentlyUsed": "Most Frequently used destinations",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
