@@ -60,7 +60,7 @@ public class V0_40_3_003__CreateSyncStats extends BaseJavaMigration {
         .columns(id, attemptId, recordsEmitted, bytesEmitted, sourceStateMessagesEmitted, destinationStateMessagesEmitted, recordsCommitted,
             meanSecondsBeforeSourceStateMessageEmitted, maxSecondsBeforeSourceStateMessageEmitted, meanSecondsBetweenStateMessageEmittedandCommitted,
             maxSecondsBetweenStateMessageEmittedandCommitted, createdAt, updatedAt)
-        .constraints(primaryKey(id), foreignKey(attemptId).references("attempts", "id").onDeleteCascade())
+        .constraints(primaryKey(id), unique(attemptId))
         .execute();
 
     ctx.createIndex("attempt_id_idx").on("sync_stats", "attempt_id").execute();
