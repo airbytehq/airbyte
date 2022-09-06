@@ -5,7 +5,6 @@
 package io.airbyte.db.instance.configs.migrations;
 
 import static org.jooq.impl.DSL.currentOffsetDateTime;
-import static org.jooq.impl.DSL.foreignKey;
 import static org.jooq.impl.DSL.primaryKey;
 import static org.jooq.impl.DSL.unique;
 
