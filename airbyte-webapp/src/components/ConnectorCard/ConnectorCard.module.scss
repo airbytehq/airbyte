@@ -1,13 +1,16 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
 .container {
   display: flex;
-  padding: 10px;
+  padding: variables.$spacing-md;
   width: 220px;
   align-items: center;
 }
 
 .details {
   width: 160px;
-  margin-left: 10px;
+  margin-left: variables.$spacing-md;
   display: flex;
   flex-direction: column;
   font-weight: normal;
@@ -20,9 +23,9 @@
 
 .connectionName {
   font-size: 14px;
-  color: #1a194d;
+  color: colors.$dark-blue-900;
   text-align: left;
-  margin-right: 10px;
+  margin-right: variables.$spacing-md;
 }
 
 .connectorDetails {
@@ -34,7 +37,7 @@
 .connectorName {
   font-size: 11px;
   margin-top: 1px;
-  color: #afafc1;
+  color: colors.$grey-300;
   text-align: left;
   word-wrap: break-word;
 }
