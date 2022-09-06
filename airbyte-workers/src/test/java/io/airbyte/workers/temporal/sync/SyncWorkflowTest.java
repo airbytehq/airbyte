@@ -11,7 +11,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,7 +26,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.micronaut.context.BeanRegistration;
@@ -45,7 +43,6 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.List;
-import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,15 +53,14 @@ class SyncWorkflowTest {
   // TEMPORAL
 
   private TestWorkflowEnvironment testEnv;
-  private Worker syncControlPlaneWorker;
-  private Worker syncDataPlaneWorker;
+  private Worker syncWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
   private PersistStateActivityImpl persistStateActivity;
 
-  private static final String DATA_PLANE_TASK_QUEUE = "SYNC_DATA_PLANE";
+  private static final String SYNC_TASK_QUEUE = "SYNC_TASK_QUEUE";
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
@@ -92,13 +88,11 @@ class SyncWorkflowTest {
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
-  private RouterService routerService;
 
   @BeforeEach
   void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncControlPlaneWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncDataPlaneWorker = testEnv.newWorker(DATA_PLANE_TASK_QUEUE);
+    syncWorker = testEnv.newWorker(SYNC_TASK_QUEUE);
     client = testEnv.getWorkflowClient();
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
@@ -139,9 +133,6 @@ class SyncWorkflowTest {
             .build())
         .build();
 
-    routerService = mock(RouterService.class);
-    when(routerService.getTaskQueue(any())).thenReturn(DATA_PLANE_TASK_QUEUE);
-
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration longActivityOptionsBeanRegistration = mock(BeanRegistration.class);
     when(longActivitiesBeanIdentifier.getName()).thenReturn("longRunActivityOptions");
@@ -154,7 +145,7 @@ class SyncWorkflowTest {
     when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(shortActivityOptions);
     temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration));
 
-    syncControlPlaneWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+    syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }
 
   @AfterEach
@@ -164,11 +155,11 @@ class SyncWorkflowTest {
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncDataPlaneWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
         persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
-        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
+        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_TASK_QUEUE).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
@@ -188,7 +179,6 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    verifyRouteToTaskQueue(routerService, sync.getConnectionId());
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -291,11 +281,6 @@ class SyncWorkflowTest {
         .build();
 
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
-  }
-
-  private static void verifyRouteToTaskQueue(final RouterService routerService,
-                                             final UUID connectionId) {
-    verify(routerService, times(4)).getTaskQueue(connectionId);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
