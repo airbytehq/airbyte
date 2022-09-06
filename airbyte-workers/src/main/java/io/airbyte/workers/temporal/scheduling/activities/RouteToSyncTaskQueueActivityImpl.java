@@ -16,7 +16,9 @@ public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueAct
 
   @Override
   public RouteToSyncTaskQueueOutput route(final RouteToSyncTaskQueueInput input) {
-    return new RouteToSyncTaskQueueOutput("SOME_TASK_QUEUE");
+    final String taskQueueForConnectionId = routerService.getTaskQueue(input.getConnectionId());
+
+    return new RouteToSyncTaskQueueOutput(taskQueueForConnectionId);
   }
 
 }
