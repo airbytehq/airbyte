@@ -28,9 +28,8 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.support.MultiCloudTemporalActivityStubGeneratorFunction;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityCancellationType;
@@ -94,8 +93,6 @@ class SyncWorkflowTest {
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
   private RouterService routerService;
-  private MultiCloudTemporalActivityStubGeneratorFunction multiCloudTemporalActivityStubGeneratorFunction;
-
   @BeforeEach
   void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
@@ -143,8 +140,6 @@ class SyncWorkflowTest {
 
     routerService = mock(RouterService.class);
     when(routerService.getTaskQueue(any())).thenReturn(DATA_PLANE_TASK_QUEUE);
-    multiCloudTemporalActivityStubGeneratorFunction = new MultiCloudTemporalActivityStubGeneratorFunction();
-    multiCloudTemporalActivityStubGeneratorFunction.setRouterService(routerService);
 
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration longActivityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -156,13 +151,7 @@ class SyncWorkflowTest {
     when(shortActivitiesBeanIdentifier.getName()).thenReturn("shortActivityOptions");
     when(shortActivityOptionsBeanRegistration.getIdentifier()).thenReturn(shortActivitiesBeanIdentifier);
     when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(shortActivityOptions);
-    final BeanIdentifier generatorFunctionOptionsBeanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration generatorFunctionBeanRegistration = mock(BeanRegistration.class);
-    when(generatorFunctionOptionsBeanIdentifier.getName()).thenReturn("multiCloudTemporalActivityStubGeneratorFunction");
-    when(generatorFunctionBeanRegistration.getIdentifier()).thenReturn(generatorFunctionOptionsBeanIdentifier);
-    when(generatorFunctionBeanRegistration.getBean()).thenReturn(multiCloudTemporalActivityStubGeneratorFunction);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration),
-        List.of(generatorFunctionBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration));
 
     syncControlPlaneWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }
