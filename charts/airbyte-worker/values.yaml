@@ -1,5 +1,5 @@
 global:
-  imageRegistry: ""
+  
   serviceAccountName: &service-account-name "airbyte-admin"
   credVolumeOverride: ""
   secretName: ""

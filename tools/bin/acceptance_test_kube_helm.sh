@@ -19,9 +19,11 @@ if [ -n "$CI" ]; then
   wait
 fi
 
-echo "Replacing default Chart.yaml with a test one"
+echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
 mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
+mv charts/airbyte/values.yaml charts/airbyte/values.yaml.old
+mv charts/airbyte/values.yaml.test charts/airbyte/values.yaml 
 
 echo "Starting app..."
 
@@ -31,6 +33,9 @@ helm upgrade --install --debug airbyte charts/airbyte
 
 echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
+
+echo "Scale up workers by 2"
+kubectl scale --replicas=2 deployment airbyte-worker
 
 echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
@@ -87,3 +92,5 @@ KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tes
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
 mv charts/airbyte/Chart.yaml.old charts/airbyte/Chart.yaml
+mv charts/airbyte/values.yaml charts/airbyte/values.yaml.test
+mv charts/airbyte/values.yaml.old charts/airbyte/values.yaml

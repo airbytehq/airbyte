@@ -19,7 +19,6 @@ data:
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   DB_DOCKER_MOUNT: airbyte_db
-  FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ .Release.Name }}-airbyte-server-svc:{{ .Values.server.service.port }}
@@ -62,4 +61,6 @@ data:
   ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
   USE_STREAM_CAPABLE_STATE: "true"
+  CONTAINER_ORCHESTRATOR_ENABLED: {{ .Values.worker.containerOrchestrator.enabled | quote }}
+  CONTAINER_ORCHESTRATOR_IMAGE: {{ .Values.worker.containerOrchestrator.image | quote }}
 {{- end }}

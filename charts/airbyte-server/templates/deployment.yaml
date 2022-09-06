@@ -39,7 +39,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-server-container
-        image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "server.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}

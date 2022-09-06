@@ -6,7 +6,7 @@
 ## @param database.host Hostname of database
 ## @param database.port Database port
 global:
-  imageRegistry: ""
+  
   serviceAccountName: &service-account-name "airbyte-admin"
   
   secretName: ""

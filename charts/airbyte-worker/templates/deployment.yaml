@@ -38,7 +38,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-worker-container
-        image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "worker.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}

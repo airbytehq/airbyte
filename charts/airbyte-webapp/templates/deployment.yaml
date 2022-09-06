@@ -36,7 +36,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-webapp-container
-        image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "webapp.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
@@ -60,11 +60,6 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: INTERNAL_API_HOST
-        - name: FULLSTORY
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: FULLSTORY
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
