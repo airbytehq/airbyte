@@ -10,6 +10,7 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -89,6 +90,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const connectionService = useConnectionService();
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
+
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
