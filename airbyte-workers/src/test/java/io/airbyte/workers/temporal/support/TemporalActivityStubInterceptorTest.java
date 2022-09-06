@@ -39,7 +39,8 @@ class TemporalActivityStubInterceptorTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
+    final TemporalActivityStubInterceptor interceptor =
+        new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
     interceptor.setActivityStubGenerator((c, a) -> testActivity);
 
     final ValidTestWorkflowImpl validTestWorklowImpl = new ValidTestWorkflowImpl();
@@ -63,7 +64,8 @@ class TemporalActivityStubInterceptorTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ErrorTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
+    final TemporalActivityStubInterceptor interceptor =
+        new TemporalActivityStubInterceptor(ErrorTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
     interceptor.setActivityStubGenerator((c, a) -> testActivity);
 
     final ErrorTestWorkflowImpl errorTestWorkflowImpl = new ErrorTestWorkflowImpl();
@@ -93,7 +95,8 @@ class TemporalActivityStubInterceptorTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
+    final TemporalActivityStubInterceptor interceptor =
+        new TemporalActivityStubInterceptor(ValidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
     interceptor.setActivityStubGenerator(activityStubFunction);
 
     final ValidTestWorkflowImpl validTestWorklowImpl = new ValidTestWorkflowImpl();
@@ -120,7 +123,8 @@ class TemporalActivityStubInterceptorTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
 
-    final TemporalActivityStubInterceptor interceptor = new TemporalActivityStubInterceptor(InvalidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
+    final TemporalActivityStubInterceptor interceptor =
+        new TemporalActivityStubInterceptor(InvalidTestWorkflowImpl.class, List.of(activityOptionsBeanRegistration));
     interceptor.setActivityStubGenerator((c, a) -> testActivity);
 
     final InvalidTestWorkflowImpl invalidTestWorklowImpl = new InvalidTestWorkflowImpl();
