@@ -324,6 +324,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
             formFields={formFields}
+            selectedConnector={selectedConnectorDefinitionSpecification}
           />
           {isOpenRequestModal && (
             <RequestConnectorModal

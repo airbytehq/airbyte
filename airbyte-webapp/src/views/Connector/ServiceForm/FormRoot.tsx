@@ -6,6 +6,7 @@ import { Spinner } from "components";
 
 import { FormBlock } from "core/form/types";
 
+import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
@@ -38,6 +39,7 @@ interface FormRootProps {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
+  selectedConnector: ConnectorDefinitionSpecification | undefined;
 }
 
 const FormRoot: React.FC<FormRootProps> = ({
@@ -49,6 +51,7 @@ const FormRoot: React.FC<FormRootProps> = ({
   fetchingConnectorError,
   hasSuccess,
   onStopTestingConnector,
+  selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
   const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
@@ -81,16 +84,18 @@ const FormRoot: React.FC<FormRootProps> = ({
           successMessage={successMessage}
         />
       ) : (
-        <CreateControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          isLoadSchema={isLoadingSchema}
-          fetchingConnectorError={fetchingConnectorError}
-          hasSuccess={hasSuccess}
-        />
+        selectedConnector && (
+          <CreateControls
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onCancelTesting={onStopTestingConnector}
+            isSubmitting={isSubmitting || isTestConnectionInProgress}
+            errorMessage={errorMessage}
+            formType={formType}
+            isLoadSchema={isLoadingSchema}
+            fetchingConnectorError={fetchingConnectorError}
+            hasSuccess={hasSuccess}
+          />
+        )
       )}
     </FormContainer>
   );
