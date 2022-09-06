@@ -57,6 +57,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.FailureCause;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.RecordMetricInput;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
@@ -131,6 +132,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private RecordMetricActivity recordMetricActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WorkflowConfigActivity workflowConfigActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private RouteToSyncTaskQueueActivity routeToSyncTaskQueueActivity;
 
   private CancellationScope cancellableSyncWorkflow;
 
