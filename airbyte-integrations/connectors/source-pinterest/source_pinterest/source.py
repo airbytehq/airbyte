@@ -257,8 +257,13 @@ class AdAccountAnalytics(PinterestAnalyticsStream):
 
 
 class Campaigns(ServerSideFilterStream):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+        super().__init__(parent, with_data_slices, **kwargs)
+        self.status_filter = status_filter
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/campaigns"
+        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
+        return f"ad_accounts/{stream_slice['parent']['id']}/campaigns{params}"
 
 
 class CampaignAnalytics(PinterestAnalyticsStream):
@@ -269,8 +274,13 @@ class CampaignAnalytics(PinterestAnalyticsStream):
 
 
 class AdGroups(ServerSideFilterStream):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+        super().__init__(parent, with_data_slices, **kwargs)
+        self.status_filter = status_filter
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups"
+        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
+        return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups{params}"
 
 
 class AdGroupAnalytics(PinterestAnalyticsStream):
@@ -281,8 +291,13 @@ class AdGroupAnalytics(PinterestAnalyticsStream):
 
 
 class Ads(ServerSideFilterStream):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+        super().__init__(parent, with_data_slices, **kwargs)
+        self.status_filter = status_filter
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/ads"
+        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
+        return f"ad_accounts/{stream_slice['parent']['id']}/ads{params}"
 
 
 class AdAnalytics(PinterestAnalyticsStream):
@@ -322,6 +337,8 @@ class SourcePinterest(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         start_date = config.get("start_date")
+        status = ",".join(config.get("status")) if config.get("status") else None
+
         if not start_date:
             config["start_date"] = "2020-07-28"  # Set default start_date if user didn't set it
 
@@ -331,13 +348,13 @@ class SourcePinterest(AbstractSource):
             AdAccounts(config),
             AdAnalytics(Ads(AdAccounts(config), with_data_slices=False, config=config), config=config),
             AdGroupAnalytics(AdGroups(AdAccounts(config), with_data_slices=False, config=config), config=config),
-            AdGroups(AdAccounts(config), config=config),
-            Ads(AdAccounts(config), config=config),
+            AdGroups(AdAccounts(config), status_filter=status, config=config),
+            Ads(AdAccounts(config), status_filter=status, config=config),
             BoardPins(Boards(config), config=config),
             BoardSectionPins(BoardSections(Boards(config), config=config), config=config),
             BoardSections(Boards(config), config=config),
             Boards(config),
             CampaignAnalytics(Campaigns(AdAccounts(config), with_data_slices=False, config=config), config=config),
-            Campaigns(AdAccounts(config), config=config),
+            Campaigns(AdAccounts(config), status_filter=status, config=config),
             UserAccountAnalytics(None, config=config),
         ]
