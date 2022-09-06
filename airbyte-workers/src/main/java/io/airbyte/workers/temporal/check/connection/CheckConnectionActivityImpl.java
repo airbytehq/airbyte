@@ -33,7 +33,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
   @Inject
