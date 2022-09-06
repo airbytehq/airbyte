@@ -6,8 +6,23 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
-from source_pinterest.source import Boards, PinterestStream
+import requests
+from source_pinterest.source import (
+    AdAccountAnalytics,
+    AdAccounts,
+    AdAnalytics,
+    AdGroupAnalytics,
+    AdGroups,
+    Ads,
+    BoardPins,
+    Boards,
+    BoardSectionPins,
+    BoardSections,
+    CampaignAnalytics,
+    Campaigns,
+    PinterestStream,
+    PinterestSubStream,
+)
 
 
 @pytest.fixture
@@ -81,38 +96,80 @@ def test_backoff_time(patch_base_class):
     assert stream.backoff_time(response_mock) == expected_backoff_time
 
 
-def test_backoff_strategy_on_rate_limit_error(requests_mock):
-    board_1 = {
-        "id": "549755885175",
-        "name": "Summer Recipes",
-        "description": "My favorite summer recipes",
-        "privacy": "PUBLIC"
-    }
-    board_2 = {
-        "id": "549755885176",
-        "name": "Crazy Cats",
-        "description": "These cats are crazy",
-        "privacy": "PUBLIC"
-    }
-    responses = [
-        {
-            "json": {"items": [board_1], "bookmark": "123"},
-            "status_code": 200,
-        },
-        {
-            "headers": {"X-RateLimit-Reset": "1"},
-            "status_code": 429,
-        },
-        {
-            "json": {"items": [board_2]},
-            "status_code": 200,
-        }
-    ]
-    requests_mock.register_uri("GET", "https://api.pinterest.com/v5/boards", responses)
+@pytest.mark.parametrize(
+    "test_response, status_code, expected",
+    [
+        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
+        ({"code": 7, "message": "Some other error message"}, 429, False),
+    ],
+)
+def test_should_retry_on_max_rate_limit_error(requests_mock, test_response, status_code, expected):
+    stream = Boards(config=MagicMock())
+    url = "https://api.pinterest.com/v5/boards"
+    requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
+    response = requests.get(url)
+    result = stream.should_retry(response)
+    assert result == expected
 
-    records = []
-    for record in Boards(config=MagicMock()).read_records(sync_mode=SyncMode.full_refresh):
-        records.append(record)
 
-    assert board_1 in records
-    assert board_2 in records
+@pytest.mark.parametrize(
+    "test_response, test_headers, status_code, expected",
+    [
+        ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
+    ],
+)
+def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, test_headers, expected):
+    stream = Boards(config=MagicMock())
+    url = "https://api.pinterest.com/v5/boards"
+    requests_mock.get(
+        "https://api.pinterest.com/v5/boards",
+        json=test_response,
+        headers=test_headers,
+        status_code=status_code,
+    )
+
+    response = requests.get(url)
+    result = stream.backoff_time(response)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("stream_cls, slice, expected"),
+    [
+        (Boards(MagicMock()), None, "boards"),
+        (AdAccounts(MagicMock()), None, "ad_accounts"),
+        (BoardSections(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/sections"),
+        (BoardPins(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/pins"),
+        (
+            BoardSectionPins(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "boards/234/sections/123/pins",
+        ),
+        (AdAccountAnalytics(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/analytics"),
+        (Campaigns(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/campaigns"),
+        (
+            CampaignAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/campaigns/analytics",
+        ),
+        (AdGroups(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ad_groups"),
+        (
+            AdGroupAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/ad_groups/analytics",
+        ),
+        (Ads(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ads"),
+        (
+            AdAnalytics(parent=None, config=MagicMock()),
+            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
+            "ad_accounts/234/ads/analytics",
+        ),
+    ],
+)
+def test_path(patch_base_class, stream_cls, slice, expected):
+    stream = stream_cls
+    if slice:
+        result = stream.path(stream_slice=slice)
+    else:
+        result = stream.path()
+    assert result == expected
