@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Builder;
@@ -27,7 +26,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ModernArrayFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.DefaultArrayFormatter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
@@ -61,7 +60,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   private ArrayFormatter getArrayFormatter() {
     if (arrayFormatter == null) {
-      arrayFormatter = new ModernArrayFormatter();
+      arrayFormatter = new DefaultArrayFormatter();
     }
     return arrayFormatter;
   }

@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ObsoleteArrayFormatter extends ModernArrayFormatter {
+public class LegacyArrayFormatter extends DefaultArrayFormatter {
 
   @Override
   public void surroundArraysByObjects(final JsonNode node) {

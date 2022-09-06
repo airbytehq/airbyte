@@ -6,16 +6,13 @@ import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQ
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FieldList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ModernArrayFormatter implements ArrayFormatter {
+public class DefaultArrayFormatter implements ArrayFormatter {
 
   public static final String NESTED_ARRAY_FIELD = "big_query_array";
   public static final String ARRAY_ITEMS_FIELD = "items";
