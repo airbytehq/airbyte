@@ -68,7 +68,8 @@ import org.apache.commons.lang3.time.StopWatch;
 @NoArgsConstructor
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class TemporalClient {
 
   /**

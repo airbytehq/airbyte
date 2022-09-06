@@ -108,7 +108,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public JobNotifier jobNotifier(
                                  final ConfigRepository configRepository,
                                  final TrackingClient trackingClient,
@@ -122,7 +123,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public JobTracker jobTracker(
                                final ConfigRepository configRepository,
                                final JobPersistence jobPersistence,
@@ -131,7 +133,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -145,13 +148,15 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public WebUrlHelper webUrlHelper(@Value("${airbyte.web-app.url}") final String webAppUrl) {
     return new WebUrlHelper(webAppUrl);
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public WorkspaceHelper workspaceHelper(
                                          final ConfigRepository configRepository,
                                          final JobPersistence jobPersistence) {
