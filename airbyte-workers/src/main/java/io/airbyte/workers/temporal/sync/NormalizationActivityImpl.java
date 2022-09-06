@@ -145,7 +145,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
-    final var jobScope =  airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
+    final var jobScope = airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);
     return () -> new NormalizationLauncherWorker(
         connectionId,

@@ -30,7 +30,8 @@ import lombok.AllArgsConstructor;
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @AllArgsConstructor
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class ConnectionHelper {
 
   @Inject
