@@ -2,21 +2,22 @@
 
 .container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
+  height: 100%;
   background: colors.$white;
 }
 
 .leftSide {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   width: 100%;
   padding: 20px 36px 39px 46px;
 }
 
 .rightSide {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 100%;
+  display: none;
 }
 
 .rightSideFrame {
@@ -26,10 +27,12 @@
   overflow: hidden;
 }
 
-@media (min-width: 992px) and (min-height: 720px) {
-  .container {
-    flex-direction: row;
-    height: 100%;
+@media (min-width: 992px) {
+  .rightSide {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
   }
 
   .leftSide,
