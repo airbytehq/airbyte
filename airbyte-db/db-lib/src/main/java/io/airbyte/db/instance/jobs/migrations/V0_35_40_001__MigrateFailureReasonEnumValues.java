@@ -322,14 +322,14 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         return false;
       }
       final FailureReasonForMigration rhs = ((FailureReasonForMigration) other);
-      return (((((((((this.retryable == rhs.retryable) || ((this.retryable != null) && this.retryable.equals(rhs.retryable)))
-          && ((this.metadata == rhs.metadata) || ((this.metadata != null) && this.metadata.equals(rhs.metadata))))
-          && ((this.stacktrace == rhs.stacktrace) || ((this.stacktrace != null) && this.stacktrace.equals(rhs.stacktrace))))
-          && ((this.failureOrigin == rhs.failureOrigin) || ((this.failureOrigin != null) && this.failureOrigin.equals(rhs.failureOrigin))))
-          && ((this.failureType == rhs.failureType) || ((this.failureType != null) && this.failureType.equals(rhs.failureType))))
-          && ((this.internalMessage == rhs.internalMessage) || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
-          && ((this.externalMessage == rhs.externalMessage) || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
-          && ((this.timestamp == rhs.timestamp) || ((this.timestamp != null) && this.timestamp.equals(rhs.timestamp))));
+      return (((((((((this.retryable.equals(rhs.retryable)) || ((this.retryable != null) && this.retryable.equals(rhs.retryable)))
+          && ((this.metadata.equals(rhs.metadata)) || ((this.metadata != null) && this.metadata.equals(rhs.metadata))))
+          && ((this.stacktrace.equals(rhs.stacktrace)) || ((this.stacktrace != null) && this.stacktrace.equals(rhs.stacktrace))))
+          && ((this.failureOrigin.equals(rhs.failureOrigin)) || ((this.failureOrigin != null) && this.failureOrigin.equals(rhs.failureOrigin))))
+          && ((this.failureType.equals(rhs.failureType)) || ((this.failureType != null) && this.failureType.equals(rhs.failureType))))
+          && ((this.internalMessage.equals(rhs.internalMessage)) || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
+          && ((this.externalMessage.equals(rhs.externalMessage)) || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
+          && ((this.timestamp.equals(rhs.timestamp)) || ((this.timestamp != null) && this.timestamp.equals(rhs.timestamp))));
     }
 
   }
@@ -403,8 +403,8 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         return false;
       }
       final AttemptFailureSummaryForMigration rhs = ((AttemptFailureSummaryForMigration) other);
-      return (((this.partialSuccess == rhs.partialSuccess) || ((this.partialSuccess != null) && this.partialSuccess.equals(rhs.partialSuccess)))
-          && ((this.failures == rhs.failures) || ((this.failures != null) && this.failures.equals(rhs.failures))));
+      return (((this.partialSuccess.equals(rhs.partialSuccess)) || ((this.partialSuccess != null) && this.partialSuccess.equals(rhs.partialSuccess)))
+          && ((this.failures.equals(rhs.failures)) || ((this.failures != null) && this.failures.equals(rhs.failures))));
     }
 
   }

@@ -102,7 +102,6 @@
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
         <exclude name="CloseResource"/>
-        <exclude name="CompareObjectsWithEquals"/>
         <exclude name="ConstructorCallsOverridableMethod"/>
         <exclude name="DoNotTerminateVM"/>
         <exclude name="EmptyCatchBlock"/>
