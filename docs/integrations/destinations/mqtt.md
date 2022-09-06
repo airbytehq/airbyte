@@ -4,6 +4,9 @@
 
 The Airbyte MQTT destination allows you to sync data to any MQTT system compliance with version 3.1.X. Each stream is written to the corresponding MQTT topic.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your MQTT connector to the latest version
+
 ### Sync overview
 
 #### Output schema

@@ -1,14 +1,14 @@
 @use "../../scss/colors";
 @use "../../scss/variables";
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
 }
 
 .modal {
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
   position: absolute;
   top: 0;
   left: 0;
@@ -23,7 +23,7 @@
 
 .card {
   margin-left: variables.$width-size-menu;
-  max-width: calc(100% - variables.$width-size-menu - variables.$spacing-lg * 2);
+  max-width: calc(100% - (#{variables.$width-size-menu} - #{variables.$spacing-lg}) * 2);
 
   &.sm {
     width: variables.$width-modal-sm;

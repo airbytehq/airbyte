@@ -114,6 +114,10 @@ class JobTrackerTest {
       .put("volume_mb", SYNC_BYTES_SYNC)
       .put("count_state_messages_from_source", 3L)
       .put("count_state_messages_from_destination", 1L)
+      .put("max_seconds_before_source_state_message_emitted", 5L)
+      .put("mean_seconds_before_source_state_message_emitted", 4L)
+      .put("max_seconds_between_state_message_emit_and_commit", 7L)
+      .put("mean_seconds_between_state_message_emit_and_commit", 6L)
       .build();
   private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
       .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
@@ -496,6 +500,10 @@ class JobTrackerTest {
     when(attempt.getOutput()).thenReturn(java.util.Optional.of(jobOutput));
     when(syncStats.getSourceStateMessagesEmitted()).thenReturn(3L);
     when(syncStats.getDestinationStateMessagesEmitted()).thenReturn(1L);
+    when(syncStats.getMaxSecondsBeforeSourceStateMessageEmitted()).thenReturn(5L);
+    when(syncStats.getMeanSecondsBeforeSourceStateMessageEmitted()).thenReturn(4L);
+    when(syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(7L);
+    when(syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
     return attempt;
   }
 
