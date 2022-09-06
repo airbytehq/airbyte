@@ -5,6 +5,7 @@
 
 export interface Experiments {
   "connector.orderOverwrite": Record<string, number>;
+  "connector.frequentlyUsedDestinationIds": string[];
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;

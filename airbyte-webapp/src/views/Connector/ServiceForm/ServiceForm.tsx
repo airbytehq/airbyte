@@ -6,17 +6,19 @@ import { useDeepCompareEffect, useToggle } from "react-use";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
+import { isDestinationDefinition, isDestinationDefinitionSpecification } from "core/domain/connector/destination";
 import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
+import { useExperiment } from "hooks/services/Experiment";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
+import { CheckConnectionRead, DestinationDefinitionRead } from "../../../core/request/AirbyteClient";
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
+import { FrequentlyUsedDestinations } from "./components/FrequentlyUsedDestinations";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
@@ -36,6 +38,7 @@ const FormikPatch: React.FC = () => {
 /**
  * This function sets all initial const values in the form to current values
  * @param schema
+ * @param initialValues
  * @constructor
  */
 const PatchInitialValuesWithWidgetConfig: React.FC<{
@@ -133,6 +136,7 @@ export interface ServiceFormProps {
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
+  const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", []);
 
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const [initialRequestName, setInitialRequestName] = useState<string>();
@@ -141,11 +145,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     formValues,
     onSubmit,
     isLoading,
+    isEditMode,
     isTestConnectionInProgress,
     onStopTesting,
     testConnector,
     selectedConnectorDefinitionSpecification,
     availableServices,
+    onServiceSelect,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -193,6 +199,23 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     setDocumentationPanelOpen(true);
   }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
+  const frequentlyUsedDestinations = useMemo(
+    () =>
+      availableServices
+        .filter(
+          (service): service is DestinationDefinitionRead =>
+            isDestinationDefinition(service) && frequentlyUsedDestinationIds.includes(service.destinationDefinitionId)
+        )
+        .map(({ destinationDefinitionId, name, icon, releaseStage }) => ({
+          destinationDefinitionId,
+          connectionName: name,
+          connectorName: name,
+          icon,
+          releaseStage,
+        })),
+    [availableServices, frequentlyUsedDestinationIds]
+  );
+
   const uiOverrides = useMemo(
     () => ({
       name: {
@@ -201,23 +224,44 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         ),
       },
       serviceType: {
-        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
-          <ConnectorServiceTypeControl
-            property={property}
-            formType={formType}
-            onChangeServiceType={props.onServiceSelect}
-            availableServices={props.availableServices}
-            isEditMode={props.isEditMode}
-            onOpenRequestConnectorModal={(name) => {
-              setInitialRequestName(name);
-              toggleOpenRequestModal();
-            }}
-            {...componentProps}
-          />
-        ),
+        component: ({ path }: FormBaseItem, componentProps: FormComponentOverrideProps) => {
+          return (
+            <>
+              <ConnectorServiceTypeControl
+                propertyPath={path}
+                formType={formType}
+                onChangeServiceType={onServiceSelect}
+                availableServices={availableServices}
+                isEditMode={isEditMode}
+                onOpenRequestConnectorModal={(name) => {
+                  setInitialRequestName(name);
+                  toggleOpenRequestModal();
+                }}
+                {...componentProps}
+              />
+              {formType === "destination" && !selectedConnectorDefinitionSpecification && (
+                <FrequentlyUsedDestinations
+                  propertyPath={path}
+                  destinations={frequentlyUsedDestinations}
+                  onDestinationSelect={onServiceSelect}
+                  isLoading={isLoading}
+                />
+              )}
+            </>
+          );
+        },
       },
     }),
-    [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
+    [
+      formType,
+      onServiceSelect,
+      availableServices,
+      isEditMode,
+      selectedConnectorDefinitionSpecification,
+      frequentlyUsedDestinations,
+      isLoading,
+      toggleOpenRequestModal,
+    ]
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
