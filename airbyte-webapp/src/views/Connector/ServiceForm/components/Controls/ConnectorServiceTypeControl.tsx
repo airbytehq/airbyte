@@ -17,7 +17,6 @@ import { GAIcon } from "components/icons/GAIcon";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -154,7 +153,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
 };
 
 interface ConnectorServiceTypeControlProps {
-  property: FormBaseItem;
+  propertyPath: string;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
@@ -165,7 +164,7 @@ interface ConnectorServiceTypeControlProps {
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
-  property,
+  propertyPath,
   formType,
   isEditMode,
   onChangeServiceType,
@@ -176,7 +175,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const [field, fieldMeta, { setValue }] = useField(property.path);
+  const [field, fieldMeta, { setValue }] = useField(propertyPath);
   const analytics = useAnalyticsService();
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
