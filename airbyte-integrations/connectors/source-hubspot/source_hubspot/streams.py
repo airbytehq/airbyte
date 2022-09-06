@@ -762,6 +762,13 @@ class IncrementalStream(Stream, ABC):
         self._init_sync = pendulum.now("utc")
 
     def _update_state(self, latest_cursor):
+        """
+        The first run uses an endpoint that is not sorted by updated_at but is
+        sorted by id because of this instead of updating the state by reading
+        the latest cursor the state will set it with the time the synch started.
+        With the proposed `state strategy`, it would capture all possible
+        updated entities in incremental synch.
+        """
         self._state = self._init_sync
         self._start_date = self._state
 
