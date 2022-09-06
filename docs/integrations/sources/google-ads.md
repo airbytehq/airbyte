@@ -5,17 +5,19 @@ This page contains the setup guide and reference information for the Google Ads 
 ## Prerequisites
 
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
-- (For Airbyte OSS) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+- (For Airbyte Open Source) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+
+**Note**: The Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday 5pm, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday e.g: 12:01am on Thursday, and so on. The connector does this to avoid syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday 5pm would get ads performance data for Wednesday between 12:01am-5pm on Wednesday, then it would need to run again once the day is done to get all of Wednesday's data once more. This is due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day. 
 
 ## Setup guide
 
-### Step 1: (For Airbyte OSS) Apply for a developer token
+### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 :::note
 You'll need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/) since Google Ads accounts cannot generate a developer token.
 ::: 
 
-To set up the Google Ads source connector with Airbyte OSS, you'll need a developer token. This token allows you to access your data from the Google Ads API. However, Google is selective about which software and use cases can get a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and make sure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
+To set up the Google Ads source connector with Airbyte Open Source, you'll need a developer token. This token allows you to access your data from the Google Ads API. However, Google is selective about which software and use cases can get a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and make sure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
 
 Follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token) to apply for the token. Note that you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. 
 
@@ -45,11 +47,11 @@ To set up Google Ads as a source in Airbyte Cloud:
 11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. 
 12. Click **Set up source**.
 
-#### For Airbyte OSS
+#### For Airbyte Open Source
 
-To set up Google Ads as a source in Airbyte OSS:
+To set up Google Ads as a source in Airbyte Open Source:
 
-1. Log into your Airbyte OSS account.
+1. Log into your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
 4. Enter a **Name** for your source.

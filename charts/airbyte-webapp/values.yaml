@@ -1,4 +1,3 @@
-
 global:
   serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
@@ -10,7 +9,6 @@ global:
     secretValue: ""
     host: "example.com"
     port: "5432"
-
 
 enabled: true
 ## @param webapp.replicaCount Number of webapp replicas
@@ -138,9 +136,6 @@ ingress:
 api:
   url: /api/v1/
 
-## @param webapp.isDemo Set to true if this is a demo
-isDemo: false
-
 ## @param webapp.fullstory.enabled Whether or not to enable fullstory
 fullstory:
   enabled: false
@@ -178,3 +173,9 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
+
+secrets: {}
+
+
+env_vars: {}
+

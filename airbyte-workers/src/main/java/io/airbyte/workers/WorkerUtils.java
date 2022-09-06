@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -122,7 +123,13 @@ public class WorkerUtils {
             .findFirst();
 
     if (traceMessage.isPresent()) {
-      final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
+      final ConnectorCommand connectorCommand = switch (outputType) {
+        case SPEC -> ConnectorCommand.SPEC;
+        case CHECK_CONNECTION -> ConnectorCommand.CHECK;
+        case DISCOVER_CATALOG -> ConnectorCommand.DISCOVER;
+      };
+
+      final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);
       return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
     }
 

@@ -1,15 +1,19 @@
 import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
 
-import { DocumentationPanel } from "components/DocumentationPanel";
+import { LoadingPage } from "components/LoadingPage";
 
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
+
+const LazyDocumentationPanel = lazy(() =>
+  import("components/DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
+);
 
 interface PanelContainerProps {
   dimensions?: {
@@ -42,24 +46,24 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
   return (
     <>
       {width < 350 ? (
-        <div className={styles.lightOverlay}>
+        <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
           <h2 className={styles.rotatedHeader}>Setup Guide</h2>
         </div>
       ) : (
-        <div>{children}</div>
+        <div className={styles.rightPanelContainer}>{children}</div>
       )}
     </>
   );
 };
-//NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
+// NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
 export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
 
   return (
-    <ReflexContainer orientation="vertical" windowResizeAware>
-      <ReflexElement className={classNames("left-pane", styles.leftPanelStyle)} propagateDimensions minSize={150}>
+    <ReflexContainer orientation="vertical">
+      <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
         <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
       {documentationPanelOpen && (
@@ -70,9 +74,11 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
         </ReflexSplitter>
       )}
       {screenWidth > 500 && documentationPanelOpen && (
-        <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
+        <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
-            <DocumentationPanel />
+            <Suspense fallback={<LoadingPage />}>
+              <LazyDocumentationPanel />
+            </Suspense>
           </RightPanelContainer>
         </ReflexElement>
       )}

@@ -84,7 +84,7 @@
     },
     "subresource_uris": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "recordings": {
           "type": ["null", "string"]
@@ -114,5 +114,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": false
+  "additionalProperties": true
 }

@@ -7,14 +7,15 @@ ENV CODE_PATH="source_slack"
 ENV WORKDIR=/airbyte/integration_code
 
 WORKDIR $WORKDIR
-COPY $CODE_PATH ./$CODE_PATH
-COPY setup.py ./
-COPY main.py ./
 
+COPY setup.py ./
 RUN pip install .
+
+COPY $CODE_PATH ./$CODE_PATH
+COPY main.py ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.15
+LABEL io.airbyte.version=0.1.17
 LABEL io.airbyte.name=airbyte/source-slack

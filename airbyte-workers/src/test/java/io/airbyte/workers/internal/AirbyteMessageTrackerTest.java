@@ -41,7 +41,8 @@ class AirbyteMessageTrackerTest {
 
   @BeforeEach
   void setup() {
-    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator);
+    final StateMetricsTracker stateMetricsTracker = new StateMetricsTracker(10L * 1024L * 1024L);
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator, stateMetricsTracker);
   }
 
   @Test
