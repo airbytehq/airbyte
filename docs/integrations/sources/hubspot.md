@@ -99,6 +99,11 @@ Objects in the `engagements` stream can have one of the following types: `note`,
 HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 :::
 
+### New state strategy on Incremental streams
+
+Due to some data loss because an entity was updated during the synch, instead of updating the state by reading the latest record the state will be save with the initial synch time. With the proposed `state strategy`, it would capture all possible updated entities in incremental synch.
+
+
 ## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
