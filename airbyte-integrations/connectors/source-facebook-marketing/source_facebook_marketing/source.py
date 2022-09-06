@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomConversions,
     Images,
     Videos,
 )
@@ -112,6 +113,12 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
+            CustomConversions(
+                api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
