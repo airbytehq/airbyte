@@ -58,6 +58,8 @@ import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.FailureCause;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.RecordMetricInput;
 import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity.RouteToSyncTaskQueueInput;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity.RouteToSyncTaskQueueOutput;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
@@ -109,6 +111,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final int RECORD_METRIC_CURRENT_VERSION = 1;
   private static final String WORKFLOW_CONFIG_TAG = "workflow_config";
   private static final int WORKFLOW_CONFIG_CURRENT_VERSION = 1;
+
+  private static final String ROUTE_ACTIVITY_TAG = "route_activity";
+  private static final int ROUTE_ACTIVITY_CURRENT_VERSION = 1;
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -712,6 +717,29 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return syncWorkflowInputs;
   }
 
+  private String getSyncTaskQueue() {
+    final int taskQueueChangeVersion =
+        Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+
+    if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
+      return TemporalJobType.CONNECTION_UPDATER.name();
+    }
+
+    final int routeActivityVersion = Workflow.getVersion(ROUTE_ACTIVITY_TAG, Workflow.DEFAULT_VERSION, ROUTE_ACTIVITY_CURRENT_VERSION);
+
+    if (routeActivityVersion < ROUTE_ACTIVITY_CURRENT_VERSION) {
+      return TemporalJobType.SYNC.name();
+    }
+
+    final RouteToSyncTaskQueueInput routeToSyncTaskQueueInput = new RouteToSyncTaskQueueInput(connectionId);
+    final RouteToSyncTaskQueueOutput routeToSyncTaskQueueOutput = runMandatoryActivityWithOutput(
+        routeToSyncTaskQueueActivity::route,
+        routeToSyncTaskQueueInput
+    );
+
+    return routeToSyncTaskQueueOutput.getTaskQueue();
+  }
+
   /**
    * Report the job as started in the job tracker and set it as running in the workflow internal
    * state.
@@ -737,14 +765,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * make sense.
    */
   private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
-    final int taskQueueChangeVersion =
-        Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+    final String taskQueue = getSyncTaskQueue();
 
-    String taskQueue = TemporalJobType.SYNC.name();
-
-    if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
-      taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
-    }
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())
