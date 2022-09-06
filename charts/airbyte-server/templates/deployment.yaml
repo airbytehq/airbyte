@@ -237,7 +237,7 @@ spec:
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
         volumeMounts:
-        {{- if eq .Values.deploymentMode "oss" }}
+        {{- if eq .Values.global.deploymentMode "oss" }}
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
@@ -256,7 +256,7 @@ spec:
         {{ toYaml .Values.global.extraContainers | indent 6 }}
       {{- end }}
       volumes:
-      {{- if eq .Values.deploymentMode "oss" }}
+      {{- if eq .Values.global.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}

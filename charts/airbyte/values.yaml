@@ -158,7 +158,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.40.3
+    tag: 0.40.4
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -428,7 +428,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.40.3
+    tag: 0.40.4
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -556,7 +556,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.40.3
+    tag: 0.40.4
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -769,7 +769,7 @@ airbyte-bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.40.3
+    tag: 0.40.4
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
