@@ -5,9 +5,9 @@ tests:
   spec:
     - spec_path: "source_netsuite/spec.yaml"
   connection:
-    - config_path: "sample_files/config.json"
+    - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "sample_files/invalid_config.json"
+    - config_path: "secrets/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
