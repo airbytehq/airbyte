@@ -28,8 +28,8 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityCancellationType;
@@ -93,6 +93,7 @@ class SyncWorkflowTest {
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
   private RouterService routerService;
+
   @BeforeEach
   void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
