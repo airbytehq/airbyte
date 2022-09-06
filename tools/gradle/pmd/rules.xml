@@ -102,9 +102,6 @@
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
         <exclude name="CloseResource"/>
-        <exclude name="EmptyCatchBlock"/>
-        <exclude name="EmptyIfStmt"/>
-        <exclude name="EmptyStatementNotInLoop"/>
         <exclude name="ImplicitSwitchFallThrough"/>
         <exclude name="InvalidLogMessageFormat"/>
         <exclude name="MissingSerialVersionUID"/>
