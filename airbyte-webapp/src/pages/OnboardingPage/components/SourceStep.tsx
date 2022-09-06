@@ -7,7 +7,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { createFormErrorMessage, FormError } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
@@ -86,7 +86,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
       ...values,
     });
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? generateMessageFromError(error) : "";
 
   return (
     <ConnectorCard

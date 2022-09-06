@@ -16,7 +16,7 @@ import {
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
@@ -194,7 +194,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
   );
 
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
+  const errorMessage = submitError ? generateMessageFromError(submitError) : null;
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return (

@@ -6,7 +6,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { createFormErrorMessage, FormError } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
@@ -84,7 +84,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <ConnectorCard

@@ -8,7 +8,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { createFormErrorMessage, FormError } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
@@ -76,7 +76,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <ConnectorCard
