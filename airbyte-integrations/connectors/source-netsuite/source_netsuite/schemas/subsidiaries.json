@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "name": {
       "type": ["null", "string"]
@@ -54,7 +54,7 @@
       "type": "object",
       "properties": {
         "nullFieldList": {
-          "type": ["null", "string"]
+          "type": ["null", "array"]
         },
         "internalId": {
           "type": ["null", "string"]
@@ -96,7 +96,7 @@
           "type": "boolean"
         },
         "customFieldList": {
-          "type": ["null", "string"]
+          "type": ["null", "array"]
         }
       },
       "additionalProperties": true,
@@ -206,7 +206,7 @@
       "type": ["null", "string"]
     },
     "taxRegistrationList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "ssnOrTin": {
       "type": ["null", "string"]
@@ -215,7 +215,7 @@
       "type": ["null", "string"]
     },
     "nexusList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "accountingBookDetailList": {
       "type": ["null", "string"]

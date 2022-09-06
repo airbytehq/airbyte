@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customForm": {
       "type": ["null", "string"]
@@ -75,7 +75,7 @@
       "type": "boolean"
     },
     "percentCompleteOverrideList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "lastModifiedDate": {
       "type": ["null","string"],
@@ -313,19 +313,19 @@
       "type": ["null", "string"]
     },
     "jobResourcesList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "plStatementList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "addressbookList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "milestonesList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "creditCardsList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customFieldList": {
       "type": ["null", "string"]

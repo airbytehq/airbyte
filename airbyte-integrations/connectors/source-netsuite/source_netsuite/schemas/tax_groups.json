@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "itemId": {
       "type": ["null", "string"]
@@ -15,7 +15,7 @@
       "type": ["null", "string"]
     },
     "subsidiaryList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "taxitem1": {
       "type": ["null", "string"]
@@ -81,7 +81,7 @@
       "type": "boolean"
     },
     "taxItemList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]

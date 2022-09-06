@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customForm": {
       "type": ["null", "string"]
@@ -296,16 +296,16 @@
       "type": ["null", "string"]
     },
     "pricingScheduleList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "subscriptionsList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "addressbookList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "currencyList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "rolesList": {
       "type": ["null", "string"]

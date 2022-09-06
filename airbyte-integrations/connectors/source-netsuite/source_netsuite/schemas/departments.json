@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "name": {
       "type": ["null", "string"]
@@ -33,13 +33,13 @@
       "type": "boolean"
     },
     "classTranslationList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "subsidiaryList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]

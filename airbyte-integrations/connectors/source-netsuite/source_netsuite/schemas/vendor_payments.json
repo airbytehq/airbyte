@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "createdDate": {
       "type": ["null", "string"]
@@ -27,7 +27,7 @@
       "type": ["null", "string"]
     },
     "billAddressList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "account": {
       "type": "object",
@@ -255,25 +255,25 @@
       "type": ["null", "string"]
     },
     "expenseList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "accountingBookDetailList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "itemList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "landedCostsList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "purchaseOrderList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "taxDetailsList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]

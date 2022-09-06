@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "postingPeriod": {
       "type": "object",
@@ -147,13 +147,13 @@
       "type": ["null", "string"]
     },
     "lineList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "accountingBookDetailList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]

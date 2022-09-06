@@ -14,15 +14,16 @@ from netsuitesdk import NetSuiteConnection
 
 
 class NetsuiteSoapStream(HttpStream):
-    def __init__(self, nc: NetSuiteConnection, name: str, config: dict, concurrency_limit: int = 1):
+
+    def __init__(self, nc: NetSuiteConnection, config: dict, concurrency_limit: int = 1):
         self.config = config
         super().__init__()
-        self.obj_name = name
+
         self.nc = nc
 
         self.concurrency_limit = concurrency_limit
 
-        self.entities_will_have_array_structure = ["VendorBill", "JournalEntry", "ExpenseReport", "ExpenseCategories"]
+        self.entities_will_have_array_structure = ["VendorBill", "VendorPayment","JournalEntry", "ExpenseReport", "ExpenseCategories"]
 
     url_base = "/"
 
@@ -51,7 +52,7 @@ class NetsuiteSoapStream(HttpStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return self.obj_name
+        return self.name
 
     def post(self, data) -> OrderedDict:
         pass
@@ -63,7 +64,7 @@ class NetsuiteSoapStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        _record_class = getattr(self.nc, self.obj_name)
+        _record_class = getattr(self.nc, self.name)
         _records = list(_record_class.get_all_generator())
         _records = self.compromise_structure(_records, _record_class.type_name)
 
@@ -82,26 +83,32 @@ class NetsuiteSoapStream(HttpStream):
 
 
 class Accounts(NetsuiteSoapStream):
+    name = "accounts"
     primary_key = "internalId"
 
 
 class Classifications(NetsuiteSoapStream):
+    name = "classifications"
     primary_key = "internalId"
 
 
 class Departments(NetsuiteSoapStream):
+    name = "departments"
     primary_key = "internalId"
 
 
 class Currencies(NetsuiteSoapStream):
+    name = "currencies"
     primary_key = "internalId"
 
 
 class Locations(NetsuiteSoapStream):
+    name = "locations"
     primary_key = "internalId"
 
 
 class VendorBills(NetsuiteSoapStream):
+    name = "vendor_bills"
     primary_key = "internalId"
 
 
@@ -110,58 +117,72 @@ class VendorBills(NetsuiteSoapStream):
 
 
 class Vendors(NetsuiteSoapStream):
+    name = "vendors"
     primary_key = "internalId"
 
 
 class VendorPayments(NetsuiteSoapStream):
+    name = "vendor_payments"
     primary_key = "internalId"
 
 
 class Subsidiaries(NetsuiteSoapStream):
+    name = "subsidiaries"
     primary_key = "internalId"
 
 
 class JournalEntries(NetsuiteSoapStream):
+    name = "journal_entries"
     primary_key = "internalId"
 
 
 class Employees(NetsuiteSoapStream):
+    name = "employees"
     primary_key = "internalId"
 
 
 class ExpenseCategories(NetsuiteSoapStream):
+    name = "expense_categories"
     primary_key = "internalId"
 
 
 class ExpenseReports(NetsuiteSoapStream):
+    name = "expense_reports"
     primary_key = "internalId"
 
 
 class Folders(NetsuiteSoapStream):
+    name = "folders"
     primary_key = "internalId"
 
 
 class Files(NetsuiteSoapStream):
+    name = "files"
     primary_key = "internalId"
 
 
 class Customers(NetsuiteSoapStream):
+    name = "customers"
     primary_key = "internalId"
 
 
 class Projects(NetsuiteSoapStream):
+    name = "projects"
     primary_key = "internalId"
 
 
 class Terms(NetsuiteSoapStream):
+    name = "terms"
     primary_key = "internalId"
 
 
 class TaxItems(NetsuiteSoapStream):
+    name = "tax_items"
     primary_key = "internalId"
 
 
 class TaxGroups(NetsuiteSoapStream):
+    name = "tax_groups"
     primary_key = "internalId"
 
 

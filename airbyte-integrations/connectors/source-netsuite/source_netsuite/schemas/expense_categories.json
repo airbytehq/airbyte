@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customForm": {
       "type": ["null", "string"]
@@ -45,19 +45,19 @@
       "type": "boolean"
     },
     "subsidiaryList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "defaultRate": {
       "type": ["null", "string"]
     },
     "ratesList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "translationsList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "customFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]

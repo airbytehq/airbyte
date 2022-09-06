@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "nullFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "itemId": {
       "type": ["null", "string"]
@@ -39,7 +39,7 @@
       "type": ["null", "string"]
     },
     "subsidiaryList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "includeChildren": {
       "type": "boolean"
@@ -93,7 +93,7 @@
       "type": ["null", "string"]
     },
     "customFieldList": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "internalId": {
       "type": ["null", "string"]
