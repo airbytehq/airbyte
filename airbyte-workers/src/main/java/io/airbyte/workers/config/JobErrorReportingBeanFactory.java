@@ -29,7 +29,8 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             value = "SENTRY")
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient sentryJobErrorReportingClient(
                                                                @Value("${airbyte.worker.job.error-reporting.sentry.dsn}") final String sentryDsn) {
@@ -39,7 +40,8 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             value = "LOGGING")
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient loggingJobErrorReportingClient() {
     return new LoggingJobErrorReportingClient();
@@ -48,14 +50,16 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             value = "")
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient defaultJobErrorReportingClient() {
     return loggingJobErrorReportingClient();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+  @Requires(property = "airbyte.worker.plane",
+            notEquals = "DATA_PLANE")
   public JobErrorReporter jobErrorReporter(
                                            @Value("${airbyte.version}") final String airbyteVersion,
                                            final ConfigRepository configRepository,
