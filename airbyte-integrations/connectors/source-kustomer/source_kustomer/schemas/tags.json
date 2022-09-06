@@ -1,0 +1,134 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "color": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "created_by": {
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "deleted": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "links": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "self": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "modified_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "modified_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "org": {
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        }
+    }
+}

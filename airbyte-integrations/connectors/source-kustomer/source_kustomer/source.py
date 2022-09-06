@@ -5,6 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -17,7 +18,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class KustomerStream(HttpStream, ABC):
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://api.kustomerapp.com/v1/"
+    url_base = "https://api.kustomerapp.com/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -34,7 +35,9 @@ class KustomerStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        next_page = response.json().get("links").get("next")
+        if next_page:
+            return {"page": dict(parse_qsl(urlparse(next_page).query)).get("page")}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -43,21 +46,23 @@ class KustomerStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        params = {"pageSize": 100}
+
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        yield from response.json().get("data")
 
 
 class Teams(KustomerStream):
 
-# TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = None
-
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -66,7 +71,24 @@ class Teams(KustomerStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "teams"
+        return "/v1/teams"
+
+
+class Tags(KustomerStream):
+# Need to create tags in Kustomer to test this properly
+# Currently using schema from kustomer-tap but maybe it's out of date.
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        return "/v3/kb/tags"
+
 
 # Source
 class SourceKustomer(AbstractSource):
@@ -91,4 +113,4 @@ class SourceKustomer(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token=config["api_token"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Teams(authenticator=auth)]
+        return [Teams(authenticator=auth), Tags(authenticator=auth)]
