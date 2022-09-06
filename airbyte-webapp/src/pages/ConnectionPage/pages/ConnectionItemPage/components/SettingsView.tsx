@@ -2,6 +2,7 @@ import React from "react";
 
 import DeleteBlock from "components/DeleteBlock";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
@@ -17,6 +18,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
   const [isAdvancedMode] = useAdvancedModeSetting();
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
   const onDelete = () => deleteConnection(connection);
 
   return (

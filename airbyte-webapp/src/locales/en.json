@@ -444,8 +444,6 @@
   "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field.",
   "admin.exportConfigurationText": "Download an archive of all configuration and state data. Exported data can be upgraded to another Airbyte version or can be exported to a different Airbyte deployment. For more information visit the <lnk>configuration archive</lnk> page in our docs.",
   "admin.importConfigurationText": "Upload an archive of all configuration and state data. <warn>Warning: This will overwrite all existing configuration!</warn>",
-  "admin.dropZoneTitle": "Drag 'n' drop file here, or click to select file",
-  "admin.dropZoneSubtitle": "Only *.tar and *.gz files will be accepted",
   "admin.logs": "Logs",
   "admin.logs.error": "Unable to download logs at this time.",
   "admin.downloadServerLogs": "Download Server Logs",

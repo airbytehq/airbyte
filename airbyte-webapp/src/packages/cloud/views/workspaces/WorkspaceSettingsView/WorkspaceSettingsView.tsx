@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
 import { InfoTooltip } from "components/base/Tooltip";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
@@ -28,7 +29,7 @@ const AdvancedModeSwitchLabel = () => (
 
 export const WorkspaceSettingsView: React.FC = () => {
   const { formatMessage } = useIntl();
-
+  useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();
