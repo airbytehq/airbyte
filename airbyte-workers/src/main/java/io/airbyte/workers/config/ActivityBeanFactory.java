@@ -14,6 +14,7 @@ import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActiv
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
+import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
 import io.airbyte.workers.temporal.spec.SpecActivity;
@@ -62,7 +63,8 @@ public class ActivityBeanFactory {
                                                   final AutoDisableConnectionActivity autoDisableConnectionActivity,
                                                   final StreamResetActivity streamResetActivity,
                                                   final RecordMetricActivity recordMetricActivity,
-                                                  final WorkflowConfigActivity workflowConfigActivity) {
+                                                  final WorkflowConfigActivity workflowConfigActivity,
+                                                  final RouteToSyncTaskQueueActivity routeToSyncTaskQueueActivity) {
     return List.of(generateInputActivity,
         jobCreationAndStatusUpdateActivity,
         configFetchActivity,
@@ -71,7 +73,8 @@ public class ActivityBeanFactory {
         autoDisableConnectionActivity,
         streamResetActivity,
         recordMetricActivity,
-        workflowConfigActivity);
+        workflowConfigActivity,
+        routeToSyncTaskQueueActivity);
   }
 
   @Singleton
