@@ -392,8 +392,9 @@ public class JsonToAvroSchemaConverter {
                 .filter(s -> !s.equals(NULL_SCHEMA)))
             .distinct()
             .collect(Collectors.toList());
+        final String subfieldNamespace = fieldNamespace == null ? fieldName : (fieldNamespace + "." + fieldName);
         // recursively merge schemas of a subfield because they may include multiple record schemas as well
-        final List<Schema> mergedSubfieldSchemas = mergeRecordSchemas(subfieldName, fieldNamespace, subfieldSchemas, appendExtraProps);
+        final List<Schema> mergedSubfieldSchemas = mergeRecordSchemas(subfieldName, subfieldNamespace, subfieldSchemas, appendExtraProps);
         mergedSubfieldSchemas.add(0, NULL_SCHEMA);
         subfieldBuilder.type(Schema.createUnion(mergedSubfieldSchemas)).withDefault(null);
       }
