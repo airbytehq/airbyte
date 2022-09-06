@@ -36,8 +36,6 @@ import org.testcontainers.utility.DockerImageName;
 
 public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(MqttDestinationAcceptanceTest.class);
   private static final String TOPIC_PREFIX = "test/integration/";
   private static final String TOPIC_NAME = "test.topic";
   private static final ObjectReader READER = new ObjectMapper().reader();
@@ -55,17 +53,14 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() throws UnknownHostException {
-    String host = getIpAddress();
-    int port = extension.getMqttPort();
-    LOGGER.info("Container host: " + host + ", port: " + port);
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("broker_host", host)
-        .put("broker_port", port)
+        .put("broker_host", getIpAddress())
+        .put("broker_port", extension.getMqttPort())
         .put("use_tls", false)
         .put("topic_pattern", TOPIC_PREFIX + "{namespace}/{stream}/" + TOPIC_NAME)
         .put("client_id", UUID.randomUUID())
         .put("publisher_sync", true)
-        .put("connect_timeout", 10)
+        .put("connect_timeout", 30)
         .put("automatic_reconnect", true)
         .put("clean_session", true)
         .put("message_retained", false)
@@ -140,7 +135,6 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
           .filter(InetAddresses::isUriInetAddress)
           .findFirst().orElse(InetAddress.getLocalHost().getHostAddress());
     } catch (SocketException e) {
-      LOGGER.info("Using localhost by default");
       return InetAddress.getLocalHost().getHostAddress();
     }
   }
@@ -152,6 +146,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     final MqttConnectOptions options = new MqttConnectOptions();
     options.setAutomaticReconnect(true);
+    options.setMaxInflight(100);
 
     client.connect(options);
 
