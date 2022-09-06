@@ -30,10 +30,14 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.utility.DockerImageName;
 
 public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(MqttDestinationAcceptanceTest.class);
   private static final String TOPIC_PREFIX = "test/integration/";
   private static final String TOPIC_NAME = "test.topic";
   private static final ObjectReader READER = new ObjectMapper().reader();
@@ -42,7 +46,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private MqttClient client;
 
   @RegisterExtension
-  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
+  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:latest"));
 
   @Override
   protected String getImageName() {
@@ -51,9 +55,12 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() throws UnknownHostException {
+    String host = getIpAddress();
+    int port = extension.getMqttPort();
+    LOGGER.info("Container host: " + host + ", port: " + port);
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("broker_host", getIpAddress())
-        .put("broker_port", extension.getMqttPort())
+        .put("broker_host", host)
+        .put("broker_port", port)
         .put("use_tls", false)
         .put("topic_pattern", TOPIC_PREFIX + "{namespace}/{stream}/" + TOPIC_NAME)
         .put("client_id", UUID.randomUUID())
@@ -133,6 +140,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
           .filter(InetAddresses::isUriInetAddress)
           .findFirst().orElse(InetAddress.getLocalHost().getHostAddress());
     } catch (SocketException e) {
+      LOGGER.info("Using localhost by default");
       return InetAddress.getLocalHost().getHostAddress();
     }
   }
