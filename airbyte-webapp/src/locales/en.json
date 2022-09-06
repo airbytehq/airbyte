@@ -360,6 +360,8 @@
   "connection.canceling": "Canceling...",
 
   "form.frequency": "Replication frequency*",
+  "form.cronExpression": "Cron expression*",
+  "form.cronExpression.placeholder": "Cron expression",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
 
@@ -513,6 +515,7 @@
   "errorView.unknownError": "Unknown error occurred",
 
   "frequency.manual": "Manual",
+  "frequency.cron": "Cron",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 

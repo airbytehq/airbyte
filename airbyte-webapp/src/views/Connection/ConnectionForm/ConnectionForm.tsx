@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
+import { Card, ControlLabels, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import {
@@ -22,13 +22,13 @@ import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { OperationsSection } from "./components/OperationsSection";
+import ScheduleField from "./components/ScheduleField";
 import SchemaField from "./components/SyncCatalogField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
-  useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
 
@@ -118,6 +118,19 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
+const fixScheduleData = (values: FormikConnectionFormValues) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentScheduleValue = values.scheduleData?.basicSchedule as any;
+
+  const isManualOrCron =
+    currentScheduleValue === ConnectionScheduleType.manual || currentScheduleValue === ConnectionScheduleType.cron;
+
+  return {
+    ...values.scheduleData,
+    basicSchedule: isManualOrCron ? undefined : (currentScheduleValue as ConnectionScheduleDataBasicSchedule),
+  };
+};
+
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
@@ -164,10 +177,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
-        ? ConnectionScheduleType.basic
-        : ConnectionScheduleType.manual;
+      // Set the scheduleData based on the schedule value, this handles the basicSchedule field
+      values["scheduleData"] = fixScheduleData(values);
 
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
@@ -195,8 +206,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-  const frequencies = useFrequencyDropdownData(connection.scheduleData);
-
   return (
     <Formik
       initialValues={initialValues}
@@ -244,35 +253,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <Field name="scheduleData.basicSchedule">
-              {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ConnectorLabel
-                      nextLine
-                      error={!!meta.error && meta.touched}
-                      label={formatMessage({
-                        id: "form.frequency",
-                      })}
-                      message={formatMessage({
-                        id: "form.frequency.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-                    <DropDown
-                      {...field}
-                      error={!!meta.error && meta.touched}
-                      options={frequencies}
-                      onChange={(item) => {
-                        onDropDownSelect?.(item);
-                        setFieldValue(field.name, item.value);
-                      }}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
+            <ScheduleField
+              scheduleData={connection?.scheduleData}
+              scheduleType={connection?.scheduleType}
+              mode={mode}
+              setFieldValue={setFieldValue}
+              onDropDownSelect={onDropDownSelect}
+            />
           </Section>
           <Card>
             <StyledSection>
