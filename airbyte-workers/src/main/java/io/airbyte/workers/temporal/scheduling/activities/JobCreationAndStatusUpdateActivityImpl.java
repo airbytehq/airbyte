@@ -60,7 +60,8 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
   @Inject

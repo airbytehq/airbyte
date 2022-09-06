@@ -35,7 +35,8 @@ import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
