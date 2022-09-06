@@ -156,21 +156,6 @@ create table "public"."stream_reset"(
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null
 );
-create table "public"."sync_stats"(
-  "id" uuid not null,
-  "attempt_id" int4 not null,
-  "records_emitted" int4 not null,
-  "bytes_emitted" int4 not null,
-  "source_state_messages_emitted" int4 not null,
-  "destination_state_messages_emitted" int4 not null,
-  "records_committed" int4 not null,
-  "mean_seconds_before_source_state_message_emitted" int4 not null,
-  "max_seconds_before_source_state_message_emitted" int4 not null,
-  "mean_seconds_between_state_message_emitted_and_committed" int4 not null,
-  "max_seconds_between_state_message_emitted_and_committed" int4 not null,
-  "created_at" timestamptz(35) not null default null,
-  "updated_at" timestamptz(35) not null default null
-);
 create table "public"."workspace"(
   "id" uuid not null,
   "customer_id" uuid null,
@@ -310,8 +295,6 @@ create unique index "stream_reset_connection_id_stream_name_stream_namespace_key
   "stream_name" asc, 
   "stream_namespace" asc
 );
-create index "attempt_id_idx" on "public"."sync_stats"("attempt_id" asc);
-create unique index "sync_stats_attempt_id_key" on "public"."sync_stats"("attempt_id" asc);
 create unique index "workspace_pkey" on "public"."workspace"("id" asc);
 create unique index "workspace_service_account_pkey" on "public"."workspace_service_account"(
   "workspace_id" asc, 
