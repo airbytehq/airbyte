@@ -2,7 +2,7 @@
 @use "../../../../../scss/variables";
 
 .container {
-  padding: variables.$spacing-xl;
+  padding-top: variables.$spacing-xl;
   border-radius: variables.$border-radius-sm;
   overflow: hidden;
 }
@@ -15,4 +15,14 @@
   display: flex;
   align-items: center;
   margin: variables.$spacing-xs;
+
+  &:active {
+    background-color: colors.$grey-100;
+  }
+}
+
+.spinnerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

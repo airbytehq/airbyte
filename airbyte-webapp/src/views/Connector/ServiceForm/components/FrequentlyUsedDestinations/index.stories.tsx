@@ -38,6 +38,7 @@ export default {
         releaseStage: "custom",
       },
     ],
+    propertyPath: "serviceType",
   },
 } as ComponentMeta<typeof FrequentlyUsedDestinations>;
 
