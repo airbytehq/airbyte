@@ -2603,6 +2603,9 @@ components:
           format: uri
         icon:
           type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
+          type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
@@ -2962,6 +2965,9 @@ components:
           type: string
           format: uri
         icon:
+          type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
           type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"

@@ -415,19 +415,22 @@ class SourceDefinitionsHandlerTest {
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
     when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId())).thenReturn(sourceDefinition);
     final String newDockerImageTag = "averydifferenttag";
+    final String newProtocolVersion = "0.2.1";
     final SourceDefinitionRead sourceDefinition = sourceDefinitionsHandler
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()));
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
     final String newImageName = DockerUtils.getTaggedImageName(this.sourceDefinition.getDockerRepository(), newDockerImageTag);
-    final ConnectorSpecification newSpec = new ConnectorSpecification().withConnectionSpecification(
-        Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")));
+    final ConnectorSpecification newSpec = new ConnectorSpecification()
+        .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
+        .withProtocolVersion(newProtocolVersion);
     when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
-    final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
+    final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition)
+        .withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
     final SourceDefinitionRead sourceDefinitionRead = sourceDefinitionsHandler
         .updateSourceDefinition(

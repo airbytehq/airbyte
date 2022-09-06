@@ -85,6 +85,7 @@ public class SourceDefinitionsHandler {
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
+          .protocolVersion(standardSourceDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardSourceDefinition))
           .releaseDate(getReleaseDate(standardSourceDefinition))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
@@ -210,6 +211,7 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(spec.getProtocolVersion())
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
@@ -239,6 +241,7 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(spec.getProtocolVersion())
         .withTombstone(currentSourceDefinition.getTombstone())
         .withPublic(currentSourceDefinition.getPublic())
         .withCustom(currentSourceDefinition.getCustom())
