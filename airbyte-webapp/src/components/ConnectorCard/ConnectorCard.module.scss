@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  padding: 10px;
+  width: 220px;
+  align-items: center;
+}
+
+.details {
+  width: 160px;
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  font-weight: normal;
+}
+
+.entityIcon {
+  height: 30px;
+  width: 30px;
+}
+
+.connectionName {
+  font-size: 14px;
+  color: #1a194d;
+  text-align: left;
+  margin-right: 10px;
+}
+
+.connectorDetails {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.connectorName {
+  font-size: 11px;
+  margin-top: 1px;
+  color: #afafc1;
+  text-align: left;
+  word-wrap: break-word;
+}
