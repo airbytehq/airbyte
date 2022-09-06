@@ -205,7 +205,7 @@ temporal:
     enabled: ${TEMPORAL_CLOUD_ENABLED:false}
     host: ${TEMPORAL_CLOUD_HOST:}
     namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
-  host: ${TEMPORAL_HOST:airbyte-temporal:7233}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
   retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
 
 logger:
