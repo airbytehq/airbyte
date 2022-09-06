@@ -16,6 +16,12 @@ def patch_base_class(mocker):
     mocker.patch.object(PinterestStream, "path", "v0/example_endpoint")
     mocker.patch.object(PinterestStream, "primary_key", "test_primary_key")
     mocker.patch.object(PinterestStream, "__abstractmethods__", set())
+    #
+    mocker.patch.object(PinterestSubStream, "path", "v0/example_endpoint")
+    mocker.patch.object(PinterestSubStream, "primary_key", "test_primary_key")
+    mocker.patch.object(PinterestSubStream, "next_page_token", None)
+    mocker.patch.object(PinterestSubStream, "parse_response", {})
+    mocker.patch.object(PinterestSubStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -57,7 +63,7 @@ def test_http_method(patch_base_class):
     [
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
+        (HTTPStatus.TOO_MANY_REQUESTS, False),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
