@@ -167,4 +167,5 @@ public class TemporalActivityStubInterceptor<T> {
   void setActivityStubGenerator(final TemporalActivityStubGeneratorFunction<Class<?>, ActivityOptions, Object> activityStubGenerator) {
     this.activityStubGenerator = activityStubGenerator;
   }
+
 }
