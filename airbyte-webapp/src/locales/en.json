@@ -108,6 +108,9 @@
   "form.url.error": "field must be a valid URL",
   "form.setupGuide": "Setup Guide",
   "form.wait": "Please wait a little bit more…",
+  "form.advancedMode.label": "Advanced mode",
+  "form.advancedMode.switchLabel": "Enable advanced mode",
+  "form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
