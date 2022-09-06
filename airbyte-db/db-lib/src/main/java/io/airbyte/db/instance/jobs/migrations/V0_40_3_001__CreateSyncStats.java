@@ -2,11 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.db.instance.configs.migrations;
+package io.airbyte.db.instance.jobs.migrations;
 
 import static org.jooq.impl.DSL.currentOffsetDateTime;
+import static org.jooq.impl.DSL.foreignKey;
 import static org.jooq.impl.DSL.primaryKey;
-import static org.jooq.impl.DSL.unique;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -19,17 +19,13 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_40_3_003__CreateSyncStats extends BaseJavaMigration {
+public class V0_40_3_001__CreateSyncStats extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_3_003__CreateSyncStats.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_3_001__CreateSyncStats.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-
-    // Warning: please do not use any jOOQ generated code to write a migration.
-    // As database schema changes, the generated jOOQ code can be deprecated. So
-    // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     createSyncStatsTable(ctx);
   }
@@ -59,10 +55,9 @@ public class V0_40_3_003__CreateSyncStats extends BaseJavaMigration {
         .columns(id, attemptId, recordsEmitted, bytesEmitted, sourceStateMessagesEmitted, destinationStateMessagesEmitted, recordsCommitted,
             meanSecondsBeforeSourceStateMessageEmitted, maxSecondsBeforeSourceStateMessageEmitted, meanSecondsBetweenStateMessageEmittedandCommitted,
             maxSecondsBetweenStateMessageEmittedandCommitted, createdAt, updatedAt)
-        .constraints(primaryKey(id), unique(attemptId))
+        .constraints(primaryKey(id), foreignKey(attemptId).references("attempts", "id"))
         .execute();
 
     ctx.createIndex("attempt_id_idx").on("sync_stats", "attempt_id").execute();
   }
-
 }
