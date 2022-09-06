@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.workers.temporal.sync.RouterService;
@@ -14,4 +18,5 @@ public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueAct
   public RouteToSyncTaskQueueOutput route(final RouteToSyncTaskQueueInput input) {
     return new RouteToSyncTaskQueueOutput("SOME_TASK_QUEUE");
   }
+
 }

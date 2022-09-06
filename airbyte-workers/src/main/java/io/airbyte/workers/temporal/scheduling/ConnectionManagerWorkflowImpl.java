@@ -734,8 +734,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final RouteToSyncTaskQueueInput routeToSyncTaskQueueInput = new RouteToSyncTaskQueueInput(connectionId);
     final RouteToSyncTaskQueueOutput routeToSyncTaskQueueOutput = runMandatoryActivityWithOutput(
         routeToSyncTaskQueueActivity::route,
-        routeToSyncTaskQueueInput
-    );
+        routeToSyncTaskQueueInput);
 
     return routeToSyncTaskQueueOutput.getTaskQueue();
   }
