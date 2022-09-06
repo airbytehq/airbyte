@@ -60,5 +60,4 @@ public class V0_40_3_001__CreateSyncStats extends BaseJavaMigration {
 
     ctx.createIndex("attempt_id_idx").on("sync_stats", "attempt_id").execute();
   }
-
 }
