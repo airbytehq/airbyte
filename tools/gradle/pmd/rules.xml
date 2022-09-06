@@ -102,10 +102,7 @@
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
         <exclude name="CloseResource"/>
-        <exclude name="ImplicitSwitchFallThrough"/>
-        <exclude name="InvalidLogMessageFormat"/>
         <exclude name="MissingSerialVersionUID"/>
-        <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
