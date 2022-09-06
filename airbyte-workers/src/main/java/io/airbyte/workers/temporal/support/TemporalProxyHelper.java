@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.workers.temporal.support;
 
-import io.airbyte.workers.temporal.support.TemporalActivityStubGeneratorFunction;
+import com.google.common.annotations.VisibleForTesting;
 import io.micronaut.context.BeanRegistration;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.QueryMethod;
@@ -14,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -52,17 +53,10 @@ public class TemporalProxyHelper {
   @Inject
   private Collection<BeanRegistration<ActivityOptions>> availableActivityOptions;
 
-  /**
-   * Collection of available {@link TemporalActivityStubGeneratorFunction} beans which will be used to
-   * initialize Temporal activity stubs in each registered Temporal workflow.
-   */
-  @Inject
-  private Collection<BeanRegistration<TemporalActivityStubGeneratorFunction>> availableGeneratorFunctions;
+  private Optional<TemporalActivityStubGeneratorFunction<Class<?>, ActivityOptions, Object>> activityStubGenerator = Optional.empty();
 
-  public TemporalProxyHelper(final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions,
-                             final Collection<BeanRegistration<TemporalActivityStubGeneratorFunction>> availableGeneratorFunctions) {
+  public TemporalProxyHelper(final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions) {
     this.availableActivityOptions = availableActivityOptions;
-    this.availableGeneratorFunctions = availableGeneratorFunctions;
   }
 
   /**
@@ -92,7 +86,7 @@ public class TemporalProxyHelper {
           .implement(workflowImplClass.getInterfaces()[0])
           .method(ElementMatchers.anyOf(proxiedMethods.toArray(new Method[] {})))
           .intercept(
-              MethodDelegation.to(generateInterceptor(workflowImplClass, availableActivityOptions, availableGeneratorFunctions)))
+              MethodDelegation.to(generateInterceptor(workflowImplClass, availableActivityOptions)))
           .make()
           .load(workflowImplClass.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
           .getLoaded();
@@ -122,18 +116,21 @@ public class TemporalProxyHelper {
    * workflow implementation.
    *
    * @param workflowImplClass The workflow implementation class.
-   * @param availableActivityOptions The collection of available {@link ActivityOptions} beans which
-   *        will be used to initialize Temporal activity stubs in each registered Temporal workflow.
-   * @param availableGeneratorFunctions The collection of available
-   *        {@link TemporalActivityStubGeneratorFunction} beans that will be used by the interceptor
-   *        to generate Temporal activity stubs.
+   * @param activityOptions The collection of available {@link ActivityOptions} beans which will be
+   *        used to initialize Temporal activity stubs in each registered Temporal workflow.
    * @return The generated {@link TemporalActivityStubInterceptor} instance.
    * @param <T> The workflow implementation type.
    */
   private <T> TemporalActivityStubInterceptor<T> generateInterceptor(final Class<T> workflowImplClass,
-                                                                     final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions,
-                                                                     final Collection<BeanRegistration<TemporalActivityStubGeneratorFunction>> availableGeneratorFunctions) {
-    return new TemporalActivityStubInterceptor(workflowImplClass, availableActivityOptions, availableGeneratorFunctions);
+                                                                     final Collection<BeanRegistration<ActivityOptions>> activityOptions) {
+    final TemporalActivityStubInterceptor<T> interceptor = new TemporalActivityStubInterceptor(workflowImplClass, activityOptions);
+    activityStubGenerator.ifPresent(a -> interceptor.setActivityStubGenerator(a));
+    return interceptor;
+  }
+
+  @VisibleForTesting
+  void setActivityStubGenerator(final TemporalActivityStubGeneratorFunction<Class<?>, ActivityOptions, Object> activityStubGenerator) {
+    this.activityStubGenerator = Optional.ofNullable(activityStubGenerator);
   }
 
 }

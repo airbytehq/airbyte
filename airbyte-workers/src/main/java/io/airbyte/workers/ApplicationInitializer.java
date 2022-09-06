@@ -23,7 +23,7 @@ import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalProxyHelper;
+import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
