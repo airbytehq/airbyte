@@ -53,7 +53,7 @@ The only pagination mechanisms supported are
 
 ### What is the authorization mechanism?
 
-Endpoints that require authenticating using a query param or an HTTP header, as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
+Endpoints that require authenticating using a query param or a HTTP header, as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
 
 Endpoints that require authenticating using Basic Auth over HTTPS, as is the case for [Greenhouse](https://developers.greenhouse.io/harvest.html#authentication), are supported.
 
@@ -123,7 +123,7 @@ There is currently only one implementation, the `SimpleRetriever`, which is defi
 
 1. Requester: Describes how to submit requests to the API source
 2. Paginator: Describes how to navigate through the API's pages
-3. Record selector: Describes how to extract records from an HTTP response
+3. Record selector: Describes how to extract records from a HTTP response
 4. Stream Slicer: Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
