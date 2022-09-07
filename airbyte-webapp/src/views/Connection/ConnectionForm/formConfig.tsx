@@ -28,8 +28,9 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
+import { ConnectionOrPartialConnection } from "./ConnectionForm";
 
-interface FormikConnectionFormValues {
+export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
@@ -41,9 +42,9 @@ interface FormikConnectionFormValues {
   normalization?: NormalizationType;
 }
 
-type ConnectionFormValues = ValuesProps;
+export type ConnectionFormValues = ValuesProps;
 
-const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
+export const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
   [SyncMode.incremental, DestinationSyncMode.append_dedup],
   [SyncMode.full_refresh, DestinationSyncMode.overwrite],
   [SyncMode.incremental, DestinationSyncMode.append],
@@ -57,7 +58,7 @@ const DEFAULT_SCHEDULE: ConnectionScheduleData = {
   },
 };
 
-function useDefaultTransformation(): OperationCreate {
+export function useDefaultTransformation(): OperationCreate {
   const workspace = useCurrentWorkspace();
   return {
     name: "My dbt transformations",
@@ -73,7 +74,7 @@ function useDefaultTransformation(): OperationCreate {
   };
 }
 
-const connectionValidationSchema = yup
+export const connectionValidationSchema = yup
   .object({
     name: yup.string().required("form.empty.error"),
     scheduleType: yup
@@ -185,7 +186,7 @@ const connectionValidationSchema = yup
  * @param initialOperations
  * @param workspaceId
  */
-function mapFormPropsToOperation(
+export function mapFormPropsToOperation(
   values: {
     transformations?: OperationRead[];
     normalization?: NormalizationType;
@@ -223,10 +224,10 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-const getInitialTransformations = (operations: OperationCreate[]): OperationRead[] =>
+export const getInitialTransformations = (operations: OperationCreate[]): OperationRead[] =>
   operations?.filter(isDbtTransformation) ?? [];
 
-const getInitialNormalization = (
+export const getInitialNormalization = (
   operations?: Array<OperationRead | OperationCreate>,
   isEditMode?: boolean
 ): NormalizationType => {
@@ -240,10 +241,8 @@ const getInitialNormalization = (
     : NormalizationType.basic;
 };
 
-const useInitialValues = (
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">),
+export const useInitialValues = (
+  connection: ConnectionOrPartialConnection,
   destDefinition: DestinationDefinitionSpecificationRead,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
@@ -275,10 +274,24 @@ const useInitialValues = (
     }
 
     return initialValues;
-  }, [initialSchema, connection, isEditMode, destDefinition]);
+  }, [
+    connection.connectionId,
+    connection.destination.name,
+    connection.name,
+    connection.namespaceDefinition,
+    connection.namespaceFormat,
+    connection.operations,
+    connection.prefix,
+    connection.scheduleData,
+    connection.source.name,
+    destDefinition.supportsDbt,
+    destDefinition.supportsNormalization,
+    initialSchema,
+    isEditMode,
+  ]);
 };
 
-const useFrequencyDropdownData = (
+export const useFrequencyDropdownData = (
   additionalFrequency: WebBackendConnectionRead["scheduleData"]
 ): DropDownRow.IDataItem[] => {
   const { formatMessage } = useIntl();
@@ -326,16 +339,4 @@ const useFrequencyDropdownData = (
 
     return [...otherFrequencies, ...basicFrequencies];
   }, [formatMessage, additionalFrequency]);
-};
-
-export type { ConnectionFormValues, FormikConnectionFormValues };
-export {
-  connectionValidationSchema,
-  useInitialValues,
-  useFrequencyDropdownData,
-  mapFormPropsToOperation,
-  SUPPORTED_MODES,
-  useDefaultTransformation,
-  getInitialNormalization,
-  getInitialTransformations,
 };
