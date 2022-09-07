@@ -399,6 +399,27 @@ public class DefaultJobPersistence implements JobPersistence {
         jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME)));
   }
 
+  public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long targetJobId, final int pagesize, final int offset) throws IOException {
+    final Optional<Object> targetJobCreatedAt = jobDatabase.query(ctx -> {
+      final Optional<Record> targetJobRecord = ctx.fetch(
+          "SELECT created_at FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND scope = '"
+              + connectionId + "' AND id = " + targetJobId).stream().findFirst();
+
+      return targetJobRecord.map(record -> getEpoch(record, "created_at"));
+    });
+
+    // we still want a normal result if the target job cannot be found
+    if (targetJobCreatedAt.isEmpty()) {
+      return listJobs(configTypes, connectionId, pagesize, offset);
+    }
+
+    // TODO finish logic
+
+    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
+        + " AND jobs.scope = '" + connectionId + "' WHERE  ORDER BY jobs.created_at DESC, jobs.id DESC LIMIT " + pagesize + " OFFSET " + offset + ") AS jobs";
+    return List.of();
+  }
+
   @Override
   public List<Job> listJobsWithStatus(final JobStatus status) throws IOException {
     return listJobsWithStatus(Sets.newHashSet(ConfigType.values()), status);
