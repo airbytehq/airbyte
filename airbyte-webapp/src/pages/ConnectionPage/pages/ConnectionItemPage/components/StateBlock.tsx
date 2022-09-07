@@ -33,7 +33,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   );
 
   return (
-    <Card $withPadding>
+    <Card>
       <H5 bold>
         <FormattedMessage id="tables.connectionState.title" />
       </H5>
@@ -41,3 +41,5 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
     </Card>
   );
 };
+
+// FIXME: add padding to card
