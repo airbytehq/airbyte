@@ -91,6 +91,7 @@ You can replicate the following tables using the Facebook Marketing connector:
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 * [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
+* [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 * [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
@@ -120,6 +121,9 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.63  | 2022-09-06 | [15724](https://github.com/airbytehq/airbyte/pull/15724) | Add the Custom Conversion stream | 
+| 0.2.62  | 2022-09-01 | [16222](https://github.com/airbytehq/airbyte/pull/16222) | Remove `end_date` from config if empty value (re-implement #16096)                                                                                                                                                                                                                                |
+| 0.2.61  | 2022-08-29 | [16096](https://github.com/airbytehq/airbyte/pull/16096) | Remove `end_date` from config if empty value                                                                                                                                                                                                                                                      |
 | 0.2.60  | 2022-08-19 | [15788](https://github.com/airbytehq/airbyte/pull/15788) | Retry FacebookBadObjectError                                                                                                                                                                                                                                                                      |
 | 0.2.59  | 2022-08-04 | [15327](https://github.com/airbytehq/airbyte/pull/15327) | Shift date validation from config validation to stream method                                                                                                                                                                                                                                     |     
 | 0.2.58  | 2022-07-25 | [15012](https://github.com/airbytehq/airbyte/pull/15012) | Add `DATA_RETENTION_PERIOD`validation and fix `failed_delivery_checks` field schema type issue                                                                                                                                                                                                    |     
