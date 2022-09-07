@@ -15,6 +15,10 @@ import { ServiceFormValues } from "./types";
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock("components/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
 
+jest.mock("../../../hooks/services/useDestinationHook", () => ({
+  useDestinationList: () => ({ destinations: [] }),
+}));
+
 jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const emptyFn = () => {};
