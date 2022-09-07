@@ -15,7 +15,7 @@ The process then submits HTTP requests to the API endpoint, and extracts records
 
 See the [connector definition section](yaml-structure.md) for more information on the YAML file describing the connector.
 
-## Is this API supported?
+## Does this framework support the connector I want to build?
 
 Not all APIs are can be built using this framework because its featureset is still limited.
 This section describes guidelines for determining whether a connector for a given API can be built using the config-based framework.
