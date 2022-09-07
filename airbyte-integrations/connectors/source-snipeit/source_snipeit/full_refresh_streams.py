@@ -30,11 +30,12 @@ class SnipeitStream(HttpStream, ABC):
 
     See the reference docs for the full list of configurable options.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, config=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.limit_per_page: int = 500
         self.total: int = 0
         self.offset: int = 0
+        self.config: dict = config
 
         # NOTE: This is probably not the best idea.
         self.stop_immediately = False
