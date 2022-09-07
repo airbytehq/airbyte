@@ -53,10 +53,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Value;
@@ -64,7 +62,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
 @Singleton
@@ -79,18 +76,25 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  @Inject
-  @Named("workspaceRoot")
+  public TemporalClient(@Named("workspaceRoot") final Path workspaceRoot,
+                        @Named("workflowClient") final WorkflowClient client,
+                        @Named("workflowServiceStubs") final WorkflowServiceStubs service,
+                        @Named("streamResetPersistence") final StreamResetPersistence streamResetPersistence,
+                        @Named("connectionManagerUtils") final ConnectionManagerUtils connectionManagerUtils,
+                        @Named("streamResetRecordsHelper") final StreamResetRecordsHelper streamResetRecordsHelper) {
+    this.workspaceRoot = workspaceRoot;
+    this.client = client;
+    this.service = service;
+    this.streamResetPersistence = streamResetPersistence;
+    this.connectionManagerUtils = connectionManagerUtils;
+    this.streamResetRecordsHelper = streamResetRecordsHelper;
+  }
+
   private Path workspaceRoot;
-  @Inject
   private WorkflowClient client;
-  @Inject
   private WorkflowServiceStubs service;
-  @Inject
   private StreamResetPersistence streamResetPersistence;
-  @Inject
   private ConnectionManagerUtils connectionManagerUtils;
-  @Inject
   private StreamResetRecordsHelper streamResetRecordsHelper;
 
   /**
@@ -465,6 +469,7 @@ public class TemporalClient {
   }
 
   public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    log.error("Restarting by status");
     final Set<UUID> workflowExecutionInfos = fetchWorkflowsByStatus(executionStatus);
 
     final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);

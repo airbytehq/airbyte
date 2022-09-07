@@ -211,5 +211,10 @@ temporal:
 logger:
   levels:
     io.airbyte.bootloader: DEBUG
+
+connection:
+  user: ${DATABASE_USER:docker}
+  password: ${DATABASE_PASSWORD:docker}
+  url: ${DATABASE_URL:`jdbc:postgresql://db:5432/airbyte`}
 # Uncomment to help resolve issues with conditional beans
 #    io.micronaut.context.condition: DEBUG
