@@ -5,11 +5,41 @@
   background: colors.$white;
   border-radius: 10px;
   box-shadow: 0 2px 4px colors.$cardShadowColor;
+
+  &.fullWidth {
+    width: 100%;
+  }
+
+  &.withPadding {
+    padding: 20px;
+  }
 }
 
-// .withPadding {
-//     padding: 20px;
-// }
+.title {
+  padding: 25px 25px 22px;
+  color: colors.$dark-blue;
+  border-bottom: #e8e8ed 1px solid;
+  font-weight: 600;
+  letter-spacing: 0.008em;
+  border-radius: 10px 10px 0px 0px;
+
+  &.lightPadding {
+    padding: 19px 20px 20px;
+  }
+
+  &.roundedBottom {
+    border-radius: 10px 10px 10px 10px;
+  }
+}
+
+// const Title = styled(H5)<{ light?: boolean; roundedBottom?: boolean }>`
+//   padding: ${({ light }) => (light ? "19px 20px 20px" : "25px 25px 22px")};
+//   color: ${({ theme }) => theme.darkPrimaryColor};
+//   border-bottom: ${({ light }) => (light ? "none" : "#e8e8ed 1px solid")};
+//   font-weight: 600;
+//   letter-spacing: 0.008em;
+//   border-radius: ${({ roundedBottom }) => (roundedBottom ? "10px 10px 0px 0px" : "10px 10px 10px 10px")};
+// `;
 
 // export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
 //   width: ${({ full }) => (full ? "100%" : "auto")};

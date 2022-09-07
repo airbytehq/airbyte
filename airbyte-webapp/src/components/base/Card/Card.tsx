@@ -1,4 +1,5 @@
 import React from "react";
+import classNames from "classnames";
 
 import styles from "./Card.module.scss";
 
@@ -6,21 +7,42 @@ import { H5 } from "../Titles";
 
 export interface CardProps {
   title?: React.ReactNode;
-  full?: boolean;
+  fullWidth?: boolean;
+  lightPadding?: boolean;
+  withPadding?: boolean;
+  roundedBottom?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ children, title }) => {
+// const cardStyleByWidth = {
+//   fullWidth: styles.fullWidth,
+// };
+
+export const Card: React.FC<CardProps> = ({ children, title, fullWidth, lightPadding, withPadding, roundedBottom }) => {
   return (
-    <div className={styles.container}>
-      {title ? <H5>{title}</H5> : null}
+    <div
+      className={classNames(
+        styles.container,
+        fullWidth ? styles.fullWidth : undefined,
+        withPadding ? styles.withPadding : undefined
+      )}
+    >
+      {title ? (
+        <H5
+          className={classNames(
+            styles.title,
+            lightPadding || !children ? styles.lightPadding : undefined,
+            roundedBottom ? styles.roundedBottom : undefined
+          )}
+        >
+          {title}
+        </H5>
+      ) : null}
       {children}
     </div>
   );
 };
 
-// <Title light={light || !children} roundedBottom={!!children}>
-//         {title}
-//       </Title>
+// className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}
 
 // export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
 //   width: ${({ full }) => (full ? "100%" : "auto")};
