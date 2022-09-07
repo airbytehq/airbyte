@@ -14,17 +14,17 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
 
-## Step 2: Set up the <connector name> connector in Airbyte
+## Step 2: Set up the Zendesk Talk connector in Airbyte
 
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the <connector name> connector and select **Zendesk Talk** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
 4. Fill in the rest of the fields:
-   * *Subdomain*
-   * *Start Date*
-   * *Authentication (API Token / OAuth2.0)*
+   - *Subdomain*
+   - *Start Date*
+   - *Authentication (API Token / OAuth2.0)*
 5. Click **Set up source**
 
 ## Supported sync modes
