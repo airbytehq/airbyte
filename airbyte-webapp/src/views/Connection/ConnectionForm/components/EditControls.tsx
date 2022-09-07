@@ -3,6 +3,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingButton } from "components";
+import { Text } from "components/base/Text";
 
 import styles from "./EditControls.module.scss";
 
@@ -29,18 +30,22 @@ const EditControls: React.FC<EditControlProps> = ({
 }) => {
   const showStatusMessage = () => {
     const messageStyle = classnames(styles.message, {
-      [styles.success]: !!successMessage,
-      [styles.error]: !!errorMessage,
+      [styles.success]: successMessage,
+      [styles.error]: errorMessage,
     });
     if (errorMessage) {
-      return <div className={messageStyle}>{errorMessage}</div>;
+      return (
+        <Text as="div" size="lg" className={messageStyle}>
+          {errorMessage}
+        </Text>
+      );
     }
 
     if (successMessage && !dirty) {
       return (
-        <div className={messageStyle} data-id="success-result">
+        <Text as="div" size="lg" className={messageStyle}>
           {successMessage}
-        </div>
+        </Text>
       );
     }
     return null;

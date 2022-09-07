@@ -1,37 +1,40 @@
 @use "../../../../scss/colors";
+@use "../../../../scss/variables";
 
 .content {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   flex-direction: row;
-  margin-top: 16px;
-  gap: 18px;
+  margin-top: variables.$spacing-lg;
+  gap: variables.$spacing-lg;
+  padding: variables.$spacing-sm;
 }
 
 .controlButton {
-  margin-left: 10px;
+  margin-left: variables.$spacing-md;
 }
 
 .message {
-  font-size: 14px;
-  line-height: 17px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-
-  & .success {
-    color: colors.$green;
-  }
-  & .error {
-    color: colors.$red;
-  }
 }
 
+.success {
+  color: colors.$green;
+}
+
+.error {
+  color: colors.$red;
+}
+
+// currently only implemented on transformation view form card, margins are specific to that implementation
+// todo: standardize the margin sizes here
 .line {
   min-width: 100%;
-  height: 1px;
+  height: variables.$border-thin;
   background: colors.$grey;
-  margin: 16px -27px 0 -24px;
+  margin: variables.$spacing-lg -27px 0 -24px;
 }
