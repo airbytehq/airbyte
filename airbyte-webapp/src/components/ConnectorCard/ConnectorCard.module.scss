@@ -41,3 +41,15 @@
   text-align: left;
   word-wrap: break-word;
 }
+
+.fullWidth {
+  width: 100%;
+
+  .details {
+    width: 100%;
+
+    .connectorDetails {
+      justify-content: space-between;
+    }
+  }
+}
