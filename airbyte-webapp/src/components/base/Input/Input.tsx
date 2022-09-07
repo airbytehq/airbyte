@@ -69,7 +69,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
 
   return (
     <div
-      className={classNames("input-container", styles.container, {
+      className={classNames(styles.container, {
         [styles.disabled]: props.disabled,
         [styles.focused]: focused,
         [styles.light]: light,
