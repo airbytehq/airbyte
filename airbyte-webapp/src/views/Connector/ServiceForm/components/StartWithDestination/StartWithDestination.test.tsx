@@ -9,7 +9,7 @@ import { StartWithDestination, StartWithDestinationProps } from "./StartWithDest
 
 const renderStartWithDestination = (props: StartWithDestinationProps) =>
   render(
-    <Formik initialValues={{}} onSubmit={() => {}}>
+    <Formik initialValues={{}} onSubmit={jest.fn()}>
       <IntlProvider locale="en" messages={en}>
         <StartWithDestination {...props} />
       </IntlProvider>
@@ -25,7 +25,7 @@ const destination = {
 
 describe("<StartWithDestinations />", () => {
   test("should renders without crash with provided props", () => {
-    const { asFragment } = renderStartWithDestination({ destination, onDestinationSelect: () => {} });
+    const { asFragment } = renderStartWithDestination({ destination, onDestinationSelect: jest.fn() });
 
     expect(asFragment()).toMatchSnapshot();
   });

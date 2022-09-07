@@ -41,7 +41,7 @@ const mockData = [
 
 const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinationsProps) =>
   render(
-    <Formik initialValues={{}} onSubmit={() => {}}>
+    <Formik initialValues={{}} onSubmit={jest.fn()}>
       <IntlProvider locale="en" messages={en}>
         <FrequentlyUsedDestinations {...props} />
       </IntlProvider>
@@ -52,7 +52,7 @@ describe("<FrequentlyUsedDestinations />", () => {
   test("should renders with mock data without crash", () => {
     const { asFragment } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
-      onDestinationSelect: () => {},
+      onDestinationSelect: jest.fn(),
       propertyPath: "serviceType",
     });
 
