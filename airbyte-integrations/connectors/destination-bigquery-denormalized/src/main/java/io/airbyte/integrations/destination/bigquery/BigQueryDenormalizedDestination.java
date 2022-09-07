@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static com.google.cloud.bigquery.Field.Mode.REPEATED;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Table;
@@ -131,7 +133,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     for (Field expectedField : expectedFields) {
       LOGGER.error("Comparing \nfields: {} \nvs \nexisting: {}", existingSchema, existingSchema);
       var existingField = existingFields.get(expectedField.getName());
-      if (!expectedField.equals(existingField)) {
+      if (isDifferenceBetweenFields(expectedField, existingField)) {
         LOGGER.warn("Expected field {} is different from existing field {}", expectedField, existingField);
         return false;
       }
@@ -139,6 +141,55 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
     LOGGER.info("Existing and expected schemas are equal.");
     return true;
+  }
+
+  private boolean isDifferenceBetweenFields(Field expectedField, Field existingField) {
+    if (existingField == null) {
+      return true;
+    } else {
+      return !expectedField.getType().equals(existingField.getType())
+          || !compareRepeatedMode(expectedField, existingField)
+          || !compareSubFields(expectedField, existingField);
+    }
+  }
+
+  /**
+   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED.
+   * Only the REPEATED mode difference is critical. The method fails only if at least one is REPEATED and the second one is not.
+   * @param expectedField expected field structure
+   * @param existingField existing field structure
+   * @return              is critical difference in the field modes
+   */
+  private boolean compareRepeatedMode(Field expectedField, Field existingField) {
+    var expectedMode = expectedField.getMode();
+    var existingMode = existingField.getMode();
+
+    if (expectedMode == null || existingMode == null) {
+      return expectedMode == null && existingMode == null;
+    } else if (expectedMode.equals(REPEATED) || existingMode.equals(REPEATED)) {
+      return expectedMode.equals(existingMode);
+    } else {
+      return true;
+    }
+  }
+
+  private boolean compareSubFields(Field expectedField, Field existingField) {
+    var expectedSubFields = expectedField.getSubFields();
+    var existingSubFields = existingField.getSubFields();
+
+    if (expectedSubFields == null || expectedSubFields.isEmpty()) {
+      return true;
+    } else if (existingSubFields == null || existingSubFields.isEmpty()) {
+      return false;
+    } else {
+      for (Field expectedSubField : expectedSubFields) {
+        var existingSubField = existingSubFields.get(expectedSubField.getName());
+        if (isDifferenceBetweenFields(expectedSubField, existingSubField)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   public static void main(final String[] args) throws Exception {
