@@ -7,12 +7,7 @@ import styled from "styled-components";
 import { Card, ControlLabels, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import {
-  ConnectionScheduleDataBasicSchedule,
-  ConnectionScheduleType,
-  NamespaceDefinitionType,
-  WebBackendConnectionRead,
-} from "core/request/AirbyteClient";
+import { NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -118,19 +113,6 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
-const fixScheduleData = (values: FormikConnectionFormValues) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const currentScheduleValue = values.scheduleData?.basicSchedule as any;
-
-  const isManualOrCron =
-    currentScheduleValue === ConnectionScheduleType.manual || currentScheduleValue === ConnectionScheduleType.cron;
-
-  return {
-    ...values.scheduleData,
-    basicSchedule: isManualOrCron ? undefined : (currentScheduleValue as ConnectionScheduleDataBasicSchedule),
-  };
-};
-
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
@@ -177,9 +159,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleData based on the schedule value, this handles the basicSchedule field
-      values["scheduleData"] = fixScheduleData(values);
-
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
       }) as unknown as ConnectionFormValues;
@@ -213,7 +192,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       enableReinitialize
       onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
+      {({ isSubmitting, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
           {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
@@ -253,13 +232,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <ScheduleField
-              scheduleData={connection?.scheduleData}
-              scheduleType={connection?.scheduleType}
-              mode={mode}
-              setFieldValue={setFieldValue}
-              onDropDownSelect={onDropDownSelect}
-            />
+            <ScheduleField scheduleData={connection?.scheduleData} mode={mode} onDropDownSelect={onDropDownSelect} />
           </Section>
           <Card>
             <StyledSection>

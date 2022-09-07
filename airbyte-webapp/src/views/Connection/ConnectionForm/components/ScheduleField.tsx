@@ -1,80 +1,68 @@
-import { Field, FieldInputProps, FieldProps } from "formik";
-import { ChangeEvent, useMemo, useState } from "react";
+import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
+import { ChangeEvent, useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { ControlLabels, DropDown, DropDownRow, Input } from "components";
 
-import {
-  ConnectionScheduleData,
-  ConnectionScheduleDataBasicSchedule,
-  ConnectionScheduleDataCron,
-  ConnectionScheduleType,
-} from "core/request/AirbyteClient";
+import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
 import { ConnectionFormMode } from "../ConnectionForm";
-import { useFrequencyDropdownData } from "../formConfig";
+import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";
 import styles from "./ScheduleField.module.scss";
 
 interface ScheduleFieldProps {
   scheduleData: ConnectionScheduleData | undefined;
-  scheduleType: ConnectionScheduleType | undefined;
   mode: ConnectionFormMode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
 }
 
-const ScheduleField: React.FC<ScheduleFieldProps> = ({
-  scheduleData,
-  scheduleType,
-  mode,
-  setFieldValue,
-  onDropDownSelect,
-}) => {
-  const [isCustomSchedule, setIsCustomSchedule] = useState<boolean>(scheduleType === ConnectionScheduleType.cron);
+const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDropDownSelect }) => {
   const { formatMessage } = useIntl();
   const frequencies = useFrequencyDropdownData(scheduleData);
 
   const onScheduleChange = (
     item: DropDownRow.IDataItem,
-    field: FieldInputProps<ConnectionScheduleDataBasicSchedule>
+    field: FieldInputProps<ConnectionScheduleData>,
+    form: FormikProps<FormikConnectionFormValues>
   ) => {
     onDropDownSelect?.(item);
-    setFieldValue(field.name, item.value);
+
+    const isManualOrCron = item.value === ConnectionScheduleType.manual || item.value === ConnectionScheduleType.cron;
+
+    let scheduleData: ConnectionScheduleData;
+
+    // Set scheduleData.basicSchedule
+    if (isManualOrCron) {
+      scheduleData = {
+        basicSchedule: undefined,
+      };
+    } else {
+      scheduleData = {
+        basicSchedule: item.value,
+      };
+    }
+
+    form.setFieldValue(field.name, scheduleData, true);
 
     // Also set scheduleType for yup validation
-    const isManualOrCron = item.value === ConnectionScheduleType.manual || item.value === ConnectionScheduleType.cron;
     const scheduleType = isManualOrCron ? (item.value as ConnectionScheduleType) : ConnectionScheduleType.basic;
-
-    setFieldValue("scheduleType", scheduleType);
-
-    // Show cron and timezone fields based on the frequency
-    if (item.value === ConnectionScheduleType.cron) {
-      setIsCustomSchedule(true);
-    } else {
-      setIsCustomSchedule(false);
-    }
+    form.setFieldValue("scheduleType", scheduleType, true);
   };
 
-  const getBasicScheduleValue = (value: ConnectionScheduleDataBasicSchedule) => {
-    // To set the initial value for the frequency dropdown. Only for Manual and Custom
-    if (!value) {
-      if (scheduleType === ConnectionScheduleType.cron) {
-        return formatMessage({
-          id: "frequency.cron",
-        }).toLowerCase();
-      }
+  const getBasicScheduleValue = (value: ConnectionScheduleData, form: FormikProps<FormikConnectionFormValues>) => {
+    const scheduleType = form.values.scheduleType;
 
-      return formatMessage({
-        id: "frequency.manual",
-      }).toLowerCase();
+    if (scheduleType === ConnectionScheduleType.basic) {
+      return value.basicSchedule;
     }
 
-    return value;
+    return formatMessage({
+      id: `frequency.${scheduleType}`,
+    }).toLowerCase();
   };
 
-  const getZoneValue = (currentSelectedZone: string) => {
+  const getZoneValue = (currentSelectedZone: string | undefined): string => {
     if (!currentSelectedZone) {
       return cronTimeZones[0].value;
     }
@@ -82,20 +70,19 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({
     return currentSelectedZone;
   };
 
-  const onCronInputChange = (
-    event: ChangeEvent<HTMLInputElement>,
-    field: FieldInputProps<ConnectionScheduleDataCron>
+  const onCronChange = (
+    event: DropDownRow.IDataItem | ChangeEvent<HTMLInputElement>,
+    field: FieldInputProps<ConnectionScheduleData>,
+    form: FormikProps<FormikConnectionFormValues>,
+    key: string
   ) => {
-    setFieldValue(field.name, {
-      ...field.value,
-      cronExpression: event.currentTarget.value,
-    });
-  };
-
-  const onCronZoneChange = (event: DropDownRow.IDataItem, field: FieldInputProps<ConnectionScheduleDataCron>) => {
-    setFieldValue(field.name, {
-      ...field.value,
-      cronTimeZone: event.value,
+    form.setFieldValue(field.name, {
+      cron: {
+        ...field.value?.cron,
+        [key]: (event as DropDownRow.IDataItem).value
+          ? (event as DropDownRow.IDataItem).value
+          : (event as ChangeEvent<HTMLInputElement>).currentTarget.value,
+      },
     });
   };
 
@@ -103,10 +90,14 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({
     return availableCronTimeZones.map((zone: string) => ({ label: zone, value: zone }));
   }, []);
 
+  const isCron = (form: FormikProps<FormikConnectionFormValues>): boolean => {
+    return form.values.scheduleType === ConnectionScheduleType.cron;
+  };
+
   return (
-    <>
-      <Field name="scheduleData.basicSchedule">
-        {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (
+    <Field name="scheduleData">
+      {({ field, meta, form }: FieldProps<ConnectionScheduleData>) => (
+        <>
           <div className={styles.flexRow}>
             <div className={styles.leftFieldCol}>
               <ControlLabels
@@ -127,17 +118,13 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({
                 error={!!meta.error && meta.touched}
                 options={frequencies}
                 onChange={(item) => {
-                  onScheduleChange(item, field);
+                  onScheduleChange(item, field, form);
                 }}
-                value={getBasicScheduleValue(field.value)}
+                value={getBasicScheduleValue(field.value, form)}
               />
             </div>
           </div>
-        )}
-      </Field>
-      {isCustomSchedule && (
-        <Field name="scheduleData.cron">
-          {({ field, meta }: FieldProps<ConnectionScheduleDataCron>) => (
+          {isCron(form) && (
             <div className={styles.flexRow}>
               <div className={styles.leftFieldCol}>
                 <ControlLabels
@@ -149,33 +136,34 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({
                   })}
                 />
               </div>
+
               <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
                 <div className={styles.flexRow}>
                   <Input
                     disabled={mode === "readonly"}
                     error={!!meta.error}
                     data-testid="cronExpression"
-                    onBlur={field.onBlur}
                     placeholder={formatMessage({
                       id: "form.cronExpression.placeholder",
                     })}
-                    value={field.value?.cronExpression}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => onCronInputChange(event, field)}
+                    value={field.value?.cron?.cronExpression}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      onCronChange(event, field, form, "cronExpression")
+                    }
                   />
                   <DropDown
                     className={styles.cronZonesDropdown}
                     options={cronTimeZones}
-                    value={getZoneValue(field.value?.cronTimeZone)}
-                    onBlur={field.onBlur}
-                    onChange={(item: DropDownRow.IDataItem) => onCronZoneChange(item, field)}
+                    value={getZoneValue(field.value?.cron?.cronTimeZone)}
+                    onChange={(item: DropDownRow.IDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
                 </div>
               </div>
             </div>
           )}
-        </Field>
+        </>
       )}
-    </>
+    </Field>
   );
 };
 
