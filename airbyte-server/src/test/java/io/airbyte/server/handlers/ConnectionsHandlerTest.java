@@ -190,6 +190,7 @@ class ConnectionsHandlerTest {
 
     @Nested
     class CreateConnection {
+
       @Test
       void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
         when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
@@ -327,10 +328,12 @@ class ConnectionsHandlerTest {
         assertThrows(ConfigNotFoundException.class, () -> connectionsHandler.createConnection(connectionCreateBadDestination));
 
       }
+
     }
 
     @Nested
     class UpdateConnection {
+
       @Test
       void testUpdateConnectionPatchSingleField() throws Exception {
         final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
@@ -338,11 +341,11 @@ class ConnectionsHandlerTest {
             .name("newName");
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .name("newName");
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync).withName("newName");
 
@@ -362,11 +365,11 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.MANUAL);
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .schedule(null)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null);
@@ -398,11 +401,11 @@ class ConnectionsHandlerTest {
             .scheduleData(cronScheduleData);
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .schedule(null)
             .scheduleType(ConnectionScheduleType.CRON)
             .scheduleData(cronScheduleData);
@@ -434,11 +437,11 @@ class ConnectionsHandlerTest {
             .scheduleData(newScheduleData);
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .schedule(new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS).units(10L)) // still dual-writing to legacy field
             .scheduleType(ConnectionScheduleType.BASIC)
             .scheduleData(newScheduleData);
@@ -482,11 +485,11 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate);
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .syncCatalog(expectedCatalog);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
@@ -530,11 +533,11 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate);
 
         final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                standardSync.getSourceCatalogId())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            standardSync.getSourceCatalogId())
             .syncCatalog(expectedCatalog);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
@@ -600,11 +603,11 @@ class ConnectionsHandlerTest {
         final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
         final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-                standardSync.getConnectionId(),
-                standardSync.getSourceId(),
-                standardSync.getDestinationId(),
-                standardSync.getOperationIds(),
-                newSourceCatalogId)
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds(),
+            newSourceCatalogId)
             .status(ConnectionStatus.INACTIVE)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null)
@@ -662,6 +665,7 @@ class ConnectionsHandlerTest {
 
         assertEquals(expected, sortedResult);
       }
+
     }
 
     @Test
