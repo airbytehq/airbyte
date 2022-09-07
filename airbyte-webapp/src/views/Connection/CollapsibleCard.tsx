@@ -3,12 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
+import styles from "./CollapsibleCard.module.scss";
 
-import { ContentCard } from "components";
-
-const Card = styled(ContentCard)`
-  margin-bottom: 10px;
-`;
+import { Card } from "components/base/Card";
+import classNames from "classnames";
 
 const CardHeader = styled.div`
   display: flex;
@@ -41,6 +39,7 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
 
   return (
     <Card
+      className={classNames(styles.collapsibleCard)}
       title={
         <CardHeader>
           {title}

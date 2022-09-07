@@ -3,7 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { Button, ContentCard, Link, LoadingButton } from "components";
+import { Button, Link, LoadingButton } from "components";
+import { Card } from "components/base/Card";
 import HeadTitle from "components/HeadTitle";
 
 import { useConfig } from "config";
@@ -17,7 +18,7 @@ const Content = styled.div`
   max-width: 813px;
 `;
 
-const ControlContent = styled(ContentCard)`
+const ControlContent = styled(Card)`
   margin-top: 12px;
 `;
 
@@ -90,7 +91,7 @@ const ConfigurationsPage: React.FC = () => {
   return (
     <Content>
       <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]} />
-      <ContentCard title={<FormattedMessage id="admin.export" />}>
+      <Card title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
           <LoadingButton onClick={onExport} isLoading={loadingExport}>
             <FormattedMessage id="admin.exportConfiguration" />
@@ -108,7 +109,7 @@ const ConfigurationsPage: React.FC = () => {
             />
           </Text>
         </ButtonContent>
-      </ContentCard>
+      </Card>
 
       <ControlContent title={<FormattedMessage id="admin.import" />}>
         <ButtonContent>

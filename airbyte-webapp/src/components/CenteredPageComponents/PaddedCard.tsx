@@ -1,8 +1,8 @@
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
+import { Card } from "components/base/Card";
 
-const PaddedCard = styled(ContentCard)`
+const PaddedCard = styled(Card)`
   width: 100%;
   max-width: 600px;
   margin-bottom: 8px;
