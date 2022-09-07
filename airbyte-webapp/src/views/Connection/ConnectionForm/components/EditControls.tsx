@@ -1,8 +1,10 @@
+import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
+
+import styles from "./EditControls.module.scss";
 
 interface EditControlProps {
   isSubmitting: boolean;
@@ -15,40 +17,6 @@ interface EditControlProps {
   withLine?: boolean;
 }
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  margin-top: 16px;
-  gap: 18px;
-`;
-
-const ControlButton = styled(LoadingButton)`
-  margin-left: 10px;
-`;
-
-const Success = styled.span`
-  color: ${({ theme }) => theme.successColor};
-  font-size: 14px;
-  line-height: 17px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-`;
-
-const Error = styled(Success)`
-  color: ${({ theme }) => theme.dangerColor};
-`;
-
-const Line = styled.div`
-  min-width: 100%;
-  height: 1px;
-  background: ${({ theme }) => theme.greyColor20};
-  margin: 16px -27px 0 -24px;
-`;
-
 const EditControls: React.FC<EditControlProps> = ({
   isSubmitting,
   dirty,
@@ -60,33 +28,43 @@ const EditControls: React.FC<EditControlProps> = ({
   withLine,
 }) => {
   const showStatusMessage = () => {
+    const messageStyle = classnames(styles.message, {
+      [styles.success]: !!successMessage,
+      [styles.error]: !!errorMessage,
+    });
     if (errorMessage) {
-      return <Error>{errorMessage}</Error>;
+      return <div className={messageStyle}>{errorMessage}</div>;
     }
+
     if (successMessage && !dirty) {
-      return <Success data-id="success-result">{successMessage}</Success>;
+      return (
+        <div className={messageStyle} data-id="success-result">
+          {successMessage}
+        </div>
+      );
     }
     return null;
   };
 
   return (
     <>
-      {withLine && <Line />}
-      <Content>
+      {withLine && <div className={styles.line} />}
+      <div className={styles.content}>
         {showStatusMessage()}
         <div>
           <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />
           </Button>
-          <ControlButton
+          <LoadingButton
+            className={styles.controlButton}
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
           >
             <FormattedMessage id="form.saveChanges" />
-          </ControlButton>
+          </LoadingButton>
         </div>
-      </Content>
+      </div>
     </>
   );
 };
