@@ -18,7 +18,7 @@ See the [connector definition section](yaml-structure.md) for more information o
 ## Does this framework support the connector I want to build?
 
 Not all APIs are can be built using this framework because its featureset is still limited.
-This section describes guidelines for determining whether a connector for a given API can be built using the config-based framework.
+This section describes guidelines for determining whether a connector for a given API can be built using the config-based framework. Please let us know through the #lowcode-earlyaccess Slack channel if you'd like to build something that falls outside what we currently support and we'd be happy to discuss and prioritize in the coming months!
 
 Refer to the API's documentation to answer the following questions:
 
