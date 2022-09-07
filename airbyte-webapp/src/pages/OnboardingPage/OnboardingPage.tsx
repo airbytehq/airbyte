@@ -47,7 +47,7 @@ const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 0;
+  margin-top: 100px; // need to move it a little bit down because of <StartWithDestination />, since it renders as a separate card with "position: absolute"
 `;
 
 const ScreenContent = styled.div`
