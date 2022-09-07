@@ -11,7 +11,7 @@ IFACE=$(ip -br add | grep ${GATEWAY} | awk '{ print $1 }')
 
 iptables -F DOCKER-USER
 iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 80 -j REJECT
-#iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 443 -j REJECT
+iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 443 -j REJECT
 
 # runs integration tests for an integration name
 
