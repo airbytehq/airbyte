@@ -53,6 +53,8 @@ public class S3DestinationConfig {
 
   private boolean checkIntegrity = true;
 
+  private int uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS;
+
   public S3DestinationConfig(final String endpoint,
                              final String bucketName,
                              final String bucketPath,
@@ -80,7 +82,8 @@ public class S3DestinationConfig {
                              final S3FormatConfig formatConfig,
                              final AmazonS3 s3Client,
                              final String fileNamePattern,
-                             final boolean checkIntegrity) {
+                             final boolean checkIntegrity,
+                             final int uploadThreadsCount) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -91,6 +94,7 @@ public class S3DestinationConfig {
     this.s3Client = s3Client;
     this.fileNamePattern = fileNamePattern;
     this.checkIntegrity = checkIntegrity;
+    this.uploadThreadsCount = uploadThreadsCount;
   }
 
   public static Builder create(final String bucketName, final String bucketPath, final String bucketRegion) {
@@ -132,7 +136,10 @@ public class S3DestinationConfig {
           final String endpoint = String.format(R2_INSTANCE_URL, getProperty(config, ACCOUNT_ID));
           builder = builder.withEndpoint(endpoint);
         }
-        builder = builder.withCheckIntegrity(false);
+        builder = builder.withCheckIntegrity(false)
+                // https://developers.cloudflare.com/r2/platform/s3-compatibility/api/#implemented-object-level-operations
+                // 3 or less
+                .withUploadThreadsCount(S3StorageOperations.R2_UPLOAD_THREADS);
       }
       default -> {
         if (config.has(S_3_ENDPOINT)) {
@@ -201,6 +208,10 @@ public class S3DestinationConfig {
 
   public boolean isCheckIntegrity() {
     return checkIntegrity;
+  }
+
+  public int getUploadThreadsCount() {
+    return uploadThreadsCount;
   }
 
   public AmazonS3 getS3Client() {
@@ -288,6 +299,8 @@ public class S3DestinationConfig {
 
     private boolean checkIntegrity = true;
 
+    private int uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS;
+
     protected Builder(final String bucketName, final String bucketPath, final String bucketRegion) {
       this.bucketName = bucketName;
       this.bucketPath = bucketPath;
@@ -349,6 +362,11 @@ public class S3DestinationConfig {
       return this;
     }
 
+    public Builder withUploadThreadsCount(final int uploadThreadsCount) {
+      this.uploadThreadsCount = uploadThreadsCount;
+      return this;
+    }
+
     public S3DestinationConfig get() {
       return new S3DestinationConfig(
           endpoint,
@@ -360,7 +378,8 @@ public class S3DestinationConfig {
           formatConfig,
           s3Client,
           fileNamePattern,
-          checkIntegrity);
+          checkIntegrity,
+          uploadThreadsCount);
     }
 
   }

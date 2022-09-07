@@ -42,7 +42,10 @@ public class S3StorageOperations extends BlobStorageOperations {
 
   private final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
 
-  private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
+  public static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
+
+  public static final int R2_UPLOAD_THREADS = 3;
+
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
   private static final int DEFAULT_PART_SIZE = 10;
   private static final int UPLOAD_RETRY_LIMIT = 3;
@@ -166,7 +169,7 @@ public class S3StorageOperations extends BlobStorageOperations {
         .setUserMetadata(metadata)
         .get()
         .checkIntegrity(s3Config.isCheckIntegrity())
-        .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+        .numUploadThreads(s3Config.getUploadThreadsCount())
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
 
