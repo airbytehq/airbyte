@@ -5,7 +5,7 @@ import React from "react";
 import selectEvent from "react-select-event";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
-import { render } from "utils/testutils";
+import { render, useMockIntersectionObserver } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
 import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
@@ -353,6 +353,10 @@ describe("Service Form", () => {
     });
 
     test("should fill right values in array of objects field", async () => {
+      // IntersectionObserver isn't available in test environment but is used by headless-ui dialog
+      // used for this component
+      useMockIntersectionObserver();
+
       const addPriceListItem = useAddPriceListItem(container);
       await addPriceListItem("test-1", "1");
       await addPriceListItem("test-2", "2");
