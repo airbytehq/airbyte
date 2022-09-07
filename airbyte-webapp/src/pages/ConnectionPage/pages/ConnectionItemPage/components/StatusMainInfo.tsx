@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import ConnectorCard from "components/ConnectorCard";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
 import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
@@ -32,37 +32,40 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   const allowSync = useFeature(FeatureItem.AllowSync);
-  const frequency = getFrequencyConfig(connection.schedule);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
 
   return (
     <div className={styles.container}>
-      <Link to={sourceConnectionPath} className={styles.connectorLink}>
-        <ConnectorCard
-          connectionName={source.sourceName}
-          icon={sourceDefinition?.icon}
-          connectorName={source.name}
-          releaseStage={sourceDefinition?.releaseStage}
-        />
-      </Link>
-      <FontAwesomeIcon icon={faArrowRight} />
-      <Link to={destinationConnectionPath} className={styles.connectorLink}>
-        <ConnectorCard
-          connectionName={destination.destinationName}
-          icon={destinationDefinition?.icon}
-          connectorName={destination.name}
-          releaseStage={destinationDefinition?.releaseStage}
-        />
-      </Link>
+      <div className={styles.pathContainer}>
+        <Link to={sourceConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={source.sourceName}
+            icon={sourceDefinition?.icon}
+            connectorName={source.name}
+            releaseStage={sourceDefinition?.releaseStage}
+          />
+        </Link>
+        <FontAwesomeIcon icon={faArrowRight} />
+        <Link to={destinationConnectionPath} className={styles.connectorLink}>
+          <ConnectorCard
+            connectionName={destination.destinationName}
+            icon={destinationDefinition?.icon}
+            connectorName={destination.name}
+            releaseStage={destinationDefinition?.releaseStage}
+          />
+        </Link>
+      </div>
       {connection.status !== ConnectionStatus.deprecated && (
-        <EnabledControl
-          onStatusUpdating={onStatusUpdating}
-          disabled={!allowSync}
-          connection={connection}
-          frequencyType={frequency?.type}
-        />
+        <div className={styles.enabledControlContainer}>
+          <EnabledControl
+            onStatusUpdating={onStatusUpdating}
+            disabled={!allowSync}
+            connection={connection}
+            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
+          />
+        </div>
       )}
     </div>
   );

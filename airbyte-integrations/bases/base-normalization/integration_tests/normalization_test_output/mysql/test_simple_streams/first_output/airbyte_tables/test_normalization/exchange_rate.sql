@@ -3,41 +3,41 @@
   create  table
     test_normalization.`exchange_rate__dbt_tmp`
   as (
-    
+
 with __dbt__cte__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: test_normalization._airbyte_raw_exchange_rate
 select
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."id"' RETURNING CHAR) as id,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."currency"' RETURNING CHAR) as currency,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."date"' RETURNING CHAR) as `date`,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."timestamp_col"' RETURNING CHAR) as timestamp_col,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."HKD@spéçiäl & characters"' RETURNING CHAR) as `HKD@spéçiäl & characters`,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."HKD_special___characters"' RETURNING CHAR) as hkd_special___characters,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."NZD"' RETURNING CHAR) as nzd,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."USD"' RETURNING CHAR) as usd,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."column___with__quotes"' RETURNING CHAR) as `column__'with"_quotes`,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."datetime_tz"' RETURNING CHAR) as datetime_tz,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."datetime_no_tz"' RETURNING CHAR) as datetime_no_tz,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."time_tz"' RETURNING CHAR) as time_tz,
-    json_value(_airbyte_data, 
+    json_value(_airbyte_data,
     '$."time_no_tz"' RETURNING CHAR) as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
-    
+
     CURRENT_TIMESTAMP
  as _airbyte_normalized_at
 from test_normalization._airbyte_raw_exchange_rate as table_alias
@@ -48,7 +48,7 @@ where 1 = 1
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 -- depends_on: __dbt__cte__exchange_rate_ab1
 select
-    cast(id as 
+    cast(id as
     signed
 ) as id,
     cast(currency as char(1024)) as currency,
@@ -57,14 +57,14 @@ select
         end as `date`
         ,
     cast(nullif(timestamp_col, '') as char(1024)) as timestamp_col,
-    cast(`HKD@spéçiäl & characters` as 
+    cast(`HKD@spéçiäl & characters` as
     float
 ) as `HKD@spéçiäl & characters`,
     cast(hkd_special___characters as char(1024)) as hkd_special___characters,
-    cast(nzd as 
+    cast(nzd as
     float
 ) as nzd,
-    cast(usd as 
+    cast(usd as
     float
 ) as usd,
     cast(`column__'with"_quotes` as char(1024)) as `column__'with"_quotes`,
@@ -74,12 +74,12 @@ select
         end as datetime_no_tz
         ,
     nullif(cast(time_tz as char(1024)), "") as time_tz,
-    nullif(cast(time_no_tz as 
+    nullif(cast(time_no_tz as
     time
 ), "") as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
-    
+
     CURRENT_TIMESTAMP
  as _airbyte_normalized_at
 from __dbt__cte__exchange_rate_ab1
@@ -113,7 +113,7 @@ select
     time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
-    
+
     CURRENT_TIMESTAMP
  as _airbyte_normalized_at,
     _airbyte_exchange_rate_hashid

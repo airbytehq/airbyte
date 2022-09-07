@@ -17,13 +17,14 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
+    is_big_integer,
     is_boolean,
     is_combining_node,
     is_date,
     is_datetime,
     is_datetime_with_timezone,
     is_datetime_without_timezone,
-    is_integer,
+    is_long,
     is_number,
     is_object,
     is_simple_property,
@@ -458,11 +459,11 @@ where 1 = 1
         if "type" in definition:
             if is_array(definition["type"]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
-                if is_simple_property(definition.get("items", {"type": "object"}).get("type", "object")):
+                if is_simple_property(definition.get("items", {"type": "object"})):
                     json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_simple_property(definition["type"]):
+            elif is_simple_property(definition):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
 
         return f"{json_extract} as {column_name}"
@@ -511,10 +512,12 @@ where 1 = 1
         elif is_object(definition["type"]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
-        elif is_integer(definition["type"]):
+        elif is_big_integer(definition):
+            sql_type = jinja_call("type_very_large_integer()")
+        elif is_long(definition["type"], definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
@@ -545,7 +548,7 @@ where 1 = 1
                 sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
-            if self.destination_type.value == DestinationType.MYSQL.value:
+            if self.destination_type.value == DestinationType.MYSQL.value or self.destination_type.value == DestinationType.TIDB.value:
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
@@ -567,7 +570,7 @@ where 1 = 1
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
-            if self.destination_type == DestinationType.MYSQL:
+            if self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB:
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -713,7 +716,7 @@ where 1 = 1
 
         if "type" not in definition:
             col = column_name
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
@@ -1139,7 +1142,7 @@ where 1 = 1
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
-        truncate_name = self.destination_type == DestinationType.MYSQL
+        truncate_name = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
@@ -1239,7 +1242,10 @@ where 1 = 1
                     quoted_unique_key=self.get_unique_key(in_jinja=True),
                     active_row_column_name=active_row_column_name,
                     normalized_at_incremental_clause=self.get_incremental_clause_for_column(
-                        "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name),
+                        "{} + '.' + {}".format(
+                            self.name_transformer.apply_quote("this.schema", literal=False),
+                            self.name_transformer.apply_quote(final_table_name),
+                        ),
                         self.get_normalized_at(in_jinja=True),
                     ),
                     unique_key_reference=unique_key_reference,
@@ -1460,7 +1466,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif "type" in properties and is_simple_property(properties["type"]):
+        elif "type" in properties and is_simple_property(properties):
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):

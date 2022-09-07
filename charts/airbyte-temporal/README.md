@@ -1,6 +1,6 @@
 # temporal
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte-temporal
 
@@ -17,17 +17,20 @@ Helm chart to deploy airbyte-temporal
 | affinity | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| global.configMapName | string | `"something"` |  |
-| global.database.host | string | `"something"` |  |
+| global.configMapName | string | `""` |  |
+| global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretName | string | `""` |  |
+| global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
-| global.secretName | string | `"something"` |  |
-| global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
+| global.extraContainers | list | `[]` |  |
+| global.secretName | string | `""` |  |
+| global.serviceAccountName | string | `"placeholderServiceAccount"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"temporalio/auto-setup"` |  |
 | image.tag | string | `"1.7.0"` |  |

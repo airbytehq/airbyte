@@ -1,17 +1,23 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
 import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { JobDebugInfoRead, JobInfoRead, JobListRequestBody } from "../../core/request/AirbyteClient";
+import {
+  JobDebugInfoRead,
+  JobInfoRead,
+  JobListRequestBody,
+  JobWithAttemptsRead,
+  Pagination,
+} from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {
   all: ["jobs"] as const,
   lists: () => [...jobsKeys.all, "list"] as const,
-  list: (filters: string) => [...jobsKeys.lists(), { filters }] as const,
+  list: (filters: string, pagination?: Pagination) => [...jobsKeys.lists(), { filters, pagination }] as const,
   detail: (jobId: number) => [...jobsKeys.all, "details", jobId] as const,
   getDebugInfo: (jobId: number) => [...jobsKeys.all, "getDebugInfo", jobId] as const,
   cancel: (jobId: string) => [...jobsKeys.all, "cancel", jobId] as const,
@@ -25,9 +31,13 @@ function useGetJobService() {
 
 export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
-  return useSuspenseQuery(jobsKeys.list(listParams.configId), () => service.list(listParams), {
+  const result = useQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
     refetchInterval: 2500, // every 2,5 seconds,
-  }).jobs;
+    keepPreviousData: true,
+    suspense: true,
+  });
+  // cast to JobWithAttemptsRead[] because (suspense: true) means we will never get undefined
+  return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
 };
 
 export const useGetJob = (id: number, enabled = true) => {

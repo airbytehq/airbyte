@@ -61,15 +61,16 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
+  @Override
   @BeforeEach
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     COLUMN_CLAUSE_WITH_PK =
-        "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
+        "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
     COLUMN_CLAUSE_WITHOUT_PK =
-        "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
+        "id INTEGER NOT NULL, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
     COLUMN_CLAUSE_WITH_COMPOSITE_PK =
-        "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
+        "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
@@ -156,6 +157,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     });
 
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');";
   }
 
   @Override
@@ -217,6 +220,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
     return getTestMessages()
         .stream()
@@ -233,6 +237,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
     return getTestMessages()
         .stream()
@@ -316,6 +321,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
   }
 
+  @Override
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(
@@ -335,7 +341,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
             Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
@@ -346,7 +352,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
             Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),

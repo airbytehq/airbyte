@@ -15,7 +15,6 @@ const ConnectionStep: React.FC<IProps> = ({ onNextStep: afterSubmitConnection })
 
   return (
     <CreateConnectionContent
-      noTitles
       source={sources[0]}
       destination={destinations[0]}
       afterSubmitConnection={afterSubmitConnection}

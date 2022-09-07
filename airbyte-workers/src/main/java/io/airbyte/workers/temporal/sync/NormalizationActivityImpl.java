@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -43,6 +44,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
+
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
 
@@ -54,6 +57,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                    final WorkerEnvironment workerEnvironment,
                                    final LogConfigs logConfigs,
                                    final JobPersistence jobPersistence,
+                                   final AirbyteApiClient airbyteApiClient,
                                    final String airbyteVersion) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
@@ -64,6 +68,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -96,7 +101,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
           workerFactory,
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler(context),
-          jobPersistence,
+          airbyteApiClient,
           airbyteVersion,
           () -> context);
 
@@ -128,7 +133,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);
-
     return () -> new NormalizationLauncherWorker(
         connectionId,
         destinationLauncherConfig,

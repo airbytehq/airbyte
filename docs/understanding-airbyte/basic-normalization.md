@@ -353,7 +353,13 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date       | Pull Request | Subject                                                                    |
 |:----------------|:----------------------|:-----------| :--- |:---------------------------------------------------------------------------|
-|                 | 0.2.11                | 2022-07-26 | [\#13591](https://github.com/airbytehq/airbyte/pull/13591) | Handle timezone in date-time format. Parse date correct in clickhouse.     |
+|                 | 0.2.20                | 2022-08-30 | [\#15592](https://github.com/airbytehq/airbyte/pull/15592) | Add TiDB support                                                           |
+|                 | 0.2.19                | 2022-08-21 | [\#14897](https://github.com/airbytehq/airbyte/pull/14897) | Update Clickhouse DBT to 1.1.7                                             |
+|                 | 0.2.16                | 2022-08-04 | [\#14295](https://github.com/airbytehq/airbyte/pull/14295) | Fixed SSH tunnel port usage                                                |
+|                 | 0.2.14                | 2022-08-01 | [\#14790](https://github.com/airbytehq/airbyte/pull/14790) | Add and persist job failures for Normalization                             |
+|                 | 0.2.13                | 2022-07-27 | [\#14683](https://github.com/airbytehq/airbyte/pull/14683) | Quote schema name to allow reserved keywords                               |
+|                 | 0.2.12                | 2022-07-26 | [\#14362](https://github.com/airbytehq/airbyte/pull/14362) | Handle timezone in date-time format. Parse date correct in clickhouse.     |
+|                 | 0.2.11                | 2022-07-26 | [\#13591](https://github.com/airbytehq/airbyte/pull/13591) | Updated support for integer columns.                                       |
 |                 | 0.2.10                | 2022-07-18 | [\#14792](https://github.com/airbytehq/airbyte/pull/14792) | Add support for key pair auth for snowflake                                |
 |                 | 0.2.9                 | 2022-07-06 | [\#14485](https://github.com/airbytehq/airbyte/pull/14485) | BigQuery partition pruning otimization                                     |
 |                 | 0.2.8                 | 2022-07-13 | [\#14522](https://github.com/airbytehq/airbyte/pull/14522) | BigQuery replaces `NULL` array entries with the string value `"NULL"`      |
@@ -399,4 +405,3 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 | 0.28.2-alpha    | 0.1.38                | 2021-07-28 | [\#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob                       |
 | 0.27.5-alpha    | 0.1.37                | 2021-07-22 | [\#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping                            |
 | 0.27.2-alpha    | 0.1.36                | 2021-07-09 | [\#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination                                 |
-

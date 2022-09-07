@@ -54,3 +54,14 @@
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637990800, "data": { "id": 2, "date": "2020-09-01", "text": "hi 4"}}}
 
 {"type":"RECORD","record":{"stream":"multiple_column_names_conflicts","data":{"id":1,"User Id":"chris","user_id":42,"User id":300,"user id": 102,"UserId":101},"emitted_at":1623959926}}
+
+# These records are verified in types_testing_incorrect_values.sql. If you add/remove entries, make sure to update that file as well.
+# IMPORTANT: big_integer_column and nullable_big_integer_column were removed from catalog.json because of difficulties in implementing NUMERIC support.
+#   This is fine, because no major sources currently produce big_integer fields.
+#   After that functionality is completed, we should restore their entries to catalog.json.
+# Verify max value for int64, and a 28-digit value for big_integer. (28 is larger than an int64 can handle, but still within bounds for a BigQuery NUMERIC column)
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":1,"airbyte_integer_column":9223372036854775807,"nullable_airbyte_integer_column":9223372036854775807,"big_integer_column":"1234567890123456789012345678","nullable_big_integer_column":"1234567890123456789012345678"},"emitted_at":1623959926}}
+# Verify max value for int64, and a negative 28-digit value for big_integer
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":2,"airbyte_integer_column":-9223372036854775808,"nullable_airbyte_integer_column":-9223372036854775808,"big_integer_column":"-1234567890123456789012345678","nullable_big_integer_column":"-1234567890123456789012345678"},"emitted_at":1623959926}}
+# Verify nullable values
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":3,"airbyte_integer_column":0,"big_integer_column":0},"emitted_at":1623959926}}

@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class ResourceRequirementsUtilsTest {
 
+  private static final String FIVE_HUNDRED_MEM = "500Mi";
+
   @Test
   void testNoReqsSet() {
     final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
@@ -91,7 +93,8 @@ class ResourceRequirementsUtilsTest {
     final ActorDefinitionResourceRequirements definitionReqs = new ActorDefinitionResourceRequirements()
         .withDefault(definitionDefaultReqs)
         .withJobSpecific(List.of(jobTypeResourceLimit));
-    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withMemoryRequest("400Mi").withMemoryLimit("500Mi");
+    final ResourceRequirements connectionResourceRequirements =
+        new ResourceRequirements().withMemoryRequest("400Mi").withMemoryLimit(FIVE_HUNDRED_MEM);
 
     final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
         connectionResourceRequirements,
@@ -103,21 +106,21 @@ class ResourceRequirementsUtilsTest {
         .withCpuRequest("2")
         .withCpuLimit("3")
         .withMemoryRequest("400Mi")
-        .withMemoryLimit("500Mi");
+        .withMemoryLimit(FIVE_HUNDRED_MEM);
     assertEquals(expectedReqs, result);
   }
 
   @Test
   void testConnectionResourceRequirementsOverrideWorker() {
     final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1").withCpuLimit("1");
-    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withCpuLimit("2").withMemoryLimit("500Mi");
+    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withCpuLimit("2").withMemoryLimit(FIVE_HUNDRED_MEM);
 
     final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(connectionResourceRequirements, workerDefaultReqs);
 
     final ResourceRequirements expectedReqs = new ResourceRequirements()
         .withCpuRequest("1")
         .withCpuLimit("2")
-        .withMemoryLimit("500Mi");
+        .withMemoryLimit(FIVE_HUNDRED_MEM);
     assertEquals(expectedReqs, result);
   }
 

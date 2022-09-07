@@ -37,6 +37,7 @@ class SentryJobErrorReportingClientTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "My Workspace";
   private static final String DOCKER_IMAGE = "airbyte/source-stripe:1.2.3";
+  private static final String ERROR_MESSAGE = "RuntimeError: Something went wrong";
 
   private final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME);
   private SentryJobErrorReportingClient sentryErrorReportingClient;
@@ -80,7 +81,7 @@ class SentryJobErrorReportingClientTest {
     final FailureReason failureReason = new FailureReason()
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR)
-        .withInternalMessage("RuntimeError: Something went wrong");
+        .withInternalMessage(ERROR_MESSAGE);
     final Map<String, String> metadata = Map.of("some_metadata", "some_metadata_value");
 
     sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, metadata);
@@ -101,7 +102,28 @@ class SentryJobErrorReportingClientTest {
 
     final Message message = actualEvent.getMessage();
     assertNotNull(message);
-    assertEquals("RuntimeError: Something went wrong", message.getFormatted());
+    assertEquals(ERROR_MESSAGE, message.getFormatted());
+  }
+
+  @Test
+  void testReportJobFailureReasonWithNoWorkspace() {
+    final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+
+    final FailureReason failureReason = new FailureReason()
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR)
+        .withInternalMessage(ERROR_MESSAGE);
+
+    sentryErrorReportingClient.reportJobFailureReason(null, failureReason, DOCKER_IMAGE, Map.of());
+
+    verify(mockSentryHub).captureEvent(eventCaptor.capture());
+    final SentryEvent actualEvent = eventCaptor.getValue();
+    final User sentryUser = actualEvent.getUser();
+    assertNull(sentryUser);
+
+    final Message message = actualEvent.getMessage();
+    assertNotNull(message);
+    assertEquals(ERROR_MESSAGE, message.getFormatted());
   }
 
   @Test
@@ -117,7 +139,7 @@ class SentryJobErrorReportingClientTest {
     when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(Optional.of(exceptions));
 
     final FailureReason failureReason = new FailureReason()
-        .withInternalMessage("RuntimeError: Something went wrong")
+        .withInternalMessage(ERROR_MESSAGE)
         .withStacktrace("Some valid stacktrace");
 
     sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, Map.of());

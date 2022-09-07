@@ -1,4 +1,4 @@
-name: integration-test
+name: Run Integration Test
 on:
   workflow_dispatch:
     inputs:
@@ -16,6 +16,9 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      uuid:
+        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+        required: false
 
 jobs:
   find_valid_pat:
@@ -25,6 +28,8 @@ jobs:
     outputs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
+      - name: UUID ${{ github.event.inputs.uuid }}
+        run: true
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Check PAT rate limits

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import json
 import logging
 import time
@@ -51,10 +52,9 @@ class PaypalHttpException(Exception):
 
 def get_endpoint(is_sandbox: bool = False) -> str:
     if is_sandbox:
-        endpoint = "https://api-m.sandbox.paypal.com"
-    else:
-        endpoint = "https://api-m.paypal.com"
-    return endpoint
+        return "https://api-m.sandbox.paypal.com"
+
+    return "https://api-m.paypal.com"
 
 
 class PaypalTransactionStream(HttpStream, ABC):
@@ -82,6 +82,10 @@ class PaypalTransactionStream(HttpStream, ABC):
     stream_slice_period: Mapping[str, int] = {"days": 15}  # max period is 31 days (API limit)
 
     requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
+    # if the stream has nested cursor_field, we should trry to unnest it once parsing the recods to avoid normalization conflicts.
+    unnest_cursor: bool = False
+    unnest_pk: bool = False
+    nested_object: str = None
 
     def __init__(
         self,
@@ -156,10 +160,24 @@ class PaypalTransactionStream(HttpStream, ABC):
             # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
             # convert any date format to python iso format string for date based cursors
             self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
+            # unnest cursor_field to handle normalization correctly
+            if self.unnest_cursor:
+                self.unnest_field(record, self.nested_object, self.cursor_field)
+            # unnest primary_key to handle normalization correctly
+            if self.unnest_pk:
+                self.unnest_field(record, self.nested_object, self.primary_key)
             yield record
 
         # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
         time.sleep(60 / self.requests_per_minute)
+
+    @staticmethod
+    def unnest_field(record: Mapping[str, Any], unnest_from: Dict, cursor_field: str):
+        """
+        Unnest cursor_field to the root level of the record.
+        """
+        if unnest_from in record:
+            record[cursor_field] = record.get(unnest_from).get(cursor_field)
 
     @staticmethod
     def update_field(record: Mapping[str, Any], field_path: Union[List[str], str], update: Callable[[Any], None]):
@@ -332,8 +350,14 @@ class Transactions(PaypalTransactionStream):
     """
 
     data_field = "transaction_details"
-    primary_key = [["transaction_info", "transaction_id"]]
-    cursor_field = ["transaction_info", "transaction_initiation_date"]
+    nested_object = "transaction_info"
+
+    primary_key = "transaction_id"
+    cursor_field = "transaction_initiation_date"
+
+    unnest_cursor = True
+    unnest_pk = True
+
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
 
     # TODO handle API error when 1 request returns more than 10000 records.
@@ -402,39 +426,69 @@ class Balances(PaypalTransactionStream):
 
 class PayPalOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
-    curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
-      -H "Accept: application/json" \
-      -H "Accept-Language: en_US" \
-      -u "CLIENT_ID:SECRET" \
-      -d "grant_type=client_credentials"
+    For `old_config` scenario:
+        curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
+        -H "Accept: application/json" \
+        -H "Accept-Language: en_US" \
+        -u "CLIENT_ID:SECRET" \
+        -d "grant_type=client_credentials"
     """
 
-    def __init__(self, config):
-        super().__init__(
-            token_refresh_endpoint=f"{get_endpoint(config['is_sandbox'])}/v1/oauth2/token",
-            client_id=config["client_id"],
-            client_secret=config["secret"],
-            refresh_token="",
-        )
+    def __init__(self, config: Dict):
+        self.old_config: bool = False
+        # default auth args
+        self.auth_args: Dict = {
+            "token_refresh_endpoint": f"{get_endpoint(config['is_sandbox'])}/v1/oauth2/token",
+            "refresh_token": "",
+        }
+        # support old configs
+        if "client_id" and "secret" in config:
+            self.old_config = True
+            self.auth_args.update(
+                **{"client_id": config["client_id"], "client_secret": config["secret"], "refresh_token": config.get("refresh_token")}
+            )
+        # new configs
+        if "credentials" in config:
+            credentials = config.get("credentials")
+            auth_type = credentials.get("auth_type")
+            self.auth_args.update(**{"client_id": credentials["client_id"], "client_secret": credentials["client_secret"]})
+            if auth_type == "oauth2.0":
+                self.auth_args["refresh_token"] = credentials["refresh_token"]
+            elif auth_type == "private_oauth":
+                self.old_config = True
+
+        self.config = config
+        super().__init__(**self.auth_args)
+
+    def get_headers(self):
+        # support old configs
+        if self.old_config:
+            return {"Accept": "application/json", "Accept-Language": "en_US"}
+        # new configs
+        basic_auth = base64.b64encode(bytes(f"{self.client_id}:{self.client_secret}", "utf-8")).decode("utf-8")
+        return {"Authorization": f"Basic {basic_auth}"}
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        return {"grant_type": "client_credentials"}
+        # support old configs
+        if self.old_config:
+            return {"grant_type": "client_credentials"}
+        # new configs
+        return {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
+        request_args = {
+            "url": self.token_refresh_endpoint,
+            "data": self.get_refresh_request_body(),
+            "headers": self.get_headers(),
+        }
         try:
-            data = "grant_type=client_credentials"
-            headers = {"Accept": "application/json", "Accept-Language": "en_US"}
-            auth = (self.client_id, self.client_secret)
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=data,
-                headers=headers,
-                auth=auth,
-            )
+            # support old configs
+            if self.old_config:
+                request_args["auth"] = (self.client_id, self.client_secret)
+            response = requests.post(**request_args)
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]

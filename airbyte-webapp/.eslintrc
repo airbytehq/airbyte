@@ -5,9 +5,10 @@
     "plugin:jest/recommended",
     "prettier",
     "plugin:prettier/recommended",
-    "plugin:css-modules/recommended"
+    "plugin:css-modules/recommended",
+    "plugin:jsx-a11y/recommended"
   ],
-  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules"],
+  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -16,9 +17,10 @@
     }
   },
   "rules": {
+    "jsx-a11y/label-has-associated-control": "error",
     "curly": "warn",
-    "css-modules/no-undef-class": ["warn", { "camelCase": true }],
-    "css-modules/no-unused-class": ["warn", { "camelCase": true }],
+    "css-modules/no-undef-class": ["error", { "camelCase": true }],
+    "css-modules/no-unused-class": ["error", { "camelCase": true }],
     "dot-location": "warn",
     "eqeqeq": "error",
     "prettier/prettier": "warn",
@@ -36,6 +38,7 @@
     "prefer-destructuring": ["warn", { "AssignmentExpression": { "array": true } }],
     "prefer-object-spread": "warn",
     "prefer-template": "warn",
+    "spaced-comment": ["warn", "always", { "markers": ["/"] }],
     "yoda": "warn",
     "import/order": [
       "warn",

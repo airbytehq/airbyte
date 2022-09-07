@@ -40,6 +40,10 @@
     String
 {% endmacro %}
 
+{%- macro tidb__type_json() -%}
+    json
+{%- endmacro -%}
+
 
 {# string ------------------------------------------------- #}
 
@@ -64,6 +68,10 @@
     text
 {%- endmacro -%}
 
+{%- macro tidb__type_string() -%}
+    char(1000)
+{%- endmacro -%}
+
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
     float
@@ -77,9 +85,16 @@
     Float64
 {% endmacro %}
 
+{% macro tidb__type_float() %}
+    float
+{% endmacro %}
 
 {# int  ------------------------------------------------- #}
 {% macro default__type_int() %}
+    int
+{% endmacro %}
+
+{% macro mysql__type_int() %}
     signed
 {% endmacro %}
 
@@ -91,6 +106,9 @@
     INT
 {% endmacro %}
 
+{% macro tidb__type_int() %}
+    signed
+{% endmacro %}
 
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
@@ -105,6 +123,9 @@
     BIGINT
 {% endmacro %}
 
+{% macro tidb__type_bigint() %}
+    signed
+{% endmacro %}
 
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
@@ -115,6 +136,58 @@
     Float64
 {% endmacro %}
 
+{% macro tidb__type_numeric() %}
+    float
+{% endmacro %}
+
+{# very_large_integer --------------------------------------- --#}
+{#
+Most databases don't have a true unbounded numeric datatype, so we use a really big numeric field.
+Our type terminology unfortunately collides with DB terminology (i.e. "big_integer" means different things in different contexts)
+so this macro needs to be called very_large_integer.
+#}
+{%- macro type_very_large_integer() -%}
+  {{ adapter.dispatch('type_very_large_integer')() }}
+{%- endmacro -%}
+
+{% macro default__type_very_large_integer() %}
+    numeric
+{% endmacro %}
+
+{% macro snowflake__type_very_large_integer() %}
+    numeric
+{% endmacro %}
+
+{% macro mysql__type_very_large_integer() %}
+    decimal(38, 0)
+{% endmacro %}
+
+{% macro clickhouse__type_very_large_integer() %}
+    decimal128(0)
+{% endmacro %}
+
+{% macro tidb__type_very_large_integer() %}
+    decimal(38, 0)
+{% endmacro %}
+
+{# timestamp ------------------------------------------------- --#}
+{% macro mysql__type_timestamp() %}
+    time
+{% endmacro %}
+
+{%- macro sqlserver__type_timestamp() -%}
+    {#-- in TSQL timestamp is really datetime --#}
+    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
+    datetime
+{%- endmacro -%}
+
+{% macro clickhouse__type_timestamp() %}
+    DateTime64
+{% endmacro %}
+
+{% macro tidb__type_timestamp() %}
+    time
+{% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
 
@@ -152,6 +225,9 @@
     DateTime64
 {% endmacro %}
 
+{%- macro tidb__type_timestamp_with_timezone() -%}
+    char(1000)
+{%- endmacro -%}
 
 {# timestamp without time zone  -------------------------------------------------     #}
 
@@ -181,6 +257,9 @@
     TIMESTAMP
 {% endmacro %}
 
+{% macro tidb__type_timestamp_without_timezone() %}
+    datetime
+{% endmacro %}
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -202,6 +281,10 @@
 
 {% macro clickhouse__type_time_without_timezone() %}
     String
+{% endmacro %}
+
+{% macro tidb__type_time_without_timezone() %}
+    time
 {% endmacro %}
 
 
@@ -243,6 +326,9 @@
     String
 {% endmacro %}
 
+{%- macro tidb__type_time_with_timezone() -%}
+    char(1000)
+{%- endmacro -%}
 
 {# date  -------------------------------------------------     #}
 

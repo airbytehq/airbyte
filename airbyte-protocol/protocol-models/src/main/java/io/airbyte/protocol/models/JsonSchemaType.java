@@ -19,12 +19,14 @@ public class JsonSchemaType {
   public static final String TIME_WITH_TIMEZONE = "time_with_timezone";
   public static final String TIMESTAMP_WITH_TIMEZONE = "timestamp_with_timezone";
   public static final String TIMESTAMP_WITHOUT_TIMEZONE = "timestamp_without_timezone";
+  public static final String AIRYBTE_INT_TYPE = "integer";
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
 
   public static final JsonSchemaType STRING = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build();
   public static final JsonSchemaType NUMBER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).build();
+  public static final JsonSchemaType INTEGER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).withAirbyteType(AIRYBTE_INT_TYPE).build();
   public static final JsonSchemaType BOOLEAN = JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN).build();
   public static final JsonSchemaType OBJECT = JsonSchemaType.builder(JsonSchemaPrimitive.OBJECT).build();
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
@@ -48,7 +50,7 @@ public class JsonSchemaType {
           .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
   public static final JsonSchemaType STRING_DATE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
       .withFormat(DATE).build();
-  public static final JsonSchemaType NUMBER_BIGINT = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).withAirbyteType("big_integer").build();
+  public static final JsonSchemaType NUMBER_BIGINT = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType("big_integer").build();
 
   private final Map<String, String> jsonSchemaTypeMap;
 
