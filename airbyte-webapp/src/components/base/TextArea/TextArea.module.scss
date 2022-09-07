@@ -1,5 +1,5 @@
-@use '../../../scss/colors';
-@use '../../../scss/variables';
+@use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .textarea {
   outline: none;
@@ -15,10 +15,9 @@
   color: colors.$dark-blue;
   caret-color: colors.$blue;
 
-  .error {
+  &.error {
     border-color: colors.$red;
   }
-
 
   &::placeholder {
     color: colors.$grey-300;
