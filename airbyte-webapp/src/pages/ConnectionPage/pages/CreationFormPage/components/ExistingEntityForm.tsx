@@ -6,7 +6,7 @@ import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
-import ContentCard from "components/ContentCard";
+import { Card } from "../../../../../components/base/Card";
 
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -81,7 +81,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const initialValues = { entityId: "" };
   return (
     <>
-      <ContentCard title={<FormattedMessage id={`connectionForm.${type}Existing`} />}>
+      <Card title={<FormattedMessage id={`connectionForm.${type}Existing`} />}>
         <Formik
           initialValues={initialValues}
           validationSchema={existingEntityValidationSchema}
@@ -117,7 +117,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
             </FormContent>
           )}
         </Formik>
-      </ContentCard>
+      </Card>
       <PaddingBlock>
         <FormattedMessage id="onboarding.or" />
       </PaddingBlock>
