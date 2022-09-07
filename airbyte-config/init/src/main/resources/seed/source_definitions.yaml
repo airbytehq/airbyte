@@ -6,6 +6,14 @@
   icon: airtable.svg
   sourceType: api
   releaseStage: alpha
+- name: AlloyDB for PostgreSQL
+  sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
+  dockerRepository: airbyte/source-alloydb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/alloydb
+  icon: alloydb.svg
+  sourceType: database
+  releaseStage: alpha
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail
@@ -256,7 +264,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.62
+  dockerImageTag: 0.2.63
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -347,7 +355,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.44
+  dockerImageTag: 0.1.45
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -449,7 +457,7 @@
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -679,7 +687,7 @@
 - name: OpenWeather
   sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerRepository: airbyte/source-openweather
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/openweather
   sourceType: api
   releaseStage: alpha
@@ -750,11 +758,11 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
