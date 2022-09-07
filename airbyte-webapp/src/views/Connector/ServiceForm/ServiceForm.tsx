@@ -143,8 +143,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
     "22f6c74f-5699-40ff-833c-4a879ea40133",
     "424892c4-daac-4491-b35d-c6688ba547ba",
+    "707456df-6f4f-4ced-b5c6-03f73bcad1c5",
+    "18081484-02a5-4662-8dba-b270b582f321",
+    "8ccd8909-4e99-4141-b48d-4984b70b2d89",
   ]);
-  const startWithDestinationId = useExperiment("connector.startWithDestinationId", "");
+  const startWithDestinationId = useExperiment(
+    "connector.startWithDestinationId",
+    "424892c4-daac-4491-b35d-c6688ba547ba"
+  );
 
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const [initialRequestName, setInitialRequestName] = useState<string>();

@@ -31,11 +31,13 @@
 
 .leftArrow {
   @extend %arrow;
+
   right: 35px;
 }
 
 .rightArrow {
   @extend %arrow;
+
   right: 0;
 }
 
