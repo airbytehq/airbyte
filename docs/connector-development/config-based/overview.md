@@ -27,7 +27,7 @@ Refer to the API's documentation to answer the following questions:
 The API documentation should show which HTTP method must be used to retrieve data from the API.
 For example, the [documentation for the Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) says the GET method should be used, and that the response is a JSON object.
 
-Other API types such as SOAP are not supported.
+Other API types such as SOAP or GraphQL are not supported.
 
 Other encoding schemes such as CSV or Protobuf are not supported.
 
