@@ -1,4 +1,4 @@
-@use '../../../scss/colors';
+@use "../../../scss/colors";
 
 .container {
   width: 100%;
@@ -11,7 +11,7 @@
     background-color: colors.$white;
   }
 
-  &.error { 
+  &.error {
     background-color: colors.$grey-100;
     border-color: colors.$red;
   }
@@ -42,7 +42,7 @@
 .input {
   outline: none;
   width: 100%;
-  padding: 7px 8px 7px 8px;
+  padding: 7px 8px;
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;
@@ -67,7 +67,7 @@
 
 button.visibilityButton {
   position: absolute;
-  right: 0px;
+  right: 0;
   top: 0;
   display: flex;
   height: 100%;

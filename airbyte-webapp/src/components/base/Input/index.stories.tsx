@@ -7,7 +7,7 @@ export default {
   component: Input,
   argTypes: {
     disabled: { control: "boolean" },
-    type: { control: "select", options: ["text", "number", "password"] },
+    type: { control: { type: "select", options: ["text", "number", "password"] } },
   },
 } as ComponentMeta<typeof Input>;
 
