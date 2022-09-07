@@ -9,7 +9,7 @@ import { useFrequencyDropdownData } from "./formConfig";
 describe("useFrequencyDropdownData", () => {
   it("should return only default frequencies when no additional frequency is provided", () => {
     const { result } = renderHook(() => useFrequencyDropdownData(undefined), { wrapper });
-    expect(result.current.map((item) => item.value)).toEqual([...frequencyConfig, "cron", "manual"]);
+    expect(result.current.map((item) => item.value)).toEqual(["cron", "manual", ...frequencyConfig, "cron", "manual"]);
   });
 
   it("should return only default frequencies when additional frequency is already present", () => {
@@ -20,7 +20,7 @@ describe("useFrequencyDropdownData", () => {
       },
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
-    expect(result.current.map((item) => item.value)).toEqual([...frequencyConfig, "cron", "manual"]);
+    expect(result.current.map((item) => item.value)).toEqual(["cron", "manual", ...frequencyConfig]);
   });
 
   it("should include additional frequency when provided and unique", () => {
