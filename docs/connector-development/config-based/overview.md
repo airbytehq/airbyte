@@ -22,7 +22,7 @@ This section describes guidelines for determining whether a connector for a give
 
 Refer to the API's documentation to answer the following questions:
 
-1. Is this an HTTP REST API returning data as JSON?
+### Is this an HTTP REST API returning data as JSON?
 
 The API documentation should show which HTTP method must be used to retrieve data from the API.
 For example, the [documentation for the Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) says the GET method should be used, and that the response is a JSON object.
@@ -33,7 +33,7 @@ Other encoding schemes such as CSV or Protobuf are not supported.
 
 Integrations that require the use of an SDK are not supported.
 
-2. Do queries return the data synchronously or do they trigger a bulk workflow?
+### Do queries return the data synchronously or do they trigger a bulk workflow?
 
 Some APIs return the data of interest as part of the response. This is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) - each request results in a response containing the data we're interested in.
 
@@ -43,7 +43,7 @@ An initial request will trigger the workflow and return an ID and a job status. 
 
 Asynchronous bulk workflows are not supported.
 
-3. What is the pagination mechanism?
+### What is the pagination mechanism?
 
 The only pagination mechanisms supported are
 
@@ -51,7 +51,7 @@ The only pagination mechanisms supported are
 * Page count passed either by query params or request header such as [Greenhouse](https://developers.greenhouse.io/harvest.html#get-list-applications)
 * Cursor field pointing to the URL of the next page of records such as [Sentry](https://docs.sentry.io/api/pagination/)
 
-4. What is the authorization mechanism?
+### What is the authorization mechanism?
 
 Endpoints that require authenticating using a query param or an HTTP header, as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
 
@@ -61,13 +61,13 @@ Endpoints that require authenticating using OAuth 2.0, as is the case for [Strav
 
 Other authentication schemes such as GWT are not supported.
 
-5. Is the schema static or dynamic?
+### Is the schema static or dynamic?
 
 Only static schemas are supported.
 
 Dynamically deriving the schema from querying an endpoint is not supported.
 
-6. Does the endpoint have a strict rate limit
+### Does the endpoint have a strict rate limit
 
 Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window, such as the [Reddit Ads API](https://ads-api.reddit.com/docs/#section/Rate-Limits), which limits to 1 request per second.
 
