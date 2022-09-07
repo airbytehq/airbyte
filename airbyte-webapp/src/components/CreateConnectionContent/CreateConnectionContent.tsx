@@ -4,7 +4,7 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, ContentCard } from "components";
+import { Button, Card } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
@@ -103,13 +103,13 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard>
+      <Card>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
         {job && <JobItem job={job} />}
-      </ContentCard>
+      </Card>
     );
   }
 
