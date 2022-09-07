@@ -98,7 +98,9 @@ public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersi
   @Override
   public void loadData(ConfigPersistence seedPersistence) throws IOException {
     throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
-
   }
 
+  public DefinitionsProvider getDefinitionsProvider() {
+    return definitionsProvider;
+  }
 }
