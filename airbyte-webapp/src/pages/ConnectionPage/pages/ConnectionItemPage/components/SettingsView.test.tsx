@@ -1,4 +1,4 @@
-import { render, mockConnection } from "utils/testutils";
+import { render, mockConnection } from "test-utils/testutils";
 
 import SettingsView from "./SettingsView";
 
