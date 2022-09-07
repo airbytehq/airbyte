@@ -103,4 +103,5 @@ public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersi
   public DefinitionsProvider getDefinitionsProvider() {
     return definitionsProvider;
   }
+
 }
