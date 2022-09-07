@@ -283,6 +283,7 @@ export const useInitialValues = (
     connection.operations,
     connection.prefix,
     connection.scheduleData,
+    connection.scheduleType,
     connection.source.name,
     destDefinition.supportsDbt,
     destDefinition.supportsNormalization,

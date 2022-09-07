@@ -184,7 +184,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
   );
 
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
+  const errorMessage = submitError ? generateMessageFromError(submitError) : null;
 
   return (
     <Formik
