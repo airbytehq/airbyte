@@ -22,7 +22,7 @@ This section describes guidelines for determining whether a connector for a give
 
 Refer to the API's documentation to answer the following questions:
 
-### Is this an HTTP REST API returning data as JSON?
+### Is this a HTTP REST API returning data as JSON?
 
 The API documentation should show which HTTP method must be used to retrieve data from the API.
 For example, the [documentation for the Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) says the GET method should be used, and that the response is a JSON object.
