@@ -12,8 +12,9 @@ $shadowColor: rgba(0, 0, 0, 25%);
   width: 100%;
   background: $white;
   border-radius: 10px;
-  box-shadow: 0 2px 4px $shadowColor;
+  box-shadow: 0 2px 4px rgb(26 25 77 / 12%);
   padding: 20px;
+  border: none;
 }
 
 // export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
