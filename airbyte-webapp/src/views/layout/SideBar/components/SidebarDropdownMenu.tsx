@@ -66,34 +66,3 @@ export const SidebarDropdownMenu: React.FC<{
     </Menu>
   );
 };
-
-// export const SidebarDropdownMenu: React.FC<{
-//   children: React.ReactNode;
-//   options?: React.ReactNode[];
-// }> = ({ children, options }) => {
-//   const config = useConfig();
-//   return (
-//     <Menu className={styles.sidebarMenu} as="div">
-//       {({ open }) => (
-//         <>
-//           <Menu.Button className={classNames(styles.button, { [styles.open]: open })}>{children}</Menu.Button>
-//           <Menu.Items className={styles.items}>
-//             <Menu.Item>
-//               <a href={config.links.statusLink} target="_blank" rel="noreferrer">
-//                 <span>
-//                   <StatusIcon />
-//                 </span>
-//                 <FormattedMessage id="sidebar.status" />
-//               </a>
-//             </Menu.Item>
-//             {options?.map((item, index) => (
-//               <Menu.Item key={index}>
-//                 {({ active }) => <div className={classNames(styles.item, { [styles.active]: active })}>{item}</div>}
-//               </Menu.Item>
-//             ))}
-//           </Menu.Items>
-//         </>
-//       )}
-//     </Menu>
-//   );
-// };
