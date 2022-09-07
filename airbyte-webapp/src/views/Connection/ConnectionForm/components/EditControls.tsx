@@ -15,12 +15,13 @@ interface EditControlProps {
   withLine?: boolean;
 }
 
-const Buttons = styled.div`
+const Content = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
   margin-top: 16px;
+  gap: 18px;
 `;
 
 const ControlButton = styled(LoadingButton)`
@@ -31,6 +32,10 @@ const Success = styled.span`
   color: ${({ theme }) => theme.successColor};
   font-size: 14px;
   line-height: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 `;
 
 const Error = styled(Success)`
@@ -67,8 +72,8 @@ const EditControls: React.FC<EditControlProps> = ({
   return (
     <>
       {withLine && <Line />}
-      <Buttons>
-        <div>{showStatusMessage()}</div>
+      <Content>
+        {showStatusMessage()}
         <div>
           <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />
@@ -81,7 +86,7 @@ const EditControls: React.FC<EditControlProps> = ({
             <FormattedMessage id="form.saveChanges" />
           </ControlButton>
         </div>
-      </Buttons>
+      </Content>
     </>
   );
 };
