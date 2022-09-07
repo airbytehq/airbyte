@@ -66,7 +66,7 @@ Your database user should now be ready for use with Airbyte.
 
 **3. Set up CDC**
 
-For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read the section on CDC below for more information.
+For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read the section on [CDC below](#change-data-capture-cdc) for more information.
 
 **4. That's it!**
 
