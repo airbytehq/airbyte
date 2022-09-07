@@ -39,7 +39,9 @@ class SnipeitStream(HttpStream, ABC):
         # NOTE: This is probably not the best idea.
         self.stop_immediately = False
 
-    url_base = "https://infinit-o.snipe-it.io/api/v1/"
+    @property
+    def url_base(self):
+        return self.config["base_url"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

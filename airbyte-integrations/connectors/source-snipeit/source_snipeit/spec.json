@@ -7,7 +7,8 @@
     "required": ["access_token"],
     "additionalProperties": false,
     "properties": {
-        "access_token": {"type": "string", "description": "A JWT provided by the admin to allow access to the API."}
+        "access_token": {"type": "string", "description": "A JWT provided by the admin to allow access to the API."},
+        "base_url": {"type": "string", "description": "The base URL of the API. Must include trailing forward slash."}
       }
     }
-  }
+}

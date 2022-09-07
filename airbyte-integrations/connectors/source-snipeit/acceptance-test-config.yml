@@ -1,6 +1,6 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: iom/source-snipeit:1
+connector_image: local/source-snipeit:1
 tests:
   spec:
     - spec_path: "source_snipeit/spec.json"
