@@ -11,7 +11,7 @@ import styles from "./ConnectorCard.module.scss";
 export interface ConnectorCardProps {
   connectionName: string;
   icon?: string;
-  connectorName: string;
+  connectorName?: string;
   releaseStage?: ReleaseStage;
   fullWidth?: boolean;
 }
@@ -30,7 +30,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
         <div className={styles.connectionName}>{connectionName}</div>
         {releaseStage && <ReleaseStageBadge stage={releaseStage} />}
       </div>
-      <div className={styles.connectorName}>{connectorName} </div>
+      {connectorName && <div className={styles.connectorName}>{connectorName} </div>}
     </div>
   </div>
 );
