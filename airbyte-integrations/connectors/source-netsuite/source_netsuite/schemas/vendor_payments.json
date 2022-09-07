@@ -326,10 +326,6 @@
     "landedCostMethod",
     "landedCostPerLine",
     "transactionNumber",
-    "expenseList",
-    "accountingBookDetailList",
-    "itemList",
-    "landedCostsList",
     "internalId",
     "externalId"
   ]
