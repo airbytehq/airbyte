@@ -3,6 +3,9 @@ import { act } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
+import mockConnection from "test-utils/mock-data/mockConnection.json";
+import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
+import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -13,22 +16,6 @@ import {
   ConnectionServiceProps,
   useConnectionFormService,
 } from "./ConnectionFormService";
-import mockConnection from "./mockConnection.json";
-import mockDest from "./mockDestinationDefinition.json";
-
-const mockWorkspace = {
-  workspaceId: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
-  customerId: "55dd55e2-33ac-44dc-8d65-5aa7c8624f72",
-  email: "krishna@airbyte.com",
-  name: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
-  slug: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
-  initialSetupComplete: true,
-  displaySetupWizard: false,
-  anonymousDataCollection: false,
-  news: false,
-  securityUpdates: false,
-  notifications: [],
-};
 
 ["packages/cloud/services/workspaces/WorkspacesService", "services/workspaces/WorkspacesService"].forEach((s) =>
   jest.mock(s, () => ({
