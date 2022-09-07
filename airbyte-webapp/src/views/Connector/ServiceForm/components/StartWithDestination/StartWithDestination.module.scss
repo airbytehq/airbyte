@@ -11,6 +11,8 @@
   background-color: colors.$white;
   width: 100%;
   margin-top: variables.$spacing-xl;
+  padding: 0;
+  border-radius: variables.$border-radius-sm;
 }
 
 .connectorCardWrapper {
