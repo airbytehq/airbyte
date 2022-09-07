@@ -407,8 +407,8 @@ public class ConnectionsHandler {
    * list of streams where existing stream positions are preserved, and new streams from the patch are
    * added in the order they were listed in the patch.
    *
-   * Preserving the order of the catalog in this way isn't strictly necessary as an application constraint,
-   * but provides for a better user experience when viewing the result of an update.
+   * Preserving the order of the catalog in this way isn't strictly necessary as an application
+   * constraint, but provides for a better user experience when viewing the result of an update.
    */
   @VisibleForTesting
   protected static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
