@@ -17,3 +17,8 @@ def catalog(request):
             )
         ]
     )
+
+
+@pytest.fixture(name="config")
+def config_fixture():
+    return {"api_key": 123, "start_date": "2019-10-10T00:00:00"}

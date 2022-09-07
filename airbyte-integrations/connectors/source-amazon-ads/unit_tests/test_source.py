@@ -7,6 +7,8 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Connecto
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
 
+from .utils import command_check, url_strip_query
+
 
 def setup_responses():
     responses.add(
@@ -39,11 +41,32 @@ def test_spec():
 
 
 @responses.activate
-def test_check(config):
+def test_check(config_gen):
     setup_responses()
     source = SourceAmazonAds()
-    assert source.check(None, config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
+
+    assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 4
+
+    assert source.check(None, config_gen(start_date="2022-02-20")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(start_date="2022-20-02")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'month must be in 1..12'"
+    )
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(start_date="no date")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'String does not match format YYYY-MM-DD'"
+    )
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(region=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 8
+    assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
 
 
 @responses.activate

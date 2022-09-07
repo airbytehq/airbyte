@@ -175,7 +175,6 @@ class TiktokStream(HttpStream, ABC):
         data = response.json()
         if data["code"]:
             raise TiktokException(data)
-            raise TiktokException(data["message"])
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
@@ -347,18 +346,35 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             return None
 
         cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+
+        # backward capability to support old state objects
+        if "dimensions" in data:
+            cursor_field_path = self.deprecated_cursor_field
+
         result = data
         for key in cursor_field_path:
             result = result.get(key)
         return result
+
+    @staticmethod
+    def unnest_field(record: Mapping[str, Any], unnest_from: str, fields: Iterable[str]):
+        """
+        Unnest cursor_field to the root level of the record.
+        """
+        if unnest_from in record:
+            prop = record.get(unnest_from, {})
+            for field in fields:
+                if field in prop:
+                    record[field] = prop.get(field)
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
-
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            # unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
+            self.unnest_field(record, "dimensions", [self.cursor_field, self.primary_key])
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
@@ -433,7 +449,7 @@ class Ads(IncrementalTiktokStream):
 class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
-    primary_key = None
+    primary_key = "ad_id"
     schema_name = "basic_reports"
     report_granularity = None
 
@@ -455,12 +471,22 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """
 
     @property
-    def cursor_field(self):
+    def deprecated_cursor_field(self):
         if self.report_granularity == ReportGranularity.DAY:
             return ["dimensions", "stat_time_day"]
         if self.report_granularity == ReportGranularity.HOUR:
             return ["dimensions", "stat_time_hour"]
-        return []
+        if self.report_granularity == ReportGranularity.LIFETIME:
+            return ["dimensions", "stat_time_day"]
+
+    @property
+    def cursor_field(self):
+        if self.report_granularity == ReportGranularity.DAY:
+            return "stat_time_day"
+        if self.report_granularity == ReportGranularity.HOUR:
+            return "stat_time_hour"
+        if self.report_granularity == ReportGranularity.LIFETIME:
+            return "stat_time_day"
 
     @staticmethod
     def _get_time_interval(
@@ -477,7 +503,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             start_date = pendulum.parse(start_date)
         end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
-        # Snapchat API only allows certain amount of days of data based on the reporting granularity
+        # TikTok API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
             max_interval = 30
         elif granularity == ReportGranularity.HOUR:
@@ -656,17 +682,23 @@ class AdsReports(BasicReports):
 class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
+    primary_key = "advertiser_id"
+
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
+    primary_key = "campaign_id"
+
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
+
+    primary_key = "adgroup_id"
 
     report_level = ReportLevel.ADGROUP
 
@@ -697,6 +729,8 @@ class AudienceReport(BasicReports):
 
 class AdGroupAudienceReports(AudienceReport):
 
+    primary_key = "adgroup_id"
+
     report_level = ReportLevel.ADGROUP
 
 
@@ -707,11 +741,15 @@ class AdsAudienceReports(AudienceReport):
 
 class AdvertisersAudienceReports(AudienceReport):
 
+    primary_key = "advertiser_id"
+
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsAudienceReportsByCountry(AudienceReport):
     """Custom reports for campaigns by country"""
+
+    primary_key = "campaign_id"
 
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
