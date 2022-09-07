@@ -6,7 +6,7 @@ import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
-import { Card } from "../../../../../components/base/Card";
+import { Card } from "components/base/Card";
 
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
