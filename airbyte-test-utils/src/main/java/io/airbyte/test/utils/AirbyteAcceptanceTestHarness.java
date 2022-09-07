@@ -59,7 +59,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -84,6 +83,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -93,6 +93,7 @@ import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -174,6 +175,26 @@ public class AirbyteAcceptanceTestHarness {
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
+
+  private static String getIpAddress(final GenericContainer container) {
+    return Objects.requireNonNull(container.getContainerInfo()
+        .getNetworkSettings()
+        .getNetworks()
+        .entrySet().stream()
+        .findFirst()
+        .get().getValue().getIpAddress());
+  }
+
+  public static String resolveHost(final GenericContainer container) {
+    return System.getProperty("os.name").toLowerCase().startsWith("mac")
+        ? getIpAddress(container)
+        : container.getHost();
+  }
+
+  public static int resolvePort(final GenericContainer container) {
+    return System.getProperty("os.name").toLowerCase().startsWith("mac") ? (Integer) container.getExposedPorts().get(0)
+        : container.getFirstMappedPort();
+  }
 
   public PostgreSQLContainer getSourcePsql() {
     return sourcePsql;
@@ -611,7 +632,7 @@ public class AirbyteAcceptanceTestHarness {
         dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psql));
+        dbConfig.put(JdbcUtils.HOST_KEY, resolveHost(psql));
       }
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
@@ -625,7 +646,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psql));
+    dbConfig.put(JdbcUtils.PORT_KEY, resolvePort(psql));
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
