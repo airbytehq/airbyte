@@ -77,12 +77,6 @@ public class MariadbSpecTest {
   }
 
   @Test
-  void testPasswordMissing() {
-    ((ObjectNode) config).remove("password");
-    assertFalse(validator.test(schema, config));
-  }
-
-  @Test
   void testAdditionalJdbcParamMissing() {
     ((ObjectNode) config).remove("jdbc_url_params");
     assertTrue(validator.test(schema, config));
