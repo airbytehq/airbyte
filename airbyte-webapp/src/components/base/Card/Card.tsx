@@ -14,10 +14,19 @@ export interface CardProps {
   roundedBottom?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ children, title, fullWidth, lightPadding, withPadding, roundedBottom }) => {
+export const Card: React.FC<CardProps> = ({
+  children,
+  title,
+  className,
+  fullWidth,
+  lightPadding,
+  withPadding,
+  roundedBottom,
+}) => {
   return (
     <div
       className={classNames(
+        className,
         styles.container,
         fullWidth ? styles.fullWidth : undefined,
         withPadding ? styles.withPadding : undefined

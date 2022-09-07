@@ -1,9 +1,11 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import classNames from "classnames";
 import styled from "styled-components";
+import styles from "./ConnectionBlock.module.scss";
 
-import ContentCard from "../ContentCard";
+import { Card } from "../base/Card";
 import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
 
 interface IProps {
@@ -12,14 +14,22 @@ interface IProps {
   itemTo?: { name: string; icon?: string };
 }
 
-const LightContentCard = styled(ContentCard)`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  padding: 20px 21px 19px;
-  margin-bottom: 12px;
-`;
+// const LightContentCard = styled(Card)`
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   flex-direction: row;
+//   padding: 20px 21px 19px;
+//   margin-bottom: 12px;
+// `;
+
+// const LightContentCard = ({ children }) => {
+//   return (
+//     <Card className={styles.lightContentCard}>
+//       {children }
+//     </Card>
+//   )
+// }
 
 const Arrow = styled(FontAwesomeIcon)`
   font-size: 29px;
@@ -32,11 +42,11 @@ const ExtraBlock = styled(Content)`
 `;
 
 const ConnectionBlock: React.FC<IProps> = (props) => (
-  <LightContentCard className={props.className}>
+  <Card className={classNames(styles.lightContentCard)}>
     {props.itemFrom ? <ConnectionBlockItem {...props.itemFrom} /> : <ExtraBlock />}
     <Arrow icon={faChevronRight} />
     {props.itemTo ? <ConnectionBlockItem {...props.itemTo} /> : <ExtraBlock />}
-  </LightContentCard>
+  </Card>
 );
 
 export default ConnectionBlock;
