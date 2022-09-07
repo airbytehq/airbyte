@@ -304,6 +304,8 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
   "destinations.frequentlyUsed": "Most Frequently used destinations",
+  "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
+  "destinations.startWith": "Start with {name}",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 

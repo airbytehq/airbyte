@@ -1,0 +1,16 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+.container {
+  position: absolute;
+  width: 100%;
+  margin-top: variables.$spacing-xl;
+}
+
+.connectorCardWrapper {
+  padding: 20px;
+}
