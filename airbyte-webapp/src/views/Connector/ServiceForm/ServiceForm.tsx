@@ -24,7 +24,7 @@ import { FrequentlyUsedDestinations } from "./components/FrequentlyUsedDestinati
 import { StartWithDestination } from "./components/StartWithDestination/StartWithDestination";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
-import { ServiceFormValues } from "./types";
+import { DestinationConnectorCard, ServiceFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -207,7 +207,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     setDocumentationPanelOpen(true);
   }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
-  const frequentlyUsedDestinations = useMemo(
+  const frequentlyUsedDestinations: DestinationConnectorCard[] = useMemo(
     () =>
       availableServices
         .filter(
@@ -216,21 +216,26 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         )
         .map(({ destinationDefinitionId, name, icon, releaseStage }) => ({
           destinationDefinitionId,
-          connectionName: name,
-          connectorName: name,
+          name,
           icon,
           releaseStage,
         })),
     [availableServices, frequentlyUsedDestinationIds]
   );
-  const startWithDestination = useMemo(
-    () =>
-      availableServices.find(
-        (service): service is DestinationDefinitionReadWithLatestTag =>
-          isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
-      ),
-    [availableServices, startWithDestinationId]
-  );
+
+  const startWithDestination: DestinationConnectorCard | undefined = useMemo(() => {
+    const destination = availableServices.find(
+      (service): service is DestinationDefinitionReadWithLatestTag =>
+        isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
+    );
+    if (!destination) {
+      return undefined;
+    }
+    const { destinationDefinitionId, name, icon, releaseStage } = destination;
+
+    return { destinationDefinitionId, name, icon, releaseStage };
+  }, [availableServices, startWithDestinationId]);
+
   const uiOverrides = useMemo(
     () => ({
       name: {

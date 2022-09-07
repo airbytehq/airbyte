@@ -4,12 +4,11 @@ import { useIntl } from "react-intl";
 
 import { ContentCard, ConnectorCard } from "components";
 
-import { DestinationDefinitionReadWithLatestTag } from "services/connector/DestinationDefinitionService";
-
+import { DestinationConnectorCard } from "../../types";
 import styles from "./StartWithDestination.module.scss";
 
-interface StartWithDestinationProps {
-  destination: DestinationDefinitionReadWithLatestTag | undefined;
+export interface StartWithDestinationProps {
+  destination: DestinationConnectorCard | undefined;
   onDestinationSelect: ((id: string) => void) | undefined;
 }
 

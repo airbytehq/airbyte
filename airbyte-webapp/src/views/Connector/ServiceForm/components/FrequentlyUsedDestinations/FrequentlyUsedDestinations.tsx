@@ -3,19 +3,13 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { SlickSlider, ConnectorCard, Spinner } from "components";
-import { ConnectorCardProps } from "components/ConnectorCard/ConnectorCard";
 
-import { DestinationDefinitionId } from "core/request/AirbyteClient";
-
+import { DestinationConnectorCard } from "../../types";
 import styles from "./FrequentlyUsedDestinations.module.scss";
-
-export interface FrequentlyUsedDestination extends ConnectorCardProps {
-  destinationDefinitionId: DestinationDefinitionId;
-}
 
 export interface FrequentlyUsedDestinationsProps {
   propertyPath: string;
-  destinations: FrequentlyUsedDestination[];
+  destinations: DestinationConnectorCard[];
   onDestinationSelect: ((id: string) => void) | undefined;
   isLoading?: boolean;
 }
@@ -46,16 +40,10 @@ export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProp
         </div>
       ) : (
         <SlickSlider title={formatMessage({ id: "destinations.frequentlyUsed" })}>
-          {destinations.map(({ destinationDefinitionId, connectionName, connectorName, icon, releaseStage }, index) => (
+          {destinations.map(({ destinationDefinitionId, name, icon, releaseStage }, index) => (
             <div key={index} onClick={() => onSlideClick(destinationDefinitionId)}>
               <div className={styles.card}>
-                <ConnectorCard
-                  connectionName={connectionName}
-                  connectorName={connectorName}
-                  icon={icon}
-                  releaseStage={releaseStage}
-                  fullWidth
-                />
+                <ConnectorCard connectionName={name} icon={icon} releaseStage={releaseStage} fullWidth />
               </div>
             </div>
           ))}
