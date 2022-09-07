@@ -1337,6 +1337,65 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 break
 
 
+class WorkflowJobs(SemiIncrementalMixin, GithubStream):
+    """
+    Get all workflow jobs for a workflow run
+    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    """
+    
+    # Substituindo valor padrão 'completed_at' da classe 'SemiIncrementalMixin',
+    # porque a request não trás esse valor, ela é utilizada
+    # utilizado para streams semi incrementais e incrementais
+    # 
+    # Uma alternativa é implementar o método:
+    # def read_records(
+    #     self,
+    #     sync_mode: SyncMode,
+    #     cursor_field: List[str] = None,
+    #     stream_slice: Mapping[str, Any] = None,
+    #     stream_state: Mapping[str, Any] = None,
+    # ) -> Iterable[Mapping[str, Any]]:
+    #   ...
+    # Para não dar suporte a esse métodos baseado no incremental
+    cursor_field = "completed_at"
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"]["full_name"], "run_id": record["id"]}
+    
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json().get("jobs"):  # GitHub puts records in an array.
+            yield self.transform(record=record, stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["run_id"] = stream_slice["run_id"]
+        record["repository"] = stream_slice["repository"]
+        return record
+
+
 class TeamMembers(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
