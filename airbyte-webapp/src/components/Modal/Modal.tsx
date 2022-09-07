@@ -2,7 +2,7 @@ import classNames from "classnames";
 import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
-import ContentCard from "components/ContentCard";
+import { Card } from "../base/Card";
 
 import styles from "./Modal.module.scss";
 
@@ -53,9 +53,9 @@ const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnB
       {clear ? (
         children
       ) : (
-        <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
+        <Card title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
           {children}
-        </ContentCard>
+        </Card>
       )}
     </div>,
     document.body

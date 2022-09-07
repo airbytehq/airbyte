@@ -7,15 +7,12 @@ import { H5 } from "../Titles";
 
 export interface CardProps {
   title?: React.ReactNode;
+  className?: string;
   fullWidth?: boolean;
   lightPadding?: boolean;
   withPadding?: boolean;
   roundedBottom?: boolean;
 }
-
-// const cardStyleByWidth = {
-//   fullWidth: styles.fullWidth,
-// };
 
 export const Card: React.FC<CardProps> = ({ children, title, fullWidth, lightPadding, withPadding, roundedBottom }) => {
   return (
@@ -41,14 +38,3 @@ export const Card: React.FC<CardProps> = ({ children, title, fullWidth, lightPad
     </div>
   );
 };
-
-// className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}
-
-// export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
-//   width: ${({ full }) => (full ? "100%" : "auto")};
-//   background: ${({ theme }) => theme.whiteColor};
-//   border-radius: 10px;
-//   box-shadow: 0 2px 4px ${({ theme }) => theme.cardShadowColor};
-//   padding: ${({ $withPadding }) => ($withPadding ? "20px" : undefined)};
-//   //border: 1px solid ${({ theme }) => theme.greyColor20};
-// `;
