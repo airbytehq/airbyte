@@ -129,7 +129,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus status = new MongoDbSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(tatus.getMessage().contains("State code: 18"));
+    assertTrue(status.getMessage().contains("State code: 18"));
   }
 
   @Test
