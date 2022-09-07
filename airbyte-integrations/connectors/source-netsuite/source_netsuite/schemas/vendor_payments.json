@@ -102,7 +102,7 @@
       ]
     },
     "approvalStatus": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "name": {
           "type": ["null", "string"]
@@ -331,7 +331,6 @@
     "itemList",
     "landedCostsList",
     "purchaseOrderList",
-    "taxDetailsList",
     "customFieldList",
     "internalId",
     "externalId"
