@@ -44,7 +44,12 @@ export default {
 } as ComponentMeta<typeof FrequentlyUsedDestinations>;
 
 export const Template: ComponentStory<typeof FrequentlyUsedDestinations> = (args) => (
-  <Formik initialValues={{ serviceType: "" }} onSubmit={() => {}}>
+  <Formik
+    initialValues={{ serviceType: "" }}
+    onSubmit={() => {
+      return undefined;
+    }}
+  >
     <div style={{ maxWidth: 560 }}>
       <FrequentlyUsedDestinations {...args} />
     </div>
