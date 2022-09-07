@@ -26,9 +26,12 @@ class EventsStream(HttpStream):
         return {"startDate": self.latest_stream_timestamp, "eventType": self.event_id}
 
     def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
-        self._cursor_value = response.json()[0]["eventDate"].replace("+00:00", "") # to get rid of +00:00
-        lower_response = json.loads(json.dumps(response.json()).lower()) # transform json to lowercase
-        yield from lower_response
+        try:
+            self._cursor_value = response.json()[0]["eventDate"][:26] # to get rid of +00:00
+            lower_response = json.loads(json.dumps(response.json()).lower()) # transform json to lowercase
+            yield from lower_response
+        except:
+            response.json()
 
     def next_page_token(self, _: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -83,5 +86,15 @@ class DepositEvents(EventsStream):
 
 
 class WithdrawEvents(EventsStream):
+    def path(self, **_) -> str:
+        return f"api/company/{self.company_id}/search"
+
+
+class SaleEvents(EventsStream):
+    def path(self, **_) -> str:
+        return f"api/company/{self.company_id}/search"
+
+
+class RoyaltyEvents(EventsStream):
     def path(self, **_) -> str:
         return f"api/company/{self.company_id}/search"

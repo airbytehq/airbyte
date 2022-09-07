@@ -12,7 +12,9 @@ from .stream_events import (
     OpenedEvents,
     PackRevealEvents,
     DepositEvents,
-    WithdrawEvents
+    WithdrawEvents,
+    SaleEvents,
+    RoyaltyEvents
 )
 
 class SourceGraffle(AbstractSource):
@@ -39,5 +41,7 @@ class SourceGraffle(AbstractSource):
             OpenedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Opened"),
             PackRevealEvents(config, "A.30cf5dcf6ea8d379.AeraPack.PackReveal"),
             DepositEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Deposit"),
-            WithdrawEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Withdraw")
+            WithdrawEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Withdraw"),
+            SaleEvents(config, "A.097bafa4e0b48eef.FindMarketSale.Sale"),
+            RoyaltyEvents(config, "A.097bafa4e0b48eef.FindMarket.RoyaltyPaid")
         ]
