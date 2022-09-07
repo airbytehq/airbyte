@@ -50,17 +50,13 @@ const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinat
 
 describe("<FrequentlyUsedDestinations />", () => {
   test("should renders with mock data without crash", () => {
-    const { getByText } = renderFrequentlyUsedDestinationsComponent({
+    const { asFragment } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
       onDestinationSelect: () => {},
       propertyPath: "serviceType",
     });
 
-    expect(getByText("Google Sheets")).toBeInTheDocument();
-    expect(getByText("BigQuery")).toBeInTheDocument();
-    expect(getByText("DynamoDB")).toBeInTheDocument();
-    expect(getByText("MongoDB")).toBeInTheDocument();
-    expect(getByText("Postgres")).toBeInTheDocument();
+    expect(asFragment()).toMatchSnapshot();
   });
 
   test("should call provided handler with right param", async () => {
