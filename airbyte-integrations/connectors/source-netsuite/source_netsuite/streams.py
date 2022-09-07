@@ -32,11 +32,10 @@ class NetsuiteSoapStream(HttpStream):
         return [zeep.helpers.serialize_object(_) for _ in data]
 
     def is_entities_or_dicts_inside_list(self, data: list) -> bool:
-        first_element = data[0]
-        if isinstance(first_element, OrderedDict):
+        if isinstance(data[0], OrderedDict):
             return False
-        elif isinstance(first_element, list):
-            self.is_entities_or_dicts_inside_list(first_element)
+        elif isinstance(data[0], list):
+            self.is_entities_or_dicts_inside_list(data[0])
         return True
 
     def compromise_structure(self, class_object: list, type_name: str) -> object:
@@ -53,9 +52,6 @@ class NetsuiteSoapStream(HttpStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.name
-
-    def post(self, data) -> OrderedDict:
-        pass
 
     def read_records(
         self,

@@ -33,15 +33,6 @@ from source_netsuite.streams import (
 
 
 class SourceNetsuiteSoap(AbstractSource):
-    @staticmethod
-    def get_authenticator(config: Mapping[str, Any]) -> NetSuiteConnection:
-        return NetSuiteConnection(
-            account=config["realm"],
-            consumer_key=config["consumer_key"],
-            consumer_secret=config["consumer_secret"],
-            token_key=config["token_id"],
-            token_secret=config["token_secret"],
-        )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         config_map = {
@@ -52,7 +43,11 @@ class SourceNetsuiteSoap(AbstractSource):
             "token_secret": config["token_secret"],
         }
 
-        _nc = NetSuiteConnection(**config_map)
+        try:
+            _nc = NetSuiteConnection(**config_map)
+        except:
+            raise Exception("Connection error")
+
         return len(_nc.accounts.get_all()) > 0, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -64,7 +59,11 @@ class SourceNetsuiteSoap(AbstractSource):
             "token_secret": config["token_secret"],
         }
 
-        _nc = NetSuiteConnection(**config_map)
+        try:
+            _nc = NetSuiteConnection(**config_map)
+        except:
+            raise Exception("Connection error")
+
         return [
             Accounts(nc=_nc, config=config),
             Classifications(nc=_nc, config=config),
@@ -97,6 +96,5 @@ class SourceNetsuiteSoap(AbstractSource):
             # TODO: (CustomRecordTypes): Getting error from SOAP side
             # TODO: (VendorCredits): It is not implemented Search method for this method
             # TODO: (Usages): It is not implemented Search method for this method
-
 
         ]
