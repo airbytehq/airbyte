@@ -11,7 +11,7 @@ import {
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
 
-import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
