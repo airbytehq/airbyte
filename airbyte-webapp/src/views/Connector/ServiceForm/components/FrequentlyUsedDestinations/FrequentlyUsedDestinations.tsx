@@ -41,11 +41,9 @@ export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProp
       ) : (
         <SlickSlider title={formatMessage({ id: "destinations.frequentlyUsed" })}>
           {destinations.map(({ destinationDefinitionId, name, icon, releaseStage }, index) => (
-            <div key={index} onClick={() => onSlideClick(destinationDefinitionId)}>
-              <div className={styles.card}>
-                <ConnectorCard connectionName={name} icon={icon} releaseStage={releaseStage} fullWidth />
-              </div>
-            </div>
+            <button key={index} className={styles.card} onClick={() => onSlideClick(destinationDefinitionId)}>
+              <ConnectorCard connectionName={name} icon={icon} releaseStage={releaseStage} fullWidth />
+            </button>
           ))}
         </SlickSlider>
       )}

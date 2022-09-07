@@ -31,7 +31,7 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.container} onClick={connectorCardClickHandler}>
+      <button className={styles.container} onClick={connectorCardClickHandler}>
         <ContentCard>
           <div className={styles.connectorCardWrapper}>
             <ConnectorCard
@@ -43,7 +43,7 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
             />
           </div>
         </ContentCard>
-      </div>
+      </button>
     </div>
   );
 };

@@ -7,6 +7,8 @@
 }
 .container {
   position: absolute;
+  border: none;
+  background-color: colors.$white;
   width: 100%;
   margin-top: variables.$spacing-xl;
 }

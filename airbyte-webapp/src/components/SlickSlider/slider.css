@@ -13,4 +13,5 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 5px; /* fix for cut slide borders */
 }

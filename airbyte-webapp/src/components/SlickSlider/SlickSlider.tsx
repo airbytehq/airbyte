@@ -18,32 +18,30 @@ interface SlickSliderProps {
 
 export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings, children }) => {
   const PrevArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
-    <div
+    <button
       className={classnames(styles.leftArrow, {
         [styles.arrowDisabled]: onClick === null,
       })}
       onClick={onClick}
-      role="button"
       tabIndex={0}
       aria-label="previous slide"
       data-testid="previous-slide-btn"
     >
       <FontAwesomeIcon icon={faChevronLeft} className={classnames(className)} {...restProps} />
-    </div>
+    </button>
   );
   const NextArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
-    <div
+    <button
       className={classnames(styles.rightArrow, {
         [styles.arrowDisabled]: onClick === null,
       })}
       onClick={onClick}
-      role="button"
       tabIndex={0}
       aria-label="next slide"
       data-testid="next-slide-btn"
     >
       <FontAwesomeIcon icon={faChevronRight} className={classnames(className)} {...restProps} />
-    </div>
+    </button>
   );
 
   const settings: SliderProps = useMemo(
