@@ -188,4 +188,9 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
 }
