@@ -100,7 +100,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
                   )
                 }
               >
-                <Input {...field} autoFocus error={!!meta.error && meta.touched} type="text" />
+                <Input {...field} error={!!meta.error && meta.touched} type="text" />
               </ControlLabelsWithMargin>
             )}
           </Field>

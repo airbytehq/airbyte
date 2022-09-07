@@ -15,12 +15,12 @@ interface PathPopoutButtonProps {
 export const PathPopoutButton: React.FC<PathPopoutButtonProps> = ({ items = [], onClick, children }) => (
   <Tooltip
     control={
-      <div className={styles.button} role="button" onClick={onClick}>
+      <button className={styles.button} onClick={onClick}>
         <Text size="sm" className={styles.text}>
           {children}
         </Text>
         <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
-      </div>
+      </button>
     }
     placement="bottom-start"
     disabled={items.length === 0}
