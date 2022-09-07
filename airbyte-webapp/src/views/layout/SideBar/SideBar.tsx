@@ -5,7 +5,6 @@ import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
-import styled from "styled-components";
 
 import { Link } from "components";
 import Version from "components/Version";
@@ -25,11 +24,6 @@ import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "./components/S
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
-
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -93,7 +87,7 @@ const SideBar: React.FC = () => {
       <div className={styles.menu}>
         <div>
           <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
-            <HelpIcon icon={faRocket} />
+            <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
             <span className={styles.text}>
               <FormattedMessage id="sidebar.update" />
             </span>
