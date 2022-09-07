@@ -409,8 +409,8 @@ public class ConnectionsHandler {
    */
   @VisibleForTesting
   protected static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
-                                                                                  final AirbyteCatalog existing,
-                                                                                  final AirbyteCatalog patch) {
+                                                                                    final AirbyteCatalog existing,
+                                                                                    final AirbyteCatalog patch) {
 
     final Map<StreamDescriptor, Integer> originalStreamDescriptorPositions = getStreamPositionMap(existing);
     final Map<StreamDescriptor, Integer> patchStreamDescriptorPositions = getStreamPositionMap(patch);
