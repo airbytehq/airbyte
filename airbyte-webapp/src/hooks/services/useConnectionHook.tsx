@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
@@ -9,7 +10,8 @@ import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
 import {
-  ConnectionSchedule,
+  ConnectionScheduleData,
+  ConnectionScheduleType,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
@@ -34,7 +36,8 @@ export const connectionsKeys = {
 
 export interface ValuesProps {
   name?: string;
-  schedule?: ConnectionSchedule;
+  scheduleData: ConnectionScheduleData;
+  scheduleType: ConnectionScheduleType;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;
@@ -92,15 +95,13 @@ export const useSyncConnection = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation((connection: WebBackendConnectionRead) => {
-    const frequency = getFrequencyConfig(connection.schedule);
-
     analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
       actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.type,
+      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
     });
 
     return service.sync(connection.connectionId);
@@ -143,11 +144,9 @@ const useCreateConnection = () => {
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
-      const frequencyData = getFrequencyConfig(values.schedule);
-
       analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
         actionDescription: "New connection created",
-        frequency: frequencyData?.type || "",
+        frequency: getFrequencyType(values.scheduleData?.basicSchedule),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -204,6 +203,20 @@ const useUpdateConnection = () => {
       queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },
   });
+};
+
+export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    (connectionIds: string[]) => {
+      queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+        ...ls,
+        connections: ls?.connections.filter((c) => !connectionIds.includes(c.connectionId)) ?? [],
+      }));
+    },
+    [queryClient]
+  );
 };
 
 const useConnectionList = (): ListConnection => {

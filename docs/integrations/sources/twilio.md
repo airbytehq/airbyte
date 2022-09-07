@@ -1,12 +1,52 @@
 # Twilio
 
-## Overview
+This page contains the setup guide and reference information for the Twilio source connector.
 
-The Twilio connector can be used to sync your Twilio data. It supports full refresh sync for all streams and incremental sync for the Alerts, Calls, Conferences, Message Media, Messages, Recordings and Usage Records streams.
+## Prerequisites
 
-### Output schema
+Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
 
-Several output streams are available from this source:
+You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
+
+See [docs](https://www.twilio.com/docs/iam/api) for more details.
+
+## Setup guide
+## Step 1: Set up the Twilio connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown. 
+4. Enter your `account_sid`.
+5. Enter your `auth_token`.
+6. Enter your `start_date`.
+7. Enter your `lookback_window`.
+8. Click **Set up source**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source.
+3. Enter your `account_sid`.
+4. Enter your `auth_token`.
+5. Enter your `start_date`.
+6. Enter your `lookback_window`.
+7. Click **Set up source**.
+
+## Supported sync modes
+
+The Twilio source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature                       | Supported? |
+|:------------------------------|:-----------|
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | Yes        |
+| Replicate Incremental Deletes | No         |
+| SSL connection                | Yes        |
+| Namespaces                    | No         |
+
+## Supported Streams
 
 * [Accounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources)
 * [Addresses](https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources)
@@ -31,41 +71,17 @@ Several output streams are available from this source:
 * [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
 * [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
 
-### Features
+## Performance considerations
 
-| Feature                       | Supported? |
-|:------------------------------|:-----------|
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | Yes        |
-| Namespaces                    | No         |
-
-### Performance considerations
-
-The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
-
-Get in touch with [Twilio Sales](https://twilio.com/help/sales) to talk to them about your use case and request an increased concurrency limit.
-
-## Getting started
-
-### Requirements
-
-* Twilio Account
-* Twilio Account SID and Auth Token to authenticate API requests.
-
-### Setup guide
-
-Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
-
-You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
-
-See [docs](https://www.twilio.com/docs/iam/api) for more details.
+The Twilio connector will gracefully handle rate limits. 
+For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
 
 ## Changelog
 
 | Version | Date        | Pull Request                                             | Subject                                                                                                 |
 |:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.8   | 2022-08-29  | [16110](https://github.com/airbytehq/airbyte/pull/16110) | Add state checkpoint interval                                                                           |
+| 0.1.7   | 2022-08-26  | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days                                                      |
 | 0.1.6   | 2022-06-22  | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices                            |
 | 0.1.5   | 2022-06-22  | [13896](https://github.com/airbytehq/airbyte/pull/13896) | Add lookback window parameters to fetch messages with a rolling window and catch status updates         |
 | 0.1.4   | 2022-04-22  | [12157](https://github.com/airbytehq/airbyte/pull/12157) | Use Retry-After header for backoff                                                                      |
@@ -73,4 +89,3 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 | 0.1.2   | 2021-12-23  | [9092](https://github.com/airbytehq/airbyte/pull/9092)   | Correct specification doc URL                                                                           |
 | 0.1.1   | 2021-10-18  | [7034](https://github.com/airbytehq/airbyte/pull/7034)   | Update schemas and transform data types according to the API schema                                     |
 | 0.1.0   | 2021-07-02  | [4070](https://github.com/airbytehq/airbyte/pull/4070)   | Native Twilio connector implemented                                                                     |
-

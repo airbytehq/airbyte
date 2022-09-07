@@ -8,6 +8,7 @@ import CreateConnectionContent from "components/CreateConnectionContent";
 import HeadTitle from "components/HeadTitle";
 import StepsMenu from "components/StepsMenu";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
@@ -70,6 +71,7 @@ function usePreloadData(): {
 }
 
 export const CreationFormPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const { location, push } = useRouter();
   const { clearAllFormChanges } = useFormChangeTrackerService();
 

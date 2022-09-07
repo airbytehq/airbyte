@@ -19,7 +19,6 @@ public class S3Destination extends BaseS3Destination {
     new IntegrationRunner(new S3Destination()).run(args);
   }
 
-
   @Override
   public StorageProvider storageProvider() {
     return StorageProvider.AWS_S3;

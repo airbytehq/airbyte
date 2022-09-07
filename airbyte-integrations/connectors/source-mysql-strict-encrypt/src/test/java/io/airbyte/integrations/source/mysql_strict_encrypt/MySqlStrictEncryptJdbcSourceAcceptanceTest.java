@@ -6,13 +6,17 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
+import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -20,10 +24,24 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -128,4 +146,178 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     assertEquals(expected, actual);
   }
 
+  @Override
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
+    return new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+  }
+
+  @Override
+  protected void incrementalDateCheck() throws Exception {
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18",
+        "2006-10-19",
+        List.of(getTestMessages().get(1), getTestMessages().get(2)));
+  }
+
+  @Override
+  protected List<AirbyteMessage> getTestMessages() {
+    return List.of(
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_1,
+                        COL_NAME, "picard",
+                        COL_UPDATED_AT, "2004-10-19")))),
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_2,
+                        COL_NAME, "crusher",
+                        COL_UPDATED_AT,
+                        "2005-10-19")))),
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_3,
+                        COL_NAME, "vash",
+                        COL_UPDATED_AT, "2006-10-19")))));
+  }
+
+  @Override
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
+    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map
+                .of(COL_ID, ID_VALUE_4,
+                    COL_NAME, "riker",
+                    COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map
+                .of(COL_ID, ID_VALUE_5,
+                    COL_NAME, "data",
+                    COL_UPDATED_AT, "2006-10-19")))));
+    final DbStreamState state = new DbStreamState()
+        .withStreamName(streamName)
+        .withStreamNamespace(namespace)
+        .withCursorField(List.of(COL_ID))
+        .withCursor("5");
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    return expectedMessages;
+  }
+
+  @Test
+  void testStrictSSLUnsecuredNoTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "preferred")
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "NO_TUNNEL")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals("Unsecured connection not allowed", actual.getMessage());
+  }
+
+  @Test
+  void testStrictSSLSecuredNoTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "NO_TUNNEL")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertNotEquals("Unsecured connection not allowed", actual.getMessage());
+  }
+
+  @Test
+  void testStrictSSLSecuredWithTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "SSH_KEY_AUTH")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+  }
+
+  @Test
+  void testStrictSSLUnsecuredWithTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "preferred")
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "SSH_KEY_AUTH")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+  }
 }

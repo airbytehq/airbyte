@@ -61,6 +61,8 @@ tags:
     description: Healthchecks
   - name: deployment
     description: Export/Import Airbyte Configuration and Database resources.
+  - name: attempt
+    description: Interactions with attempt related resources.
 
 paths:
   /v1/workspaces/create:
@@ -1402,6 +1404,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/state/create_or_update:
+    post:
+      tags:
+        - connection
+        - internal
+      summary: Create or update the state for a connection.
+      operationId: createOrUpdateState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionStateCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -1975,27 +2001,6 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/updateNew:
-    post:
-      operationId: webBackendUpdateConnectionNew
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebBackendConnectionUpdate"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionRead"
-          description: Successful operation
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-      summary: Update a connection
-      tags:
-        - web_backend
   /v1/web_backend/connections/search:
     post:
       tags:
@@ -2207,100 +2212,26 @@ paths:
               schema:
                 type: string
                 format: binary
-  /v1/deployment/export:
+  /v1/attempt/set_workflow_in_attempt:
     post:
       tags:
-        - deployment
-      summary: Export Airbyte Configuration and Data Archive
-      operationId: exportArchive
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/x-gzip:
-              schema:
-                $ref: "#/components/schemas/AirbyteArchive"
-  /v1/deployment/import:
-    post:
-      tags:
-        - deployment
-      summary: Import Airbyte Configuration and Data Archive
-      operationId: importArchive
-      requestBody:
-        content:
-          application/x-gzip:
-            schema:
-              $ref: "#/components/schemas/AirbyteArchive"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImportRead"
-  /v1/deployment/export_workspace:
-    post:
-      tags:
-        - deployment
-      summary: Export Airbyte Workspace Configuration
-      operationId: exportWorkspace
+        - attempt
+        - internal
+      summary: For worker to register the workflow id in attempt.
+      operationId: setWorkflowInAttempt
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/SetWorkflowInAttemptRequestBody"
         required: true
       responses:
         "200":
-          description: Successful operation
-          content:
-            application/x-gzip:
-              schema:
-                $ref: "#/components/schemas/AirbyteArchive"
-  /v1/deployment/upload_archive_resource:
-    post:
-      tags:
-        - deployment
-      summary: Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
-      operationId: uploadArchiveResource
-      requestBody:
-        content:
-          application/x-gzip:
-            schema:
-              $ref: "#/components/schemas/AirbyteArchive"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadRead"
-  /v1/deployment/import_into_workspace:
-    post:
-      tags:
-        - deployment
-      summary: >
-        Import Airbyte Configuration into Workspace (this operation might change ids of imported
-        configurations). Note, in order to use this api endpoint, you might need to upload a
-        temporary archive resource with 'deployment/upload_archive_resource' first
-      operationId: importIntoWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ImportRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImportRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
+                $ref: "#/components/schemas/InternalOperationResult"
 components:
   securitySchemes:
     bearerAuth:
@@ -3276,6 +3207,16 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+    ConnectionStateCreateOrUpdate:
+      type: object
+      required:
+        - connectionId
+        - connectionState
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        connectionState:
+          $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
       required:
@@ -3355,8 +3296,6 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
-        withRefreshedCatalog:
-          type: boolean
         skipReset:
           type: boolean
         operations:
@@ -4729,6 +4668,31 @@ components:
           $ref: "#/components/schemas/ResourceId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    AttemptNumber:
+      type: integer
+      format: int32
+    WorkflowId:
+      type: string
+    SetWorkflowInAttemptRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - workflowId
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        workflowId:
+          $ref: "#/components/schemas/WorkflowId"
+    InternalOperationResult:
+      type: object
+      required:
+        - succeeded
+      properties:
+        succeeded:
+          type: boolean
     InvalidInputProperty:
       type: object
       required:
