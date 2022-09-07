@@ -59,7 +59,7 @@ SOME_BACKOFF_TIME = 60
             "test_403_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="found"),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="found", options={}),
             {},
             response_status.IGNORE,
             None,
@@ -68,7 +68,7 @@ SOME_BACKOFF_TIME = 60
             "test_403_dont_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="not_found"),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="not_found", options={}),
             {},
             response_status.FAIL,
             None,
@@ -78,7 +78,7 @@ SOME_BACKOFF_TIME = 60
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}),
+            HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}, options={}),
             {},
             response_status.IGNORE,
             None,
@@ -86,7 +86,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in response }}", options={}),
             None,
             {},
             ResponseStatus.retry(10),
@@ -95,7 +95,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in response }}", options={}),
             None,
             {},
             response_status.FAIL,
@@ -104,7 +104,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_200_fail_with_predicate",
             HTTPStatus.OK,
-            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contain="found"),
+            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contains="found", options={}),
             None,
             {},
             response_status.FAIL,
@@ -113,10 +113,19 @@ SOME_BACKOFF_TIME = 60
         (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}),
+            HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}, options={}),
             None,
             {},
             ResponseStatus.retry(10),
+            None,
+        ),
+        (
+            "test_200_fail_with_predicate_from_header",
+            HTTPStatus.OK,
+            HttpResponseFilter(action=ResponseAction.FAIL, predicate="{{ headers['fail'] }}", options={}),
+            None,
+            {"fail": True},
+            response_status.FAIL,
             None,
         ),
     ],
@@ -127,7 +136,7 @@ def test_default_error_handler(
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
     response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
-    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy)
+    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy, options={})
     actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == should_retry
     if should_retry.action == ResponseAction.RETRY:
@@ -137,7 +146,7 @@ def test_default_error_handler(
 def test_default_error_handler_attempt_count_increases():
     status_code = 500
     response_mock = create_response(status_code)
-    error_handler = DefaultErrorHandler()
+    error_handler = DefaultErrorHandler(options={})
     actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10

@@ -137,14 +137,15 @@ Using this feature requires additional configuration, when creating the source. 
 
 ### Changelog (Strict Encrypt)
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.1.10  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
-| 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| Version | Date | Pull Request | Subject                                                                                             |
+|:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| 0.1.20  | 2022-07-14 | [\#15260](https://github.com/airbytehq/airbyte/pull/15260) | Align version of strict encrypt connector with regular connector                                    |
+| 0.1.10  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                |
+| 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                              |
 | 0.1.8   | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
-| 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
 | 0.1.5   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description |
-| 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
+| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
+| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description                                                           |
+| 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
 | 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |

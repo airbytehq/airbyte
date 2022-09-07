@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -61,6 +62,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   private static final String HIERARCHYID = "hierarchyid";
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  private List<String> schemas;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -95,7 +98,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName,
                                                                final String cursorField,
                                                                final JDBCType cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -113,7 +116,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
@@ -182,6 +185,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
             mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
+    if (mssqlConfig.has("schemas") && mssqlConfig.get("schemas").isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : mssqlConfig.get("schemas")) {
+        schemas.add(schema.asText());
+      }
+    }
+
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
     }
@@ -222,6 +232,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(MssqlSource::overrideSyncModes)
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::addCdcMetadataColumns)
@@ -231,6 +242,31 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     return catalog;
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly filtered (from UI) schemas
+      List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
+          .stream()
+          .filter(this::isTableInRequestedSchema)
+          .toList();
+      for (TableInfo<CommonField<JDBCType>> info : resultInternals) {
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+      }
+      return resultInternals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return internals;
+    }
+  }
+
+  private boolean isTableInRequestedSchema(TableInfo<CommonField<JDBCType>> tableInfo) {
+    return schemas
+        .stream()
+        .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
@@ -284,7 +320,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       // Azure SQL does not support USE clause
       final String sql =
-          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get(JdbcUtils.DATABASE_KEY).asText() + "; SELECT * FROM cdc.change_tables";
+          isAzureSQL ? "SELECT * FROM cdc.change_tables"
+              : "USE [" + config.get(JdbcUtils.DATABASE_KEY).asText() + "]; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
@@ -377,6 +414,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   // Note: in place mutation.

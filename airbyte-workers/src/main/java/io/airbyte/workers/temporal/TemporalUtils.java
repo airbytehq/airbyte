@@ -5,10 +5,15 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.uber.m3.tally.RootScopeBuilder;
+import com.uber.m3.tally.Scope;
+import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -21,6 +26,7 @@ import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
+import io.temporal.common.reporter.MicrometerClientStatsReporter;
 import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
@@ -63,6 +69,7 @@ public class TemporalUtils {
       .setInitialInterval(Duration.ofSeconds(configs.getInitialDelayBetweenActivityAttemptsSeconds()))
       .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
+  private static final double REPORT_INTERVAL_SECONDS = 120.0;
 
   public static WorkflowServiceStubs createTemporalService(final WorkflowServiceStubsOptions options, final String namespace) {
     return getTemporalClientWhenConnected(
@@ -90,14 +97,28 @@ public class TemporalUtils {
   private static WorkflowServiceStubsOptions getCloudTemporalOptions() {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
+    WorkflowServiceStubsOptions.Builder optionBuilder;
     try {
-      return WorkflowServiceStubsOptions.newBuilder()
+      optionBuilder = WorkflowServiceStubsOptions.newBuilder()
           .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
-          .setTarget(configs.getTemporalCloudHost())
-          .build();
+          .setTarget(configs.getTemporalCloudHost());
     } catch (final SSLException e) {
       log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
       throw new RuntimeException(e);
+    }
+
+    configureTemporalMeterRegistry(optionBuilder);
+    return optionBuilder.build();
+  }
+
+  private static void configureTemporalMeterRegistry(WorkflowServiceStubsOptions.Builder optionalBuilder) {
+    MeterRegistry registry = MetricClientFactory.getMeterRegistry();
+    if (registry != null) {
+      StatsReporter reporter = new MicrometerClientStatsReporter(registry);
+      Scope scope = new RootScopeBuilder()
+          .reporter(reporter)
+          .reportEvery(com.uber.m3.util.Duration.ofSeconds(REPORT_INTERVAL_SECONDS));
+      optionalBuilder.setMetricsScope(scope);
     }
   }
 

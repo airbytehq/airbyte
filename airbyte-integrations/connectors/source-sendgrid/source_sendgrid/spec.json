@@ -5,7 +5,7 @@
     "title": "Sendgrid Spec",
     "type": "object",
     "required": ["apikey"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "apikey": {
         "title": "Sendgrid API key",

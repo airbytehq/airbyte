@@ -1,12 +1,13 @@
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
-  
-  secretName: "airbyte-secrets"
+  credVolumeOverride: ""
+  secretName: ""
+  extraContainers: []
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "test"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
   logs:
     ## @param logs.accessKey.password Logs Access Key
@@ -205,6 +206,8 @@ log:
 ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
 extraEnv: []
 
+secrets: {}
+
 ## @param worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
 ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumeMounts:
@@ -220,3 +223,7 @@ extraVolumeMounts: []
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+extraContainers: []
+
+env_vars: {}

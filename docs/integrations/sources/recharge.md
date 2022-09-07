@@ -22,10 +22,10 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 5. Enter your `Access Token`.
 6. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
 4. Choose required `Start date`
 5. Enter your `Access Token` generated from `Step 1`.
@@ -47,7 +47,7 @@ Several output streams are available from this source:
 
 * [Addresses](https://developer.rechargepayments.com/v1-shopify?python#list-addresses) \(Incremental sync\)
 * [Charges](https://developer.rechargepayments.com/v1-shopify?python#list-charges) \(Incremental sync\)
-* [Collections](https://developer.rechargepayments.com/v1-shopify) 
+* [Collections](https://developer.rechargepayments.com/v1-shopify)
 * [Customers](https://developer.rechargepayments.com/v1-shopify?python#list-customers) \(Incremental sync\)
 * [Discounts](https://developer.rechargepayments.com/v1-shopify?python#list-discounts) \(Incremental sync\)
 * [Metafields](https://developer.rechargepayments.com/v1-shopify?python#list-metafields)
@@ -67,6 +67,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.8 | 2022-08-27 | [16045](https://github.com/airbytehq/airbyte/pull/16045) | Force total_weight to be an integer |
 | 0.1.7 | 2022-07-24 | [14978](https://github.com/airbytehq/airbyte/pull/14978) | Set `additionalProperties` to True, to guarantee backward cababilities |
 | 0.1.6 | 2022-07-21 | [14902](https://github.com/airbytehq/airbyte/pull/14902) | Increased test coverage, fixed broken `charges`, `orders` schemas, added state checkpoint |
 | 0.1.5 | 2022-01-26 | [9808](https://github.com/airbytehq/airbyte/pull/9808) | Update connector fields title/description |

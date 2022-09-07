@@ -1,6 +1,6 @@
 # webapp
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte-webapp
 
@@ -18,26 +18,26 @@ Helm chart to deploy airbyte-webapp
 | api.url | string | `"/api/v1/"` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| fullstory.enabled | bool | `false` |  |
-| global.configMapName | string | `"something"` |  |
-| global.database.host | string | `"something"` |  |
+| global.configMapName | string | `""` |  |
+| global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretName | string | `""` |  |
+| global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
-| global.secretName | string | `"something"` |  |
-| global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
+| global.extraContainers | list | `[]` |  |
+| global.secretName | string | `""` |  |
+| global.serviceAccountName | string | `"placeholderServiceAccount"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"airbyte/webapp"` |  |
-| image.tag | string | `"0.39.23-alpha"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` |  |
 | ingress.enabled | bool | `false` |  |
 | ingress.hosts | list | `[]` |  |
 | ingress.tls | list | `[]` |  |
-| isDemo | bool | `false` |  |
 | livenessProbe.enabled | bool | `true` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `30` |  |
