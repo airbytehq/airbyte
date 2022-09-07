@@ -183,6 +183,31 @@ Field | Description |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 
 
+### Key pair authentication
+    In order to configure key pair authentication you will need a private/public key pair.
+    If you do not have the key pair yet, you can generate one using openssl command line tool
+    Use this command in order to generate an unencrypted private key file:
+
+       `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt`
+
+    Alternatively, use this command to generate an encrypted private key file:
+
+      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
+
+    Once you have your private key, you need to generate a matching public key.
+    You can do so with the following command:
+
+      `openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
+
+    Finally, you need to add the public key to your Snowflake user account.
+    You can do so with the following SQL command in Snowflake:
+
+      `alter user <user_name> set rsa_public_key=<public_key_value>;`
+
+    and replace <user_name> with your user name and <public_key_value> with your public key.
+
+
+
 To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
 
 | Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -250,6 +275,8 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.35  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields). |
+| 0.4.34  | 2022-07-23 | [\#14388](https://github.com/airbytehq/airbyte/pull/14388) | Add support for key pair authentication  |
 | 0.4.33  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                               |
 | 0.4.32  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                                                                |
 | 0.4.31  | 2022-07-07 | [\#13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description                                                                                                             |

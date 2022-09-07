@@ -3,14 +3,14 @@
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 * HTTP APIs \(REST APIs, GraphQL, etc..\)
-* Singer Taps
 * Generic Python sources \(anything not covered by the above\)
+* Singer Taps (Note: The CDK supports building Singer taps but Airbyte no longer access contributions of this type)
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding.
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to [the Connector Development section of our Discourse forum](https://discuss.airbyte.io/c/connector-development/16) to inquire further!
 
 ## Getting Started
 
@@ -54,11 +54,6 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 * [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
 * [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
 * [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
-
-**Singer connectors**:
-
-* [Salesforce](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce-singer/source_salesforce_singer/source.py)
-* [Github](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-github-singer/source_github_singer/source.py)
 
 **Simple Python connectors using the barebones `Source` abstraction**:
 

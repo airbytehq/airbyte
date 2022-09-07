@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 // todo (cgardens) - we need the ability to identify jsonschemas that Airbyte considers invalid for
 // a connector (e.g. "not" keyword).
 @Slf4j
+@SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
 public class JsonSchemas {
 
   private static final String JSON_SCHEMA_ENUM_KEY = "enum";
@@ -167,13 +168,13 @@ public class JsonSchemas {
    *        the node from the root of the object passed at the root level invocation
    *
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
                                                  final List<FieldNameOrList> path,
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     if (!jsonSchemaNode.isObject()) {
       throw new IllegalArgumentException(String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
     }
-
     consumer.accept(jsonSchemaNode, path);
     // if type is missing assume object. not official JsonSchema, but it seems to be a common
     // compromise.
@@ -188,8 +189,7 @@ public class JsonSchemas {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
+            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
@@ -205,8 +205,7 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
+            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
       }

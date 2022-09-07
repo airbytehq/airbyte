@@ -88,6 +88,8 @@ The API user account should be assigned one of the following roles:
 * CREATIVE\_MANAGER
 * VIEWER \(Recommended\)
 
+To edit these roles, sign into Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075). 
+
 ## Step 2: Set up the source connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -101,7 +103,7 @@ The API user account should be assigned one of the following roles:
 7. Log in and Authorize to the LinkedIn Ads account
 8. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
@@ -180,8 +182,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
 |:--------| :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
-| 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column |
-| 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                   |
+| 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column              |
+| 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                   |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documenation corrections                                                                                    |
 | 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984)   | Update connector fields title/description                                                                         |
 | 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382)   | Modify log message in rate-limit cases                                                                            |

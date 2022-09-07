@@ -15,7 +15,7 @@ This page guides you through the process of setting up the Snapchat Marketing so
 
 1. [Set up Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 2. [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)  
 3. Add the OAuth2 app:
@@ -52,7 +52,7 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 6. Choose required Start date
 7. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
@@ -98,6 +98,7 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------|
+| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs        |
 | 0.1.5   | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime           |
 | 0.1.4   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                        |
 | 0.1.3   | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811)   | Add oauth2.0, fix stream_state                        |

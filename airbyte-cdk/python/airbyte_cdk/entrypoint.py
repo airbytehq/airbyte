@@ -20,11 +20,11 @@ from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_o
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 
 logger = init_logger("airbyte")
-init_uncaught_exception_handler(logger)
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
+        init_uncaught_exception_handler(logger)
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 

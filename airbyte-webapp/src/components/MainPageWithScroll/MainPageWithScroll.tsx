@@ -1,4 +1,3 @@
-import classnames from "classnames";
 import React from "react";
 
 import styles from "./MainPageWithScroll.module.scss";
@@ -8,21 +7,21 @@ import styles from "./MainPageWithScroll.module.scss";
  * @param pageTitle the title shown on the page
  */
 interface MainPageWithScrollProps {
-  error?: React.ReactNode;
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ error, headTitle, pageTitle, children }) => {
+const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, children }) => {
   return (
     <div className={styles.page}>
-      {error}
-      <div className={classnames({ [styles.headerError]: !!error })}>
+      <div>
         {headTitle}
         {pageTitle}
       </div>
-      <div className={styles.content}>{children}</div>
+      <div className={styles.contentContainer}>
+        <div className={styles.content}>{children}</div>
+      </div>
     </div>
   );
 };

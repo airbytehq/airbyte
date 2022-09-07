@@ -9,6 +9,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.CompositeIterator;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
@@ -115,7 +116,7 @@ public class AirbyteDebeziumHandler {
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
-      FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
+      FilteredFileDatabaseHistory.setDatabaseName(config.get(JdbcUtils.DATABASE_KEY).asText());
       return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
 

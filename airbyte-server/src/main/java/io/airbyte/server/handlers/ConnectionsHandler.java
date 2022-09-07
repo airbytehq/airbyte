@@ -26,13 +26,16 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.ScheduleData;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -44,6 +47,7 @@ import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
+import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
@@ -107,10 +111,12 @@ public class ConnectionsHandler {
     // Set this as default name if connectionCreate doesn't have it
     final String defaultName = sourceConnection.getName() + " <> " + destinationConnection.getName();
 
+    final List<UUID> operationIds = connectionCreate.getOperationIds() != null ? connectionCreate.getOperationIds() : Collections.emptyList();
+
     ConnectionHelper.validateWorkspace(workspaceHelper,
         connectionCreate.getSourceId(),
         connectionCreate.getDestinationId(),
-        new HashSet<>(connectionCreate.getOperationIds()));
+        new HashSet<>(operationIds));
 
     final UUID connectionId = uuidGenerator.get();
 
@@ -123,7 +129,7 @@ public class ConnectionsHandler {
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
-        .withOperationIds(connectionCreate.getOperationIds())
+        .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId());
     if (connectionCreate.getResourceRequirements() != null) {
@@ -137,15 +143,15 @@ public class ConnectionsHandler {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
-    if (connectionCreate.getSchedule() != null) {
-      final Schedule schedule = new Schedule()
-          .withTimeUnit(ApiPojoConverters.toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
-          .withUnits(connectionCreate.getSchedule().getUnits());
-      standardSync
-          .withManual(false)
-          .withSchedule(schedule);
+    if (connectionCreate.getSchedule() != null && connectionCreate.getScheduleType() != null) {
+      throw new JsonValidationException("supply old or new schedule schema but not both");
+    }
+
+    if (connectionCreate.getScheduleType() != null) {
+      ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(standardSync, connectionCreate.getScheduleType(),
+          connectionCreate.getScheduleData());
     } else {
-      standardSync.withManual(true);
+      populateSyncFromLegacySchedule(standardSync, connectionCreate);
     }
 
     configRepository.writeStandardSync(standardSync);
@@ -162,6 +168,28 @@ public class ConnectionsHandler {
     }
 
     return buildConnectionRead(connectionId);
+  }
+
+  private void populateSyncFromLegacySchedule(final StandardSync standardSync, final ConnectionCreate connectionCreate) {
+    if (connectionCreate.getSchedule() != null) {
+      final Schedule schedule = new Schedule()
+          .withTimeUnit(ApiPojoConverters.toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
+          .withUnits(connectionCreate.getSchedule().getUnits());
+      // Populate the legacy field.
+      // TODO(https://github.com/airbytehq/airbyte/issues/11432): remove.
+      standardSync
+          .withManual(false)
+          .withSchedule(schedule);
+      // Also write into the new field. This one will be consumed if populated.
+      standardSync
+          .withScheduleType(ScheduleType.BASIC_SCHEDULE);
+      standardSync.withScheduleData(new ScheduleData().withBasicSchedule(
+          new BasicSchedule().withTimeUnit(ApiPojoConverters.toBasicScheduleTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
+              .withUnits(connectionCreate.getSchedule().getUnits())));
+    } else {
+      standardSync.withManual(true);
+      standardSync.withScheduleType(ScheduleType.MANUAL);
+    }
   }
 
   private void trackNewConnection(final StandardSync standardSync) {

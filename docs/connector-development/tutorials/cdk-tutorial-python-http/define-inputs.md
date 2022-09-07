@@ -20,11 +20,11 @@ connectionSpecification:
     - access_key
     - start_date
     - base
-  additionalProperties: false
   properties:
     access_key:
       type: string
       description: API access key used to retrieve data from the Exchange Rates API.
+      airbyte_secret: true
     start_date:
       type: string
       description: Start getting data from that date.

@@ -58,6 +58,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -144,6 +145,9 @@ public class AirbyteAcceptanceTestHarness {
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
   private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
+
+  // Used for bypassing SSL modification for db configs
+  private static final String IS_TEST = "is_test";
 
   private static boolean isKube;
   private static boolean isMinikube;
@@ -292,6 +296,7 @@ public class AirbyteAcceptanceTestHarness {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
+      destinationPsql.stop();
     } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
@@ -486,15 +491,22 @@ public class AirbyteAcceptanceTestHarness {
     );
   }
 
-  public DestinationRead createDestination() throws ApiException {
+  public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
     return createDestination(
         "AccTestDestination-" + UUID.randomUUID(),
         defaultWorkspaceId,
-        getDestinationDefId(),
-        getDestinationDbConfig());
+        getPostgresDestinationDefinitionId(),
+        getDestinationDbConfig(isLegacy));
   }
 
-  public DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig)
+  public DestinationRead createPostgresDestination() throws ApiException {
+    return createPostgresDestination(false);
+  }
+
+  public DestinationRead createDestination(final String name,
+                                           final UUID workspaceId,
+                                           final UUID destinationDefId,
+                                           final JsonNode destinationConfig)
       throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
@@ -518,15 +530,6 @@ public class AirbyteAcceptanceTestHarness {
     final OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
     operationIds.add(operation.getOperationId());
     return operation;
-  }
-
-  public UUID getDestinationDefId() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
-        .stream()
-        .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
-        .findFirst()
-        .orElseThrow()
-        .getDestinationDefinitionId();
   }
 
   public List<JsonNode> retrieveSourceRecords(final Database database, final String table) throws SQLException {
@@ -560,59 +563,81 @@ public class AirbyteAcceptanceTestHarness {
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
   }
 
+  public JsonNode getSourceDbConfig(final boolean isLegacy) {
+    return getDbConfig(sourcePsql, false, false, isLegacy, Type.SOURCE);
+  }
+
   public JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
+    return getSourceDbConfig(false);
+  }
+
+  public JsonNode getDestinationDbConfig(final boolean isLegacy) {
+    return getDbConfig(destinationPsql, false, true, isLegacy, Type.DESTINATION);
   }
 
   public JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
+    return getDestinationDbConfig(false);
   }
 
   public JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true, false, Type.DESTINATION);
   }
 
-  public JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
+  public JsonNode getDbConfig(final PostgreSQLContainer psql,
+                              final boolean hiddenPassword,
+                              final boolean withSchema,
+                              final boolean isLegacy,
+                              final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+          : localConfig(psql, hiddenPassword, withSchema, isLegacy);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
+                                          final boolean hiddenPassword,
+                                          final boolean withSchema,
+                                          final boolean isLegacy)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
     if (isKube) {
       if (isMinikube) {
         // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
       }
     } else if (isMac) {
-      dbConfig.put("host", "host.docker.internal");
+      dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
     } else {
-      dbConfig.put("host", "localhost");
+      dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
     }
 
     if (hiddenPassword) {
-      dbConfig.put("password", "**********");
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, "**********");
     } else {
-      dbConfig.put("password", psql.getPassword());
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put("port", psql.getFirstMappedPort());
-    dbConfig.put("database", psql.getDatabaseName());
-    dbConfig.put("username", psql.getUsername());
-    dbConfig.put("ssl", false);
+    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
+    dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
+
+    // bypasses the SSL modification for cloud acceptance tests. This use useful in cloud since it
+    // enforces most databases to have SSL on, but the postgres containers we use for testing does not
+    // allow SSL.
+    if (!isLegacy) {
+      dbConfig.put(IS_TEST, true);
+    }
+    dbConfig.put(JdbcUtils.SSL_KEY, false);
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
     return dbConfig;
   }
@@ -633,12 +658,16 @@ public class AirbyteAcceptanceTestHarness {
         .documentationUrl(URI.create("https://example.com")));
   }
 
-  public SourceRead createPostgresSource() throws ApiException {
+  public SourceRead createPostgresSource(final boolean isLegacy) throws ApiException {
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
         defaultWorkspaceId,
         getPostgresSourceDefinitionId(),
-        getSourceDbConfig());
+        getSourceDbConfig(isLegacy));
+  }
+
+  public SourceRead createPostgresSource() throws ApiException {
+    return createPostgresSource(false);
   }
 
   public SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)
@@ -655,7 +684,7 @@ public class AirbyteAcceptanceTestHarness {
   public UUID getPostgresSourceDefinitionId() throws ApiException {
     return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
         .stream()
-        .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
+        .filter(sourceRead -> "postgres".equalsIgnoreCase(sourceRead.getName()))
         .findFirst()
         .orElseThrow()
         .getSourceDefinitionId();
@@ -664,7 +693,7 @@ public class AirbyteAcceptanceTestHarness {
   public UUID getPostgresDestinationDefinitionId() throws ApiException {
     return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
         .stream()
-        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .filter(destRead -> "postgres".equalsIgnoreCase(destRead.getName()))
         .findFirst()
         .orElseThrow()
         .getDestinationDefinitionId();
@@ -845,7 +874,6 @@ public class AirbyteAcceptanceTestHarness {
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
         .prefix(connection.getPrefix())
-        .withRefreshedCatalog(true)
         .skipReset(false);
   }
 

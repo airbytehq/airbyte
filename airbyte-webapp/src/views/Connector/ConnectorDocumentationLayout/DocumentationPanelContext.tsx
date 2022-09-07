@@ -1,7 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 
-// @ts-expect-error Default value provided at implementation
-const DocumentationPanelContext = createContext<ReturnType<typeof useDocumentationPanelState>>();
+export type DocumentationPanelContext = ReturnType<typeof useDocumentationPanelState>;
 
 export const useDocumentationPanelState = () => {
   const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
@@ -27,19 +26,15 @@ export const useDocumentationPanelState = () => {
   };
 };
 
-export const useCloseDocumentationPanelEffect = () => {
-  const { setDocumentationPanelOpen } = useDocumentationPanelState();
-  useEffect(() => {
-    return setDocumentationPanelOpen(false);
-  }, [setDocumentationPanelOpen]);
-};
+// @ts-expect-error Default value provided at implementation
+export const documentationPanelContext = createContext<DocumentationPanelContext>();
 
-export const useDocumentationPanelContext = () => useContext(DocumentationPanelContext);
+export const useDocumentationPanelContext = () => useContext(documentationPanelContext);
 
 export const DocumentationPanelProvider: React.FC = ({ children }) => {
   return (
-    <DocumentationPanelContext.Provider value={useDocumentationPanelState()}>
+    <documentationPanelContext.Provider value={useDocumentationPanelState()}>
       {children}
-    </DocumentationPanelContext.Provider>
+    </documentationPanelContext.Provider>
   );
 };

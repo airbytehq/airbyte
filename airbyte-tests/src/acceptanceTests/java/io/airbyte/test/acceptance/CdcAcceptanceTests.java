@@ -81,7 +81,8 @@ import org.slf4j.LoggerFactory;
  */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
-public class CdcAcceptanceTests {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class CdcAcceptanceTests {
 
   record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {}
 
@@ -93,6 +94,7 @@ public class CdcAcceptanceTests {
   private static final String REPLICATION_SLOT = "airbyte_slot";
   // must match publication name used in the above POSTGRES_INIT_SQL_FILE
   private static final String PUBLICATION = "airbyte_publication";
+  private static final Integer INITIAL_WAITING_SECONDS = 5;
 
   private static final String SOURCE_NAME = "CDC Source";
   private static final String CONNECTION_NAME = "test-connection";
@@ -102,6 +104,8 @@ public class CdcAcceptanceTests {
   private static final String ID_AND_NAME_TABLE = "id_and_name";
   private static final String COLOR_PALETTE_TABLE = "color_palette";
   private static final String COLUMN_COLOR = "color";
+  private static final String STARTING = "Starting {}";
+  private static final String STARTING_SYNC_ONE = "Starting {} sync 1";
 
   // version of the postgres destination connector that was built with the
   // old Airbyte protocol that does not contain any per-stream logic/fields
@@ -115,7 +119,7 @@ public class CdcAcceptanceTests {
   private AirbyteAcceptanceTestHarness testHarness;
 
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -142,23 +146,23 @@ public class CdcAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
+  void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId, POSTGRES_INIT_SQL_FILE);
     testHarness.setup();
   }
 
   @AfterEach
-  public void end() {
+  void end() {
     testHarness.cleanup();
     testHarness.stopDbAndContainers();
   }
 
   @Test
-  public void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+  void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -250,8 +254,8 @@ public class CdcAcceptanceTests {
   // tests that incremental syncs still work properly even when using a destination connector that was
   // built on the old protocol that did not have any per-stream state fields
   @Test
-  public void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+  void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
+    LOGGER.info(STARTING, testInfo.getDisplayName());
     final UUID postgresDestDefId = testHarness.getPostgresDestinationDefinitionId();
     // Fetch the current/most recent source definition version
     final DestinationDefinitionRead destinationDefinitionRead = apiClient.getDestinationDefinitionApi().getDestinationDefinition(
@@ -271,11 +275,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+  void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -310,11 +314,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+  void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -341,7 +345,7 @@ public class CdcAcceptanceTests {
     final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
     final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
     final JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -353,11 +357,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
-    LOGGER.info("Starting {}", testInfo.getDisplayName());
+  void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
+    LOGGER.info(STARTING, testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
+    LOGGER.info(STARTING_SYNC_ONE, testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -383,12 +387,12 @@ public class CdcAcceptanceTests {
     // filter out color_palette stream
     final List<AirbyteStreamAndConfiguration> updatedStreams = streams
         .stream()
-        .filter(stream -> !stream.getStream().getName().equals(COLOR_PALETTE_TABLE))
+        .filter(stream -> !COLOR_PALETTE_TABLE.equals(stream.getStream().getName()))
         .toList();
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
     WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -403,7 +407,7 @@ public class CdcAcceptanceTests {
     catalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Updated catalog: {}", catalog);
     update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -457,7 +461,7 @@ public class CdcAcceptanceTests {
   private UUID createCdcConnection() throws ApiException {
     final SourceRead sourceRead = createCdcSource();
     final UUID sourceId = sourceRead.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     operationRead = testHarness.createOperation();
     final UUID operationId = operationRead.getOperationId();
@@ -485,10 +489,12 @@ public class CdcAcceptanceTests {
     final UUID postgresSourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
     final JsonNode sourceDbConfig = testHarness.getSourceDbConfig();
     final Map<Object, Object> sourceDbConfigMap = Jsons.object(sourceDbConfig, Map.class);
+    sourceDbConfigMap.put("is_test", true);
     sourceDbConfigMap.put("replication_method", ImmutableMap.builder()
         .put("method", CDC_METHOD)
         .put("replication_slot", REPLICATION_SLOT)
         .put("publication", PUBLICATION)
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
     LOGGER.info("final sourceDbConfigMap: {}", sourceDbConfigMap);
 
@@ -538,7 +544,7 @@ public class CdcAcceptanceTests {
         return sourceRecordValuesMatch && cdcUpdatedAtMatches && cdcDeletedAtMatches;
       }).toList();
 
-      if (matchingDestRecords.size() == 0) {
+      if (matchingDestRecords.isEmpty()) {
         throw new IllegalStateException(String.format(
             "Could not find a matching CDC destination record for record matcher %s. Destination records: %s", recordMatcher, destRecords));
       }

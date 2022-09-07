@@ -109,6 +109,16 @@ public class TrackingMetadata {
             metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
             metadata.put("volume_mb", syncSummary.getBytesSynced());
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
+            metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
+            metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
+            metadata.put("max_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("mean_seconds_before_source_state_message_emitted",
+                syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
+            metadata.put("max_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
+            metadata.put("mean_seconds_between_state_message_emit_and_commit",
+                syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
           }
         }
 
@@ -142,19 +152,16 @@ public class TrackingMetadata {
 
   private static JsonNode failureReasonAsJson(final FailureReason failureReason) {
     // we want the json to always include failureOrigin and failureType, even when they are null
-    return Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+    final LinkedHashMap<String, Object> linkedHashMap = new LinkedHashMap<>();
+    linkedHashMap.put("failureOrigin", failureReason.getFailureOrigin());
+    linkedHashMap.put("failureType", failureReason.getFailureType());
+    linkedHashMap.put("internalMessage", failureReason.getInternalMessage());
+    linkedHashMap.put("externalMessage", failureReason.getExternalMessage());
+    linkedHashMap.put("metadata", failureReason.getMetadata());
+    linkedHashMap.put("retryable", failureReason.getRetryable());
+    linkedHashMap.put("timestamp", failureReason.getTimestamp());
 
-      {
-        put("failureOrigin", failureReason.getFailureOrigin());
-        put("failureType", failureReason.getFailureType());
-        put("internalMessage", failureReason.getInternalMessage());
-        put("externalMessage", failureReason.getExternalMessage());
-        put("metadata", failureReason.getMetadata());
-        put("retryable", failureReason.getRetryable());
-        put("timestamp", failureReason.getTimestamp());
-      }
-
-    });
+    return Jsons.jsonNode(linkedHashMap);
   }
 
 }

@@ -101,28 +101,29 @@ public class JobNotifier {
               workspaceId,
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-          switch (action) {
-            case FAILURE_NOTIFICATION:
-              if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-                LOGGER.warn("Failed to successfully notify failure: {}", notification);
-              }
-              break;
-            case SUCCESS_NOTIFICATION:
-              if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-                LOGGER.warn("Failed to successfully notify success: {}", notification);
-              }
-              break;
-            case CONNECTION_DISABLED_NOTIFICATION:
-              if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  workspaceId, connectionId)) {
-                LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
-              }
-              break;
-            case CONNECTION_DISABLED_WARNING_NOTIFICATION:
-              if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  workspaceId, connectionId)) {
-                LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
-              }
+
+          if (FAILURE_NOTIFICATION == action) {
+            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
+              LOGGER.warn("Failed to successfully notify failure: {}", notification);
+            }
+            break;
+          } else if (SUCCESS_NOTIFICATION == action) {
+            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
+              LOGGER.warn("Failed to successfully notify success: {}", notification);
+            }
+            break;
+          } else if (CONNECTION_DISABLED_NOTIFICATION == action) {
+            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                workspaceId, connectionId)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+            }
+            break;
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION == action) {
+            if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                workspaceId, connectionId)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
+            }
+
           }
         } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);

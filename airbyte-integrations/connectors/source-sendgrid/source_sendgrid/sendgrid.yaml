@@ -1,0 +1,257 @@
+version: "0.1.0"
+definitions:
+  page_size: 50
+  step: "30d"
+
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://api.sendgrid.com"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      api_token: "{{ config.apikey }}"
+  cursor_paginator:
+    type: LimitPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: "page_size"
+    page_token_option:
+      inject_into: "path"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._metadata.next }}"
+  offset_paginator:
+    type: LimitPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "offset"
+    pagination_strategy:
+      type: "OffsetIncrement"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_time'] }}"
+      datetime_format: "%s"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+    step: "*ref(definitions.step)"
+    cursor_field: "{{ options.stream_cursor_field }}"
+    start_time_option:
+      field_name: "start_time"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "end_time"
+      inject_into: "request_parameter"
+    datetime_format: "%s"
+  messages_stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_time'] }}"
+      datetime_format: "%s"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+    step: "*ref(definitions.step)"
+    cursor_field: "{{ options.stream_cursor_field }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+
+  base_stream:
+    type: DeclarativeStream
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: []
+      requester:
+        $ref: "*ref(definitions.requester)"
+      paginator:
+        type: NoPagination
+streams:
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "lists"
+      primary_key: "id"
+      path: "/v3/marketing/lists"
+      field_pointer: ["result"]
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/v3/marketing/campaigns"
+      field_pointer: ["result"]
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contacts"
+      primary_key: "id"
+      path: "/v3/marketing/contacts"
+      field_pointer: ["result"]
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stats_automations"
+      primary_key: "id"
+      path: "/v3/marketing/stats/automations"
+      field_pointer: ["results"]
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "segments"
+      primary_key: "id"
+      path: "/v3/marketing/segments"
+      field_pointer: ["results"]
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "single_sends"
+      primary_key: "id"
+      path: "/v3/marketing/stats/singlesends"
+      field_pointer: ["results"]
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "templates"
+      primary_key: "id"
+      path: "/v3/templates"
+      field_pointer: ["result"]
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            generations: "legacy,dynamic"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "bounces"
+      primary_key: "email"
+      stream_cursor_field: "created"
+      path: "/v3/suppression/bounces"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "global_suppressions"
+      primary_key: "email"
+      stream_cursor_field: "created"
+      path: "/v3/suppression/unsubscribes"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "blocks"
+      primary_key: "email"
+      stream_cursor_field: "created"
+      path: "/v3/suppression/blocks"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "suppression_groups"
+      primary_key: "id"
+      path: "/v3/asm/groups"
+      field_pointer: []
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "suppression_group_members"
+      primary_key: "group_id"
+      path: "/v3/asm/suppressions"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "invalid_emails"
+      primary_key: "email"
+      stream_cursor_field: "created"
+      path: "/v3/suppression/invalid_emails"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "spam_reports"
+      primary_key: "email"
+      stream_cursor_field: "created"
+      path: "/v3/suppression/spam_reports"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "messages"
+      primary_key: "msg_id"
+      stream_cursor_field: "last_event_time"
+      path: "/v3/messages"
+      field_pointer: []
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            limit: "1000"
+            query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
+      stream_slicer:
+        $ref: "*ref(definitions.messages_stream_slicer)"
+check:
+  type: CheckStream
+  stream_names: ["lists"]
