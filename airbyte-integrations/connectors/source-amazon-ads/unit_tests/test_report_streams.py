@@ -8,6 +8,7 @@ from datetime import timedelta
 from functools import partial
 from unittest import mock
 
+import pendulum
 import pytest
 import responses
 from airbyte_cdk.models import SyncMode
@@ -16,6 +17,7 @@ from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
+from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
@@ -23,6 +25,8 @@ from source_amazon_ads.streams import (
     SponsoredProductsReportStream,
 )
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
+
+from .utils import read_incremental
 
 """
 METRIC_RESPONSE is gzip compressed binary representing this string:
@@ -337,10 +341,10 @@ def test_display_report_stream_slices_incremental(config):
 def test_get_start_date(config):
     profiles = make_profiles()
 
-    config["start_date"] = "2021-07-10"
+    config["start_date"] = pendulum.from_format("2021-07-10", CONFIG_DATE_FORMAT).date()
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 7, 10)
-    config["start_date"] = "2021-05-10"
+    config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
 
@@ -366,7 +370,7 @@ def test_stream_slices_different_timezones(config):
 
 def test_stream_slices_lazy_evaluation(config):
     with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
-        config["start_date"] = "2021-05-10"
+        config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
         profile1 = Profile(profileId=1, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
         profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
 
@@ -413,3 +417,142 @@ def test_get_date_range_lazy_evaluation():
             date_range.append(date)
             frozen_datetime.tick(delta=timedelta(hours=3))
         assert date_range == ["20220529", "20220530", "20220531", "20220601", "20220602"]
+
+
+@responses.activate
+def test_read_incremental_without_records(config):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=b64decode("H4sIAAAAAAAAAIuOBQApu0wNAgAAAA=="),
+    )
+
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+
+    with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
+        state = {}
+        reportDates = ["20210102", "20210102", "20210102", "20210103", "20210104", "20210105"]
+        for reportDate in reportDates:
+            records = list(read_incremental(stream, state))
+            assert state == {"1": {"reportDate": reportDate}}
+            assert records == []
+            frozen_datetime.tick(delta=timedelta(days=1))
+
+
+@responses.activate
+def test_read_incremental_with_records(config):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+
+    with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
+
+        state = {}
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210102"}}
+        assert {r["reportDate"] for r in records} == {"20210102"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210102"}}
+        assert {r["reportDate"] for r in records} == {"20210102", "20210103"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210102"}}
+        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210103"}}
+        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104", "20210105"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210104"}}
+        assert {r["reportDate"] for r in records} == {"20210103", "20210104", "20210105", "20210106"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210105"}}
+        assert {r["reportDate"] for r in records} == {"20210104", "20210105", "20210106", "20210107"}
+
+
+@responses.activate
+def test_read_incremental_without_records_start_date(config):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=b64decode("H4sIAAAAAAAAAIuOBQApu0wNAgAAAA=="),
+    )
+
+    profiles = make_profiles()
+    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+
+    with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
+
+        state = {}
+        reportDates = ["20201231", "20210101", "20210102", "20210103", "20210104"]
+        for reportDate in reportDates:
+            records = list(read_incremental(stream, state))
+            assert state == {"1": {"reportDate": reportDate}}
+            assert records == []
+            frozen_datetime.tick(delta=timedelta(days=1))
+
+
+@responses.activate
+def test_read_incremental_with_records_start_date(config):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+
+    with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
+
+        state = {}
+        records = list(read_incremental(stream, state))
+
+        assert state == {"1": {"reportDate": "20201231"}}
+        assert {r["reportDate"] for r in records} == {
+            "20201225",
+            "20201226",
+            "20201227",
+            "20201228",
+            "20201229",
+            "20201230",
+            "20201231",
+            "20210101",
+            "20210102",
+        }
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210101"}}
+        assert {r["reportDate"] for r in records} == {"20201231", "20210101", "20210102", "20210103"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210102"}}
+        assert {r["reportDate"] for r in records} == {"20210101", "20210102", "20210103", "20210104"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210103"}}
+        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104", "20210105"}
+
+        frozen_datetime.tick(delta=timedelta(days=1))
+        records = list(read_incremental(stream, state))
+        assert state == {"1": {"reportDate": "20210104"}}
+        assert {r["reportDate"] for r in records} == {"20210103", "20210104", "20210105", "20210106"}

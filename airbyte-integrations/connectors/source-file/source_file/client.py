@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import boto3
 import botocore
 import google
+import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
@@ -225,8 +226,9 @@ class URLFile:
 class Client:
     """Class that manages reading and parsing data from streams"""
 
+    CSV_CHUNK_SIZE = 10_000
     reader_class = URLFile
-    binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
+    binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
         self._dataset_name = dataset_name
@@ -297,6 +299,7 @@ class Client:
             "flat_json": pd.read_json,
             "html": pd.read_html,
             "excel": pd.read_excel,
+            "excel_binary": pd.read_excel,
             "feather": pd.read_feather,
             "parquet": pd.read_parquet,
             "orc": pd.read_orc,
@@ -312,27 +315,35 @@ class Client:
 
         reader_options = {**self._reader_options}
         if self._reader_format == "csv":
-            reader_options["chunksize"] = 10000
+            reader_options["chunksize"] = self.CSV_CHUNK_SIZE
             if skip_data:
                 reader_options["nrows"] = 0
                 reader_options["index_col"] = 0
 
             yield from reader(fp, **reader_options)
+        elif self._reader_options == "excel_binary":
+            reader_options["engine"] = "pyxlsb"
+            yield from reader(fp, **reader_options)
         else:
             yield reader(fp, **reader_options)
 
     @staticmethod
-    def dtype_to_json_type(dtype) -> str:
+    def dtype_to_json_type(current_type: str, dtype) -> str:
         """Convert Pandas Dataframe types to Airbyte Types.
 
+        :param current_type: str - one of the following types based on previous dataframes
         :param dtype: Pandas Dataframe type
         :return: Corresponding Airbyte Type
         """
+        number_types = ("int64", "float64")
+        if current_type == "string":
+            # previous column values was of the string type, no sense to look further
+            return current_type
         if dtype == object:
             return "string"
-        elif dtype in ("int64", "float64"):
+        if dtype in number_types and (not current_type or current_type in number_types):
             return "number"
-        elif dtype == "bool":
+        if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
         return "string"
 
@@ -357,7 +368,7 @@ class Client:
                     fp = self._cache_stream(fp)
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df = df.where(pd.notnull(df), None)
+                    df.replace({np.nan: None}, inplace=True)
                     yield from df[list(columns)].to_dict(orient="records")
 
     def _cache_stream(self, fp):
@@ -378,7 +389,9 @@ class Client:
         fields = {}
         for df in df_list:
             for col in df.columns:
-                fields[col] = self.dtype_to_json_type(df[col].dtype)
+                # if data type of the same column differs in dataframes, we choose the broadest one
+                prev_frame_column_type = fields.get(col)
+                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
         return {field: {"type": [fields[field], "null"]} for field in fields}
 
     @property

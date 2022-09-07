@@ -8,13 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class AirbyteMessageUtils {
@@ -74,6 +80,26 @@ public class AirbyteMessageUtils {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
+  }
+
+  public static AirbyteStateMessage createStreamStateMessage(final String streamName, final int stateData) {
+    return new AirbyteStateMessage()
+        .withType(AirbyteStateType.STREAM)
+        .withStream(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)));
+  }
+
+  public static AirbyteMessage createGlobalStateMessage(final int stateData, final String... streamNames) {
+    final List<AirbyteStreamState> streamStates = new ArrayList<>();
+    for (final String streamName : streamNames) {
+      streamStates.add(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)));
+    }
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(new AirbyteGlobalState().withStreamStates(streamStates)));
+  }
+
+  public static AirbyteStreamState createStreamState(final String streamName) {
+    return new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName));
   }
 
   public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Double emittedAt) {

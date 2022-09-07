@@ -22,7 +22,6 @@ Helm chart to deploy airbyte-webapp
 | extraEnv | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| fullstory.enabled | bool | `false` |  |
 | global.configMapName | string | `""` |  |
 | global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
@@ -39,7 +38,6 @@ Helm chart to deploy airbyte-webapp
 | ingress.enabled | bool | `false` |  |
 | ingress.hosts | list | `[]` |  |
 | ingress.tls | list | `[]` |  |
-| isDemo | bool | `false` |  |
 | livenessProbe.enabled | bool | `true` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `30` |  |

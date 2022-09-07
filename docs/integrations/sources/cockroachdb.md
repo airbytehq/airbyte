@@ -95,6 +95,8 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.1.17  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
+| 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.1.13 | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.1.12  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.1.11  | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0 |
@@ -107,20 +109,3 @@ Your database user should now be ready for use with Airbyte.
 | 0.1.4   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.1.3   | 2021-10-10 | [7819](https://github.com/airbytehq/airbyte/pull/7819) | Fixed Datatype errors during Cockroach DB parsing |
 | 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
-
-## Changelog source-cockroachdb-strict-encrypt
-
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.1.15  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
-| 0.1.14  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
-| 0.1.13  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.1.12  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
-| 0.1.8   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0 |
-| 0.1.6   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
-| 0.1.5   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
-| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.3   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table |
-| 0.1.2   | 2021-12-24 | [9004](https://github.com/airbytehq/airbyte/pull/9004) | User can see only permmited tables during discovery |
-| 0.1.1   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
-| 0.1.0   | 2021-11-23 | [7457](https://github.com/airbytehq/airbyte/pull/7457) | CockroachDb source: Add only encrypted version for the connector |
