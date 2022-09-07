@@ -81,7 +81,7 @@ public class ImportApi {
     }
   }
 
-  private Boolean errorResponse(final HttpResponse<InputStream> localVarResponse){
+  private Boolean errorResponse(final HttpResponse<InputStream> localVarResponse) {
     return localVarResponse.statusCode() / 100 != 2;
   }
 
