@@ -21,8 +21,7 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionForm, ConnectionFormSubmitResult } from "views/Connection/ConnectionForm";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
