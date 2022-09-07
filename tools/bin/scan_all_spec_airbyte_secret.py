@@ -116,8 +116,7 @@ def find_properties(properties, path=None):
         elif prop_obj.get("type", "string") == "array" and prop_obj["items"].get("type") == "object":
             yield from find_properties(prop_obj["items"]["properties"], path=path + [prop_name])
         else:
-            if not prop_obj.get("airbyte_secret"):
-                yield path, prop_name
+            yield path, prop_name, prop_obj
 
 
 def main():
@@ -128,8 +127,8 @@ def main():
 
     for filename, obj in iter_all_specs(SPECS_DIR):
         properties = obj["spec"]["connectionSpecification"]["properties"]
-        for prop_path, prop_name in find_properties(properties):
-            if PATTERN.search(prop_name):
+        for prop_path, prop_name, prop_obj in find_properties(properties):
+            if prop_obj.get("type") != "boolean" and not prop_obj.get("airbyte_secret") and PATTERN.search(prop_name):
                 print(filename, ".".join(prop_path + [prop_name]))
 
 
