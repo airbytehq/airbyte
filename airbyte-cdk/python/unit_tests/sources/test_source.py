@@ -269,7 +269,7 @@ def abstract_source(mocker):
         pytest.param(
             [{"type": "LEGACY", "not": "something"}],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(ValueError),
             id="test_invalid_state_message_has_no_stream_global_or_data",
         ),
     ],

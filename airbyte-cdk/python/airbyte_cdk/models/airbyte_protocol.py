@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, Extra, Field, root_validator
+from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
 class Type(Enum):
@@ -292,14 +292,6 @@ class AirbyteStateMessage(BaseModel):
     stream: Optional[AirbyteStreamState] = None
     global_: Optional[AirbyteGlobalState] = Field(None, alias="global")
     data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")
-
-    # To maintain backwards compatibility, all of AirbyteStateMessage's fields are optional, but we should validate
-    # that at least one of the three fields is defined.
-    @root_validator()
-    def check_at_least_one(cls, values):
-        if values.get("global_") is None and values.get("data") is None and values.get("stream") is None:
-            raise ValueError("AirbyteStateMessage should contain either a stream, global, or state field")
-        return values
 
 
 class AirbyteCatalog(BaseModel):

@@ -58,7 +58,13 @@ class Source(
                 return []
             is_per_stream_state = isinstance(state_obj, List)
             if is_per_stream_state:
-                return [AirbyteStateMessage.parse_obj(state) for state in state_obj]
+                parsed_state_messages = []
+                for state in state_obj:
+                    parsed_message = AirbyteStateMessage.parse_obj(state)
+                    if not parsed_message.stream and not parsed_message.data and not parsed_message.global_:
+                        raise ValueError("AirbyteStateMessage should contain either a stream, global, or state field")
+                    parsed_state_messages.append(parsed_message)
+                return parsed_state_messages
             else:
                 # When the legacy JSON object format is received, always outputting an AirbyteStateMessage simplifies processing downstream
                 return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
