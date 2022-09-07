@@ -24,6 +24,7 @@ export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings,
       })}
       onClick={onClick}
       tabIndex={0}
+      type="button"
       aria-label="previous slide"
       data-testid="previous-slide-btn"
     >
@@ -37,6 +38,7 @@ export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings,
       })}
       onClick={onClick}
       tabIndex={0}
+      type="button"
       aria-label="next slide"
       data-testid="next-slide-btn"
     >
