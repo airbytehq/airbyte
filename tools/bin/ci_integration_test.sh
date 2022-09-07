@@ -4,6 +4,7 @@ set -e
 
 . tools/lib/lib.sh
 
+docker run -i --rm -v /etc:/etc ubuntu /bin/bash -c "echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root"
 
 docker network create http_reject
 GATEWAY=$(docker network inspect http_reject | jq -r .[0].IPAM.Config[0].Gateway)
