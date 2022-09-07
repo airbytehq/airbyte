@@ -118,7 +118,7 @@ public class DefaultJobPersistence implements JobPersistence {
     this(jobDatabase, Instant::now, 30, 500, 10);
   }
 
-  private static String jobSelectAndJoin(String jobsSubquery) {
+  private static String jobSelectAndJoin(final String jobsSubquery) {
     return "SELECT\n"
         + "jobs.id AS job_id,\n"
         + "jobs.config_type AS config_type,\n"
@@ -802,7 +802,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
     ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
-    ctx.truncateTable(tableSql).restartIdentity().execute();
+    ctx.truncateTable(tableSql).restartIdentity().cascade().execute();
   }
 
   /**
