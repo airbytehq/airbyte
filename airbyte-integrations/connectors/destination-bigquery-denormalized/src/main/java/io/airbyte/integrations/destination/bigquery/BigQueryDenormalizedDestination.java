@@ -84,8 +84,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected void putStreamIntoUploaderMap(AirbyteStream stream, UploaderConfig uploaderConfig,
       Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) throws IOException {
     Table existingTable = uploaderConfig.getBigQuery().getTable(uploaderConfig.getConfigStream().getStream().getNamespace(), uploaderConfig.getTargetTableName());
-    AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
-    BigQueryRecordFormatter formatter = uploader.getRecordFormatter();
+    BigQueryRecordFormatter formatter = uploaderConfig.getFormatter();
 
     if (existingTable != null)
     {
@@ -100,6 +99,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
       LOGGER.info("Target table is not created yet. The modern destination processing will be used.");
     }
 
+    AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
         uploader);

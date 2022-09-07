@@ -37,10 +37,7 @@ public class BigQueryUploaderFactory {
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 
-    final boolean isGcsUploadingMode = BigQueryUtils.getLoadingMethod(uploaderConfig.getConfig()) == UploadingMethod.GCS;
-    final BigQueryRecordFormatter recordFormatter = isGcsUploadingMode
-        ? uploaderConfig.getFormatterMap().get(UploaderType.AVRO)
-        : uploaderConfig.getFormatterMap().get(UploaderType.STANDARD);
+    final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
     final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
@@ -57,7 +54,7 @@ public class BigQueryUploaderFactory {
     final JobInfo.WriteDisposition syncMode = BigQueryUtils.getWriteDisposition(
         uploaderConfig.getConfigStream().getDestinationSyncMode());
 
-    return (isGcsUploadingMode
+    return (uploaderConfig.isGcsUploadingMode()
         ? getGcsBigQueryUploader(
             uploaderConfig.getConfig(),
             uploaderConfig.getConfigStream(),
