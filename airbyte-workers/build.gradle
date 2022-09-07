@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation libs.micrometer.statsd
     implementation 'io.sentry:sentry:6.3.1'
-    implementation 'net.bytebuddy:byte-buddy:1.12.13'
+    implementation 'net.bytebuddy:byte-buddy:1.12.14'
     implementation 'org.springframework:spring-core:5.3.22'
 
     implementation project(':airbyte-analytics')
@@ -69,7 +69,7 @@ dependencies {
     testImplementation libs.bundles.micronaut.test
     testImplementation 'io.temporal:temporal-testing:1.8.1'
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
-    testImplementation 'org.mockito:mockito-inline:4.0.0'
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
