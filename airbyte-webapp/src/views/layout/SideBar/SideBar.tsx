@@ -21,7 +21,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
-import { SidebarDropdownMenu } from "./components/SidebarDropdownMenu";
+import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "./components/SidebarDropdownMenu";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
@@ -102,24 +102,24 @@ const SideBar: React.FC = () => {
         <div>
           <SidebarDropdownMenu
             options={[
-              <a href={config.links.docsLink} target="_blank" rel="noreferrer">
-                <span>
-                  <DocsIcon />
-                </span>
-                <FormattedMessage id="sidebar.documentation" />
-              </a>,
-              <a href={config.links.slackLink} target="_blank" rel="noreferrer">
-                <span>
-                  <FontAwesomeIcon icon={faSlack} />
-                </span>
-                <FormattedMessage id="sidebar.joinSlack" />
-              </a>,
-              <a href={config.links.recipesLink} target="_blank" rel="noreferrer">
-                <span>
-                  <RecipesIcon />
-                </span>
-                <FormattedMessage id="sidebar.recipes" />
-              </a>,
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.docsLink,
+                icon: <DocsIcon />,
+                displayName: <FormattedMessage id="sidebar.documentation" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.slackLink,
+                icon: <FontAwesomeIcon icon={faSlack} />,
+                displayName: <FormattedMessage id="sidebar.joinSlack" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.recipesLink,
+                icon: <RecipesIcon />,
+                displayName: <FormattedMessage id="sidebar.recipes" />,
+              },
             ]}
           >
             <DocsIcon />

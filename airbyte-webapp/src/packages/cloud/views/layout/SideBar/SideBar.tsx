@@ -28,7 +28,10 @@ import { RoutePaths } from "../../../../../pages/routePaths";
 import ChatIcon from "../../../../../views/layout/SideBar/components/ChatIcon";
 import DocsIcon from "../../../../../views/layout/SideBar/components/DocsIcon";
 import RecipesIcon from "../../../../../views/layout/SideBar/components/RecipesIcon";
-import { SidebarDropdownMenu } from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
+import {
+  SidebarDropdownMenu,
+  SidebarDropdownMenuItemType,
+} from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
 import StatusIcon from "../../../../../views/layout/SideBar/components/StatusIcon";
 import styles from "./SideBar.module.scss";
 
@@ -102,30 +105,30 @@ const SideBar: React.FC = () => {
         <div>
           <SidebarDropdownMenu
             options={[
-              <a href={config.links.docsLink} target="_blank" rel="noreferrer">
-                <span>
-                  <DocsIcon />
-                </span>
-                <FormattedMessage id="sidebar.documentation" />
-              </a>,
-              <a href={config.links.slackLink} target="_blank" rel="noreferrer">
-                <span>
-                  <FontAwesomeIcon icon={faSlack} />
-                </span>
-                <FormattedMessage id="sidebar.joinSlack" />
-              </a>,
-              <a href={config.links.statusLink} target="_blank" rel="noreferrer">
-                <span>
-                  <StatusIcon />
-                </span>
-                <FormattedMessage id="sidebar.status" />
-              </a>,
-              <a href={config.links.recipesLink} target="_blank" rel="noreferrer">
-                <span>
-                  <RecipesIcon />
-                </span>
-                <FormattedMessage id="sidebar.recipes" />
-              </a>,
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.docsLink,
+                icon: <DocsIcon />,
+                displayName: <FormattedMessage id="sidebar.documentation" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.slackLink,
+                icon: <FontAwesomeIcon icon={faSlack} />,
+                displayName: <FormattedMessage id="sidebar.joinSlack" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.statusLink,
+                icon: <StatusIcon />,
+                displayName: <FormattedMessage id="sidebar.status" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.recipesLink,
+                icon: <RecipesIcon />,
+                displayName: <FormattedMessage id="sidebar.recipes" />,
+              },
             ]}
           >
             <DocsIcon />
@@ -137,18 +140,18 @@ const SideBar: React.FC = () => {
         <div>
           <SidebarDropdownMenu
             options={[
-              <a href={config.links.supportTicketLink} target="_blank" rel="noreferrer">
-                <span>
-                  <FontAwesomeIcon icon={faEnvelope} />
-                </span>
-                <FormattedMessage id="sidebar.supportTicket" />
-              </a>,
-              <div onClick={handleChatUs}>
-                <span>
-                  <ChatIcon />
-                </span>
-                <FormattedMessage id="sidebar.chat" />
-              </div>,
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: config.links.supportTicketLink,
+                icon: <FontAwesomeIcon icon={faEnvelope} />,
+                displayName: <FormattedMessage id="sidebar.supportTicket" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.BUTTON,
+                onClick: handleChatUs,
+                icon: <ChatIcon />,
+                displayName: <FormattedMessage id="sidebar.chat" />,
+              },
             ]}
           >
             <FontAwesomeIcon icon={faQuestionCircle} size="2x" />

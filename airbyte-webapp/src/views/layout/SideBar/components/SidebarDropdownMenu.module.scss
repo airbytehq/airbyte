@@ -13,6 +13,7 @@
   width: 100%;
   background: transparent;
   border: 0;
+  outline: none;
   margin-top: 7px;
   cursor: pointer;
   border-radius: 12px;
@@ -43,17 +44,24 @@
   min-width: 260px;
   margin: 0 0 14px 12px;
   padding: 4px 0;
+  outline: none;
   border-radius: 4px;
   background-color: colors.$white;
   box-shadow: 0 8px 10px 0 rgb(11 10 26 / 4%), 0 3px 14px 0 rgb(11 10 26 / 8%), 0 5px 5px 0 rgb(11 10 26 / 12%);
 
-  .item a,
-  .item div {
+  &:focus-within {
+    outline: none;
+  }
+
+  .item {
     cursor: pointer;
     display: flex;
     align-items: center;
     height: 42px;
+    width: 100%;
     padding: 0 16px;
+    border: 0;
+    background-color: transparent;
     text-decoration: none;
     color: colors.$dark-blue;
     font-size: 14px;
@@ -66,7 +74,7 @@
       font-size: 22px;
     }
 
-    &:hover {
+    &.active {
       background-color: colors.$grey-50;
     }
   }
