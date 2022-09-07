@@ -236,8 +236,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     return { destinationDefinitionId, name, icon, releaseStage };
   }, [availableServices, startWithDestinationId]);
 
-  const uiOverrides = useMemo(
-    () => ({
+  const uiOverrides = useMemo(() => {
+    return {
       name: {
         component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorNameControl property={property} formType={formType} {...componentProps} />
@@ -271,18 +271,17 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           );
         },
       },
-    }),
-    [
-      formType,
-      onServiceSelect,
-      availableServices,
-      isEditMode,
-      selectedConnectorDefinitionSpecification,
-      frequentlyUsedDestinations,
-      isLoading,
-      toggleOpenRequestModal,
-    ]
-  );
+    };
+  }, [
+    formType,
+    onServiceSelect,
+    availableServices,
+    isEditMode,
+    selectedConnectorDefinitionSpecification,
+    frequentlyUsedDestinations,
+    isLoading,
+    toggleOpenRequestModal,
+  ]);
 
   const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
     formFields,
