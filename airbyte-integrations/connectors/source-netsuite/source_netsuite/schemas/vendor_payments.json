@@ -330,8 +330,6 @@
     "accountingBookDetailList",
     "itemList",
     "landedCostsList",
-    "purchaseOrderList",
-    "customFieldList",
     "internalId",
     "externalId"
   ]
