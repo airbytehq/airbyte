@@ -2,16 +2,14 @@
 @use "../../../scss/variables";
 @forward "./CatalogTree.module.scss";
 
-.removedStream {
-  color: colors.$red;
-}
-
 .icon {
   margin-right: 7px;
   margin-top: -1px;
+
   &.plus {
     color: colors.$green;
   }
+
   &.minus {
     color: colors.$red;
   }

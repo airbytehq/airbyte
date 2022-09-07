@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 
@@ -23,14 +23,14 @@ interface FormCardProps<T> extends CollapsibleCardProps {
   submitDisabled?: boolean;
 }
 
-export function FormCard<T>({
+export const FormCard = <T extends object>({
   children,
   form,
   bottomSeparator = true,
   mode,
   submitDisabled,
   ...props
-}: React.PropsWithChildren<FormCardProps<T>>) {
+}: React.PropsWithChildren<FormCardProps<T>>) => {
   const { formatMessage } = useIntl();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<
@@ -41,7 +41,7 @@ export function FormCard<T>({
     form.onSubmit(values, formikHelpers);
   });
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <Formik {...form} onSubmit={(values, formikHelpers) => mutateAsync({ values, formikHelpers })}>
@@ -73,4 +73,4 @@ export function FormCard<T>({
       )}
     </Formik>
   );
-}
+};

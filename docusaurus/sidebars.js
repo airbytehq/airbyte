@@ -39,11 +39,17 @@ module.exports = {
           {
             type: 'category',
             label: 'Sources',
+            link: {
+              type: 'generated-index',
+            },
             items: getSourceConnectors()
           },
           {
             type: 'category',
             label: 'Destinations',
+            link: {
+              type: 'generated-index',
+            },
             items: getDestinationConnectors()
           },
           {
@@ -106,6 +112,7 @@ module.exports = {
         'operator-guides/upgrading-airbyte',
         'operator-guides/reset',
         'operator-guides/configuring-airbyte-db',
+        'operator-guides/configuring-connector-resources',
         'operator-guides/browsing-output-logs',
         'operator-guides/using-the-airflow-airbyte-operator',
         'operator-guides/using-prefect-task',
@@ -218,13 +225,9 @@ module.exports = {
         'contributing-to-airbyte/developing-on-kubernetes',
         'contributing-to-airbyte/monorepo-python-development',
         'contributing-to-airbyte/code-style',
+        'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        {
-          type: 'link',
-          label: 'Connector template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
         {
           type: 'category',
           label: 'Updating documentation',
@@ -233,11 +236,11 @@ module.exports = {
             id: 'contributing-to-airbyte/updating-documentation',
           },
           items: [
-            'docusaurus/contributing_to_docs',
-            'docusaurus/making_a_redirect',
-            'docusaurus/deploying_and_reverting_docs',
-            'docusaurus/locally_testing_docusaurus',
-            'docusaurus/readme',
+            {
+              type: 'link',
+              label: 'Connector doc template',
+              href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
+            },
           ]
         },
       ]
@@ -294,15 +297,6 @@ module.exports = {
           href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
         },
         'project-overview/product-release-stages',
-        {
-          type: 'category',
-          label: 'Changelog',
-          items: [
-            'project-overview/changelog/README',
-            'project-overview/changelog/platform',
-            'project-overview/changelog/connectors',
-          ]
-        },
         'project-overview/slack-code-of-conduct',
         'project-overview/security',
         {
@@ -324,6 +318,13 @@ module.exports = {
             'project-overview/licenses/examples',
           ]
         },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Release Notes',
+      items: [
+         'release_notes/july_2022',
       ],
     },
   ],

@@ -2,6 +2,7 @@ export * from "./base";
 
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
+export * from "./CodeEditor";
 export * from "./DefaultLogoCatalog";
 export * from "./ImageBlock";
 export * from "./Label";

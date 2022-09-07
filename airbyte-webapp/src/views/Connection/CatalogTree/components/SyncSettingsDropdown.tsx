@@ -102,10 +102,11 @@ const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
   <DropDown
     {...props}
     components={{
-      SingleValue: SingleValue,
-      Option: Option,
+      SingleValue,
+      Option,
       Control: DropdownControl,
     }}
+    data-testid="syncSettingsDropdown"
     $withBorder
   />
 );

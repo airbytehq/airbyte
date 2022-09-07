@@ -1,0 +1,24 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ConnectorJobOutput.yaml
+title: ConnectorJobOutput
+description: connector command job output
+type: object
+additionalProperties: true
+required:
+  - outputType
+properties:
+  outputType:
+    type: string
+    enum:
+      - checkConnection
+      - discoverCatalog
+      - spec
+  checkConnection:
+    "$ref": StandardCheckConnectionOutput.yaml
+  discoverCatalog:
+    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+  spec:
+    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  failureReason:
+    "$ref": FailureReason.yaml

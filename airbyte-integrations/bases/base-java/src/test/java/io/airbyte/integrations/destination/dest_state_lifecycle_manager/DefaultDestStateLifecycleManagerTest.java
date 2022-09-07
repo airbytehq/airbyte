@@ -24,14 +24,14 @@ class DefaultDestStateLifecycleManagerTest {
       .withState(new AirbyteStateMessage());
   private static final AirbyteMessage LEGACY_MESSAGE = new AirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY));
+      .withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
   private static final AirbyteMessage GLOBAL_MESSAGE = new AirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL));
+      .withState(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL));
   private static final AirbyteMessage STREAM_MESSAGE = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("users"))));
 
   private DestStateLifecycleManager mgr1;

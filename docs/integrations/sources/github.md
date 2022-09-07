@@ -7,11 +7,16 @@ This page contains the setup guide and reference information for the GitHub sour
 * Branch (Optional)
 * Page size for large streams (Optional)
 
-For Airbyte Cloud:
-* Access Token
+**For Airbyte Cloud:**
 
-For Airbyte OSS:
-* Personal Access Token
+* Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+* OAuth
+
+
+**For Airbyte Open Source:**
+
+* Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+
 
 ## Setup guide
 ### Step 1: Set up GitHub
@@ -28,14 +33,14 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **GitHub** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your GitHub account`.
+4. Click `Authenticate your GitHub account` by selecting Oauth or Personal Access Token for Authentication. 
 5. Log in and Authorize to the GitHub account.
 6. **Start date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 7. **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 8. **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 1. Authenticate with **Personal Access Token**.
 
 ## Supported sync modes
@@ -90,7 +95,7 @@ This connector outputs the following incremental streams:
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
-* [WorkflowRuns](https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository)
+* [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository)
 * [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
 
 ### Notes
@@ -99,12 +104,16 @@ This connector outputs the following incremental streams:
    * read only new records;
    * output only new records.
 
-2. Other 20 incremental streams are also incremental but with one difference, they:
+2. Stream `workflow_runs` is almost pure incremental:
+   * read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   * output only new records.
+
+3. Other 19 incremental streams are also incremental but with one difference, they:
    * read all records;
    * output only new records.
-   Please, consider this behaviour when using those 20 incremental streams because it may affect you API call limits.
+   Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
 
-3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 * `assignees`
@@ -137,6 +146,18 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.46  | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730) | Validate input organizations and repositories                                                              |
+| 0.2.45  | 2022-08-11 | [15420](https://github.com/airbytehq/airbyte/pull/15420) | "User" object can be "null"                                                                                |
+| 0.2.44  | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795) | Use GraphQL for `pull_request_comment_reactions` stream                                                    |
+| 0.2.43  | 2022-07-26 | [15049](https://github.com/airbytehq/airbyte/pull/15049) | Bugfix schemas for streams `deployments`, `workflow_runs`, `teams`                                         |
+| 0.2.42  | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613) | Improve schema for stream `pull_request_commits` added "null"                                              |
+| 0.2.41  | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376) | Add Retry for GraphQL API Resource limitations                                                             |
+| 0.2.40  | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338) | Revert: "Rename field `mergeable` to `is_mergeable`"                                                       |
+| 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable`                                                                 |
+| 0.2.38  | 2022-06-27 | [13989](https://github.com/airbytehq/airbyte/pull/13989) | Use GraphQL for `reviews` stream                                                                           |
+| 0.2.37  | 2022-06-21 | [13955](https://github.com/airbytehq/airbyte/pull/13955) | Fix "secondary rate limit" not retrying                                                                    |
+| 0.2.36  | 2022-06-20 | [13926](https://github.com/airbytehq/airbyte/pull/13926) | Break point added for `workflows_runs` stream                                                              |
+| 0.2.35  | 2022-06-16 | [13763](https://github.com/airbytehq/airbyte/pull/13763) | Use GraphQL for `pull_request_stats` stream                                                                |
 | 0.2.34  | 2022-06-14 | [13707](https://github.com/airbytehq/airbyte/pull/13707) | Fix API sorting, fix `get_starting_point` caching                                                          |
 | 0.2.33  | 2022-06-08 | [13558](https://github.com/airbytehq/airbyte/pull/13558) | Enable caching only for parent streams                                                                     |
 | 0.2.32  | 2022-06-07 | [13531](https://github.com/airbytehq/airbyte/pull/13531) | Fix different result from `get_starting_point` when reading by pages                                       |

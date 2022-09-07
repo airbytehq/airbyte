@@ -24,6 +24,38 @@
       "patternProperties": {
         ".+": {}
       }
+    },
+    "something2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "oneOfOne": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oneOfTwo": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "someArray": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "oldName": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
     }
   }
 }

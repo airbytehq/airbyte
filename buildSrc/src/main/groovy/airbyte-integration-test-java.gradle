@@ -56,5 +56,6 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
         }
 
         project.integrationTest.dependsOn(project.integrationTestJava)
+        project.integrationTest.dependsOn(project.spotbugsMain)
     }
 }

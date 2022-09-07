@@ -1,9 +1,7 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useMap } from "react-use";
 
-interface ServiceContainer {
-  [key: string]: Service;
-}
+type ServiceContainer = Record<string, Service>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Service = any;
@@ -33,20 +31,6 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({ chil
 
   return <ServicesProviderContext.Provider value={ctxValue}>{children}</ServicesProviderContext.Provider>;
 };
-
-export type ServiceInject = [string, Service];
-
-const WithServiceInner: React.FC<{
-  serviceInject: ServiceInject[];
-}> = ({ children, serviceInject }) => {
-  useInjectServices(serviceInject);
-
-  return <>{children}</>;
-};
-
-export const WithService: React.FC<{
-  serviceInject: ServiceInject[];
-}> = React.memo(WithServiceInner);
 
 export function useInjectServices(serviceInject: ServiceContainer): void {
   const { register, unregister } = useServicesProvider();

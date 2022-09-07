@@ -31,9 +31,9 @@ interface StreamHeaderProps {
   stream: SyncSchemaStream;
   destName: string;
   destNamespace: string;
-  availableSyncModes: {
+  availableSyncModes: Array<{
     value: SyncSchema;
-  }[];
+  }>;
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
   primitiveFields: SyncSchemaField[];
@@ -95,7 +95,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [styles.purpleBackground]: isSelected,
     [styles.redBorder]: hasError,
   });
-
+  //  FIXME: find out why checkboxCell warns as unused
+  // eslint-disable-next-line css-modules/no-undef-class
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, { [styles.streamRowCheckboxCell]: true });
 
   return (
@@ -157,7 +158,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               pathType={pkType}
               paths={paths}
               path={primaryKey}
-              isMulti={true}
+              isMulti
               placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
               onPathChange={onPrimaryKeyChange}
             />

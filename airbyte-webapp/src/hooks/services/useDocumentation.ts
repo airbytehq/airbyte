@@ -13,7 +13,7 @@ const DOCS_URL = /^https:\/\/docs\.airbyte\.(io|com)/;
 
 export const useDocumentation = (documentationUrl: string): UseDocumentationResult => {
   const { integrationUrl } = useConfig();
-  const url = documentationUrl.replace(DOCS_URL, integrationUrl) + ".md";
+  const url = `${documentationUrl.replace(DOCS_URL, integrationUrl)}.md`;
 
   return useQuery(documentationKeys.text(documentationUrl), () => fetchDocumentation(url), {
     enabled: !!documentationUrl,

@@ -3,13 +3,19 @@
     "updated_at": 1626086649
   },
   "company_segments": {
-    "updated_at": 1626086649
+    "updated_at": 1648469610,
+    "companies": {
+      "updated_at": 1625749675
+    }
   },
   "conversations": {
-    "updated_at": 1626086649
+    "updated_at": 1632835061
   },
   "conversation_parts": {
-    "updated_at": 1626086649
+    "updated_at": 1632835061,
+    "conversations": {
+      "updated_at": 1632835061
+    }
   },
   "contacts": {
     "updated_at": 1626086649

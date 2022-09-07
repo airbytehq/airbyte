@@ -107,4 +107,5 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
     JsonNode actualJsonNode = (actualObject.isTextual() ? Jsons.deserialize(actualObject.textValue()) : actualObject);
     super.compareObjects(expectedObject, actualJsonNode);
   }
+
 }

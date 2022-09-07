@@ -1,55 +1,50 @@
-import React, { useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import styled, { keyframes } from "styled-components";
+import { Dialog } from "@headlessui/react";
+import classNames from "classnames";
+import React, { useState } from "react";
 
 import ContentCard from "components/ContentCard";
+
+import styles from "./Modal.module.scss";
 
 export interface ModalProps {
   title?: string | React.ReactNode;
   onClose?: () => void;
   clear?: boolean;
   closeOnBackground?: boolean;
+  size?: "sm" | "md" | "lg" | "xl";
+  testId?: string;
 }
 
-const fadeIn = keyframes`
-  from { opacity: 0; }
-`;
+const cardStyleBySize = {
+  sm: styles.sm,
+  md: styles.md,
+  lg: styles.lg,
+  xl: styles.xl,
+};
 
-const Overlay = styled.div`
-  animation: ${fadeIn} 0.2s ease-out;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 15, 23, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-`;
+const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, clear, testId }) => {
+  const [isOpen, setIsOpen] = useState(true);
 
-const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground }) => {
-  const handleUserKeyPress = useCallback((event, closeModal) => {
-    const { keyCode } = event;
-    if (keyCode === 27) {
-      closeModal();
-    }
-  }, []);
+  const onModalClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
 
-  useEffect(() => {
-    onClose && window.addEventListener("keydown", (event) => handleUserKeyPress(event, onClose));
-
-    return () => {
-      onClose && window.removeEventListener("keydown", (event) => handleUserKeyPress(event, onClose));
-    };
-  }, [handleUserKeyPress, onClose]);
-
-  return createPortal(
-    <Overlay onClick={() => (closeOnBackground && onClose ? onClose() : null)}>
-      {clear ? children : <ContentCard title={title}>{children}</ContentCard>}
-    </Overlay>,
-    document.body
+  return (
+    <Dialog open={isOpen} onClose={onModalClose} data-testid={testId} className={styles.modalPageContainer}>
+      <div className={styles.backdrop} />
+      <div className={styles.modalContainer}>
+        <Dialog.Panel className={styles.modalPanel}>
+          {clear ? (
+            children
+          ) : (
+            <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
+              {children}
+            </ContentCard>
+          )}
+        </Dialog.Panel>
+      </div>
+    </Dialog>
   );
 };
 

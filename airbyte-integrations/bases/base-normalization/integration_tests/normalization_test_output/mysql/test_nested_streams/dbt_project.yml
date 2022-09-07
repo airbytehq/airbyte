@@ -1,25 +1,25 @@
 name: airbyte_utils
-version: "1.0"
+version: '1.0'
 config-version: 2
 profile: normalize
-source-paths:
-  - models
+model-paths:
+- models
 docs-paths:
-  - docs
+- docs
 analysis-paths:
-  - analysis
+- analysis
 test-paths:
-  - tests
-data-paths:
-  - data
+- tests
+seed-paths:
+- data
 macro-paths:
-  - macros
+- macros
 target-path: ../build
 log-path: ../logs
-modules-path: /dbt
+packages-install-path: /dbt
 clean-targets:
-  - build
-  - dbt_modules
+- build
+- dbt_modules
 quoting:
   database: true
   schema: false
@@ -42,7 +42,7 @@ models:
         +materialized: view
 vars:
   dbt_utils_dispatch_list:
-    - airbyte_utils
+  - airbyte_utils
   json_column: _airbyte_data
   models_to_source:
     nested_stream_with_co_1g_into_long_names_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
@@ -79,6 +79,10 @@ vars:
     unnest_alias_ab2: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_ab3: test_normalization._airbyte_raw_unnest_alias
     unnest_alias: test_normalization._airbyte_raw_unnest_alias
+    arrays_ab1: test_normalization._airbyte_raw_arrays
+    arrays_ab2: test_normalization._airbyte_raw_arrays
+    arrays_ab3: test_normalization._airbyte_raw_arrays
+    arrays: test_normalization._airbyte_raw_arrays
     nested_stream_with_co_2g_names_partition_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_2g_names_partition_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_2g_names_partition_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names
@@ -91,6 +95,10 @@ vars:
     unnest_alias_children_ab2: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_children_ab3: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_children: test_normalization._airbyte_raw_unnest_alias
+    arrays_nested_array_parent_ab1: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab2: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab3: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent: test_normalization._airbyte_raw_arrays
     nested_stream_with_co_3double_array_data_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_3double_array_data_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_3double_array_data_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names

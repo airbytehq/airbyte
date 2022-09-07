@@ -15,6 +15,7 @@ import {
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
+import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
@@ -196,9 +197,8 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
             return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          } else {
-            return naturalComparator(a.label, b.label);
           }
+          return naturalComparator(a.label, b.label);
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices, orderOverwrite]
@@ -210,14 +210,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
-      analytics.track(
-        formType === "source"
-          ? "Airbyte.UI.NewSource.NoMatchingConnector"
-          : "Airbyte.UI.NewDestination.NoMatchingConnector",
-        {
-          query: inputValue,
-        }
-      );
+      analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.NO_MATCHING_CONNECTOR, {
+        actionDescription: "Connector query without results",
+        query: inputValue,
+      });
       return formatMessage({ id: "form.noConnectorFound" });
     },
     [analytics, formType, formatMessage]
@@ -241,9 +237,9 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const onMenuOpen = () => {
-    const eventName =
-      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
-    analytics.track(eventName, {});
+    analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.SELECTION_OPENED, {
+      actionDescription: "Opened connector type selection",
+    });
   };
 
   return (

@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { render } from "test-utils/testutils";
 
 import {
   ConnectionStatus,
@@ -9,9 +10,8 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
-import { render } from "utils/testutils";
 
-import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -38,7 +38,7 @@ const mockConnection: WebBackendConnectionRead = {
   sourceId: "test-source",
   destinationId: "test-destination",
   status: ConnectionStatus.active,
-  schedule: null,
+  schedule: undefined,
   syncCatalog: {
     streams: [],
   },
@@ -88,9 +88,10 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders relevant items", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });
@@ -109,7 +110,7 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders only relevant items for the mode", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
     test("pointer events are turned off in the fieldset", async () => {

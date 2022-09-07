@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.gcs.avro;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
+import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -13,7 +14,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
@@ -104,8 +104,7 @@ class GcsAvroFormatConfigTest {
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
     final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"AVRO\",\n"
-        + "  \"part_size_mb\": 6\n"
+        + "  \"format_type\": \"AVRO\"\n"
         + "}"));
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
@@ -114,15 +113,13 @@ class GcsAvroFormatConfigTest {
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
     assertEquals("AVRO", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
-        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 6, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
@@ -138,11 +135,10 @@ class GcsAvroFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
-        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
 }

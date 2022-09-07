@@ -19,10 +19,10 @@ class DestSingleStateLifecycleManagerTest {
 
   private static final AirbyteMessage MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("a")));
+      .withState(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("a")));
   private static final AirbyteMessage MESSAGE2 = new AirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("b")));
+      .withState(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("b")));
 
   private DestSingleStateLifecycleManager mgr;
 

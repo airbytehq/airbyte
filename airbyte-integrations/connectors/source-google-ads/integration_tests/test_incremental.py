@@ -2,9 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pendulum
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_google_ads.source import SourceGoogleAds
 
@@ -34,11 +35,11 @@ GAP_DAYS = 14
 
 def test_incremental_sync(config, configured_catalog):
     today = pendulum.now().date()
-    start_date = today.subtract(months=1)
+    start_date = today.subtract(months=3)
     config["start_date"] = start_date.to_date_string()
 
     google_ads_client = SourceGoogleAds()
-    records = list(google_ads_client.read(AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog)))
+    records = list(google_ads_client.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog)))
     latest_state = None
     for record in records[::-1]:
         if record and record.type == Type.STATE:
@@ -55,7 +56,7 @@ def test_incremental_sync(config, configured_catalog):
     #  next sync
     records = list(
         google_ads_client.read(
-            AirbyteLogger(),
+            logging.getLogger("airbyte"),
             config,
             ConfiguredAirbyteCatalog.parse_obj(configured_catalog),
             {"ad_group_ad_report": {config["customer_id"]: {"segments.date": latest_state}}},
@@ -72,7 +73,7 @@ def test_incremental_sync(config, configured_catalog):
 def test_abnormally_large_state(config, configured_catalog):
     google_ads_client = SourceGoogleAds()
     records = google_ads_client.read(
-        AirbyteLogger(),
+        logging.getLogger("airbyte"),
         config,
         ConfiguredAirbyteCatalog.parse_obj(configured_catalog),
         {"ad_group_ad_report": {"segments.date": "2222-06-04"}},

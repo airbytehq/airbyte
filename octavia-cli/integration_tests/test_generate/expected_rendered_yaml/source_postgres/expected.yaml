@@ -1,6 +1,6 @@
 # Configuration for airbyte/source-postgres
 # Documentation about this connector can be found at https://docs.airbyte.com/integrations/sources/postgres
-resource_name: my_postgres_source
+resource_name: "my_postgres_source"
 definition_type: source
 definition_id: foobar
 definition_image: airbyte/source-postgres

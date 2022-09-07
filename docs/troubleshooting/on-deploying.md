@@ -85,3 +85,13 @@ This happens \(sometimes\) on Windows system when you first install `docker`. Yo
 
 If you are okay with losing your previous Airbyte configurations, you can run `docker-compose down -v` and that should fix things then `docker-compose up`.
 
+## `unauthorized: incorrect username or password` when running `docker-compose up`
+
+If you see the following error:
+
+```bash
+ERROR: Head "https://registry-1.docker.io/v2/airbyte/init/manifests/{XXX}": unauthorized: incorrect username or password
+```
+
+You are most likely logged into Docker with your email address instead of your Docker ID.
+Log out of Docker by running `docker logout` and try running `docker-compose up` again.

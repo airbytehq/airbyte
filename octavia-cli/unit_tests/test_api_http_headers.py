@@ -188,7 +188,7 @@ def test_merge_api_headers(tmp_path, mocker, yaml_document, option_based_raw_hea
     assert api_http_headers.merge_api_headers(option_based_raw_headers, yaml_file_path) == expected_merged_headers
     if option_based_raw_headers and yaml_file_path:
         api_http_headers.click.echo.assert_called_with(
-            "ℹ️ - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
+            "ℹ️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
         )
 
 

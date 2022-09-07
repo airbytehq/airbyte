@@ -161,22 +161,19 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
               onClick={() => onClickRow?.(row.original)}
               erroredRows={erroredRows && !!row.original.error}
             >
-              {
-                // @ts-ignore needs to address proper types for table
-                row.cells.map((cell: ICellProps, key) => {
-                  return (
-                    <Td
-                      {...cell.getCellProps()}
-                      collapse={cell.column.collapse}
-                      customPadding={cell.column.customPadding}
-                      customWidth={cell.column.customWidth}
-                      key={`table-cell-${row.id}-${key}`}
-                    >
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })
-              }
+              {row.cells.map((cell: ICellProps, key) => {
+                return (
+                  <Td
+                    {...cell.getCellProps()}
+                    collapse={cell.column.collapse}
+                    customPadding={cell.column.customPadding}
+                    customWidth={cell.column.customWidth}
+                    key={`table-cell-${row.id}-${key}`}
+                  >
+                    {cell.render("Cell")}
+                  </Td>
+                );
+              })}
             </Tr>
           );
         })}

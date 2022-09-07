@@ -23,17 +23,17 @@ class DestStreamStateLifecycleManagerTest {
   private static final AirbyteMessage STREAM1_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("apples")).withStreamState(Jsons.jsonNode("a"))));
   private static final AirbyteMessage STREAM1_MESSAGE2 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("apples")).withStreamState(Jsons.jsonNode("b"))));
   private static final AirbyteMessage STREAM2_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(
               new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("bananas")).withStreamState(Jsons.jsonNode("10"))));
 

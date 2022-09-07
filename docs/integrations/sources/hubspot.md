@@ -1,46 +1,46 @@
 # HubSpot
 
-This page guides you through the process of setting up the HubSpot source connector.
+This page guides you through setting up the HubSpot source connector.
 
 ## Prerequisite
 
-You can use OAuth or an API key to authenticate your HubSpot account. If you choose to use OAuth, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
+You can use OAuth, API key, or Private App to authenticate your HubSpot account. If you choose to use OAuth or Private App, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
-| Stream | Required Scope |
-| :--- | :--- |
-| `campaigns` | `content` |
-| `companies` | `contacts` |
-| `contact_lists` | `contacts` |
-| `contacts` | `contacts` |
-| `contacts_list_memberships` | `contacts` |
-| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals` | `contacts` |
-| `email_events` | `content` |
-| `engagements` | `contacts` |
-| `engagements_emails` | `sales-email-read` |
-| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
-| `forms` | `forms` |
-| `form_submissions`| `forms` |
-| `line_items` | `e-commerce` |
-| `owners` | `contacts` |
-| `products` | `e-commerce` |
-| `property_history` | `contacts` |
-| `quotes` | no scope required |
-| `subscription_changes` | `content` |
-| `tickets` | `tickets` |
-| `workflows` | `automation` |
+| Stream                      | Required Scope                                                                   |
+|:----------------------------|:---------------------------------------------------------------------------------|
+| `campaigns`                 | `content`                                                                        |
+| `companies`                 | `contacts`                                                                       |
+| `contact_lists`             | `contacts`                                                                       |
+| `contacts`                  | `contacts`                                                                       |
+| `contacts_list_memberships` | `contacts`                                                                       |
+| `deal_pipelines`            | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
+| `deals`                     | `contacts`                                                                       |
+| `email_events`              | `content`                                                                        |
+| `engagements`               | `contacts`                                                                       |
+| `engagements_emails`        | `sales-email-read`                                                               |
+| `feedback_submissions`      | `crm.objects.feedback_submissions.read`                                          |
+| `forms`                     | `forms`                                                                          |
+| `form_submissions`          | `forms`                                                                          |
+| `line_items`                | `e-commerce`                                                                     |
+| `owners`                    | `contacts`                                                                       |
+| `products`                  | `e-commerce`                                                                     |
+| `property_history`          | `contacts`                                                                       |
+| `quotes`                    | no scope required                                                                |
+| `subscription_changes`      | `content`                                                                        |
+| `tickets`                   | `tickets`                                                                        |
+| `workflows`                 | `automation`                                                                     |
 
 
 ## Set up the HubSpot source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
-    - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
-    - To authenticate using API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
+6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::
@@ -90,7 +90,7 @@ The HubSpot source connector supports the following streams:
 Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
 
 - A `call` engagement has a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
-- An `email` engagement has a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
+- An `email` engagement has a corresponding `engagements_metadata` object with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
@@ -119,10 +119,29 @@ Example of the output message when trying to read `workflows` stream with missin
 
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 
+## Tutorials
+
+Now that you have set up the Hubspot source connector, check out the following Hubspot tutorial:
+
+[Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    | 
+| 0.1.81  | 2022-08-05 | [15354](https://github.com/airbytehq/airbyte/pull/15354) | Fix `Deals` stream schema                                                                                                                      |
+| 0.1.80  | 2022-08-01 | [15156](https://github.com/airbytehq/airbyte/pull/15156) | Fix 401 error while retrieving associations using OAuth                                                                                        |
+| 0.1.79  | 2022-07-28 | [15144](https://github.com/airbytehq/airbyte/pull/15144) | Revert v0.1.78 due to permission issues                                                                                                        | 
+| 0.1.78  | 2022-07-28 | [15099](https://github.com/airbytehq/airbyte/pull/15099) | Fix to fetch associations when using incremental mode                                                                                          |
+| 0.1.77  | 2022-07-26 | [15035](https://github.com/airbytehq/airbyte/pull/15035) | Make PropertyHistory stream read historic data not limited to 30 days                                                                          |
+| 0.1.76  | 2022-07-25 | [14999](https://github.com/airbytehq/airbyte/pull/14999) | Partially revert changes made in v0.1.75                                                                                                       |
+| 0.1.75  | 2022-07-18 | [14744](https://github.com/airbytehq/airbyte/pull/14744) | Remove override of private CDK method                                                                                                          |
+| 0.1.74  | 2022-07-25 | [14412](https://github.com/airbytehq/airbyte/pull/14412) | Add private app authentication                                                                                                                 |
+| 0.1.73  | 2022-07-13 | [14666](https://github.com/airbytehq/airbyte/pull/14666) | Decrease number of http requests made, disable Incremental mode for PropertyHistory stream                                                     |
+| 0.1.72  | 2022-06-24 | [14054](https://github.com/airbytehq/airbyte/pull/14054) | Extended error logging                                                                                                                         |
+| 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code                                                                                        | 
+| 0.1.70  | 2022-06-16 | [13837](https://github.com/airbytehq/airbyte/pull/13837) | Fix the missing data in CRM streams issue                                                                                                      |
 | 0.1.69  | 2022-06-10 | [13691](https://github.com/airbytehq/airbyte/pull/13691) | Fix the `URI Too Long` issue                                                                                                                   |
 | 0.1.68  | 2022-06-08 | [13596](https://github.com/airbytehq/airbyte/pull/13596) | Fix for the `property_history` which did not emit records                                                                                      |
 | 0.1.67  | 2022-06-07 | [13566](https://github.com/airbytehq/airbyte/pull/13566) | Report which scopes are missing to the user                                                                                                    |

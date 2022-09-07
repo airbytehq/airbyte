@@ -21,7 +21,7 @@ const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupported
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
-        const newStreamNode = setIn(streamNode, "config", Object.assign({}, streamNode.config, newConfig));
+        const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
 
         onChangeStream(newStreamNode);
       }

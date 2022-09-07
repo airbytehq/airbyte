@@ -163,6 +163,9 @@ The following are fields that still exist in the specification but are slated to
     additionalProperties: true
     properties:
       # General Properties (Common to all connectors)
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer."
+        type: string
       documentationUrl:
         type: string
         format: uri
@@ -277,7 +280,7 @@ Technical systems often group their underlying data into namespaces with each na
 
 An example of a namespace is the RDBMS's `schema` concept. An API namespace might be used for multiple accounts (e.g. `company_a` vs `company_b`, each having a "users" and "purchases" stream).  Some common use cases for schemas are enforcing permissions, segregating test and production data and general data organization.
 
-The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](#namespace).
+The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](namespaces.md).
 
 
 ## Cursor
@@ -449,7 +452,11 @@ For forwards compatibility all messages should allow for unknown properties (in 
 Messages are structs emitted by actors.
 
 ### StreamDescriptor
-A stream descriptor contains all information required to identify a Stream. `namespace` can be null if the stream does not have an associated namespace. If it does, it must be populated. `name` is required.
+A stream descriptor contains all information required to identify a Stream:
+
+* The `name` of the stream (required).  It may not be `null`.
+* The `namespace` of the stream (optional).  It may be `null` if the stream does not have an associated namespace, otherwise must be populated.
+* Any UTF-8 string value is valid for both `name` and `namespace`, including the empty string (`""`) value.
 
 This is the new pattern for referring to a stream. As structs are updated, they are moved ot use this pattern. Structs that have not been updated still refer to streams by having top-level fields called `stream_name` and `namespace`.
 

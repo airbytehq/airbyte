@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class JobTest {
@@ -42,8 +42,8 @@ class JobTest {
   }
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
-    final List<Attempt> attempts = Arrays.stream(attemptStatuses)
-        .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, null, 0L, 0L, null))
+    final List<Attempt> attempts = IntStream.range(0, attemptStatuses.length)
+        .mapToObj(idx -> new Attempt(idx + 1, 1L, null, null, attemptStatuses[idx], null, idx, 0L, null))
         .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }
@@ -58,6 +58,17 @@ class JobTest {
     final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
     assertTrue(job.getSuccessfulAttempt().isPresent());
     assertEquals(job.getAttempts().get(1), job.getSuccessfulAttempt().get());
+  }
+
+  @Test
+  void testGetLastFailedAttempt() {
+    assertTrue(jobWithAttemptWithStatus().getLastFailedAttempt().isEmpty());
+    assertTrue(jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED).getLastFailedAttempt().isEmpty());
+    assertTrue(jobWithAttemptWithStatus(AttemptStatus.FAILED).getLastFailedAttempt().isPresent());
+
+    final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.FAILED);
+    assertTrue(job.getLastFailedAttempt().isPresent());
+    assertEquals(2, job.getLastFailedAttempt().get().getId());
   }
 
   @Test

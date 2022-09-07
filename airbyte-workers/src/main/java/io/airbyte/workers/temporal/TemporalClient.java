@@ -4,20 +4,21 @@
 
 package io.airbyte.workers.temporal;
 
+import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.config.Configs;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
@@ -28,12 +29,20 @@ import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.api.common.v1.WorkflowType;
+import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -46,6 +55,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
@@ -54,7 +64,8 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
   private final WorkflowServiceStubs service;
-  private final Configs configs;
+  private final StreamResetPersistence streamResetPersistence;
+  private final ConnectionManagerUtils connectionManagerUtils;
 
   /**
    * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
@@ -63,26 +74,36 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
-
-  public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-    return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
-  }
-
-  // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
-  // one. either temporal decides and can report it or it is injected into temporal runs.
   public TemporalClient(final WorkflowClient client,
                         final Path workspaceRoot,
                         final WorkflowServiceStubs workflowServiceStubs,
-                        final Configs configs) {
+                        final StreamResetPersistence streamResetPersistence) {
+    this(client, workspaceRoot, workflowServiceStubs, streamResetPersistence, ConnectionManagerUtils.getInstance());
+  }
+
+  @VisibleForTesting
+  TemporalClient(final WorkflowClient client,
+                 final Path workspaceRoot,
+                 final WorkflowServiceStubs workflowServiceStubs,
+                 final StreamResetPersistence streamResetPersistence,
+                 final ConnectionManagerUtils connectionManagerUtils) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
-    this.configs = configs;
+    this.streamResetPersistence = streamResetPersistence;
+    this.connectionManagerUtils = connectionManagerUtils;
   }
 
-  public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
+  /**
+   * Direct termination of Temporal Workflows should generally be avoided. This method exists for some
+   * rare circumstances where this may be required. Originally added to facilitate Airbyte's migration
+   * to Temporal Cloud. TODO consider deleting this after Temporal Cloud migration
+   */
+  public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
+    this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
+  }
+
+  public TemporalResponse<ConnectorJobOutput> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
@@ -94,9 +115,9 @@ public class TemporalClient {
 
   }
 
-  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(final UUID jobId,
-                                                                               final int attempt,
-                                                                               final JobCheckConnectionConfig config) {
+  public TemporalResponse<ConnectorJobOutput> submitCheckConnection(final UUID jobId,
+                                                                    final int attempt,
+                                                                    final JobCheckConnectionConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
@@ -108,7 +129,9 @@ public class TemporalClient {
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {
+  public TemporalResponse<ConnectorJobOutput> submitDiscoverSchema(final UUID jobId,
+                                                                   final int attempt,
+                                                                   final JobDiscoverCatalogConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
@@ -163,7 +186,7 @@ public class TemporalClient {
     connectionIds.forEach((connectionId) -> {
       final StopWatch singleSyncMigrationWatch = new StopWatch();
       singleSyncMigrationWatch.start();
-      if (!isInRunningWorkflowCache(ConnectionManagerUtils.getConnectionManagerName(connectionId))) {
+      if (!isInRunningWorkflowCache(connectionManagerUtils.getConnectionManagerName(connectionId))) {
         log.info("Migrating: " + connectionId);
         try {
           submitConnectionUpdaterAsync(connectionId);
@@ -213,10 +236,24 @@ public class TemporalClient {
     } while (token != null && token.size() > 0);
   }
 
+  /**
+   * Refreshes the cache of running workflows, and returns their names. Currently called by the
+   * Temporal Cloud migrator to generate a list of workflows that should be migrated. After the
+   * Temporal Migration is complete, this could be removed, though it may be handy for a future use
+   * case.
+   */
+  public Set<String> getAllRunningWorkflows() {
+    final var startTime = Instant.now();
+    refreshRunningWorkflow();
+    final var endTime = Instant.now();
+    log.info("getAllRunningWorkflows took {} milliseconds", Duration.between(startTime, endTime).toMillis());
+    return workflowNames;
+  }
+
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
-    final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
     try {
       CompletableFuture.supplyAsync(() -> {
         try {
@@ -224,7 +261,6 @@ public class TemporalClient {
             Thread.sleep(DELAY_BETWEEN_QUERY_MS);
           } while (!isWorkflowReachable(connectionId));
         } catch (final InterruptedException e) {}
-
         return null;
       }).get(60, TimeUnit.SECONDS);
     } catch (final InterruptedException | ExecutionException e) {
@@ -238,7 +274,7 @@ public class TemporalClient {
 
   public void deleteConnection(final UUID connectionId) {
     try {
-      ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
           connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
     } catch (final DeletedWorkflowException e) {
       log.info("Connection {} has already been deleted.", connectionId);
@@ -248,7 +284,7 @@ public class TemporalClient {
   public void update(final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      connectionManagerWorkflow = connectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
     } catch (final DeletedWorkflowException e) {
       log.info("Connection {} is deleted, and therefore cannot be updated.", connectionId);
       return;
@@ -256,7 +292,7 @@ public class TemporalClient {
       log.error(
           String.format("Failed to retrieve ConnectionManagerWorkflow for connection %s. Repairing state by creating new workflow.", connectionId),
           e);
-      ConnectionManagerUtils.safeTerminateWorkflow(client, connectionId,
+      connectionManagerUtils.safeTerminateWorkflow(client, connectionId,
           "Terminating workflow in unreachable state before starting a new workflow for this connection");
       submitConnectionUpdaterAsync(connectionId);
       return;
@@ -271,28 +307,27 @@ public class TemporalClient {
 
     final Optional<String> failingReason;
     final Optional<Long> jobId;
+    final Optional<ErrorCode> errorCode;
 
   }
 
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
 
-    if (ConnectionManagerUtils.isWorkflowStateRunning(client, connectionId)) {
+    if (connectionManagerUtils.isWorkflowStateRunning(client, connectionId)) {
       // TODO Bmoric: Error is running
       return new ManualOperationResult(
           Optional.of("A sync is already running for: " + connectionId),
-          Optional.empty());
+          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_RUNNING));
     }
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow =
-          ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't sync a deleted connection.", e);
       return new ManualOperationResult(
           Optional.of(e.getMessage()),
-          Optional.empty());
+          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_DELETED));
     }
 
     do {
@@ -301,31 +336,31 @@ public class TemporalClient {
       } catch (final InterruptedException e) {
         return new ManualOperationResult(
             Optional.of("Didn't managed to start a sync for: " + connectionId),
-            Optional.empty());
+            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
       }
-    } while (!connectionManagerWorkflow.getState().isRunning());
+    } while (!connectionManagerUtils.isWorkflowStateRunning(client, connectionId));
 
     log.info("end of manual schedule");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+    final long jobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
 
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        Optional.of(jobId), Optional.empty());
   }
 
   public ManualOperationResult startNewCancellation(final UUID connectionId) {
     log.info("Manual cancellation request");
 
-    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
+    final long jobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
 
     try {
-      ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't cancel a deleted workflow", e);
       return new ManualOperationResult(
           Optional.of(e.getMessage()),
-          Optional.empty());
+          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_DELETED));
     }
 
     do {
@@ -334,33 +369,42 @@ public class TemporalClient {
       } catch (final InterruptedException e) {
         return new ManualOperationResult(
             Optional.of("Didn't manage to cancel a sync for: " + connectionId),
-            Optional.empty());
+            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
       }
-    } while (ConnectionManagerUtils.isWorkflowStateRunning(client, connectionId));
+    } while (connectionManagerUtils.isWorkflowStateRunning(client, connectionId));
 
     log.info("end of manual cancellation");
 
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        Optional.of(jobId), Optional.empty());
   }
 
-  public ManualOperationResult resetConnection(final UUID connectionId) {
+  public ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
     log.info("reset sync request");
 
-    // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
-    final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
-
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow =
-          ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
+      streamResetPersistence.createStreamResets(connectionId, streamsToReset);
+    } catch (final IOException e) {
+      log.error("Could not persist streams to reset.", e);
+      return new ManualOperationResult(
+          Optional.of(e.getMessage()),
+          Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
+    }
+
+    // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
+    final long oldJobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
+
+    try {
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't reset a deleted workflow", e);
       return new ManualOperationResult(
           Optional.of(e.getMessage()),
-          Optional.empty());
+          Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
     }
+
+    Optional<Long> newJobId;
 
     do {
       try {
@@ -368,17 +412,25 @@ public class TemporalClient {
       } catch (final InterruptedException e) {
         return new ManualOperationResult(
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
-            Optional.empty());
+            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
       }
-    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+      newJobId = getNewJobId(connectionId, oldJobId);
+    } while (newJobId.isEmpty());
 
     log.info("end of reset submission");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
-
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        newJobId, Optional.empty());
+  }
+
+  private Optional<Long> getNewJobId(final UUID connectionId, final long oldJobId) {
+    final long currentJobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
+    if (currentJobId == NON_RUNNING_JOB_ID || currentJobId == oldJobId) {
+      return Optional.empty();
+    } else {
+      return Optional.of(currentJobId);
+    }
   }
 
   /**
@@ -387,49 +439,103 @@ public class TemporalClient {
    * The way to do so is to wait for the jobId to change, either to a new job id or the default id
    * that signal that a workflow is waiting to be submitted
    */
-  public ManualOperationResult synchronousResetConnection(final UUID connectionId) {
-    final ManualOperationResult resetResult = resetConnection(connectionId);
+  public ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    final ManualOperationResult resetResult = resetConnection(connectionId, streamsToReset);
     if (resetResult.getFailingReason().isPresent()) {
       return resetResult;
     }
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
-    try {
-      connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
-    } catch (final Exception e) {
-      log.error("Encountered exception retrieving workflow after reset.", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty());
-    }
-
-    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
-
+    final long resetJobId = resetResult.getJobId().get();
     do {
       try {
         Thread.sleep(DELAY_BETWEEN_QUERY_MS);
       } catch (final InterruptedException e) {
         return new ManualOperationResult(
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
-            Optional.empty());
+            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
       }
-    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+    } while (connectionManagerUtils.getCurrentJobId(client, connectionId) == resetJobId);
 
     log.info("End of reset");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
-
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        Optional.of(resetJobId), Optional.empty());
+  }
+
+  public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    final Set<UUID> workflowExecutionInfos = fetchWorkflowsByStatus(executionStatus);
+
+    final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
+
+    nonRunningWorkflow.forEach(connectionId -> {
+      connectionManagerUtils.safeTerminateWorkflow(client, connectionId, "Terminating workflow in "
+          + "unreachable state before starting a new workflow for this connection");
+      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
+    });
+  }
+
+  /**
+   * This should be in the class {@li}
+   *
+   * @param workflowId
+   * @return
+   */
+  Optional<UUID> extractConnectionIdFromWorkflowId(final String workflowId) {
+    if (!workflowId.startsWith("connection_manager_")) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
+        .map(
+            stringUUID -> UUID.fromString(stringUUID));
+  }
+
+  Set<UUID> fetchWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
+    ByteString token;
+    ListWorkflowExecutionsRequest workflowExecutionsRequest =
+        ListWorkflowExecutionsRequest.newBuilder()
+            .setNamespace(client.getOptions().getNamespace())
+            .build();
+
+    final Set<UUID> workflowExecutionInfos = new HashSet<>();
+    do {
+      final ListWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listWorkflowExecutions(workflowExecutionsRequest);
+      final WorkflowType connectionManagerWorkflowType = WorkflowType.newBuilder().setName(ConnectionManagerWorkflow.class.getSimpleName()).build();
+      workflowExecutionInfos.addAll(listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+          .filter(workflowExecutionInfo -> workflowExecutionInfo.getType() == connectionManagerWorkflowType ||
+              workflowExecutionInfo.getStatus() == executionStatus)
+          .flatMap((workflowExecutionInfo -> extractConnectionIdFromWorkflowId(workflowExecutionInfo.getExecution().getWorkflowId()).stream()))
+          .collect(Collectors.toSet()));
+      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
+
+      workflowExecutionsRequest =
+          ListWorkflowExecutionsRequest.newBuilder()
+              .setNamespace(client.getOptions().getNamespace())
+              .setNextPageToken(token)
+              .build();
+
+    } while (token != null && token.size() > 0);
+
+    return workflowExecutionInfos;
+  }
+
+  @VisibleForTesting
+  Set<UUID> filterOutRunningWorkspaceId(final Set<UUID> workflowIds) {
+    refreshRunningWorkflow();
+
+    final Set<UUID> runningWorkflowByUUID =
+        workflowNames.stream().flatMap(name -> extractConnectionIdFromWorkflowId(name).stream()).collect(Collectors.toSet());
+
+    return workflowIds.stream().filter(workflowId -> !runningWorkflowByUUID.contains(workflowId)).collect(Collectors.toSet());
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  private <T> T getWorkflowOptionsWithWorkflowId(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
-    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
+  private boolean getConnectorJobSucceeded(final ConnectorJobOutput output) {
+    return output.getFailureReason() == null;
   }
 
   @VisibleForTesting
@@ -446,7 +552,12 @@ public class TemporalClient {
       exception = e;
     }
 
-    final JobMetadata metadata = new JobMetadata(exception == null, logPath);
+    boolean succeeded = exception == null;
+    if (succeeded && operationOutput instanceof ConnectorJobOutput) {
+      succeeded = getConnectorJobSucceeded((ConnectorJobOutput) operationOutput);
+    }
+
+    final JobMetadata metadata = new JobMetadata(succeeded, logPath);
     return new TemporalResponse<>(operationOutput, metadata);
   }
 
@@ -457,7 +568,7 @@ public class TemporalClient {
   @VisibleForTesting
   boolean isWorkflowReachable(final UUID connectionId) {
     try {
-      ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      connectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
       return true;
     } catch (final Exception e) {
       return false;

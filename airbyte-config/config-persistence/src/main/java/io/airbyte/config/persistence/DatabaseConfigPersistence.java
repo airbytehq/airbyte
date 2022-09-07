@@ -47,6 +47,7 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -617,6 +618,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
       standardSyncs.add(new ConfigWithMetadata<>(
           record.get(CONNECTION.ID).toString(),
           ConfigSchema.STANDARD_SYNC.name(),
@@ -1080,6 +1084,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(CONNECTION)
           .where(CONNECTION.ID.eq(standardSync.getConnectionId())));
 
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
+
       if (isExistingConfig) {
         ctx.update(CONNECTION)
             .set(CONNECTION.ID, standardSync.getConnectionId())
@@ -1096,6 +1104,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
@@ -1130,6 +1143,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.CREATED_AT, timestamp)
@@ -1434,6 +1452,24 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         LOGGER.warn(ConfigSchema.STANDARD_SYNC_OPERATION + NOT_FOUND);
       }
 
+      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG)) {
+        configs.get(ConfigSchema.ACTOR_CATALOG).map(c -> (ActorCatalog) c)
+            .forEach(c -> writeActorCatalog(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG);
+      } else {
+        LOGGER.warn(ConfigSchema.ACTOR_CATALOG + NOT_FOUND);
+      }
+      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT)) {
+        configs.get(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT).map(c -> (ActorCatalogFetchEvent) c)
+            .forEach(c -> writeActorCatalogFetchEvent(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
+      } else {
+        LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + NOT_FOUND);
+      }
+
+      // Syncs need to be imported after Actor Catalogs as they have a foreign key association with Actor
+      // Catalogs.
+      // e.g. They reference catalogs and thus catalogs need to exist before or the insert will fail.
       if (configs.containsKey(ConfigSchema.STANDARD_SYNC)) {
         configs.get(ConfigSchema.STANDARD_SYNC).map(c -> (StandardSync) c).forEach(c -> writeStandardSync(Collections.singletonList(c), ctx));
         originalConfigs.remove(ConfigSchema.STANDARD_SYNC);
@@ -1447,22 +1483,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         originalConfigs.remove(ConfigSchema.STANDARD_SYNC_STATE);
       } else {
         LOGGER.warn(ConfigSchema.STANDARD_SYNC_STATE + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG)) {
-        configs.get(ConfigSchema.ACTOR_CATALOG).map(c -> (ActorCatalog) c)
-            .forEach(c -> writeActorCatalog(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG);
-      } else {
-        LOGGER.warn(ConfigSchema.ACTOR_CATALOG + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT)) {
-        configs.get(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT).map(c -> (ActorCatalogFetchEvent) c)
-            .forEach(c -> writeActorCatalogFetchEvent(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
-      } else {
-        LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + NOT_FOUND);
       }
 
       if (!originalConfigs.isEmpty()) {

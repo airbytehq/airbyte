@@ -31,8 +31,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 1
               },
               "client_id": {
@@ -63,8 +61,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "api_token",
-                "enum": ["api_token"],
-                "default": "api_token",
                 "order": 0
               },
               "api_token": {
