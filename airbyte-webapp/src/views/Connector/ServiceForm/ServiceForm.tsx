@@ -9,16 +9,19 @@ import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/doma
 import { isDestinationDefinition, isDestinationDefinitionSpecification } from "core/domain/connector/destination";
 import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
+import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useExperiment } from "hooks/services/Experiment";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useDestinationList } from "hooks/services/useDestinationHook";
+import { DestinationDefinitionReadWithLatestTag } from "services/connector/DestinationDefinitionService";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { CheckConnectionRead, DestinationDefinitionRead } from "../../../core/request/AirbyteClient";
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FrequentlyUsedDestinations } from "./components/FrequentlyUsedDestinations";
+import { StartWithDestination } from "./components/StartWithDestination/StartWithDestination";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
@@ -136,7 +139,12 @@ export interface ServiceFormProps {
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
-  const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", []);
+  const { destinations } = useDestinationList();
+  const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
+    "22f6c74f-5699-40ff-833c-4a879ea40133",
+    "424892c4-daac-4491-b35d-c6688ba547ba",
+  ]);
+  const startWithDestinationId = useExperiment("connector.startWithDestinationId", "");
 
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const [initialRequestName, setInitialRequestName] = useState<string>();
@@ -203,7 +211,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     () =>
       availableServices
         .filter(
-          (service): service is DestinationDefinitionRead =>
+          (service): service is DestinationDefinitionReadWithLatestTag =>
             isDestinationDefinition(service) && frequentlyUsedDestinationIds.includes(service.destinationDefinitionId)
         )
         .map(({ destinationDefinitionId, name, icon, releaseStage }) => ({
@@ -215,7 +223,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         })),
     [availableServices, frequentlyUsedDestinationIds]
   );
-
+  const startWithDestination = useMemo(
+    () =>
+      availableServices.find(
+        (service): service is DestinationDefinitionReadWithLatestTag =>
+          isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
+      ),
+    [availableServices, startWithDestinationId]
+  );
   const uiOverrides = useMemo(
     () => ({
       name: {
@@ -239,7 +254,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
                 }}
                 {...componentProps}
               />
-              {formType === "destination" && !selectedConnectorDefinitionSpecification && (
+              {!isEditMode && formType === "destination" && !selectedConnectorDefinitionSpecification && (
                 <FrequentlyUsedDestinations
                   propertyPath={path}
                   destinations={frequentlyUsedDestinations}
@@ -326,6 +341,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             formFields={formFields}
             selectedConnector={selectedConnectorDefinitionSpecification}
           />
+          {formType === "destination" &&
+            !destinations.length &&
+            !isEditMode &&
+            !selectedConnectorDefinitionSpecification && (
+              <StartWithDestination onDestinationSelect={onServiceSelect} destination={startWithDestination} />
+            )}
           {isOpenRequestModal && (
             <RequestConnectorModal
               connectorType={formType}
