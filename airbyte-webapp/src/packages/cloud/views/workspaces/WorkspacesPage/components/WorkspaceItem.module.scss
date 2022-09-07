@@ -1,15 +1,19 @@
-@use "../../../../../../scss/colors";
+$white: #fff;
+$shadowColor: rgba(0, 0, 0, 25%);
 
 .item {
-  padding: 20px 28px 20px 20px;
+  //padding: 20px 28px 20px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
   cursor: pointer;
+
+  width: 100%;
+  background: $white;
   border-radius: 10px;
-  width: "100%";
-  box-shadow: 0 2px 4px black;
+  box-shadow: 0 2px 4px $shadowColor;
+  padding: 20px;
 }
 
 // export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
