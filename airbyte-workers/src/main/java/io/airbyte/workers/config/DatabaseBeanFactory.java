@@ -41,6 +41,21 @@ public class DatabaseBeanFactory {
   private static final Boolean BASELINE_ON_MIGRATION = true;
   private static final String INSTALLED_BY = "WorkerApp";
 
+  /*
+   * @Singleton
+   *
+   * @Requires(property = "airbyte.worker.plane", notEquals = "DATA_PLANE")
+   *
+   * @Named("config") public static DSLContext configDsl(@Value("${connection.user}") final String
+   * username,
+   *
+   * @Value("${connection.password}") final String password,
+   *
+   * @Value("${connection.url}") final String jdbcConnectionString) { return
+   * DSL.using(DataSourceFactory.create(username, password,
+   * DatabaseDriver.POSTGRESQL.getDriverClassName(), jdbcConnectionString), SQLDialect.POSTGRES); }
+   */
+
   @Singleton
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")

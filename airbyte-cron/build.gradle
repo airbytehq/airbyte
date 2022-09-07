@@ -3,8 +3,27 @@ plugins {
 }
 
 dependencies {
+    implementation 'com.auth0:java-jwt:3.19.2'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'io.sentry:sentry:6.3.1'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation 'io.temporal:temporal-serviceclient:1.8.1'
+
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-analytics')
     implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-workers')
+    implementation (project(':airbyte-scheduler:scheduler-persistence')) {
+        // Temporary hack to avoid dependency conflicts
+        exclude group: 'io.micronaut'
+        exclude group: 'io.micronaut.flyway'
+        exclude group: 'io.micronaut.jaxrs'
+        exclude group: 'io.micronaut.security'
+        exclude group: 'io.micronaut.sql'
+    }
 
     runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
 
