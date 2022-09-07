@@ -80,7 +80,6 @@ const connectionValidationSchema = yup
       .string()
       .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
     scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
-      console.log(scheduleType);
       if (scheduleType === ConnectionScheduleType.basic) {
         return yup.object({
           basicSchedule: yup
