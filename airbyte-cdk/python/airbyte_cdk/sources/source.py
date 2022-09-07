@@ -6,11 +6,10 @@
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from typing import Any, Dict, Generic, Iterable, Mapping, MutableMapping, TypeVar
+from typing import Any, Generic, Iterable, List, Mapping, MutableMapping, TypeVar, Union
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
@@ -39,15 +38,37 @@ class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]
         """
 
 
-class Source(DefaultConnectorMixin, BaseSource[Mapping[str, Any], MutableMapping[str, Any], ConfiguredAirbyteCatalog], ABC):
+class Source(
+    DefaultConnectorMixin,
+    BaseSource[Mapping[str, Any], Union[List[AirbyteStateMessage], MutableMapping[str, Any]], ConfiguredAirbyteCatalog],
+    ABC,
+):
     # can be overridden to change an input state
-    def read_state(self, state_path: str) -> Dict[str, Any]:
+    def read_state(self, state_path: str) -> List[AirbyteStateMessage]:
+        """
+        Retrieves the input state of a sync by reading from the specified JSON file. Incoming state can be deserialized into either
+        a JSON object for legacy state input or as a list of AirbyteStateMessages for the per-stream state format. Regardless of the
+        incoming input type, it will always be transformed and output as a list of AirbyteStateMessage(s).
+        :param state_path: The filepath to where the stream states are located
+        :return: The complete stream state based on the connector's previous sync
+        """
         if state_path:
             state_obj = json.loads(open(state_path, "r").read())
-        else:
-            state_obj = {}
-        state = defaultdict(dict, state_obj)
-        return state
+            if not state_obj:
+                return []
+            is_per_stream_state = isinstance(state_obj, List)
+            if is_per_stream_state:
+                parsed_state_messages = []
+                for state in state_obj:
+                    parsed_message = AirbyteStateMessage.parse_obj(state)
+                    if not parsed_message.stream and not parsed_message.data and not parsed_message.global_:
+                        raise ValueError("AirbyteStateMessage should contain either a stream, global, or state field")
+                    parsed_state_messages.append(parsed_message)
+                return parsed_state_messages
+            else:
+                # When the legacy JSON object format is received, always outputting an AirbyteStateMessage simplifies processing downstream
+                return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
+        return []
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:

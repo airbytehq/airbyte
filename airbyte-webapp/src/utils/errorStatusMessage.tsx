@@ -1,10 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-export class FormError extends Error {
-  status?: number;
-}
-
-export const createFormErrorMessage = (error: FormError): JSX.Element | string | null => {
+export const createFormErrorMessage = (error: { status?: number; message?: string }): JSX.Element | string | null => {
   if (error.message) {
     return error.message;
   }

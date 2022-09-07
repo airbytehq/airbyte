@@ -6,6 +6,13 @@ import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
 import { ConfigContext, defaultConfig } from "config";
+import {
+  ConnectionStatus,
+  DestinationRead,
+  NamespaceDefinitionType,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { ServicesProvider } from "core/servicesProvider";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
@@ -56,3 +63,53 @@ export const TestWrapper: React.FC = ({ children }) => (
     </IntlProvider>
   </ThemeProvider>
 );
+
+export const useMockIntersectionObserver = () => {
+  // IntersectionObserver isn't available in test environment but is used by the dialog component
+  const mockIntersectionObserver = jest.fn();
+  mockIntersectionObserver.mockReturnValue({
+    observe: jest.fn().mockReturnValue(null),
+    unobserve: jest.fn().mockReturnValue(null),
+    disconnect: jest.fn().mockReturnValue(null),
+  });
+  window.IntersectionObserver = mockIntersectionObserver;
+};
+
+export const mockSource: SourceRead = {
+  sourceId: "test-source",
+  name: "test source",
+  sourceName: "test-source-name",
+  workspaceId: "test-workspace-id",
+  sourceDefinitionId: "test-source-definition-id",
+  connectionConfiguration: undefined,
+};
+
+export const mockDestination: DestinationRead = {
+  destinationId: "test-destination",
+  name: "test destination",
+  destinationName: "test destination name",
+  workspaceId: "test-workspace-id",
+  destinationDefinitionId: "test-destination-definition-id",
+  connectionConfiguration: undefined,
+};
+
+export const mockConnection: WebBackendConnectionRead = {
+  connectionId: "test-connection",
+  name: "test connection",
+  prefix: "test",
+  sourceId: "test-source",
+  destinationId: "test-destination",
+  status: ConnectionStatus.active,
+  schedule: undefined,
+  syncCatalog: {
+    streams: [],
+  },
+  namespaceDefinition: NamespaceDefinitionType.source,
+  namespaceFormat: "",
+  operationIds: [],
+  source: mockSource,
+  destination: mockDestination,
+  operations: [],
+  catalogId: "",
+  isSyncing: false,
+};

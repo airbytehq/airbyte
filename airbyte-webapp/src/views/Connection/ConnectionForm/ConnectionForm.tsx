@@ -9,7 +9,11 @@ import { IDataItem } from "components/base/DropDown/components/Option";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { Action, Namespace } from "core/analytics";
-import { ConnectionScheduleDataBasicSchedule, NamespaceDefinitionType } from "core/request/AirbyteClient";
+import {
+  ConnectionScheduleDataBasicSchedule,
+  NamespaceDefinitionType,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
@@ -88,6 +92,10 @@ const FormContainer = styled(Form)`
 `;
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
+
+export type ConnectionOrPartialConnection =
+  | WebBackendConnectionRead
+  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 
 export interface ConnectionFormProps {
   className?: string;

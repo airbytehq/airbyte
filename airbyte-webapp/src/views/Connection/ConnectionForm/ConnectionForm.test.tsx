@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { render } from "test-utils/testutils";
 
 import {
   ConnectionStatus,
@@ -10,7 +11,6 @@ import {
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
-import { render } from "utils/testutils";
 
 import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
 

@@ -1,4 +1,7 @@
 import { renderHook } from "@testing-library/react-hooks";
+import mockDestinationDefinition from "test-utils/mock-data//mockDestinationDefinition.json";
+import mockConnection from "test-utils/mock-data/mockConnection.json";
+import { TestWrapper as wrapper } from "test-utils/testutils";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { NormalizationType } from "core/domain/connection";
@@ -8,9 +11,6 @@ import {
   OperationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
-import mockConnection from "hooks/services/Connection/mockConnection.json";
-import mockDestinationDefinition from "hooks/services/Connection/mockDestinationDefinition.json";
-import { TestWrapper as wrapper } from "utils/testutils";
 
 import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } from "./formConfig";
 
