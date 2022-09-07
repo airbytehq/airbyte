@@ -80,10 +80,10 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
       onBlur={onContainerBlur}
     >
       <input
+        data-testid="input"
         {...props}
         ref={inputRef}
         type={type}
-        data-testid="input"
         className={classNames(
           styles.input,
           {
