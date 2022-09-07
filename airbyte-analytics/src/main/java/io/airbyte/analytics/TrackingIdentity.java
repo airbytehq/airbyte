@@ -70,9 +70,9 @@ public class TrackingIdentity {
       return false;
     }
     final TrackingIdentity that = (TrackingIdentity) o;
-    return that.anonymousDataCollection.equals(anonymousDataCollection) &&
-        that.news.equals(news) &&
-        that.securityUpdates.equals(securityUpdates) &&
+    return anonymousDataCollection == that.anonymousDataCollection &&
+        news == that.news &&
+        securityUpdates == that.securityUpdates &&
         Objects.equals(customerId, that.customerId) &&
         Objects.equals(email, that.email);
   }
