@@ -148,6 +148,7 @@ class JobHistoryHandlerTest {
 
       when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
+      when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -158,7 +159,7 @@ class JobHistoryHandlerTest {
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
           testJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
-      final JobReadList expectedJobReadList = new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead));
+      final JobReadList expectedJobReadList = new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);
 
       assertEquals(expectedJobReadList, jobReadList);
     }
@@ -187,6 +188,7 @@ class JobHistoryHandlerTest {
           new Job(latestJobId, ConfigType.SYNC, JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING, null, createdAt3, createdAt3);
 
       when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
+      when(jobPersistence.getJobCount(configTypes, JOB_CONFIG_ID)).thenReturn(3L);
 
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
@@ -200,7 +202,38 @@ class JobHistoryHandlerTest {
           new JobWithAttemptsRead().job(toJobInfo(secondJob)).attempts(ImmutableList.of(toAttemptRead(secondJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJob)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
-          new JobReadList().jobs(List.of(latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead));
+          new JobReadList().jobs(List.of(latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead)).totalJobCount(3L);
+
+      assertEquals(expectedJobReadList, jobReadList);
+    }
+
+    @Test
+    @DisplayName("Should return jobs including specified job id")
+    void testListJobsIncludingJobId() throws IOException {
+      final var successfulJob = testJob;
+      final int pagesize = 25;
+      final int rowOffset = 0;
+
+      final var jobId2 = JOB_ID + 100;
+      final var createdAt2 = CREATED_AT + 1000;
+      final var latestJobNoAttempt =
+          new Job(jobId2, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING,
+              null, createdAt2, createdAt2);
+
+      when(jobPersistence.listJobsIncludingId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
+          .thenReturn(List.of(latestJobNoAttempt, successfulJob));
+
+      final var requestBody = new JobListRequestBody()
+          .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
+          .configId(JOB_CONFIG_ID)
+          .includingJobId(jobId2)
+          .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
+      final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
+
+      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
+          testJobAttempt)));
+      final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
+      final JobReadList expectedJobReadList = new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead));
 
       assertEquals(expectedJobReadList, jobReadList);
     }

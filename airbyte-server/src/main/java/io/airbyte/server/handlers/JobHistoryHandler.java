@@ -80,15 +80,25 @@ public class JobHistoryHandler {
         .collect(Collectors.toSet());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
-        configId,
-        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
-            : DEFAULT_PAGE_SIZE,
-        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
+    final int pageSize = (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
+        : DEFAULT_PAGE_SIZE;
+    final List<Job> jobs;
+
+    if (request.getIncludingJobId() != null) {
+      jobs = jobPersistence.listJobsIncludingId(configTypes, configId, request.getIncludingJobId(), pageSize);
+    } else {
+      jobs = jobPersistence.listJobs(configTypes, configId, pageSize,
+          (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
+    }
+
+    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
+
+    final List<JobWithAttemptsRead> jobReads = jobs
         .stream()
-        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
+        .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
-    return new JobReadList().jobs(jobReads);
+
+    return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {

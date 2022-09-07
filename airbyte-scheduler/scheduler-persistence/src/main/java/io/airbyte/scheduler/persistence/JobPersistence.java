@@ -141,6 +141,14 @@ public interface JobPersistence {
   void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
 
   /**
+   * @param configTypes - the type of config, e.g. sync
+   * @param connectionId - ID of the connection for which the job count should be retrieved
+   * @return count of jobs belonging to the specified connection
+   * @throws IOException
+   */
+  Long getJobCount(final Set<ConfigType> configTypes, final String connectionId) throws IOException;
+
+  /**
    * @param configTypes - type of config, e.g. sync
    * @param configId - id of that config
    * @return lists job in descending order by created_at
@@ -157,6 +165,19 @@ public interface JobPersistence {
   List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
+
+  /**
+   * @param configTypes - type of config, e.g. sync
+   * @param connectionId - id of the connection for which jobs should be retrieved
+   * @param targetJobId - id of a job that should be included in the result, if it exists in the
+   *        connection
+   * @param pagesize - minimum size of the job list that should be returned
+   * @return List of jobs created after and including the target job ID (or the `pagesize` most recent
+   *         jobs, whichever is larger), if it exists in the connection. Otherwise, this acts as a
+   *         normal listJobs request.
+   * @throws IOException
+   */
+  List<Job> listJobsIncludingId(Set<JobConfig.ConfigType> configTypes, String connectionId, long targetJobId, int pagesize) throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 

@@ -3775,6 +3775,9 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns all jobs created after and including this job, or the full pagination pagesize if that list is smaller than a page. Otherwise, this field is ignored.
+          $ref: "#/components/schemas/JobId"
         pagination:
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
@@ -3992,11 +3995,16 @@ components:
       type: object
       required:
         - jobs
+        - totalCount
       properties:
         jobs:
           type: array
           items:
             $ref: "#/components/schemas/JobWithAttemptsRead"
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
     JobInfoRead:
       type: object
       required:

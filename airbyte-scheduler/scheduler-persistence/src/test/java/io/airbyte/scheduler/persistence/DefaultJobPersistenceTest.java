@@ -1030,6 +1030,37 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
+  @DisplayName("When getting the count of jobs")
+  class GetJobCount {
+    @Test
+    @DisplayName("Should return the total job count for the connection")
+    void testGetJobCount() throws IOException {
+      int numJobsToCreate = 10;
+      for (int i = 0; i < numJobsToCreate; i++) {
+        jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
+      }
+
+      final Long actualJobCount = jobPersistence.getJobCount(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString());
+
+      assertEquals(numJobsToCreate, actualJobCount);
+    }
+
+    @Test
+    @DisplayName("Should return 0 if there are no jobs for this connection")
+    void testGetJobCountNoneForConnection() throws IOException {
+      final UUID otherConnectionId1 = UUID.randomUUID();
+      final UUID otherConnectionId2 = UUID.randomUUID();
+
+      jobPersistence.enqueueJob(otherConnectionId1.toString(), SPEC_JOB_CONFIG);
+      jobPersistence.enqueueJob(otherConnectionId2.toString(), SPEC_JOB_CONFIG);
+
+      final Long actualJobCount = jobPersistence.getJobCount(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString());
+
+      assertEquals(0, actualJobCount);
+    }
+  }
+
+  @Nested
   @DisplayName("When listing jobs, use paged results")
   class ListJobs {
 
@@ -1142,6 +1173,68 @@ class DefaultJobPersistenceTest {
 
       assertEquals(2, actualList.size());
       assertEquals(jobId2, actualList.get(0).getId());
+    }
+
+    @Test
+    @DisplayName("Should list jobs coming after and including target job")
+    void testListJobsIncludingId() throws IOException {
+      final List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < 100; i++) {
+        // This makes each enqueued job have an increasingly higher createdAt time
+        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+        // also create an attempt for each job to verify that joining with attempts does not cause failures
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+      }
+
+      final int targetIdIndex = 50;
+      final List<Job> actualList =
+          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(targetIdIndex), 25);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(targetIdIndex, ids.size()));
+      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
+    }
+
+    @Test
+    @DisplayName("Should list at least the full page size if list up to target job is smaller than a page")
+    void testListJobsIncludingIdAtLeastFullPageSize() throws IOException {
+      final List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < 100; i++) {
+        // This makes each enqueued job have an increasingly higher createdAt time
+        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+        // also create an attempt for each job to verify that joining with attempts does not cause failures
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+      }
+
+      final int pageSize = 25;
+      final List<Job> actualList =
+          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(90), pageSize);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - pageSize, ids.size()));
+      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
+    }
+
+    @Test
+    @DisplayName("Should return the normal full page size if there is no job with the target ID for this connection")
+    void testListJobsIncludingIdFromWrongConnection() throws IOException {
+      final List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < 50; i++) {
+        // This makes each enqueued job have an increasingly higher createdAt time
+        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+        // also create an attempt for each job to verify that joining with attempts does not cause failures
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+      }
+
+      final long otherConnectionJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SPEC_JOB_CONFIG).orElseThrow();
+
+      final int pageSize = 25;
+      final List<Job> actualList =
+          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, pageSize);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - pageSize, ids.size()));
+      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
     }
 
   }

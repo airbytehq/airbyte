@@ -387,6 +387,14 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Long getJobCount(final Set<ConfigType> configTypes, final String connectionId) throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.fetch(
+        "SELECT COUNT(*) FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND scope = '" + connectionId
+            + "'"));
+    return result.get(0).get("count", Long.class);
+  }
+
+  @Override
   public List<Job> listJobs(final ConfigType configType, final String configId, final int pagesize, final int offset) throws IOException {
     return listJobs(Set.of(configType), configId, pagesize, offset);
   }
@@ -399,25 +407,36 @@ public class DefaultJobPersistence implements JobPersistence {
         jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME)));
   }
 
-  public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long targetJobId, final int pagesize, final int offset) throws IOException {
-    final Optional<Object> targetJobCreatedAt = jobDatabase.query(ctx -> {
+  @Override
+  public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long targetJobId, final int pagesize)
+      throws IOException {
+    // fetch creation time of the target job for this connection
+    final Optional<LocalDateTime> targetJobCreatedAt = jobDatabase.query(ctx -> {
       final Optional<Record> targetJobRecord = ctx.fetch(
           "SELECT created_at FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND scope = '"
-              + connectionId + "' AND id = " + targetJobId).stream().findFirst();
+              + connectionId + "' AND id = " + targetJobId)
+          .stream().findFirst();
 
-      return targetJobRecord.map(record -> getEpoch(record, "created_at"));
+      return targetJobRecord.map(record -> record.get("created_at", LocalDateTime.class));
     });
 
     // we still want a normal result if the target job cannot be found
     if (targetJobCreatedAt.isEmpty()) {
-      return listJobs(configTypes, connectionId, pagesize, offset);
+      return listJobs(configTypes, connectionId, pagesize, 0);
     }
 
-    // TODO finish logic
+    // fetch jobs created after and including the target job
+    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
+        + " AND scope = '" + connectionId + "' AND created_at >= ? ORDER BY created_at DESC, id DESC) AS jobs";
+    final List<Job> jobs = jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
+        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME, targetJobCreatedAt.get())));
 
-    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
-        + " AND jobs.scope = '" + connectionId + "' WHERE  ORDER BY jobs.created_at DESC, jobs.id DESC LIMIT " + pagesize + " OFFSET " + offset + ") AS jobs";
-    return List.of();
+    // return a full page of jobs if the above result is smaller than a page
+    if (jobs.size() < pagesize) {
+      return listJobs(configTypes, connectionId, pagesize, 0);
+    }
+
+    return jobs;
   }
 
   @Override
