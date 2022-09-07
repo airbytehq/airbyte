@@ -350,10 +350,9 @@ public class ConnectionsHandler {
         case CRON -> Preconditions.checkArgument(
             patch.getScheduleData() != null,
             "ConnectionUpdate should include scheduleData when setting the Connection scheduleType to CRON.");
-        default -> {
-          // shouldn't be possible to reach this case
-          throw new RuntimeException("Unrecognized scheduleType!");
-        }
+
+        // shouldn't be possible to reach this case
+        default -> throw new RuntimeException("Unrecognized scheduleType!");
       }
     }
   }
@@ -408,14 +407,14 @@ public class ConnectionsHandler {
    * list of streams where existing stream positions are preserved, and new streams from the patch are
    * added in the order they were listed in the patch.
    */
-  private static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> mergedStreams,
+  private static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
                                                                                   final AirbyteCatalog existing,
                                                                                   final AirbyteCatalog patch) {
 
     final Map<StreamDescriptor, Integer> originalStreamDescriptorPositions = getStreamPositionMap(existing);
     final Map<StreamDescriptor, Integer> patchStreamDescriptorPositions = getStreamPositionMap(patch);
 
-    return mergedStreams.stream().sorted((stream1, stream2) -> {
+    return unsortedMergedStreams.stream().sorted((stream1, stream2) -> {
       final StreamDescriptor stream1Descriptor = getStreamDescriptorForStream(stream1.getStream());
       final StreamDescriptor stream2Descriptor = getStreamDescriptorForStream(stream2.getStream());
 
@@ -436,7 +435,7 @@ public class ConnectionsHandler {
         return -1; // returning -1 selects the left-hand argument to come first, ie stream1
       }
 
-      // likewise, if stream2 is in the original but stream1 isn't, stream2 shoudl come first
+      // likewise, if stream2 is in the original but stream1 isn't, stream2 should come first
       if (stream2OriginalPosition != null) {
         return 1;
       }

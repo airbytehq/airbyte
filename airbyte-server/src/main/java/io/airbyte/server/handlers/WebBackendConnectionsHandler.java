@@ -376,7 +376,7 @@ public class WebBackendConnectionsHandler {
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
 
-    final List<UUID> newAndExistingOperationIds = updateOperations(connectionRead, webBackendConnectionPatch);
+    final List<UUID> newAndExistingOperationIds = createOrUpdateOperations(connectionRead, webBackendConnectionPatch);
 
     // pass in operationIds because the patch object doesn't include operationIds that were just created
     // above.
@@ -469,7 +469,7 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
-  private List<UUID> updateOperations(final ConnectionRead connectionRead, final WebBackendConnectionUpdate webBackendConnectionPatch)
+  private List<UUID> createOrUpdateOperations(final ConnectionRead connectionRead, final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws JsonValidationException, ConfigNotFoundException, IOException {
 
     // this is a patch-style update, so don't make any changes if the request doesn't include operations
