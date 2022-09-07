@@ -307,6 +307,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
+  @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable getReplicationRunnable(final AirbyteSource source,
                                                  final AirbyteDestination destination,
                                                  final AtomicBoolean cancelled,
@@ -419,6 +420,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
+  @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
                                                        final AtomicBoolean cancelled,
                                                        final MessageTracker messageTracker,
