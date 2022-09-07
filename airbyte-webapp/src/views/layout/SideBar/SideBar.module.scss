@@ -31,6 +31,9 @@
 }
 
 .menuItem {
+  background-color: transparent;
+  appearance: none;
+  border: none;
   color: colors.$grey-30;
   width: 100%;
   cursor: pointer;
