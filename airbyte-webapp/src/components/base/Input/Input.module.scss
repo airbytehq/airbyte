@@ -16,7 +16,7 @@
     border-color: colors.$red;
   }
 
-  &:not(.disabled):hover {
+  &:not(.disabled):not(.focused):hover {
     background-color: colors.$grey-100;
     border-color: colors.$grey-100;
 
