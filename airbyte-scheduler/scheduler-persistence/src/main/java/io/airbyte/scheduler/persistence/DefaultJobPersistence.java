@@ -310,23 +310,32 @@ public class DefaultJobPersistence implements JobPersistence {
   public <T> void writeOutput(final long jobId, final int attemptNumber, final T output, final SyncStats syncStats) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
-        ctx.update(ATTEMPTS)
+      ctx.update(ATTEMPTS)
           .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
           .set(ATTEMPTS.UPDATED_AT, now)
           .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
           .execute();
+      final Optional<Record> record =
+          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+              attemptNumber).stream().findFirst();
+      final Integer attemptId = record.get().get("id", Integer.class);
 
-        final Optional<Record> record = ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId, attemptNumber).stream().findFirst();
-        final Integer attemptId = record.get().get("id", Integer.class);
-
-       ctx.update(SYNC_STATS)
-           .set(SYNC_STATS.UPDATED_AT, now)
-           .set(SYNC_STATS.CREATED_AT, now)
-           .set(SYNC_STATS.ATTEMPT_ID, attemptId)
-           .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+      ctx.update(SYNC_STATS)
+          .set(SYNC_STATS.UPDATED_AT, now)
+          .set(SYNC_STATS.CREATED_AT, now)
+          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsEmitted())
+          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
       return null;
-
     });
+
   }
 
   @Override

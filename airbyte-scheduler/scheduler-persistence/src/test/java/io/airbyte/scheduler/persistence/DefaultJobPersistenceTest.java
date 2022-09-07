@@ -252,7 +252,7 @@ class DefaultJobPersistenceTest {
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput);
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats());
 
     final Job updated = jobPersistence.getJob(jobId);
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
