@@ -47,9 +47,11 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
         ? ConnectionScheduleType.basic
         : ConnectionScheduleType.manual;
 
+      // TODO: We should align these types
+      // With the PATCH-style endpoint available we might be able to forego this pattern
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
-      }) as unknown as ConnectionFormValues; // TODO: We should align these types
+      }) as unknown as ConnectionFormValues;
 
       formValues.operations = mapFormPropsToOperation(values, connection.operations, workspaceId);
 
