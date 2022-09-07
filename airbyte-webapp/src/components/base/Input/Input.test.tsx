@@ -1,7 +1,6 @@
 import { fireEvent, waitFor } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
-
-import { render } from "utils/testutils";
+import { render } from "test-utils/testutils";
 
 import { Input } from "./Input";
 
