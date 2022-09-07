@@ -407,7 +407,8 @@ public class ConnectionsHandler {
    * list of streams where existing stream positions are preserved, and new streams from the patch are
    * added in the order they were listed in the patch.
    */
-  private static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
+  @VisibleForTesting
+  protected static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
                                                                                   final AirbyteCatalog existing,
                                                                                   final AirbyteCatalog patch) {
 
