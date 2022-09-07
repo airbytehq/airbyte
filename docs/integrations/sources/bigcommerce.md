@@ -17,6 +17,7 @@ This Source is capable of syncing the following core Streams:
 - [Transactions](https://developer.bigcommerce.com/api-reference/store-management/order-transactions/transactions/gettransactions)
 - [Pages](https://developer.bigcommerce.com/api-reference/store-management/store-content/pages/getallpages)
 - [Products](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
+- [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
 
 ### Data type mapping
 
