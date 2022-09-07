@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -23,6 +24,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -305,14 +307,26 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
+  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output, final SyncStats syncStats) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    jobDatabase.transaction(
-        ctx -> ctx.update(ATTEMPTS)
-            .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
-            .set(ATTEMPTS.UPDATED_AT, now)
-            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
-            .execute());
+    jobDatabase.transaction(ctx -> {
+        ctx.update(ATTEMPTS)
+          .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
+          .set(ATTEMPTS.UPDATED_AT, now)
+          .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+          .execute();
+
+        final Optional<Record> record = ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId, attemptNumber).stream().findFirst();
+        final Integer attemptId = record.get().get("id", Integer.class);
+
+       ctx.update(SYNC_STATS)
+           .set(SYNC_STATS.UPDATED_AT, now)
+           .set(SYNC_STATS.CREATED_AT, now)
+           .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+           .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+      return null;
+
+    });
   }
 
   @Override
