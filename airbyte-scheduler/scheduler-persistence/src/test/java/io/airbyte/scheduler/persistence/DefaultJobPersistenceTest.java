@@ -1032,6 +1032,7 @@ class DefaultJobPersistenceTest {
   @Nested
   @DisplayName("When getting the count of jobs")
   class GetJobCount {
+
     @Test
     @DisplayName("Should return the total job count for the connection")
     void testGetJobCount() throws IOException {
@@ -1058,6 +1059,7 @@ class DefaultJobPersistenceTest {
 
       assertEquals(0, actualJobCount);
     }
+
   }
 
   @Nested
