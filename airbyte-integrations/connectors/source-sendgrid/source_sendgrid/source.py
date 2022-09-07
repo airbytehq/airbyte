@@ -36,7 +36,7 @@ class SourceSendgrid(AbstractSource):
         try:
             start_time = config.get("start_time")
             if start_time and isinstance(start_time, str):
-                _ = pendulum.parse()
+                pendulum.parse(start_time)
             authenticator = TokenAuthenticator(config["apikey"])
             scopes_gen = Scopes(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
             next(scopes_gen)

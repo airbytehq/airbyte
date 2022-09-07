@@ -78,7 +78,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://sen
 
 | Version | Date       | Pull Request                                             | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------|
-| 0.2.14  | 2022-09-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Change Start Time config parameter to datetime string |
+| 0.2.14  | 2022-09-07 | [16400](https://github.com/airbytehq/airbyte/pull/16400) | Change Start Time config parameter to datetime string |
 | 0.2.13  | 2022-08-29 | [16112](https://github.com/airbytehq/airbyte/pull/16112) | Revert back to Python CDK                             |
 | 0.2.12  | 2022-08-24 | [15911](https://github.com/airbytehq/airbyte/pull/15911) | Bugfix to allowing reading schemas at runtime         |
 | 0.2.11  | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime        |
