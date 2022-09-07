@@ -1,6 +1,15 @@
+@use "../../../scss/colors";
+
 .container {
   width: auto;
+  background: colors.$white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px colors.$cardShadowColor;
 }
+
+// .withPadding {
+//     padding: 20px;
+// }
 
 // export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
 //   width: ${({ full }) => (full ? "100%" : "auto")};

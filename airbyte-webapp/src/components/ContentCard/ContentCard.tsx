@@ -20,15 +20,6 @@ interface IProps {
 //   border-radius: ${({ roundedBottom }) => (roundedBottom ? "10px 10px 0px 0px" : "10px 10px 10px 10px")};
 // `;
 
-const ContentCard: React.FC<IProps> = (props) => (
-  <Card>
-    {/* {props.title ? (
-      <Title light={props.light || !props.children} roundedBottom={!!props.children}>
-        {props.title}
-      </Title>
-    ) : null} */}
-    {props.children}
-  </Card>
-);
+const ContentCard: React.FC<IProps> = (props) => <Card>{props.children}</Card>;
 
 export default ContentCard;
