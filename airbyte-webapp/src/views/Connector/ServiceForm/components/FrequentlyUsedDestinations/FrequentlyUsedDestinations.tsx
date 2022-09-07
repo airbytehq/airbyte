@@ -1,10 +1,9 @@
 import { useField } from "formik";
+import React from "react";
 import { useIntl } from "react-intl";
 
-import ConnectorCard from "components/ConnectorCard";
+import { SlickSlider, ConnectorCard, Spinner } from "components";
 import { ConnectorCardProps } from "components/ConnectorCard/ConnectorCard";
-import { SlickSlider } from "components/SlickSlider";
-import Spinner from "components/Spinner";
 
 import { DestinationDefinitionId } from "core/request/AirbyteClient";
 
@@ -21,12 +20,12 @@ export interface FrequentlyUsedDestinationsProps {
   isLoading?: boolean;
 }
 
-export const FrequentlyUsedDestinations = ({
+export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProps> = ({
   propertyPath,
   destinations,
   onDestinationSelect,
   isLoading,
-}: FrequentlyUsedDestinationsProps) => {
+}) => {
   const [, , { setValue }] = useField(propertyPath);
   const { formatMessage } = useIntl();
 
@@ -55,6 +54,7 @@ export const FrequentlyUsedDestinations = ({
                   connectorName={connectorName}
                   icon={icon}
                   releaseStage={releaseStage}
+                  fullWidth
                 />
               </div>
             </div>
