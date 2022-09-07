@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   ConnectionFormValues,
@@ -72,7 +72,7 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
     [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
   );
 
-  const errorMessage = useMemo(() => (submitError ? createFormErrorMessage(submitError) : null), [submitError]);
+  const errorMessage = useMemo(() => (submitError ? generateMessageFromError(submitError) : null), [submitError]);
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return {

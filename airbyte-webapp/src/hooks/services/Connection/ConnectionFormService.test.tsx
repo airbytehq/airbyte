@@ -3,9 +3,9 @@ import { act } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
+import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { TestWrapper } from "utils/testutils";
 
 import { ModalCancel } from "../Modal";
 import {
