@@ -33,19 +33,19 @@ public class V0_40_3_001__CreateSyncStats extends BaseJavaMigration {
   private static void createSyncStatsTable(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<Integer> attemptId = DSL.field("attempt_id", SQLDataType.INTEGER.nullable(false));
-    final Field<Integer> recordsEmitted = DSL.field("records_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> bytesEmitted = DSL.field("bytes_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> sourceStateMessagesEmitted = DSL.field("source_state_messages_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> destinationStateMessagesEmitted = DSL.field("destination_state_messages_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> recordsCommitted = DSL.field("records_committed", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> meanSecondsBeforeSourceStateMessageEmitted =
-        DSL.field("mean_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> maxSecondsBeforeSourceStateMessageEmitted =
-        DSL.field("max_seconds_before_source_state_message_emitted", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> meanSecondsBetweenStateMessageEmittedandCommitted =
-        DSL.field("mean_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(true));
-    final Field<Integer> maxSecondsBetweenStateMessageEmittedandCommitted =
-        DSL.field("max_seconds_between_state_message_emitted_and_committed", SQLDataType.INTEGER.nullable(true));
+    final Field<Long> recordsEmitted = DSL.field("records_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> bytesEmitted = DSL.field("bytes_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> sourceStateMessagesEmitted = DSL.field("source_state_messages_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> destinationStateMessagesEmitted = DSL.field("destination_state_messages_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> recordsCommitted = DSL.field("records_committed", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> meanSecondsBeforeSourceStateMessageEmitted =
+        DSL.field("mean_seconds_before_source_state_message_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> maxSecondsBeforeSourceStateMessageEmitted =
+        DSL.field("max_seconds_before_source_state_message_emitted", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> meanSecondsBetweenStateMessageEmittedandCommitted =
+        DSL.field("mean_seconds_between_state_message_emitted_and_committed", SQLDataType.BIGINT.nullable(true));
+    final Field<Long> maxSecondsBetweenStateMessageEmittedandCommitted =
+        DSL.field("max_seconds_between_state_message_emitted_and_committed", SQLDataType.BIGINT.nullable(true));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =
