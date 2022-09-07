@@ -97,7 +97,7 @@ class ConnectorRunner:
             image=self._image,
             command=cmd,
             volumes=volumes,
-            network_mode="host",
+            network_mode="http_reject",
             detach=True,
             **kwargs,
         )
