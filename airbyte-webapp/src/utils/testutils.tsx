@@ -70,6 +70,7 @@ export const useMockIntersectionObserver = () => {
     disconnect: jest.fn().mockReturnValue(null),
   });
   window.IntersectionObserver = mockIntersectionObserver;
+};
 
 export const mockSource: SourceRead = {
   sourceId: "test-source",
