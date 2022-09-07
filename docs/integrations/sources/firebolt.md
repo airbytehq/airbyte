@@ -58,4 +58,5 @@ You can now use the Airbyte Firebolt source.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-04-28 | TBD | Create Firebolt source |
+| 0.2.0 | 2022-09-09 | TBD | Reading from views |
+| 0.1.0 | 2022-04-28 | https://github.com/airbytehq/airbyte/pull/13874 | Create Firebolt source |

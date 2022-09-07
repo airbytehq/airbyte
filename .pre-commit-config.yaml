@@ -8,7 +8,7 @@ repos:
       - id: licenseheaders
         args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.10.0
     hooks:
       - id: black
         args: ["--config", "pyproject.toml"]
@@ -25,7 +25,7 @@ repos:
           ]
         additional_dependencies: ["colorama"]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.0
+    rev: v3.0.0-alpha.1
     hooks:
       - id: prettier
         types_or: [yaml, json]
@@ -38,14 +38,14 @@ repos:
           ).?$
 
   - repo: https://github.com/csachs/pyproject-flake8
-    rev: v0.0.1a2.post1
+    rev: v5.0.4a1.post1
     hooks:
       - id: pyproject-flake8
         args: ["--config", "pyproject.toml"]
         additional_dependencies: ["mccabe"]
         alias: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.930
+    rev: v0.982
     hooks:
       - id: mypy
         args: ["--config-file", "pyproject.toml"]
