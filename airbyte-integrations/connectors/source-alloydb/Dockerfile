@@ -2,7 +2,7 @@ FROM airbyte/integration-base-java:dev AS build
 
 WORKDIR /airbyte
 
-ENV APPLICATION destination-mqtt
+ENV APPLICATION source-alloydb
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
@@ -12,9 +12,9 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION destination-mqtt
+ENV APPLICATION source-alloydb
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.3
-LABEL io.airbyte.name=airbyte/destination-mqtt
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-alloydb
