@@ -4,16 +4,13 @@ set -e
 
 . tools/lib/lib.sh
 
-docker run -i --rm -v /etc:/etc ubuntu /bin/bash -c "echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root"
-echo "change password"
-
 docker network create http_reject
 GATEWAY=$(docker network inspect http_reject | jq -r .[0].IPAM.Config[0].Gateway)
 IFACE=$(ip -br add | grep ${GATEWAY} | awk '{ print $1 }')
 
 iptables -F DOCKER-USER
 iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 80 -j REJECT
-iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 443 -j REJECT
+#iptables -A DOCKER-USER -i ${IFACE} -p tcp --dport 443 -j REJECT
 
 # runs integration tests for an integration name
 
