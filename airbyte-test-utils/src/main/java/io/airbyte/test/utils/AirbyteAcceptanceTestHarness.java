@@ -59,6 +59,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -610,7 +611,7 @@ public class AirbyteAcceptanceTestHarness {
         dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psql));
       }
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
@@ -624,7 +625,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psql));
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
