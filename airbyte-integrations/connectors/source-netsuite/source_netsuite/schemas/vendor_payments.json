@@ -284,7 +284,6 @@
   },
   "additionalProperties": true,
   "required": [
-    "nullFieldList",
     "createdDate",
     "lastModifiedDate",
     "nexus",
@@ -292,7 +291,6 @@
     "taxRegOverride",
     "taxDetailsOverride",
     "customForm",
-    "billAddressList",
     "account",
     "entity",
     "subsidiary",
@@ -324,7 +322,6 @@
     "location",
     "status",
     "landedCostMethod",
-    "landedCostPerLine",
     "transactionNumber",
     "internalId",
     "externalId"
