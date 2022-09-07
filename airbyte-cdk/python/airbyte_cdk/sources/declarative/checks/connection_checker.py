@@ -17,6 +17,9 @@ class ConnectionChecker(ABC):
     @abstractmethod
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
+        Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
+        to the Stripe API.
+
         :param source: source
         :param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.

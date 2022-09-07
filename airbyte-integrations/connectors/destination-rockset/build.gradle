@@ -24,6 +24,8 @@ dependencies {
     implementation group: 'com.rockset', name: 'rockset-java', version: '0.9.0'
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.1.1'
 
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-rockset')

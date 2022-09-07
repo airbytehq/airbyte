@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static org.apache.logging.log4j.util.Strings.EMPTY;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -18,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,6 +212,7 @@ public class DatabricksStreamCopier implements StreamCopier {
     return S3DestinationConfig.create(config)
         .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
         .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
+        .withFileNamePattern(Optional.ofNullable(config.getFileNamePattern()).orElse(EMPTY))
         .get();
   }
 

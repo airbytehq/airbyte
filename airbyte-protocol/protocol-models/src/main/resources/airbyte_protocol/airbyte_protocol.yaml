@@ -130,10 +130,9 @@ definitions:
         type: string
   AirbyteStateBlob:
     type: object
-    description: "the state data"
     additionalProperties: true
+    description: "the state data"
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-
   AirbyteLogMessage:
     type: object
     additionalProperties: true
@@ -195,8 +194,8 @@ definitions:
           - system_error
           - config_error
   AirbyteConnectionStatus:
-    description: Airbyte connection status
     type: object
+    description: Airbyte connection status
     additionalProperties: true
     required:
       - status
@@ -209,9 +208,9 @@ definitions:
       message:
         type: string
   AirbyteCatalog:
-    description: Airbyte stream schema catalog
     type: object
     additionalProperties: true
+    description: Airbyte stream schema catalog
     required:
       - streams
     properties:
@@ -258,9 +257,9 @@ definitions:
         description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
         type: string
   ConfiguredAirbyteCatalog:
-    description: Airbyte stream schema catalog
     type: object
     additionalProperties: true
+    description: Airbyte stream schema catalog
     required:
       - streams
     properties:
@@ -309,9 +308,9 @@ definitions:
       #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
       - append_dedup # SCD Type 1 & 2
   OAuth2Specification:
-    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
     type: object
     additionalProperties: true
+    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
     properties:
       rootObject:
         description:
@@ -355,11 +354,11 @@ definitions:
           items:
             type: string
   ConnectorSpecification:
-    description: Specification of a connector (source/destination)
     type: object
+    additionalProperties: true
+    description: Specification of a connector (source/destination)
     required:
       - connectionSpecification
-    additionalProperties: true
     properties:
       # todo - split ConnectorSpecification into general vs connector type sections of properties
       # General Properties (Common to all connectors)
@@ -428,8 +427,12 @@ definitions:
             type: string
           oauth_config_specification:
             "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. "
+        type: string
   OAuthConfigSpecification:
     type: object
+    additionalProperties: true
     properties:
       oauth_user_input_from_connector_config_specification:
         description: |-

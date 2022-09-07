@@ -29,6 +29,10 @@ Which should respond with something similar to:
 
 You will need to provide the `Site id` and `API key` to the Webflow connector in order for it to pull data from your Webflow site. 
 
+# Related tutorial
+If you are interested in learning more about the Webflow API and implementation details of this connector, you may wish to consult the [tutorial about how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api). 
+
+
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 0.1.0 | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |

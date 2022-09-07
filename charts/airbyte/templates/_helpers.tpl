@@ -147,7 +147,7 @@ Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "airbyte.minio.fullname" -}}
-{{- $name := default "minio" .Values.logs.minio.nameOverride -}}
+{{- $name := default "minio" .Values.global.logs.minio.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -155,27 +155,27 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Add environment variables to configure minio
 */}}
 {{- define "airbyte.minio.endpoint" -}}
-{{- if .Values.logs.minio.enabled -}}
+{{- if .Values.global.logs.minio.enabled -}}
     {{- printf "http://%s:%d" (include "airbyte.minio.fullname" .) 9000 -}}
-{{- else if .Values.logs.externalMinio.enabled -}}
-    {{- printf "http://%s:%g" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
+{{- else if .Values.global.logs.externalMinio.enabled -}}
+    {{- printf "http://%s:%g" .Values.global.logs.externalMinio.host .Values.global.logs.externalMinio.port -}}
 {{- else -}}
     {{- printf "" -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "airbyte.s3PathStyleAccess" -}}
-{{- ternary "true" "" (or .Values.logs.minio.enabled .Values.logs.externalMinio.enabled) -}}
+{{- ternary "true" "" (or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled) -}}
 {{- end -}}
 
 {{/*
 Returns the GCP credentials path
 */}}
 {{- define "airbyte.gcpLogCredentialsPath" -}}
-{{- if .Values.logs.gcs.credentialsJson }}
+{{- if .Values.global.logs.gcs.credentialsJson }}
     {{- printf "%s" "/secrets/gcs-log-creds/gcp.json" -}}
 {{- else -}}
-    {{- printf "%s" .Values.logs.gcs.credentials -}}
+    {{- printf "%s" .Values.global.logs.gcs.credentials -}}
 {{- end -}}
 {{- end -}}
 

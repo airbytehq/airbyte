@@ -2739,7 +2739,7 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
-        withRefreshedCatalog:
+        skipReset:
           type: boolean
       required:
         - connectionId

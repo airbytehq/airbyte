@@ -20,11 +20,11 @@ from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_o
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 
 logger = init_logger("airbyte")
-init_uncaught_exception_handler(logger)
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
+        init_uncaught_exception_handler(logger)
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
@@ -32,6 +32,7 @@ class AirbyteEntrypoint(object):
     def parse_args(args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
+        parent_parser.add_argument("--debug", action="store_true", help="enables detailed debug logs related to the sync")
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
 
@@ -67,6 +68,12 @@ class AirbyteEntrypoint(object):
         if not cmd:
             raise Exception("No command passed")
 
+        if hasattr(parsed_args, "debug") and parsed_args.debug:
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.debug("Debug logs enabled")
+        else:
+            self.logger.setLevel(logging.INFO)
+
         # todo: add try catch for exceptions with different exit codes
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -84,11 +91,9 @@ class AirbyteEntrypoint(object):
 
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation
-                config, internal_config = split_config(config)
+                connector_config, _ = split_config(config)
                 if self.source.check_config_against_spec or cmd == "check":
-                    check_config_against_spec_or_exit(config, source_spec)
-                # Put internal flags back to config dict
-                config.update(internal_config.dict())
+                    check_config_against_spec_or_exit(connector_config, source_spec)
 
                 if cmd == "check":
                     check_result = self.source.check(self.logger, config)

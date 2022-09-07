@@ -1,5 +1,8 @@
 # Kinesis
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kinesis connector to version `0.1.4` or newer
+
 ## Sync overview
 
 

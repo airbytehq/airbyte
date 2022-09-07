@@ -5,13 +5,13 @@
     "title": "YouTube Analytics Spec",
     "type": "object",
     "required": ["credentials"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "title": "Authenticate via OAuth 2.0",
         "type": "object",
         "required": ["client_id", "client_secret", "refresh_token"],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "title": "Client ID",

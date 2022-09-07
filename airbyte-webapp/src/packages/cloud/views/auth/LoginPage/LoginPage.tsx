@@ -6,12 +6,17 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
+
+import { OAuthLogin } from "../OAuthLogin";
+import { Disclaimer } from "../SignupPage/components/SignupForm";
+import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -22,11 +27,12 @@ const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const { query, replace } = useRouter();
+  useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
     <div>
       <HeadTitle titles={[{ id: "login.login" }]} />
-      <FormTitle bold>
+      <FormTitle>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
 
@@ -86,10 +92,15 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={CloudRoutes.ResetPassword} $light data-testid="reset-password-link">
+                <Link
+                  to={CloudRoutes.ResetPassword}
+                  className={styles.forgotPassword}
+                  $light
+                  data-testid="reset-password-link"
+                >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton type="submit" isLoading={isSubmitting}>
+                <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
                 </LoadingButton>
               </>
@@ -97,6 +108,8 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <OAuthLogin />
+      <Disclaimer />
     </div>
   );
 };

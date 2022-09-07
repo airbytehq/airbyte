@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.general;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -62,6 +64,7 @@ import org.slf4j.MDC;
  * next replication can pick up where it left off instead of starting from the beginning)</li>
  * </ul>
  */
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
@@ -77,6 +80,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
+  private final WorkerMetricReporter metricReporter;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -84,7 +88,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
-                                  final RecordSchemaValidator recordSchemaValidator) {
+                                  final RecordSchemaValidator recordSchemaValidator,
+                                  final WorkerMetricReporter metricReporter) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -93,6 +98,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
+    this.metricReporter = metricReporter;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -111,8 +117,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
+  public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+    LineGobbler.startSection("REPLICATION");
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
     // that is independent of workflow executions.
@@ -153,7 +160,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -197,7 +204,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
           .withBytesEmitted(messageTracker.getTotalBytesEmitted())
-          .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
+          .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
+          .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted())
+          .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
+          .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
+          .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null));
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -213,7 +225,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         final SyncStats syncStats = new SyncStats()
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
-            .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
+            .withSourceStateMessagesEmitted(null)
+            .withDestinationStateMessagesEmitted(null);
 
         if (outputStatus == ReplicationStatus.COMPLETED) {
           syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
@@ -236,7 +249,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
-      LOGGER.info("sync summary: {}", summary);
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
@@ -279,6 +291,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         LOGGER.warn("State capture: No state retained.");
       }
 
+      if (messageTracker.getUnreliableStateTimingMetrics()) {
+        metricReporter.trackStateMetricTrackerError();
+      }
+
+      final ObjectMapper mapper = new ObjectMapper();
+      LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
+      LOGGER.info("failures: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(failures));
+
+      LineGobbler.endSection("REPLICATION");
       return output;
     } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
@@ -292,7 +313,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final RecordSchemaValidator recordSchemaValidator) {
+                                                 final RecordSchemaValidator recordSchemaValidator,
+                                                 final WorkerMetricReporter metricReporter) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -336,6 +358,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
+            metricReporter.trackSchemaValidationError(stream);
           });
         }
 
@@ -366,9 +389,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void validateSchema(RecordSchemaValidator recordSchemaValidator,
-                                     Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     AirbyteMessage message) {
+  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final AirbyteMessage message) {
     if (message.getRecord() == null) {
       return;
     }

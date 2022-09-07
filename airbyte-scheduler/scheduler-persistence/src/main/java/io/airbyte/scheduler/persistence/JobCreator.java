@@ -9,7 +9,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StreamDescriptor;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;

@@ -22,14 +22,15 @@ const ControlComponent = (props: ControlProps<Value, false>) => (
   <div ref={props.innerRef}>
     {props.selectProps.selectProps.targetComponent({
       onOpen: props.selectProps.selectProps.onOpen,
+      isOpen: props.selectProps.menuIsOpen,
       value: props.selectProps.value,
     })}
   </div>
 );
 
-type PopoutProps = DropdownProps & {
+interface PopoutProps extends DropdownProps {
   targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
-};
+}
 
 const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {
   const [isOpen, toggleOpen] = useToggle(false);
@@ -61,7 +62,10 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
   return (
     <>
       <DropDown
-        selectProps={{ targetComponent, onOpen: toggleOpen }}
+        selectProps={{
+          targetComponent,
+          onOpen: toggleOpen,
+        }}
         autoFocus
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}

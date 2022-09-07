@@ -7,6 +7,9 @@
     "distinct_id": {
       "type": "string"
     },
+    "properties": {
+      "type": "object"
+    },
     "event": {
       "type": ["string", "object"]
     },

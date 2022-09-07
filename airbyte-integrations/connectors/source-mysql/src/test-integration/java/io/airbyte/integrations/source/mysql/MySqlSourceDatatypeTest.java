@@ -4,12 +4,13 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.Map;
 import org.jooq.SQLDialect;
@@ -26,25 +27,27 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "STANDARD")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put("replication_method", replicationMethod)
         .build());
 
     final Database database = new Database(
         DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.MYSQL.getDriverClassName(),
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull")));
 

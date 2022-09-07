@@ -10,7 +10,7 @@
 If you'd prefer to follow along with a video, check out the Plural Airbyte deployment guide video [here](https://youtu.be/suvTJyJ6PzI)
 :::
 
-First, create an account on https://app.plural.sh.  This is simply to track your installations and allow for the delivery of automated upgrades, you will not be asked to provide any infrastructure credentials or sensitive information.
+First, create an account on [https://app.plural.sh](https://app.plural.sh).  This is simply to track your installations and allow for the delivery of automated upgrades, you will not be asked to provide any infrastructure credentials or sensitive information.
 
 Then, install the Plural CLI by following steps 1, 2, and 3 of the instructions [here](https://docs.plural.sh/getting-started). Through this, you will also configure your cloud provider and the domain name under which your application will be deployed to.
 

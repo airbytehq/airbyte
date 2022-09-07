@@ -36,6 +36,7 @@ public interface WorkflowStateChangedListener {
     SUCCESS,
     CANCELLED_FOR_RESET,
     RESET_WITH_SCHEDULING,
+    DONE_WAITING,
   }
 
   @Value

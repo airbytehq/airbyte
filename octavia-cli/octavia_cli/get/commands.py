@@ -47,7 +47,7 @@ def get_resource_id_or_name(resource: str) -> Tuple[Optional[str], Optional[str]
 def get_json_representation(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
-    ResourceCls: Type[Union[Source, Destination, Connection]],
+    ResourceClass: Type[Union[Source, Destination, Connection]],
     resource_to_get: str,
 ) -> str:
     """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
@@ -56,14 +56,14 @@ def get_json_representation(
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
         workspace_id (str): Current workspace id.
-        ResourceCls (Type[Union[Source, Destination, Connection]]): Resource class to use
+        ResourceClass (Type[Union[Source, Destination, Connection]]): Resource class to use
         resource_to_get (str): resource name or id to get JSON representation for.
 
     Returns:
         str: The resource's JSON representation.
     """
     resource_id, resource_name = get_resource_id_or_name(resource_to_get)
-    resource = ResourceCls(api_client, workspace_id, resource_id=resource_id, resource_name=resource_name)
+    resource = ResourceClass(api_client, workspace_id, resource_id=resource_id, resource_name=resource_name)
     return resource.to_json()
 
 

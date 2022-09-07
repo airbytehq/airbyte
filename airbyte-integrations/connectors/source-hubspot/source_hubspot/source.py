@@ -10,12 +10,12 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
+from source_hubspot.constants import API_KEY_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -82,14 +82,10 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config.get("start_date")
+        start_date = config["start_date"]
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        common_params = dict(api=api, start_date=start_date, credentials=credentials)
-
-        if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator()
-        return common_params
+        return dict(api=api, start_date=start_date, credentials=credentials)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -124,7 +120,7 @@ class SourceHubspot(AbstractSource):
         ]
 
         credentials_title = credentials.get("credentials_title")
-        if credentials_title == "API Key Credentials":
+        if credentials_title == API_KEY_CREDENTIALS:
             streams.append(Quotes(**common_params))
 
         api = API(credentials=credentials)
@@ -185,26 +181,3 @@ class SourceHubspot(AbstractSource):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
-
-    def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to checkpoint the latest actual state,
-        because stream state is refreshed after reading each batch of records (if need_chunk is True),
-        or reading all records in the stream.
-        """
-        yield from super()._read_incremental(
-            logger=logger,
-            stream_instance=stream_instance,
-            configured_stream=configured_stream,
-            connector_state=connector_state,
-            internal_config=internal_config,
-        )
-        stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
-        yield self._checkpoint_state(stream_instance, stream_state, connector_state)

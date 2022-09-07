@@ -127,7 +127,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {

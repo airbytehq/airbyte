@@ -16,4 +16,8 @@ public interface FeatureFlags {
 
   boolean forceSecretMigration();
 
+  boolean useStreamCapableState();
+
+  boolean logConnectorMessages();
+
 }
