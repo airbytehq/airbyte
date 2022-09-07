@@ -115,7 +115,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
    * @return               Are calculated fields same as we have in the existing table
    */
   private boolean compareSchemas(com.google.cloud.bigquery.Schema expectedSchema, @Nullable com.google.cloud.bigquery.Schema existingSchema) {
-    LOGGER.error("Comparing schemas \nexpected: {} \nvs \nexisting: {}", existingSchema, existingSchema);
     if (expectedSchema != null && existingSchema == null) {
       LOGGER.warn("Existing schema is null when we expect {}", expectedSchema);
       return false;
