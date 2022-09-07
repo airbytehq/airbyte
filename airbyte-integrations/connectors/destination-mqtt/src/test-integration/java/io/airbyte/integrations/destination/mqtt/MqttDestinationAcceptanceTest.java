@@ -30,8 +30,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.utility.DockerImageName;
 
 public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -44,7 +42,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private MqttClient client;
 
   @RegisterExtension
-  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:latest"));
+  public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
 
   @Override
   protected String getImageName() {
@@ -60,7 +58,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("topic_pattern", TOPIC_PREFIX + "{namespace}/{stream}/" + TOPIC_NAME)
         .put("client_id", UUID.randomUUID())
         .put("publisher_sync", true)
-        .put("connect_timeout", 30)
+        .put("connect_timeout", 10)
         .put("automatic_reconnect", true)
         .put("clean_session", true)
         .put("message_retained", false)
@@ -147,7 +145,6 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     final MqttConnectOptions options = new MqttConnectOptions();
     options.setAutomaticReconnect(true);
-    options.setMaxInflight(1000);
 
     client.connect(options);
 
