@@ -327,13 +327,12 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public URI getRemoteConnectorCatalogUrl() {
-    // Default to reuse the job database
+  public Optional<URI> getRemoteConnectorCatalogUrl() {
     final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
     if (remoteConnectorCatalogUrl != null) {
-      return URI.create(remoteConnectorCatalogUrl);
+      return Optional.of(URI.create(remoteConnectorCatalogUrl));
     } else {
-      return null;
+      return Optional.empty();
     }
   }
 

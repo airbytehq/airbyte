@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -473,13 +474,13 @@ class EnvConfigsTest {
   @Test
   void testRemoteConnectorCatalogUrl() {
     envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, null);
-    assertEquals(null, config.getRemoteConnectorCatalogUrl());
+    assertEquals(Optional.empty(), config.getRemoteConnectorCatalogUrl());
 
     envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, "");
-    assertEquals(null, config.getRemoteConnectorCatalogUrl());
+    assertEquals(Optional.empty(), config.getRemoteConnectorCatalogUrl());
 
     envMap.put(EnvConfigs.REMOTE_CONNECTOR_CATALOG_URL, "https://airbyte.com");
-    assertEquals(URI.create("https://airbyte.com"), config.getRemoteConnectorCatalogUrl());
+    assertEquals(Optional.of(URI.create("https://airbyte.com")), config.getRemoteConnectorCatalogUrl());
   }
 
 }
