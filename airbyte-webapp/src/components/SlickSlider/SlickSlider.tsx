@@ -13,6 +13,7 @@ import "./slider.css";
 interface SlickSliderProps {
   title?: string;
   sliderSettings?: SliderProps;
+  children: React.ReactNode;
 }
 
 export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings, children }) => {
