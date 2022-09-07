@@ -46,8 +46,6 @@ public class PostgresCdcProperties {
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
-        LOGGER.info("dbConfig: {}", dbConfig);
-
         if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
           LOGGER.debug("sslMode: {}", dbConfig.get(SSL_MODE).asText());
           props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));

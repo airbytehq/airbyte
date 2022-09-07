@@ -7,9 +7,11 @@ package io.airbyte.config;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -70,6 +72,13 @@ public interface Configs {
    * backward compatibility.
    */
   Path getWorkspaceRoot();
+
+  /**
+   * Defines the URL to pull the remote connector catalog from.
+   *
+   * @return
+   */
+  Optional<URI> getRemoteConnectorCatalogUrl();
 
   // Docker Only
 

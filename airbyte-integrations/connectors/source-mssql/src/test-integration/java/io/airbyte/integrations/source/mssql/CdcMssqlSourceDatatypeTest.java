@@ -32,7 +32,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
     container.start();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "replication_type", "CDC",
+        "method", "CDC",
         "data_to_sync", "Existing and New",
         "snapshot_isolation", "Snapshot"));
 
@@ -42,7 +42,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication", replicationConfig)
+        .put("replication_method", replicationConfig)
         .build());
 
     dslContext = DSLContextFactory.create(

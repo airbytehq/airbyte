@@ -13,10 +13,6 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
     authDomain: "",
     authEmulatorHost: "",
   },
-  fullstory: {
-    orgId: "",
-    enabled: true,
-  },
   intercom: {
     appId: "",
   },
