@@ -2,10 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
 import logging
 import tempfile
+from contextlib import nullcontext as does_not_raise
 from typing import Any, Mapping, MutableMapping
 from unittest.mock import MagicMock
 
@@ -105,10 +105,9 @@ def abstract_source(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_name, incoming_state, expected_state, expected_error",
+    "incoming_state, expected_state, expected_error",
     [
-        (
-            "test_incoming_stream_state",
+        pytest.param(
             [
                 {
                     "type": "STREAM",
@@ -127,10 +126,10 @@ def abstract_source(mocker):
                     ),
                 )
             ],
-            None,
+            does_not_raise(),
+            id="test_incoming_stream_state",
         ),
-        (
-            "test_incoming_multiple_stream_states",
+        pytest.param(
             [
                 {
                     "type": "STREAM",
@@ -177,10 +176,10 @@ def abstract_source(mocker):
                     ),
                 ),
             ],
-            None,
+            does_not_raise(),
+            id="test_incoming_multiple_stream_states",
         ),
-        (
-            "test_incoming_global_state",
+        pytest.param(
             [
                 {
                     "type": "GLOBAL",
@@ -208,23 +207,23 @@ def abstract_source(mocker):
                     }
                 ),
             ],
-            None,
+            does_not_raise(),
+            id="test_incoming_global_state",
         ),
-        (
-            "test_incoming_legacy_state",
+        pytest.param(
             {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
             [
                 AirbyteStateMessage(
                     type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
                 )
             ],
-            None,
+            does_not_raise(),
+            id="test_incoming_legacy_state",
         ),
-        ("test_empty_incoming_stream_state", [], [], None),
-        ("test_none_incoming_state", None, [], None),
-        ("test_empty_incoming_legacy_state", {}, [], None),
-        (
-            "test_invalid_stream_state_invalid_type",
+        pytest.param([], [], does_not_raise(), id="test_empty_incoming_stream_state"),
+        pytest.param(None, [], does_not_raise(), id="test_none_incoming_state"),
+        pytest.param({}, [], does_not_raise(), id="test_empty_incoming_legacy_state"),
+        pytest.param(
             [
                 {
                     "type": "NOT_REAL",
@@ -235,22 +234,22 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            ValidationError,
+            pytest.raises(ValidationError),
+            id="test_invalid_stream_state_invalid_type",
         ),
-        (
-            "test_invalid_stream_state_missing_descriptor",
+        pytest.param(
             [{"type": "STREAM", "stream": {"stream_state": {"created_at": "2009-07-19"}}}],
             None,
-            ValidationError,
+            pytest.raises(ValidationError),
+            id="test_invalid_stream_state_missing_descriptor",
         ),
-        (
-            "test_invalid_global_state_missing_streams",
+        pytest.param(
             [{"type": "GLOBAL", "global": {"shared_state": {"shared_key": "shared_val"}}}],
             None,
-            ValidationError,
+            pytest.raises(ValidationError),
+            id="test_invalid_global_state_missing_streams",
         ),
-        (
-            "test_invalid_global_state_streams_not_list",
+        pytest.param(
             [
                 {
                     "type": "GLOBAL",
@@ -264,19 +263,22 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            ValidationError,
+            pytest.raises(ValidationError),
+            id="test_invalid_global_state_streams_not_list",
         ),
-        ("test_invalid_state_message_has_no_stream_global_or_data", [{"type": "LEGACY", "not": "something"}], None, ValidationError),
+        pytest.param(
+            [{"type": "LEGACY", "not": "something"}],
+            None,
+            pytest.raises(ValidationError),
+            id="test_invalid_state_message_has_no_stream_global_or_data",
+        ),
     ],
 )
-def test_read_state(source, test_name, incoming_state, expected_state, expected_error):
+def test_read_state(source, incoming_state, expected_state, expected_error):
     with tempfile.NamedTemporaryFile("w") as state_file:
         state_file.write(json.dumps(incoming_state))
         state_file.flush()
-        if expected_error:
-            with pytest.raises(expected_error):
-                source.read_state(state_file.name)
-        else:
+        with expected_error:
             actual = source.read_state(state_file.name)
             assert actual == expected_state
 

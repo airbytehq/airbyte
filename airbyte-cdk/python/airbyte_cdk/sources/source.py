@@ -45,13 +45,22 @@ class Source(
 ):
     # can be overridden to change an input state
     def read_state(self, state_path: str) -> List[AirbyteStateMessage]:
+        """
+        Retrieves the input state of a sync by reading from the specified JSON file. Incoming state can be deserialized into either
+        a JSON object for legacy state input or as a list of AirbyteStateMessages for the per-stream state format. Regardless of the
+        incoming input type, it will always be transformed and output as a list of AirbyteStateMessage(s).
+        :param state_path: The filepath to where the stream states are located
+        :return: The complete stream state based on the connector's previous sync
+        """
         if state_path:
             state_obj = json.loads(open(state_path, "r").read())
             if not state_obj:
                 return []
-            elif isinstance(state_obj, List):
+            is_per_stream_state = isinstance(state_obj, List)
+            if is_per_stream_state:
                 return [AirbyteStateMessage.parse_obj(state) for state in state_obj]
             else:
+                # When the legacy JSON object format is received, always outputting an AirbyteStateMessage simplifies processing downstream
                 return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
         return []
 

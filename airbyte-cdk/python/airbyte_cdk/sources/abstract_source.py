@@ -2,8 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
-import copy
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -96,7 +94,7 @@ class AbstractSource(Source, ABC):
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
         state_manager = ConnectorStateManager(state=state)
-        connector_state = copy.deepcopy(state_manager.get_legacy_state(), {})
+        connector_state = state_manager.get_legacy_state()
 
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
