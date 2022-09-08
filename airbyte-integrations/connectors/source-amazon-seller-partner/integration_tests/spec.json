@@ -75,9 +75,10 @@
       },
       "period_in_days": {
         "title": "Period In Days",
-        "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "description": "Will be used for stream slicing.",
         "default": 30,
-        "examples": ["30", "365"],
+        "maximum": 30,
+        "examples": ["1", "10", "30"],
         "type": "integer"
       },
       "report_options": {
