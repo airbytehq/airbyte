@@ -356,7 +356,7 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(SYNC_STATS).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
             .fetch(getSyncStatsRecordMapper())
             .stream()
             .toList());

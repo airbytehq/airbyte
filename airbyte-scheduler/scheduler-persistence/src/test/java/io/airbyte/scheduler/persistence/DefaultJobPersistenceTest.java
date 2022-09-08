@@ -7,6 +7,7 @@ package io.airbyte.scheduler.persistence;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -204,6 +205,7 @@ class DefaultJobPersistenceTest {
     jobDatabase.query(ctx -> ctx.truncateTable(JOBS).cascade().execute());
     jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).cascade().execute());
     jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(SYNC_STATS));
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
@@ -248,7 +250,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should be able to read what is written")
-  void testWriteOutput() throws IOException {
+  void testWriteOutput() throws IOException, SQLException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
@@ -265,10 +267,17 @@ class DefaultJobPersistenceTest {
         jobOutput.getSync().getStandardSyncSummary().getTotalStats());
 
     final Job updated = jobPersistence.getJob(jobId);
+
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
 
-    final SyncStats storedSyncStats = jobPersistence.getSyncStats(updated.getId()).stream().findFirst().get();
+    final Optional<Record> record =
+        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst());
+
+    final Long attemptId = record.get().get("id", Long.class);
+
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
     assertEquals(9L, storedSyncStats.getRecordsEmitted());
     assertEquals(10L, storedSyncStats.getRecordsCommitted());
