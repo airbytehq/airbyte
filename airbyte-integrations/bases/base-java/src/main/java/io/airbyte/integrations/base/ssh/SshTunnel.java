@@ -228,18 +228,13 @@ public class SshTunnel implements AutoCloseable {
    * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
    * the keys from the key info, and return the key pair for use in authentication.
    */
-  KeyPair getPrivateKeyPair() throws IOException {
+  KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException {
     final String validatedKey = validateKey();
-    try {
-      final var kp = SecurityUtils
-          .getKeyPairResourceParser()
-          .loadKeyPairs(null, null, null, new StringReader(validatedKey));
+    final var kp = SecurityUtils
+        .getKeyPairResourceParser()
+        .loadKeyPairs(null, null, null, new StringReader(validatedKey));
 
-      return kp.iterator().next();
-    } catch (final IOException | GeneralSecurityException e) {
-      LOGGER.error("Failed to get KeyPair for SSH tunnel", e);
-    }
-    return null;
+    return kp.iterator().next();
   }
 
   private String validateKey() {
@@ -290,7 +285,7 @@ public class SshTunnel implements AutoCloseable {
 
       LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
       return session;
-    } catch (final IOException e) {
+    } catch (final IOException | GeneralSecurityException e) {
       throw new RuntimeException(e);
     }
   }
