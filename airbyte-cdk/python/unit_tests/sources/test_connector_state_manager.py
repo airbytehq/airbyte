@@ -449,5 +449,4 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
     assert state_manager.streams[HashableStreamDescriptor(name=update_name, namespace=update_namespace)] == AirbyteStreamState(
         stream_descriptor=StreamDescriptor(name=update_name, namespace=update_namespace), stream_state=update_value
     )
-
     assert state_manager.get_legacy_state() == expected_legacy_state
