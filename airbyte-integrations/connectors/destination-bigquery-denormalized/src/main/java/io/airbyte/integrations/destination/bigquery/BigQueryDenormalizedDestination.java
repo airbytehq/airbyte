@@ -130,7 +130,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     var existingFields = existingSchema.getFields();
 
     for (Field expectedField : expectedFields) {
-      LOGGER.error("Comparing \nfields: {} \nvs \nexisting: {}", existingSchema, existingSchema);
       var existingField = existingFields.get(expectedField.getName());
       if (isDifferenceBetweenFields(expectedField, existingField)) {
         LOGGER.warn("Expected field {} is different from existing field {}", expectedField, existingField);
