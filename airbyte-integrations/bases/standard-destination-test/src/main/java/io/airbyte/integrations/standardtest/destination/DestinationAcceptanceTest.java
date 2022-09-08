@@ -1023,6 +1023,7 @@ public abstract class DestinationAcceptanceTest {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
     }
+    LOGGER.info("implements overwrite");
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
