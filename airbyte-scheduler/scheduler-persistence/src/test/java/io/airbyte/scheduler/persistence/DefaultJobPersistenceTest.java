@@ -266,8 +266,7 @@ class DefaultJobPersistenceTest {
 
     final Job updated = jobPersistence.getJob(jobId);
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
-    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(),
-        updated.getAttempts().get(0).getUpdatedAtInSecond());
+    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
 
     final SyncStats storedSyncStats = jobPersistence.getSyncStats(updated.getId()).stream().findFirst().get();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
