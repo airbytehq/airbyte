@@ -1,1 +1,1 @@
-export * from "./OptionalInviteUsersHint";
+export * from "./CloudInviteUsersHint";
