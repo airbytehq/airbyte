@@ -1,6 +1,8 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-mysql:dev
+connector_image: airbyte/source-mysql:0.6.9
 tests:
   spec:
     - spec_path: "src/main/resources/spec.json"
+      backward_compatibility_tests_config:
+        previous_connector_version: 0.6.8
