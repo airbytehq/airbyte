@@ -643,7 +643,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .orElse(deployment); // if no record was returned that means that the new deployment id was used.
 
     if (!deployment.equals(committedDeploymentId)) {
-      LOGGER.warn("Attempted to set a deployment id %s, but deployment id %s already set. Retained original value.");
+      LOGGER.warn("Attempted to set a deployment id {}, but deployment id {} already set. Retained original value.", deployment, deployment);
     }
   }
 

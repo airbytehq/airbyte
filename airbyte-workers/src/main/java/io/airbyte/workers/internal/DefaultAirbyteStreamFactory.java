@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
  * line, only the first will be parsed.
  */
+@SuppressWarnings("PMD.MoreThanOneLogger")
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
