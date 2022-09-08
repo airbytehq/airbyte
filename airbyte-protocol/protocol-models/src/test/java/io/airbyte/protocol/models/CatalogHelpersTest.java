@@ -160,7 +160,7 @@ class CatalogHelpersTest {
   void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
     CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
         Jsons.deserialize(MoreResources.readResource("companies_schema.json")), true).stream().collect(
-        Collectors.toMap(Pair::getLeft, Pair::getRight));
+            Collectors.toMap(Pair::getLeft, Pair::getRight));
   }
 
 }
