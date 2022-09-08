@@ -32,7 +32,7 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
 4. Select `Sign in with Google`.
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Log in and Authorize to the Google account and click `Set up source`.
 
 **For Airbyte Open Source:**
 
