@@ -208,7 +208,7 @@ spec:
         {{- if .Values.extraEnv }}
         {{- toYaml .Values.extraEnv | nindent 8 }}
         {{- end }}
-        
+
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -252,10 +252,10 @@ spec:
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
       {{- if .Values.extraContainers }}
-      {{ toYaml .Values.extraContainers | indent 8 }}
+      {{ toYaml .Values.extraContainers | nindent 6 }}
       {{- end }}
       {{- if .Values.global.extraContainers }}
-      {{ toYaml .Values.global.extraContainers | indent 8 }}
+      {{ toYaml .Values.global.extraContainers | nindent 6 }}
       {{- end }}
       volumes:
       {{- if eq .Values.global.deploymentMode "oss" }}

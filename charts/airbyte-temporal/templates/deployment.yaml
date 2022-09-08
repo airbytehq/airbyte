@@ -112,10 +112,10 @@ spec:
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         {{- end }}
         {{- if .Values.extraContainers }}
-        {{ toYaml .Values.extraContainers | indent 8 }}
+        {{ toYaml .Values.extraContainers | nindent 6 }}
         {{- end }}
-        {{- if .Values.global.extraConrainers }}
-        {{ toYaml .Values.global.extraContainers | indent 8 }}
+        {{- if .Values.global.extraContainers }}
+        {{ toYaml .Values.global.extraContainers | nindent 6 }}
         {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
