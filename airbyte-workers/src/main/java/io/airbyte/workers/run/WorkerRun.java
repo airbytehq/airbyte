@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
  * outputs are passed to the selected worker. It also makes sure that the outputs of the worker are
  * persisted to the db.
  */
+@SuppressWarnings("PMD.AvoidFieldNameMatchingTypeName")
 public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
