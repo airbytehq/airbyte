@@ -1,0 +1,24 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/weatherstack
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Weatherstack Spec
+  type: object
+  required:
+    - access_key
+    - query
+    - historical_date
+  properties:
+    access_key:
+      type: string
+      description: API access key used to retrieve data from the Weatherstack API.
+    query:
+      type: string
+      description: A city or Zip Code to query.
+      examples:
+        - New York
+        - London
+    historical_date:
+      type: string
+      description: This is required for enabling the Historical date API.
+      examples:
+        - '2015-01-21'

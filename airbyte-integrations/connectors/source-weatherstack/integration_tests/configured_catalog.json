@@ -1,0 +1,35 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "current_weather",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string",
+              "properties": {
+                "New York": {
+                  "type": "string"
+                },
+                "London": {
+                  "type": "string"
+                }
+              }
+            },
+            "historical_date": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
