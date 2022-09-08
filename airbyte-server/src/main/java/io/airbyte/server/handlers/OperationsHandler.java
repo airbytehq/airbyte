@@ -74,12 +74,12 @@ public class OperationsHandler {
         .withName(operationCreate.getName())
         .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
         .withTombstone(false);
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.generated.OperatorType.NORMALIZATION) {
+    if ((io.airbyte.api.model.generated.OperatorType.NORMALIZATION).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
       standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
           .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
     }
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.generated.OperatorType.DBT) {
+    if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
       standardSyncOperation.withOperatorDbt(new OperatorDbt()
           .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
@@ -91,10 +91,10 @@ public class OperationsHandler {
   }
 
   private void validateOperation(final OperatorConfiguration operatorConfiguration) {
-    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.generated.OperatorType.NORMALIZATION) {
+    if ((io.airbyte.api.model.generated.OperatorType.NORMALIZATION).equals(operatorConfiguration.getOperatorType())) {
       Preconditions.checkArgument(operatorConfiguration.getNormalization() != null);
     }
-    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.generated.OperatorType.DBT) {
+    if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operatorConfiguration.getOperatorType())) {
       Preconditions.checkArgument(operatorConfiguration.getDbt() != null);
     }
   }
@@ -115,14 +115,14 @@ public class OperationsHandler {
     standardSyncOperation
         .withName(operationUpdate.getName())
         .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
-    if (operationUpdate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.generated.OperatorType.NORMALIZATION) {
+    if ((io.airbyte.api.model.generated.OperatorType.NORMALIZATION).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getNormalization() != null);
       standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
           .withOption(Enums.convertTo(operationUpdate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
     } else {
       standardSyncOperation.withOperatorNormalization(null);
     }
-    if (operationUpdate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.generated.OperatorType.DBT) {
+    if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getDbt() != null);
       standardSyncOperation.withOperatorDbt(new OperatorDbt()
           .withGitRepoUrl(operationUpdate.getOperatorConfiguration().getDbt().getGitRepoUrl())
@@ -174,7 +174,7 @@ public class OperationsHandler {
       boolean sharedOperation = false;
       for (final StandardSync sync : configRepository.listStandardSyncsUsingOperation(operationId)) {
         // Check if other connections are using the same operation
-        if (sync.getConnectionId() != standardSync.getConnectionId()) {
+        if (!sync.getConnectionId().equals(standardSync.getConnectionId())) {
           sharedOperation = true;
           break;
         }
@@ -216,12 +216,12 @@ public class OperationsHandler {
   private static OperationRead buildOperationRead(final StandardSyncOperation standardSyncOperation) {
     final OperatorConfiguration operatorConfiguration = new OperatorConfiguration()
         .operatorType(Enums.convertTo(standardSyncOperation.getOperatorType(), io.airbyte.api.model.generated.OperatorType.class));
-    if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
+    if ((OperatorType.NORMALIZATION).equals(standardSyncOperation.getOperatorType())) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorNormalization() != null);
       operatorConfiguration.normalization(new io.airbyte.api.model.generated.OperatorNormalization()
           .option(Enums.convertTo(standardSyncOperation.getOperatorNormalization().getOption(), OptionEnum.class)));
     }
-    if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
+    if ((OperatorType.DBT).equals(standardSyncOperation.getOperatorType())) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorDbt() != null);
       operatorConfiguration.dbt(new io.airbyte.api.model.generated.OperatorDbt()
           .gitRepoUrl(standardSyncOperation.getOperatorDbt().getGitRepoUrl())
