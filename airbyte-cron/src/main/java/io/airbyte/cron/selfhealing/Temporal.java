@@ -24,7 +24,7 @@ public class Temporal {
 
   @Scheduled(fixedRate = "10s")
   void cleanTemporal() {
-    temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+    temporalClient.restartClosedWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
   }
 
 }

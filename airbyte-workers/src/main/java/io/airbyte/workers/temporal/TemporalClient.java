@@ -32,10 +32,10 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
+import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsResponse;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
-import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
-import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
@@ -464,8 +464,8 @@ public class TemporalClient {
         Optional.of(resetJobId), Optional.empty());
   }
 
-  public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
-    final Set<UUID> workflowExecutionInfos = fetchWorkflowsByStatus(executionStatus);
+  public void restartClosedWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    final Set<UUID> workflowExecutionInfos = fetchClosedWorkflowsByStatus(executionStatus);
 
     final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
 
@@ -491,17 +491,17 @@ public class TemporalClient {
             stringUUID -> UUID.fromString(stringUUID));
   }
 
-  Set<UUID> fetchWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
+  Set<UUID> fetchClosedWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
     ByteString token;
-    ListWorkflowExecutionsRequest workflowExecutionsRequest =
-        ListWorkflowExecutionsRequest.newBuilder()
+    ListClosedWorkflowExecutionsRequest workflowExecutionsRequest =
+        ListClosedWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
             .build();
 
     final Set<UUID> workflowExecutionInfos = new HashSet<>();
     do {
-      final ListWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
-          service.blockingStub().listWorkflowExecutions(workflowExecutionsRequest);
+      final ListClosedWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listClosedWorkflowExecutions(workflowExecutionsRequest);
       final WorkflowType connectionManagerWorkflowType = WorkflowType.newBuilder().setName(ConnectionManagerWorkflow.class.getSimpleName()).build();
       workflowExecutionInfos.addAll(listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter(workflowExecutionInfo -> workflowExecutionInfo.getType() == connectionManagerWorkflowType ||
@@ -511,7 +511,7 @@ public class TemporalClient {
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
 
       workflowExecutionsRequest =
-          ListWorkflowExecutionsRequest.newBuilder()
+          ListClosedWorkflowExecutionsRequest.newBuilder()
               .setNamespace(client.getOptions().getNamespace())
               .setNextPageToken(token)
               .build();
