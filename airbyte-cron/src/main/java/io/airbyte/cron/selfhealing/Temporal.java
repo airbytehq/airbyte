@@ -7,7 +7,7 @@ package io.airbyte.cron.selfhealing;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.micronaut.scheduling.annotation.Scheduled;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
-import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Temporal {
 
-  @Inject
-  private TemporalClient temporalClient;
+  private final TemporalClient temporalClient;
 
-  public Temporal() {
+  public Temporal(@Named("temporalClient") final TemporalClient temporalClient) {
     log.info("Creating temporal self-healing");
+    this.temporalClient = temporalClient;
   }
 
   @Scheduled(fixedRate = "10s")
