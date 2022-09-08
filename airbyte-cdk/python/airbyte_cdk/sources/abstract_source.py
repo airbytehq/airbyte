@@ -93,14 +93,12 @@ class AbstractSource(Source, ABC):
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
-        state_manager = ConnectorStateManager(state=state)
-        connector_state = state_manager.get_legacy_state()
-
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
@@ -116,7 +114,7 @@ class AbstractSource(Source, ABC):
                         logger=logger,
                         stream_instance=stream_instance,
                         configured_stream=configured_stream,
-                        connector_state=connector_state,
+                        connector_state=state_manager,
                         internal_config=internal_config,
                     )
                 except AirbyteTracedException as e:
@@ -136,14 +134,14 @@ class AbstractSource(Source, ABC):
 
     @property
     def per_stream_state_enabled(self):
-        return False  # While CDK per-stream is in active development we should keep this off
+        return True  # While CDK per-stream is in active development we should keep this off
 
     def _read_stream(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
+        connector_state: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         self._apply_log_level_to_stream_logger(logger, stream_instance)
@@ -206,7 +204,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
+        connector_state: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         """Read stream using incremental algorithm
@@ -219,7 +217,12 @@ class AbstractSource(Source, ABC):
         :return:
         """
         stream_name = configured_stream.stream.name
-        stream_state = connector_state.get(stream_name, {})
+
+        if self.per_stream_state_enabled:
+            stream_state = connector_state.get_stream_state(stream_name, stream_instance.namespace)
+        else:
+            stream_state = connector_state.get_legacy_state().get(stream_name, {})
+
         if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
@@ -285,13 +288,14 @@ class AbstractSource(Source, ABC):
                 if self._limit_reached(internal_config, total_records_counter):
                     return
 
-    def _checkpoint_state(self, stream, stream_state, connector_state):
+    @staticmethod
+    def _checkpoint_state(stream: Stream, stream_state, connector_state):
         try:
-            connector_state[stream.name] = stream.state
+            connector_state.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
-            connector_state[stream.name] = stream_state
-
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
+            connector_state.update_state_for_stream(stream.name, stream.namespace, stream_state)
+        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state.get_legacy_state()))
+        # return AirbyteMessage(type=MessageType.STATE, state=connector_state.create_state_message(stream.name, stream.namespace))
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:

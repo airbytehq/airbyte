@@ -13,12 +13,16 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
+    StreamDescriptor,
     SyncMode,
     Type,
 )
@@ -254,11 +258,24 @@ def _state(state_data: Dict[str, Any]):
 
 
 class TestIncrementalRead:
-    def test_with_state_attribute(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_with_state_attribute(self, mocker, use_legacy):
         """Test correct state passing for the streams that have a state attribute"""
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
         old_state = {"cursor": "old_value"}
-        new_state = {"cursor": "new_value"}
+        if use_legacy:
+            input_state = {"s1": old_state}
+        else:
+            input_state = [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
+                    ),
+                ),
+            ]
+        new_state_from_connector = {"cursor": "new_value"}
+
         s1 = MockStreamWithState(
             [
                 (
@@ -277,7 +294,7 @@ class TestIncrementalRead:
             MockStreamWithState,
             "state",
             new_callable=mocker.PropertyMock,
-            return_value=new_state,
+            return_value=new_state_from_connector,
         )
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
         src = MockSource(streams=[s1, s2])
@@ -291,12 +308,12 @@ class TestIncrementalRead:
         expected = [
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
-            _state({"s1": new_state}),
+            _state({"s1": new_state_from_connector}),
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
-            _state({"s1": new_state, "s2": new_state}),
+            _state({"s1": new_state_from_connector, "s2": new_state_from_connector}),
         ]
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state={"s1": old_state})))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
         assert state_property.mock_calls == [
@@ -305,11 +322,17 @@ class TestIncrementalRead:
             call(),  # get state in the end of slice for s2
         ]
 
-    def test_with_checkpoint_interval(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_with_checkpoint_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
         after reading N records within a stream.
         """
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+
         s1 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s1",
@@ -350,15 +373,21 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
             _state({"s1": state, "s2": state}),
         ]
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
 
-    def test_with_no_interval(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_with_no_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs
         a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
         """
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+
         s1 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s1",
@@ -387,14 +416,20 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
 
-    def test_with_slices(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_with_slices(self, mocker, use_legacy):
         """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+
         s1 = MockStream(
             [
                 (
@@ -452,15 +487,20 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
 
-    def test_no_slices(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_no_slices(self, mocker, use_legacy):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
             1. outputs a state message after reading the entire stream
         """
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
         slices = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         state = {"cursor": "value"}
@@ -518,19 +558,22 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        print(f"expected:\n{expected}")
-        print(f"messages:\n{messages}")
         assert expected == messages
 
-    def test_with_slices_and_interval(self, mocker):
+    @pytest.mark.parametrize("use_legacy", [True, False])
+    def test_with_slices_and_interval(self, mocker, use_legacy):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
             2. outputs a state message every N records (N=checkpoint_interval)
             3. outputs a state message after reading the entire slice
         """
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         s1 = MockStream(
@@ -608,6 +651,6 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
