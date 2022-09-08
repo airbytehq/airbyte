@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.val;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -159,10 +158,8 @@ class CatalogHelpersTest {
 
   @Test
   void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
-    val test = CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
-        Jsons.deserialize(MoreResources.readResource("companies_schema.json")), true);
-
-    test.stream().collect(
+    CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
+        Jsons.deserialize(MoreResources.readResource("companies_schema.json")), true).stream().collect(
         Collectors.toMap(Pair::getLeft, Pair::getRight));
   }
 
