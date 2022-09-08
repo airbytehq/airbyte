@@ -210,7 +210,7 @@ class JobHistoryHandlerTest {
 
     @Test
     @DisplayName("Should return jobs including specified job id")
-    void testListJobsIncludingJobId() throws IOException {
+    void testListJobsStartingWithJobId() throws IOException {
       final var successfulJob = testJob;
       final int pagesize = 25;
       final int rowOffset = 0;
@@ -223,18 +223,20 @@ class JobHistoryHandlerTest {
 
       when(jobPersistence.listJobsStartingWithId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
+      when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
           .configId(JOB_CONFIG_ID)
-          .includingJobId(jobId2)
+          .startingJobId(jobId2)
           .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
           testJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
-      final JobReadList expectedJobReadList = new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead));
+      final JobReadList expectedJobReadList =
+          new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);
 
       assertEquals(expectedJobReadList, jobReadList);
     }
