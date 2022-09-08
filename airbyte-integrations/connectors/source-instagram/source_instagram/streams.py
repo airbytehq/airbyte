@@ -345,12 +345,13 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
+        if item.get("media_product_type") == "REEL":
+            metrics = self.REEL_METRICS
         if item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
             metrics = self.CAROUSEL_ALBUM_METRICS
-        elif item.get("media_type") == "REEL":
-            metrics = self.REEL_METRICS
+
         else:
             metrics = self.MEDIA_METRICS
 
