@@ -44,7 +44,7 @@ const Tr = styled.tr<{
   background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
   &:hover {
-    background-color: ${({ theme }) => `${theme.greyColor0}`};
+    background-color: ${({ theme }) => `${theme.grey50}`};
   }
 `;
 
