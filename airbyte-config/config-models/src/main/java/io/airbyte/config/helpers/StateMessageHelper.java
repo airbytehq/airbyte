@@ -28,6 +28,7 @@ public class StateMessageHelper {
    * @param state - a blob representing the state
    * @return An optional state wrapper, if there is no state an empty optional will be returned
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static Optional<StateWrapper> getTypedState(final JsonNode state, final boolean useStreamCapableState) {
     if (state == null) {
       return Optional.empty();
