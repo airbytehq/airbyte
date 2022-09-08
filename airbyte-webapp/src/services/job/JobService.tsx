@@ -9,7 +9,7 @@ import {
   JobDebugInfoRead,
   JobInfoRead,
   JobListRequestBody,
-  JobReadList,
+  JobWithAttemptsRead,
   Pagination,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
@@ -36,9 +36,8 @@ export const useListJobs = (listParams: JobListRequestBody) => {
     keepPreviousData: true,
     suspense: true,
   });
-  // cast to JobReadList because (suspense: true) means we will never get undefined
-  const jobReadList: JobReadList = result.data as JobReadList;
-  return { jobs: jobReadList.jobs, totalJobCount: jobReadList.totalJobCount, isPreviousData: result.isPreviousData };
+  // cast to JobWithAttemptsRead[] because (suspense: true) means we will never get undefined
+  return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
 };
 
 export const useGetJob = (id: number, enabled = true) => {

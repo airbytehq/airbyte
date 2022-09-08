@@ -173,8 +173,8 @@ public interface JobPersistence {
    *        connection
    * @param pagesize - minimum size of the job list that should be returned
    * @return List of jobs created after and including the target job ID (or the `pagesize` most recent
-   *         jobs, whichever is larger), if it exists in the connection. Otherwise, this acts as a
-   *         normal listJobs request.
+   *         jobs, whichever is larger), if it exists in the connection. Otherwise, an empty list is
+   *         returned
    * @throws IOException
    */
   List<Job> listJobsIncludingId(Set<JobConfig.ConfigType> configTypes, String connectionId, long targetJobId, int pagesize) throws IOException;
