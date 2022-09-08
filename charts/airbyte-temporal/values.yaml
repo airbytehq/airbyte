@@ -153,3 +153,24 @@ resources:
   limits: {}
 
 extraContainers: []
+
+
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example with default vars for webapp:
+# env_vars:
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DB: airbyte-db-svc
+#   DB_PORT: 5432
+#   DATABASE_DB: airbyte
+#   POSTGRES_USER: airbyte
+#   POSTGRES_PWD: 12345
+
+env_vars: {}

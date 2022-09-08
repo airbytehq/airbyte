@@ -107,12 +107,7 @@ extraEnv: []
 ##   DATABASE_USER: my-db-user
 secrets: {}
 
-##  env_vars [object] Supply extra env variables to main container using simplified notation
-## Example:
-## env_vars:
-##   DATABASE_HOST: airbyte-db
-##   DATABASE_PORT: 5432
-env_vars: {}
+
 ##  extraContainer [array] Additional container for server pod(s)
 ## Example:
 # extraContainers:
@@ -153,3 +148,19 @@ extraVolumeMounts: []
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example:
+# env_vars:
+#   AIRBYTE_VERSION: 0.40.4
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DATABASE_HOST: airbyte-db-svc
+#   DATABASE_PORT: 5432
+#   # translate manually DATABASE_URL: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+#   DATABASE_URL: jdbc:postgresql://airbyte-db-svc:5432/airbyte
+#   DATABASE_PASSWORD: 12345
+#   DATABASE_USER: airbyte
+
+
+env_vars: {}

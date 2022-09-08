@@ -227,10 +227,15 @@ extraEnv: []
 secrets: {}
 
 ##  env_vars [object] Supply extra env variables to main container using simplified notation
-## Example:
-## env_vars:
-##   DATABASE_HOST: airbyte-db
-##   DATABASE_PORT: 5432
+## Example with default vars for webapp:
+# env_vars:
+#   AIRBYTE_VERSION: 0.40.4
+
+#   # Miscellaneous
+#   TRACKING_STRATEGY: segment
+#   API_URL: /api/v1/
+#   INTERNAL_API_HOST: airbyte-server-svc:8001
+
 env_vars: {}
 
 
