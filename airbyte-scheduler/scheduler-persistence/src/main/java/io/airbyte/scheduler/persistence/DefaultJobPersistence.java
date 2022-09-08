@@ -328,7 +328,7 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.ATTEMPT_ID, attemptId)
           .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
           .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
-          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsEmitted())
+          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
           .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
           .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
           .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())

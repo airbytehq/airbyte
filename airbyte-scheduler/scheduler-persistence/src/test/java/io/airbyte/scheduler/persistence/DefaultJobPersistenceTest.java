@@ -253,7 +253,7 @@ class DefaultJobPersistenceTest {
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
     final SyncStats syncStats =
-        new SyncStats().withBytesEmitted(100L).withRecordsEmitted(10L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
+        new SyncStats().withBytesEmitted(100L).withRecordsEmitted(9L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
             .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
             .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
     final StandardSyncOutput standardSyncOutput =
@@ -270,7 +270,7 @@ class DefaultJobPersistenceTest {
 
     final SyncStats storedSyncStats = jobPersistence.getSyncStats(updated.getId()).stream().findFirst().get();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
-    assertEquals(10L, storedSyncStats.getRecordsEmitted());
+    assertEquals(9L, storedSyncStats.getRecordsEmitted());
     assertEquals(10L, storedSyncStats.getRecordsCommitted());
     assertEquals(4L, storedSyncStats.getSourceStateMessagesEmitted());
     assertEquals(1L, storedSyncStats.getDestinationStateMessagesEmitted());
