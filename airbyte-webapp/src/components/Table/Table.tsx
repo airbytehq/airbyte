@@ -33,7 +33,6 @@ const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   width: 100%;
   max-width: 100%;
   border-radius: 10px;
-  overflow: hidden;
   box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
 };
 `;
