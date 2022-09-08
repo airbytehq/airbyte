@@ -190,6 +190,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
+  @SuppressWarnings("PMD.EmptyIfStmt")
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
@@ -257,7 +258,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // silently ignore it.
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
-          log.info("");
         } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
