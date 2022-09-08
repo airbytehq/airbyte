@@ -103,7 +103,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 45)
+        self.report_wait_timeout = config.get("report_wait_timeout", 60)
         self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
         super().__init__(config, profiles)
