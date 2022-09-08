@@ -157,7 +157,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   /**
-   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED, null. Only
+   * Compare field modes. Field can have on of four modes: NULLABLE, REQUIRED, REPEATED, null. Only
    * the REPEATED mode difference is critical. The method fails only if at least one is REPEATED and
    * the second one is not.
    *
