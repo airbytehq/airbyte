@@ -84,8 +84,8 @@ public class JobHistoryHandler {
         : DEFAULT_PAGE_SIZE;
     final List<Job> jobs;
 
-    if (request.getIncludingJobId() != null) {
-      jobs = jobPersistence.listJobsIncludingId(configTypes, configId, request.getIncludingJobId(), pageSize);
+    if (request.getStartingJobId() != null) {
+      jobs = jobPersistence.listJobsStartingWithId(configTypes, configId, request.getStartingJobId(), pageSize);
     } else {
       jobs = jobPersistence.listJobs(configTypes, configId, pageSize,
           (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);

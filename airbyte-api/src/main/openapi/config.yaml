@@ -3775,7 +3775,7 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
-        includingJobId:
+        startingJobId:
           description: If the job with this ID exists for the specified connection, returns all jobs created after and including this job, or the full pagination pagesize if that list is smaller than a page. Returns an empty list if this job is specified and cannot be found in this connection.
           $ref: "#/components/schemas/JobId"
         pagination:

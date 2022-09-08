@@ -1178,8 +1178,8 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should list jobs coming after and including target job")
-    void testListJobsIncludingId() throws IOException {
+    @DisplayName("Should list jobs coming after and including starting job")
+    void testListJobsStartingWithId() throws IOException {
       final List<Long> ids = new ArrayList<>();
       for (int i = 0; i < 100; i++) {
         // This makes each enqueued job have an increasingly higher createdAt time
@@ -1190,16 +1190,16 @@ class DefaultJobPersistenceTest {
         jobPersistence.createAttempt(jobId, LOG_PATH);
       }
 
-      final int targetIdIndex = 50;
+      final int startingIdIndex = 50;
       final List<Job> actualList =
-          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(targetIdIndex), 25);
-      final List<Long> expectedJobIds = Lists.reverse(ids.subList(targetIdIndex, ids.size()));
+          jobPersistence.listJobsStartingWithId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(startingIdIndex), 25);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(startingIdIndex, ids.size()));
       assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
     }
 
     @Test
-    @DisplayName("Should list at least the full page size if list up to target job is smaller than a page")
-    void testListJobsIncludingIdAtLeastFullPageSize() throws IOException {
+    @DisplayName("Should list at least the full page size if list up to starting job is smaller than a page")
+    void testListJobsStartingWithIdReturnsAtLeastFullPageSize() throws IOException {
       final List<Long> ids = new ArrayList<>();
       for (int i = 0; i < 100; i++) {
         // This makes each enqueued job have an increasingly higher createdAt time
@@ -1212,14 +1212,14 @@ class DefaultJobPersistenceTest {
 
       final int pageSize = 25;
       final List<Job> actualList =
-          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(90), pageSize);
+          jobPersistence.listJobsStartingWithId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(90), pageSize);
       final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - pageSize, ids.size()));
       assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
     }
 
     @Test
-    @DisplayName("Should return an empty list if there is no job with the target ID for this connection")
-    void testListJobsIncludingIdFromWrongConnection() throws IOException {
+    @DisplayName("Should return an empty list if there is no job with the starting ID for this connection")
+    void testListJobsStartingWithIdFromWrongConnection() throws IOException {
       for (int i = 0; i < 10; i++) {
         jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
       }
@@ -1227,7 +1227,7 @@ class DefaultJobPersistenceTest {
       final long otherConnectionJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SPEC_JOB_CONFIG).orElseThrow();
 
       final List<Job> actualList =
-          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, 25);
+          jobPersistence.listJobsStartingWithId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, 25);
       assertEquals(List.of(), actualList);
     }
 
