@@ -44,7 +44,7 @@ const SideBar: React.FC = () => {
   const handleChatUs = () => show();
 
   return (
-    <nav className={styles.navBar}>
+    <nav className={styles.nav}>
       <div>
         <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />

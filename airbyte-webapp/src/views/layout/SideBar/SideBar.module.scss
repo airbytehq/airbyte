@@ -1,7 +1,7 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
-.navBar {
+.nav {
   z-index: 9999;
   display: flex;
   position: relative;
@@ -11,7 +11,7 @@
   width: 100px;
   min-width: 65px;
   background-color: colors.$dark-blue;
-  padding: 23px 3px 15px 4px;
+  padding: 23px 4px 15px 4px;
   text-align: center;
 }
 

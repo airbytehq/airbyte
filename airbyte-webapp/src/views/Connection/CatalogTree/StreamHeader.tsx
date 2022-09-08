@@ -96,7 +96,6 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [styles.redBorder]: hasError,
   });
   //  FIXME: find out why checkboxCell warns as unused
-  // eslint-disable-next-line css-modules/no-undef-class
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, { [styles.streamRowCheckboxCell]: true });
 
   return (

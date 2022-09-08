@@ -1,24 +1,5 @@
 @use "../../../../../scss/colors";
-
-.navBar {
-  z-index: 9999;
-  display: flex;
-  position: relative;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  width: 100px;
-  min-width: 65px;
-  background-color: colors.$dark-blue;
-  padding: 23px 3px 15px 4px;
-  text-align: center;
-}
-
-.menu {
-  width: 100%;
-  padding: 0;
-  margin: 20px 0 0;
-}
+@forward "../../../../../views/layout/SideBar/SideBar.module.scss";
 
 .workspaceButton {
   overflow: hidden;
@@ -36,8 +17,4 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   text-align: center;
-}
-
-.text {
-  margin-top: 7px;
 }
