@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.test.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +25,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -60,11 +63,10 @@ public class VersioningAcceptanceTests {
     testHarness.cleanup();
   }
 
-
   @ParameterizedTest
   @CsvSource({
-      "2.1.1, 0.2.0",
-      "2.1.2, 0.2.1",
+    "2.1.1, 0.2.0",
+    "2.1.2, 0.2.1",
   })
   void testCreateSourceSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
@@ -80,7 +82,7 @@ public class VersioningAcceptanceTests {
     final SourceDefinitionIdRequestBody sourceDefinitionReq = new SourceDefinitionIdRequestBody()
         .sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId());
     final SourceDefinitionRead sourceDefinitionReadSanityCheck =
-    apiClient.getSourceDefinitionApi().getSourceDefinition(sourceDefinitionReq);
+        apiClient.getSourceDefinitionApi().getSourceDefinition(sourceDefinitionReq);
     assertEquals(sourceDefinitionRead.getProtocolVersion(), sourceDefinitionReadSanityCheck.getProtocolVersion());
 
     // Clean up the source
@@ -89,14 +91,14 @@ public class VersioningAcceptanceTests {
 
   @ParameterizedTest
   @CsvSource({
-      "2.1.1, 0.2.0",
-      "2.1.2, 0.2.1",
+    "2.1.1, 0.2.0",
+    "2.1.2, 0.2.1",
   })
   void testCreateDestinationSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
     final DestinationDefinitionCreate destDefinitionCreate = new DestinationDefinitionCreate()
         .dockerImageTag(dockerImageTag)
-        // We are currently using source because the destination-e2e-test connector is facing a regression (09-08-2020)
+        // We are currently using source because the destination-e2e-test connector is facing a regression
         // For the purpose of the test, at this moment, using source works because we only check version
         .dockerRepository("airbyte/source-e2e-test")
         .documentationUrl(new URI("https://hub.docker.com/r/airbyte/destination-e2e-test"))
