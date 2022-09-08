@@ -257,6 +257,7 @@
   "sources.syncNow": "Sync now",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
+  "sources.linkedJobNotFound": "The linked job could not be found",
   "sources.emptySchema": "Schema is empty",
   "sources.noSources": "Source list is empty",
   "sources.sourceSettings": "Source Settings",

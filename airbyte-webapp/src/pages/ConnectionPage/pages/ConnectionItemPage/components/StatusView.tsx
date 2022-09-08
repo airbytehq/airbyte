@@ -7,6 +7,7 @@ import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
+import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -51,15 +52,22 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
-  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
+  const { jobId: linkedJobId } = useAttemptLink();
+  const {
+    jobs,
+    totalJobCount,
+    isPreviousData: isJobPageLoading,
+  } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+    includingJobId: linkedJobId ? Number(linkedJobId) : undefined,
     pagination: {
       pageSize: jobPageSize,
     },
   });
 
-  const moreJobPagesAvailable = jobs.length === jobPageSize;
+  const linkedJobNotFound = linkedJobId && jobs.length === 0;
+  const moreJobPagesAvailable = !linkedJobNotFound && jobPageSize < totalJobCount;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -73,6 +81,8 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           // We need to disable button when job is canceled but the job list still has a running job
         } as ActiveJob)
     );
+
+    setJobPageSize(jobs.length);
   }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -170,7 +180,13 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </div>
         }
       >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+        {jobs.length ? (
+          <JobsList jobs={jobs} />
+        ) : linkedJobNotFound ? (
+          <EmptyResource text={<FormattedMessage id="sources.linkedJobNotFound" />} description="test description" />
+        ) : (
+          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+        )}
       </ContentCard>
 
       {(moreJobPagesAvailable || isJobPageLoading) && (
