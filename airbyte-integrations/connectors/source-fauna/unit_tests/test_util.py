@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
 from unittest.mock import Mock
 
 from faunadb import query as q
@@ -40,31 +39,13 @@ class DeletionsConfig:
         return DeletionsConfig(mode="deleted_field", column=column)
 
 
-class Column:
-    def __init__(self, name: str, path: List[str], type: str, required: bool, format="", airbyte_type=""):
-        self.name = name
-        self.path = path
-        self.type = type
-        self.required = required
-        self.format = format
-        self.airbyte_type = airbyte_type
-
-
 class CollectionConfig:
     def __init__(
         self,
-        index="",
-        deletions=DeletionsConfig.ignore(),
-        name="",
-        data_column=True,
-        additional_columns=[],
         page_size=64,
+        deletions=DeletionsConfig.ignore(),
     ):
-        self.name = name
-        self.data_column = data_column
-        self.additional_columns = additional_columns
         self.page_size = page_size
-        self.index = index
         self.deletions = deletions
 
 
@@ -110,10 +91,7 @@ def config(extra: dict[str, any]) -> dict[str, any]:
         "scheme": "http",
         "secret": "secret",
         "collection": {
-            "name": "foo",
-            "data_column": True,
             "page_size": 64,
-            "index": "ts",
             "deletions": {"deletion_mode": "ignore"},
         },
     }
@@ -129,6 +107,7 @@ def expand_columns_query(ref):
         {
             "ref": q.select(["ref", "id"], doc),
             "ts": q.select("ts", doc),
-            "data": q.select("data", doc),
+            "data": q.select("data", doc, {}),
+            "ttl": q.select("ttl", doc, None),
         },
     )

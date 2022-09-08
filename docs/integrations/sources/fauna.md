@@ -13,8 +13,8 @@ You need to create a separate source per collection that you want to export.
 
 ## Preliminary setup
 
-1. Choose the Fauna collection you want to export and enter that in the "Collection" field on the left.
-2. Enter the domain of the collection's database that you are exporting. The URL can be found in [the docs](https://docs.fauna.com/fauna/current/learn/understanding/region_groups#how-to-use-region-groups).
+Enter the domain of the collection's database that you are exporting. The URL can be found in
+[the docs](https://docs.fauna.com/fauna/current/learn/understanding/region_groups#how-to-use-region-groups).
 
 ## Full sync
 
@@ -24,14 +24,49 @@ Follow these steps if you want this connection to perform a full sync.
 ```javascript
 CreateRole({
   name: "airbyte-readonly",
-  privileges: [{
-    resource: Collection("COLLECTION_NAME"),
-    actions: { read: true }
-  }],
+  privileges: [
+    {
+      resource: Collections(),
+      actions: { read: true }
+    },
+    {
+      resource: Indexes(),
+      actions: { read: true }
+    },
+    {
+      resource: Collection("COLLECTION_NAME"),
+      actions: { read: true }
+    }
+  ],
 })
 ```
 
-Replace `COLLECTION_NAME` with the name of the collection configured for this connector.
+Replace `COLLECTION_NAME` with the name of the collection configured for this connector. If you'd like to sync
+multiple collections, add an entry for each additional collection you'd like to sync. For example, to sync
+`users` and `products`, run this query instead:
+```javascript
+CreateRole({
+  name: "airbyte-readonly",
+  privileges: [
+    {
+      resource: Collections(),
+      actions: { read: true }
+    },
+    {
+      resource: Indexes(),
+      actions: { read: true }
+    },
+    {
+      resource: Collection("users"),
+      actions: { read: true }
+    },
+    {
+      resource: Collection("products"),
+      actions: { read: true }
+    }
+  ],
+})
+```
 
 2. Create a key with that role. You can create a key using this query:
 ```javascript
@@ -63,21 +98,27 @@ CreateIndex({
 Replace `COLLECTION_NAME` with the name of the collection configured for this connector.
 Replace `INDEX_NAME` with the name that you configured for the Incremental Sync Index.
 
+Repeat this step for every collection you'd like to sync.
+
 2. Create a role that can read the collection, the index, and the metadata of all indexes. It needs access to index metadata in order to validate the index settings. You can create the role with this query:
 ```javascript
 CreateRole({
   name: "airbyte-readonly",
   privileges: [
     {
+      resource: Collections(),
+      actions: { read: true }
+    },
+    {
+      resource: Indexes(),
+      actions: { read: true }
+    },
+    {
       resource: Collection("COLLECTION_NAME"),
       actions: { read: true }
     },
     {
       resource: Index("INDEX_NAME"),
-      actions: { read: true }
-    },
-    {
-      resource: Indexes(),
       actions: { read: true }
     }
   ],
@@ -86,6 +127,42 @@ CreateRole({
 
 Replace `COLLECTION_NAME` with the name of the collection configured for this connector.
 Replace `INDEX_NAME` with the name that you configured for the Incremental Sync Index.
+
+If you'd like to sync multiple collections, add an entry for every collection and index
+you'd like to sync. For example, to sync `users` and `products` with Incremental Sync, run
+the following query:
+```javascript
+CreateRole({
+  name: "airbyte-readonly",
+  privileges: [
+    {
+      resource: Collections(),
+      actions: { read: true }
+    },
+    {
+      resource: Indexes(),
+      actions: { read: true }
+    },
+    {
+      resource: Collection("users"),
+      actions: { read: true }
+    },
+    {
+      resource: Index("users-ts"),
+      actions: { read: true }
+    },
+    {
+      resource: Collection("products"),
+      actions: { read: true }
+    },
+    {
+      resource: Index("products-ts"),
+      actions: { read: true }
+    }
+  ],
+})
+```
+
 
 3. Create a key with that role. You can create a key using this query:
 ```javascript

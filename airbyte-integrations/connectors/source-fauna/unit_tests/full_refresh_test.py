@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock
 from faunadb import _json
 from faunadb import query as q
 from source_fauna import SourceFauna
-from test_util import CollectionConfig, Column, expand_columns_query, mock_logger
+from test_util import CollectionConfig, expand_columns_query, mock_logger
 
 
 def results(modified, after):
@@ -121,18 +121,8 @@ def test_read_all_extra_columns():
             {
                 "ref": q.select(["ref", "id"], doc),
                 "ts": q.select("ts", doc),
-                "my_column": q.select(
-                    ["data", "my_field"],
-                    doc,
-                    q.abort(
-                        q.format(
-                            "The path ['data', 'my_field'] does not exist in document Ref(%s, collection=%s)",
-                            q.select(["ref", "id"], doc),
-                            q.select(["ref", "collection", "id"], doc),
-                        )
-                    ),
-                ),
-                "optional_data": q.select(["data", "nested", "nested_field"], doc, None),
+                "data": q.select("data", doc, {}),
+                "ttl": q.select("ttl", doc, None),
             },
         )
 
@@ -158,15 +148,23 @@ def test_read_all_extra_columns():
                 {
                     "ref": "3",
                     "ts": 12345,
-                    "my_column": "fancy string here",
-                    "optional_data": 3,
+                    "data": {
+                        "my_column": "fancy string here",
+                        "optional_data": 3,
+                    },
                 },
-                {"ref": "5", "ts": 123459, "my_column": "another fancy string here", "optional_data": 5},
+                {
+                    "ref": "5",
+                    "ts": 123459,
+                    "data": {"my_column": "another fancy string here", "optional_data": 5},
+                },
                 {
                     "ref": "7",
                     "ts": 1234599,
-                    "my_column": "even more fancy string here",
-                    "optional_data": None,
+                    "data": {
+                        "my_column": "even more fancy string here",
+                        "optional_data": None,
+                    },
                 },
             ],
             after=None,
@@ -194,16 +192,7 @@ def test_read_all_extra_columns():
         source.read_all(
             logger,
             stream,
-            conf=CollectionConfig(
-                page_size=PAGE_SIZE,
-                data_column=False,
-                additional_columns=[
-                    Column(name="my_column", path=["data", "my_field"], type="this doesn't matter in read()", required=True),
-                    Column(
-                        name="optional_data", path=["data", "nested", "nested_field"], type="this doesn't matter in read()", required=False
-                    ),
-                ],
-            ),
+            conf=CollectionConfig(page_size=PAGE_SIZE),
             state={"full_sync_cursor": {"ts": TS}},
         )
     )
@@ -211,20 +200,26 @@ def test_read_all_extra_columns():
         {
             "ref": "3",
             "ts": 12345,
-            "my_column": "fancy string here",
-            "optional_data": 3,
+            "data": {
+                "my_column": "fancy string here",
+                "optional_data": 3,
+            },
         },
         {
             "ref": "5",
             "ts": 123459,
-            "my_column": "another fancy string here",
-            "optional_data": 5,
+            "data": {
+                "my_column": "another fancy string here",
+                "optional_data": 5,
+            },
         },
         {
             "ref": "7",
             "ts": 1234599,
-            "my_column": "even more fancy string here",
-            "optional_data": None,
+            "data": {
+                "my_column": "even more fancy string here",
+                "optional_data": None,
+            },
         },
     ]
 
