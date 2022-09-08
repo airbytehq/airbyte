@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Optional
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
@@ -21,6 +21,7 @@ from source_google_search_console.streams import (
     SearchAnalyticsByQuery,
     Sitemaps,
     Sites,
+    SearchAnalyticsByCustomDimensions,
 )
 
 
@@ -62,7 +63,20 @@ class SourceGoogleSearchConsole(AbstractSource):
             SearchAnalyticsAllFields(**stream_config),
         ]
 
+        streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
+
         return streams
+
+    def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
+        if "custom_reports" not in config:
+            return []
+
+        reports = json.loads(config["custom_reports"])
+
+        return [
+            type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
+            for report in reports
+        ]
 
     @staticmethod
     def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
