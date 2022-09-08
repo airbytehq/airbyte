@@ -305,7 +305,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except IOError as e:
+        except IOError:
             schema: Mapping[str, Any] = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
