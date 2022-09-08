@@ -119,7 +119,7 @@ def createSpotlessTarget = { pattern ->
         'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
         'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
         'airbyte-webapp', // The webapp module uses its own auto-formatter, so spotless is not necessary here
-        'airbyte-webapp-e2e-tests' // This module also uses its own auto-formatter
+        'airbyte-webapp-e2e-tests', // This module also uses its own auto-formatter
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
