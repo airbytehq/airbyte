@@ -402,10 +402,17 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
-    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
-        + " AND jobs.scope = '" + configId + "' ORDER BY jobs.created_at DESC, jobs.id DESC LIMIT " + pagesize + " OFFSET " + offset + ") AS jobs";
-    return jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
-        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME)));
+    return jobDatabase.query(ctx -> {
+      final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
+          .where(JOBS.CONFIG_TYPE.cast(String.class).in(DSL.inline(Sqls.toSqlInFragmentInline(configTypes))))
+          .and(JOBS.SCOPE.eq(DSL.inline(configId)))
+          .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
+          .limit(DSL.inline(pagesize))
+          .offset(DSL.inline(offset))
+          .getSQL() + ") AS jobs";
+
+      return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
+    });
   }
 
   @Override
@@ -435,10 +442,15 @@ public class DefaultJobPersistence implements JobPersistence {
     }
 
     // list of jobs starting with starting job is larger than pagesize, so return that list
-    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
-        + " AND scope = '" + connectionId + "' AND created_at >= ? ORDER BY created_at DESC, id DESC) AS jobs";
-    return jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
-        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME, startingJobCreatedAt.get().toLocalDateTime())));
+    return jobDatabase.query(ctx -> {
+      final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
+          .where(JOBS.CONFIG_TYPE.cast(String.class).in(DSL.inline(Sqls.toSqlInFragmentInline(configTypes))))
+          .and(JOBS.SCOPE.eq(DSL.inline(connectionId)))
+          .and(JOBS.CREATED_AT.greaterOrEqual(DSL.inline(startingJobCreatedAt.get())))
+          .getSQL() + ") AS jobs";
+
+      return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
+    });
   }
 
   @Override

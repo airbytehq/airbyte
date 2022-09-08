@@ -32,4 +32,16 @@ public class Sqls {
         .collect(Collectors.joining(",", "(", ")"));
   }
 
+  /**
+   * Generate a string fragment that can be passed to DSL.inline() to be used with .in() when building
+   * a query through jooq, e.g. .where(COLUMN.in(DSL.inline(Sqls.toSqlFragmentInline(values))))
+   *
+   * @param values to encode
+   * @param <T> enum type
+   * @return "value1,value2,value3"
+   */
+  public static <T extends Enum<T>> String toSqlInFragmentInline(final Iterable<T> values) {
+    return StreamSupport.stream(values.spliterator(), false).map(Sqls::toSqlName).collect(Collectors.joining(","));
+  }
+
 }
