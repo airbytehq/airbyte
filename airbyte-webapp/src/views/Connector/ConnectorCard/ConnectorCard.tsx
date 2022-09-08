@@ -9,7 +9,7 @@ import { Connector, ConnectorT } from "core/domain/connector";
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
@@ -99,7 +99,7 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
     <ContentCard title={title} full={full}>
       <ServiceForm
         {...props}
-        errorMessage={props.errorMessage || (error && createFormErrorMessage(error))}
+        errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
         isTestConnectionInProgress={isTestConnectionInProgress}
         onStopTesting={onStopTesting}
         testConnector={testConnector}
