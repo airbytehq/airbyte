@@ -20,9 +20,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.val;
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class CatalogHelpersTest {
 
   // handy for debugging test only.
@@ -112,7 +115,7 @@ class CatalogHelpersTest {
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
         StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName("users"), new UpdateStreamTransform(Set.of(
             FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get(PROPERTIES).get("COD")),
-            FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get(PROPERTIES).get("something2")),
+            FieldTransform.createRemoveFieldTransform(List.of("something2", "oneOf"), schema1.get(PROPERTIES).get("something2")),
             FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get(PROPERTIES).get("HKD")),
             FieldTransform.createUpdateFieldTransform(List.of(CAD), new UpdateFieldSchemaTransform(
                 schema1.get(PROPERTIES).get(CAD),
@@ -129,7 +132,8 @@ class CatalogHelpersTest {
                 schema2.get(PROPERTIES).get(SOME_ARRAY).get(ITEMS).get(PROPERTIES).get("newName"))))))
         .sorted(STREAM_TRANSFORM_COMPARATOR)
         .toList();
-    assertEquals(expectedDiff, actualDiff.stream().sorted(STREAM_TRANSFORM_COMPARATOR).toList());
+
+    Assertions.assertThat(actualDiff).containsAll(expectedDiff);
   }
 
   @Test
@@ -155,8 +159,11 @@ class CatalogHelpersTest {
 
   @Test
   void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
-    CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
-        Jsons.deserialize(MoreResources.readResource("companies_schema.json"))).stream().collect(
+    val test = CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
+        Jsons.deserialize(MoreResources.readResource("companies_schema.json")), true);
+
+    test.stream().collect(
         Collectors.toMap(Pair::getLeft, Pair::getRight));
   }
+
 }
