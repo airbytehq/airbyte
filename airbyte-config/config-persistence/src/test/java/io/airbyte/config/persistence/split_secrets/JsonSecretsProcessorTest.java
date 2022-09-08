@@ -198,7 +198,6 @@ class JsonSecretsProcessorTest {
   public void setup() {
     processor = JsonSecretsProcessor.builder()
         .copySecrets(true)
-        .maskSecrets(true)
         .build();
   }
 
@@ -502,7 +501,6 @@ class JsonSecretsProcessorTest {
     public void setup() {
       processor = JsonSecretsProcessor.builder()
           .copySecrets(false)
-          .maskSecrets(false)
           .build();
     }
 

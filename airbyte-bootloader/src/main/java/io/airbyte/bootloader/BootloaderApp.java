@@ -191,7 +191,6 @@ public class BootloaderApp {
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(true)
         .copySecrets(true)
         .build();
 
