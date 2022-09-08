@@ -129,6 +129,7 @@ public class SshTunnel implements AutoCloseable {
       this.remoteDatabasePort = remoteDatabasePort;
 
       this.sshclient = createClient();
+      this.tunnelSession = openTunnel(sshclient);
     }
   }
 
@@ -168,7 +169,7 @@ public class SshTunnel implements AutoCloseable {
 
     // final int localPort = findFreePort();
 
-    final SshTunnel result = new SshTunnel(
+    return new SshTunnel(
         config,
         hostKey,
         portKey,
@@ -180,8 +181,6 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
         Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
         Jsons.getIntOrZero(config, portKey));
-    result.tunnelSession = result.openTunnel(result.sshclient);
-    return result;
   }
 
   public static void sshWrap(final JsonNode config,
@@ -233,7 +232,6 @@ public class SshTunnel implements AutoCloseable {
     final var kp = SecurityUtils
         .getKeyPairResourceParser()
         .loadKeyPairs(null, null, null, new StringReader(validatedKey));
-
     return kp.iterator().next();
   }
 
