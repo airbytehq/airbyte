@@ -142,7 +142,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     // This could be due to user changes (e.g. in the sync mode) or due to new/removed
     // streams due to a "refreshed source schema".
     const hasCatalogChanged = !equal(
-      values.syncCatalog.streams.filter((s) => s.config?.selected),
+      values.syncCatalog.streams
+        .filter((s) => s.config?.selected)
+        .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
       initialConnection.syncCatalog.streams
         .filter((s) => s.config?.selected)
 
