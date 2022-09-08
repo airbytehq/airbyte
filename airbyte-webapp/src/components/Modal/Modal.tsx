@@ -21,7 +21,7 @@ const cardStyleBySize = {
   xl: styles.xl,
 };
 
-const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cardless: clear, testId }) => {
+const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cardless, testId }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const onModalClose = () => {
@@ -34,7 +34,7 @@ const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cardless:
       <div className={styles.backdrop} />
       <div className={styles.modalContainer}>
         <Dialog.Panel className={styles.modalPanel}>
-          {clear ? (
+          {cardless ? (
             children
           ) : (
             <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
