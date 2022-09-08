@@ -30,6 +30,9 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -249,14 +252,34 @@ class DefaultJobPersistenceTest {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
-    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
+    final SyncStats syncStats =
+        new SyncStats().withBytesEmitted(100L).withRecordsEmitted(10L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
+            .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
+            .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
+    final StandardSyncOutput standardSyncOutput =
+        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats));
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats());
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
+        jobOutput.getSync().getStandardSyncSummary().getTotalStats());
 
     final Job updated = jobPersistence.getJob(jobId);
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
-    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(),
+        updated.getAttempts().get(0).getUpdatedAtInSecond());
+
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(updated.getId()).stream().findFirst().get();
+    assertEquals(100L, storedSyncStats.getBytesEmitted());
+    assertEquals(10L, storedSyncStats.getRecordsEmitted());
+    assertEquals(10L, storedSyncStats.getRecordsCommitted());
+    assertEquals(4L, storedSyncStats.getSourceStateMessagesEmitted());
+    assertEquals(1L, storedSyncStats.getDestinationStateMessagesEmitted());
+    assertEquals(5L, storedSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(2L, storedSyncStats.getMeanSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
+    assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
+
   }
 
   @Test

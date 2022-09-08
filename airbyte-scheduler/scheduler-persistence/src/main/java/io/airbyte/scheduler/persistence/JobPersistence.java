@@ -30,6 +30,8 @@ import java.util.stream.Stream;
  */
 public interface JobPersistence {
 
+  List<SyncStats> getSyncStats(Long attemptId) throws IOException;
+
   Job getJob(long jobId) throws IOException;
 
   //

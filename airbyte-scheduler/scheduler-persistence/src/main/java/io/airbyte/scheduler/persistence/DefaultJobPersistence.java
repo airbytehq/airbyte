@@ -28,6 +28,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.jobs.jooq.generated.tables.records.SyncStatsRecord;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -63,6 +64,7 @@ import org.jooq.InsertValuesStepN;
 import org.jooq.JSONB;
 import org.jooq.Named;
 import org.jooq.Record;
+import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.Sequence;
 import org.jooq.Table;
@@ -318,9 +320,10 @@ public class DefaultJobPersistence implements JobPersistence {
       final Optional<Record> record =
           ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
               attemptNumber).stream().findFirst();
-      final Integer attemptId = record.get().get("id", Integer.class);
+      final Long attemptId = record.get().get("id", Long.class);
 
-      ctx.update(SYNC_STATS)
+      ctx.insertInto(SYNC_STATS)
+          .set(SYNC_STATS.ID, UUID.randomUUID())
           .set(SYNC_STATS.UPDATED_AT, now)
           .set(SYNC_STATS.CREATED_AT, now)
           .set(SYNC_STATS.ATTEMPT_ID, attemptId)
@@ -332,7 +335,8 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
           .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
           .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
+          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+          .execute();
       return null;
     });
 
@@ -348,6 +352,38 @@ public class DefaultJobPersistence implements JobPersistence {
             .set(ATTEMPTS.UPDATED_AT, now)
             .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
             .execute());
+  }
+
+  @Override
+  public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
+    return jobDatabase
+        .query(ctx -> ctx.select(DSL.asterisk()).from(SYNC_STATS).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId)).fetch(getSyncStatsRecordMapper())
+            .stream()
+            .flatMap(row -> Stream.of(new SyncStats().withBytesEmitted(row.getBytesEmitted()).withRecordsEmitted(row.getRecordsEmitted())
+                .withSourceStateMessagesEmitted(row.getSourceStateMessagesEmitted())
+                .withDestinationStateMessagesEmitted(row.getDestinationStateMessagesEmitted()).withRecordsCommitted(row.getRecordsCommitted())
+                .withMeanSecondsBeforeSourceStateMessageEmitted(row.getMeanSecondsBeforeSourceStateMessageEmitted())
+                .withMaxSecondsBeforeSourceStateMessageEmitted(row.getMaxSecondsBeforeSourceStateMessageEmitted())
+                .withMeanSecondsBetweenStateMessageEmittedandCommitted(row.getMeanSecondsBetweenStateMessageEmittedAndCommitted())
+                .withMaxSecondsBetweenStateMessageEmittedandCommitted(row.getMaxSecondsBetweenStateMessageEmittedAndCommitted())))
+            .toList());
+  }
+
+  private static RecordMapper<Record, SyncStatsRecord> getSyncStatsRecordMapper() {
+    return record -> new SyncStatsRecord(
+        UUID.fromString(record.get(SYNC_STATS.ID, String.class)),
+        record.get(SYNC_STATS.ATTEMPT_ID, Long.class),
+        record.get(SYNC_STATS.RECORDS_EMITTED, Long.class),
+        record.get(SYNC_STATS.BYTES_EMITTED, Long.class),
+        record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, Long.class),
+        record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, Long.class),
+        record.get(SYNC_STATS.RECORDS_COMMITTED, Long.class),
+        record.get(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, Long.class),
+        record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, Long.class),
+        record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, Long.class),
+        record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, Long.class),
+        record.get(SYNC_STATS.CREATED_AT, OffsetDateTime.class),
+        record.get(SYNC_STATS.UPDATED_AT, OffsetDateTime.class));
   }
 
   @Override
