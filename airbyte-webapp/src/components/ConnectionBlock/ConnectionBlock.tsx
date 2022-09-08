@@ -1,11 +1,11 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import classNames from "classnames";
-import styles from "./ConnectionBlock.module.scss";
+import React from "react";
 
 import { Card } from "../base/Card";
 import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
+import styles from "./ConnectionBlock.module.scss";
 
 interface IProps {
   itemFrom?: { name: string; icon?: string };

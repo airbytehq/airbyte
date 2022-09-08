@@ -1,12 +1,13 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
-import styles from "./CollapsibleCard.module.scss";
 
 import { Card } from "components/base/Card";
-import classNames from "classnames";
+
+import styles from "./CollapsibleCard.module.scss";
 
 const CardHeader = styled.div`
   display: flex;

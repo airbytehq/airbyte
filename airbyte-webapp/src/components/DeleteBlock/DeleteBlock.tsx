@@ -3,10 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, H5 } from "components";
-import { Card } from "../base/Card";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
+
+import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
