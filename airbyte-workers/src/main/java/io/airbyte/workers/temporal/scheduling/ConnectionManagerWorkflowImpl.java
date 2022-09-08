@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
@@ -108,7 +109,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
 
-  static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
+  @VisibleForTesting
+  public static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
