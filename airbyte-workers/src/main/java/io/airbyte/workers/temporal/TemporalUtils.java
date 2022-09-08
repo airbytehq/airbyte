@@ -67,14 +67,20 @@ public class TemporalUtils {
   @Property(name = "airbyte.activity.max-delay",
             defaultValue = "600")
   private Integer maxDelayBetweenActivityAttemptsSeconds;
+  @Property(name = "temporal.cloud.client.cert")
   private String temporalCloudClientCert;
+  @Property(name = "temporal.cloud.client.key")
   private String temporalCloudClientKey;
   @Property(name = "temporal.cloud.enabled",
             defaultValue = "false")
   private Boolean temporalCloudEnabled;
+  @Property(name = "temporal.cloud.host")
   private String temporalCloudHost;
+  @Property(name = "temporal.cloud.namespace")
   private String temporalCloudNamespace;
+  @Property(name = "temporal.host")
   private String temporalHost;
+  @Property(name = "temporal.retention")
   private Integer temporalRetentionInDays;
 
   public TemporalUtils() {}
@@ -82,13 +88,13 @@ public class TemporalUtils {
   public TemporalUtils(final Integer activityNumberOfAttempts,
                        final Integer initialDelayBetweenActivityAttemptsSeconds,
                        final Integer maxDelayBetweenActivityAttemptsSeconds,
-                       @Property(name = "temporal.cloud.client.cert") final String temporalCloudClientCert,
-                       @Property(name = "temporal.cloud.client.key") final String temporalCloudClientKey,
+                       final String temporalCloudClientCert,
+                       final String temporalCloudClientKey,
                        final Boolean temporalCloudEnabled,
-                       @Property(name = "temporal.cloud.host") final String temporalCloudHost,
-                       @Property(name = "temporal.cloud.namespace") final String temporalCloudNamespace,
-                       @Property(name = "temporal.host") final String temporalHost,
-                       @Property(name = "temporal.retention") final Integer temporalRetentionInDays) {
+                       final String temporalCloudHost,
+                       final String temporalCloudNamespace,
+                       final String temporalHost,
+                       final Integer temporalRetentionInDays) {
     this.activityNumberOfAttempts = activityNumberOfAttempts;
     this.initialDelayBetweenActivityAttemptsSeconds = initialDelayBetweenActivityAttemptsSeconds;
     this.maxDelayBetweenActivityAttemptsSeconds = maxDelayBetweenActivityAttemptsSeconds;
