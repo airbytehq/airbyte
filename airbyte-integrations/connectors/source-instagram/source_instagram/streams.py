@@ -320,6 +320,7 @@ class MediaInsights(Media):
 
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
+    REEL_METRICS = ["comments", "likes", "play", "reach", "saved", "shares", "total_interactions"]
 
     def read_records(
         self,
@@ -348,6 +349,8 @@ class MediaInsights(Media):
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
             metrics = self.CAROUSEL_ALBUM_METRICS
+        elif item.get("media_type") == "REEL":
+            metrics = self.REEL_METRICS
         else:
             metrics = self.MEDIA_METRICS
 
