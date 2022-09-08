@@ -89,7 +89,6 @@ class Tags(KustomerStream):
         """
         return "/v3/kb/tags"
 
-
 # Source
 class SourceKustomer(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -103,7 +102,13 @@ class SourceKustomer(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        return True, None
+        auth = TokenAuthenticator(token=config["api_token"])
+        try:
+            teams = Teams(authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
+            next(teams)
+            return True, None
+        except requests.exceptions.RequestException as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
