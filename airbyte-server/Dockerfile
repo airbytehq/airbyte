@@ -1,3 +1,5 @@
+# This is a test pr to verify that snyk/davinchia does not attempt to run anymore
+
 ARG JDK_VERSION=19-slim-bullseye
 ARG JDK_IMAGE=openjdk:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS server
