@@ -16,7 +16,7 @@ import {
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
@@ -118,10 +118,13 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
-interface ConnectionFormProps {
+export type ConnectionOrPartialConnection =
+  | WebBackendConnectionRead
+  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+
+export interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
-  additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
@@ -132,19 +135,16 @@ interface ConnectionFormProps {
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+  connection: ConnectionOrPartialConnection;
 }
 
-const ConnectionForm: React.FC<ConnectionFormProps> = ({
+export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onCancel,
   className,
   onDropDownSelect,
   mode,
   successMessage,
-  additionBottomControls,
   canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
@@ -194,7 +194,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
   );
 
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
+  const errorMessage = submitError ? generateMessageFromError(submitError) : null;
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return (
@@ -373,7 +373,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onEndEditTransformation={toggleEditingTransformation}
               />
               <CreateControls
-                additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
                 errorMessage={
@@ -387,6 +386,3 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     </Formik>
   );
 };
-
-export type { ConnectionFormProps };
-export default ConnectionForm;
