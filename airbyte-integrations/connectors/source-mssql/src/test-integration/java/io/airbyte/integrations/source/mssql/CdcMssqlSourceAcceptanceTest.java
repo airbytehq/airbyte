@@ -97,7 +97,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "replication_type", "CDC",
+        "method", "CDC",
         "data_to_sync", "Existing and New",
         "snapshot_isolation", "Snapshot"));
 
@@ -107,7 +107,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
-        .put("replication", replicationConfig)
+        .put("replication_method", replicationConfig)
         .build());
 
     dslContext = DSLContextFactory.create(

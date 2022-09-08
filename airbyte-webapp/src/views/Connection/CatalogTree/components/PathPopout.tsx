@@ -1,9 +1,11 @@
 import React from "react";
 
 import { Popout } from "components";
+import { Tooltip } from "components/base/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
+import styles from "./PathPopout.module.scss";
 import { PathPopoutButton } from "./PathPopoutButton";
 
 export function pathDisplayName(path: Path): string {
@@ -41,7 +43,11 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
           : pathDisplayName(props.path)
         : "";
 
-      return <>{text}</>;
+      return (
+        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+          {text}
+        </Tooltip>
+      );
     }
     return <>{"<sourceDefined>"}</>;
   }

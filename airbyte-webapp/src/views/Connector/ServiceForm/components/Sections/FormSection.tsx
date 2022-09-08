@@ -43,7 +43,7 @@ interface FormSectionProps {
   disabled?: boolean;
 }
 
-const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, hasOauth, disabled }) => {
+export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, hasOauth, disabled }) => {
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
 
@@ -84,5 +84,3 @@ const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend
     </>
   );
 };
-
-export { FormSection };
