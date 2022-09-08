@@ -1124,6 +1124,25 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
+    @DisplayName("Should list all jobs matching multiple config types")
+    void testListJobsMultipleConfigTypes() throws IOException {
+      final long specJobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final long checkJobId = jobPersistence.enqueueJob(SCOPE, CHECK_JOB_CONFIG).orElseThrow();
+      // add a third config type that is not added in the listJobs request, to verify that it is not
+      // included in the results
+      jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+
+      final List<Job> actualList =
+          jobPersistence.listJobs(Set.of(SPEC_JOB_CONFIG.getConfigType(), CHECK_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), 9999, 0);
+
+      final List<Job> expectedList =
+          List.of(createJob(checkJobId, CHECK_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond()),
+              createJob(specJobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond()));
+
+      assertEquals(expectedList, actualList);
+    }
+
+    @Test
     @DisplayName("Should list all jobs with all attempts")
     void testListJobsWithMultipleAttempts() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
@@ -1184,15 +1203,18 @@ class DefaultJobPersistenceTest {
       for (int i = 0; i < 100; i++) {
         // This makes each enqueued job have an increasingly higher createdAt time
         when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
-        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        // Alternate between spec and check job config types to verify that both config types are fetched
+        // properly
+        final JobConfig jobConfig = i % 2 == 0 ? SPEC_JOB_CONFIG : CHECK_JOB_CONFIG;
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), jobConfig).orElseThrow();
         ids.add(jobId);
         // also create an attempt for each job to verify that joining with attempts does not cause failures
         jobPersistence.createAttempt(jobId, LOG_PATH);
       }
 
       final int startingIdIndex = 50;
-      final List<Job> actualList =
-          jobPersistence.listJobsStartingWithId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), ids.get(startingIdIndex), 25);
+      final List<Job> actualList = jobPersistence.listJobsStartingWithId(Set.of(SPEC_JOB_CONFIG.getConfigType(), CHECK_JOB_CONFIG.getConfigType()),
+          CONNECTION_ID.toString(), ids.get(startingIdIndex), 25);
       final List<Long> expectedJobIds = Lists.reverse(ids.subList(startingIdIndex, ids.size()));
       assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
     }

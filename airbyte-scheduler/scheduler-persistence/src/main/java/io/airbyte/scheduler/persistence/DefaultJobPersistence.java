@@ -68,6 +68,7 @@ import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.Sequence;
 import org.jooq.Table;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -404,12 +405,12 @@ public class DefaultJobPersistence implements JobPersistence {
   public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
     return jobDatabase.query(ctx -> {
       final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
-          .where(JOBS.CONFIG_TYPE.cast(String.class).in(DSL.inline(Sqls.toSqlInFragmentInline(configTypes))))
-          .and(JOBS.SCOPE.eq(DSL.inline(configId)))
+          .where(JOBS.CONFIG_TYPE.cast(String.class).in(Sqls.toSqlNames(configTypes)))
+          .and(JOBS.SCOPE.eq(configId))
           .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
-          .limit(DSL.inline(pagesize))
-          .offset(DSL.inline(offset))
-          .getSQL() + ") AS jobs";
+          .limit(pagesize)
+          .offset(offset)
+          .getSQL(ParamType.INLINED) + ") AS jobs";
 
       return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
     });
@@ -444,10 +445,10 @@ public class DefaultJobPersistence implements JobPersistence {
     // list of jobs starting with starting job is larger than pagesize, so return that list
     return jobDatabase.query(ctx -> {
       final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
-          .where(JOBS.CONFIG_TYPE.cast(String.class).in(DSL.inline(Sqls.toSqlInFragmentInline(configTypes))))
-          .and(JOBS.SCOPE.eq(DSL.inline(connectionId)))
-          .and(JOBS.CREATED_AT.greaterOrEqual(DSL.inline(startingJobCreatedAt.get())))
-          .getSQL() + ") AS jobs";
+          .where(JOBS.CONFIG_TYPE.cast(String.class).in(Sqls.toSqlNames(configTypes)))
+          .and(JOBS.SCOPE.eq(connectionId))
+          .and(JOBS.CREATED_AT.greaterOrEqual(startingJobCreatedAt.get()))
+          .getSQL(ParamType.INLINED) + ") AS jobs";
 
       return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
     });
