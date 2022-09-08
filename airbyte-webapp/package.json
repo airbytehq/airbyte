@@ -137,8 +137,14 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+    "src/**/*.{js,jsx,ts,tsx,json}": [
+      "eslint --fix"
+    ],
+    "src/**/*.{css,scss,md}": [
       "prettier --write"
+    ],
+    "src/**/*.{css,scss}": [
+      "stylelint --fix"
     ]
   },
   "browserslist": {
