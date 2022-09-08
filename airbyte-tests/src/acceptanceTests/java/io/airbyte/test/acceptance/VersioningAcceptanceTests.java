@@ -64,7 +64,7 @@ public class VersioningAcceptanceTests {
   @ParameterizedTest
   @CsvSource({
       "2.1.1, 0.2.0",
-      "2.2.0, 0.2.1",
+      "2.1.2, 0.2.1",
   })
   void testCreateSourceSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
@@ -89,14 +89,16 @@ public class VersioningAcceptanceTests {
 
   @ParameterizedTest
   @CsvSource({
-      "0.2.4, 0.2.0",
-      "0.2.5, 0.2.1",
+      "2.1.1, 0.2.0",
+      "2.1.2, 0.2.1",
   })
   void testCreateDestinationSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
     final DestinationDefinitionCreate destDefinitionCreate = new DestinationDefinitionCreate()
         .dockerImageTag(dockerImageTag)
-        .dockerRepository("airbyte/destination-e2e-test")
+        // We are currently using source because the destination-e2e-test connector is facing a regression (09-08-2020)
+        // For the purpose of the test, at this moment, using source works because we only check version
+        .dockerRepository("airbyte/source-e2e-test")
         .documentationUrl(new URI("https://hub.docker.com/r/airbyte/destination-e2e-test"))
         .name("Dest E2E Test Connector");
 
