@@ -275,7 +275,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(null),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(null)))));;
+                        .withStreamState(null)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
     statePersistence.updateOrCreateState(connectionId, fullReset);
