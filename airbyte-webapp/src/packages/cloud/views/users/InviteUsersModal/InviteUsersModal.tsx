@@ -13,6 +13,7 @@ import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Modal } from "components/ui/Modal";
 
+import { useNotificationService } from "hooks/services/Notification";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
 
@@ -59,6 +60,7 @@ export const InviteUsersModal: React.FC<{
   const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
+  const { registerNotification } = useNotificationService();
   const { mutateAsync: invite } = inviteUserLogic;
 
   const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
@@ -78,10 +80,17 @@ export const InviteUsersModal: React.FC<{
           ],
         }}
         onSubmit={async (values) => {
+          const count = values.users.length;
           await invite(
             { users: values.users, workspaceId },
             {
-              onSuccess: () => props.onClose(),
+              onSuccess: () => {
+                registerNotification({
+                  title: formatMessage({ id: "addUsers.success.title" }, { count }),
+                  id: `invite-users-success-${count}`,
+                });
+                props.onClose();
+              },
             }
           );
         }}
