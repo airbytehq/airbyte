@@ -120,10 +120,7 @@ public class TemporalUtils {
   // Cloud migration is complete.
   // The Temporal Migration migrator is the only reason this public method exists.
   public WorkflowServiceStubs createTemporalService(final boolean isCloud) {
-    log.info(temporalHost);
-    final WorkflowServiceStubsOptions options = isCloud ? getCloudTemporalOptions()
-        : TemporalWorkflowUtils.getAirbyteTemporalOptions("airbyte"
-            + "-temporal:7233");
+    final WorkflowServiceStubsOptions options = isCloud ? getCloudTemporalOptions() : TemporalWorkflowUtils.getAirbyteTemporalOptions(temporalHost);
     final String namespace = isCloud ? temporalCloudNamespace : DEFAULT_NAMESPACE;
 
     return createTemporalService(options, namespace);
