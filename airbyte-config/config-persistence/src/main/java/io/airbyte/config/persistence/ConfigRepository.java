@@ -89,6 +89,10 @@ public class ConfigRepository {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  public ConfigPersistence getConfigPersistence() {
+    return persistence;
+  }
+
   /**
    * Conduct a health check by attempting to read from the database. Since there isn't an
    * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
