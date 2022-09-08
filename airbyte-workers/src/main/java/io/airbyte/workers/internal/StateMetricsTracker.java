@@ -101,6 +101,7 @@ public class StateMetricsTracker {
     remainingCapacity -= 1;
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   void updateMaxAndMeanSeconds(final LocalDateTime startingTime, final LocalDateTime timeCommitted) {
     final Long secondsUntilCommit = calculateSecondsBetweenStateEmittedAndCommitted(startingTime, timeCommitted);
     if (maxSecondsBetweenStateMessageEmittedandCommitted < secondsUntilCommit) {
