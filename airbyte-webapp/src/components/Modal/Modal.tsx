@@ -10,7 +10,6 @@ export interface ModalProps {
   title?: string | React.ReactNode;
   onClose?: () => void;
   clear?: boolean;
-  closeOnBackground?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
   testId?: string;
 }

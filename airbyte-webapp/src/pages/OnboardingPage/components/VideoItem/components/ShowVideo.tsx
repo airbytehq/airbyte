@@ -25,7 +25,7 @@ const CloseButton = styled(Button)`
 
 const ShowVideo: React.FC<ShowVideoProps> = ({ videoId, onClose }) => {
   return (
-    <Modal onClose={onClose} clear closeOnBackground>
+    <Modal onClose={onClose} clear>
       <CloseButton onClick={onClose} iconOnly>
         <FontAwesomeIcon icon={faTimes} />
       </CloseButton>
