@@ -1,0 +1,51 @@
+micronaut:
+  application:
+    name: airbyte-cron
+
+airbyte:
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  version: ${AIRBYTE_VERSION}
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    maximum-pool-size: 10
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+#  jobs:
+#    connection-test-query: SELECT 1
+#    connection-timeout: 30000
+#    idle-timeout: 600000
+#    maximum-pool-size: 10
+#    url: ${DATABASE_URL}
+#    driverClassName: org.postgresql.Driver
+#    username: ${DATABASE_USER}
+#    password: ${DATABASE_PASSWORD}
+
+flyway:
+  enabled: true
+  datasources:
+    config:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/configs/migrations'
+    jobs:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/jobs/migrations'
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
