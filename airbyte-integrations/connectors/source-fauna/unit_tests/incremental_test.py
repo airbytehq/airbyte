@@ -56,6 +56,9 @@ def state(data: dict[str, any]) -> AirbyteMessage:
 # Tests to make sure the read() function handles the various config combinations of
 # updates/deletions correctly.
 def test_read_no_updates_or_creates_but_removes_present():
+    def find_index_for_stream(collection: str) -> str:
+        return "ts"
+
     def read_updates_hardcoded(
         logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int
     ) -> Generator[any, None, None]:
@@ -82,6 +85,7 @@ def test_read_no_updates_or_creates_but_removes_present():
     source = SourceFauna()
     source._setup_client = Mock()
     source.read_all = Mock()
+    source.find_index_for_stream = find_index_for_stream
     source.read_updates = read_updates_hardcoded
     source.read_removes = read_removes_hardcoded
     source.client = MagicMock()
@@ -155,6 +159,9 @@ def test_read_no_updates_or_creates_but_removes_present():
 def test_read_updates_ignore_deletes():
     was_called = False
 
+    def find_index_for_stream(collection: str) -> str:
+        return "my_stream_name_ts"
+
     def read_updates_hardcoded(
         logger, stream: ConfiguredAirbyteStream, conf, state: dict[str, any], index: str, page_size: int
     ) -> Generator[any, None, None]:
@@ -190,6 +197,7 @@ def test_read_updates_ignore_deletes():
     source = SourceFauna()
     source._setup_client = Mock()
     source.read_all = Mock()
+    source.find_index_for_stream = find_index_for_stream
     source.read_updates = read_updates_hardcoded
     source.read_removes = read_removes_hardcoded
     source.client = MagicMock()
@@ -204,7 +212,6 @@ def test_read_updates_ignore_deletes():
                 {
                     "collection": {
                         "name": "my_stream_name",
-                        "index": "my_stream_name_ts",
                         "deletions": {
                             "deletion_mode": "ignore",
                         },
@@ -340,6 +347,9 @@ def test_read_removes_resume_from_partial_failure():
 
     failed_yet = False
 
+    def find_index_for_stream(collection: str) -> str:
+        return "foo_ts"
+
     def query_hardcoded(expr):
         nonlocal current_query
         nonlocal failed_yet
@@ -354,6 +364,7 @@ def test_read_removes_resume_from_partial_failure():
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
+    source.find_index_for_stream = find_index_for_stream
     source.client.query = query_hardcoded
 
     logger = mock_logger()
@@ -362,7 +373,7 @@ def test_read_removes_resume_from_partial_failure():
     # ts should be "now", which is whatever we want
     # ref must not be present, as we are not resuming
     state = {}
-    config = CollectionConfig(index="foo_ts", page_size=PAGE_SIZE)
+    config = CollectionConfig(page_size=PAGE_SIZE)
     outputs = []
     try:
         for output in source.read_removes(logger, stream, config, state, deletion_column="deletes_here"):
@@ -490,6 +501,9 @@ def test_read_remove_deletions():
         ),
     ]
 
+    def find_index_for_stream(collection: str) -> str:
+        return "foo_ts"
+
     def query_hardcoded(expr):
         nonlocal current_query
         assert expr == QUERIES[current_query]
@@ -500,6 +514,7 @@ def test_read_remove_deletions():
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
+    source.find_index_for_stream = find_index_for_stream
     source.client.query = query_hardcoded
 
     logger = mock_logger()
@@ -508,7 +523,7 @@ def test_read_remove_deletions():
     # ts should be "now", which is whatever we want
     # ref must not be present, as we are not resuming
     state = {}
-    config = CollectionConfig(index="foo_ts", page_size=PAGE_SIZE)
+    config = CollectionConfig(page_size=PAGE_SIZE)
     outputs = list(source.read_removes(logger, stream, config, state, deletion_column="my_deleted_column"))
     # We should get the first document
     assert outputs == [
@@ -653,6 +668,7 @@ def test_read_updates_query():
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
+    source.find_index_for_stream = Mock()
     source.client.query = query_hardcoded
     source.find_emitted_at = Mock(return_value=NOW)
 
@@ -669,7 +685,7 @@ def test_read_updates_query():
                     json_schema={},
                 ),
             ),
-            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
@@ -705,7 +721,7 @@ def test_read_updates_query():
                     json_schema={},
                 ),
             ),
-            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
@@ -727,7 +743,7 @@ def test_read_updates_query():
                     json_schema={},
                 ),
             ),
-            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
@@ -738,6 +754,7 @@ def test_read_updates_query():
     assert state == {"ref": "11", "ts": 1000}
 
     assert not source._setup_client.called
+    assert not source.find_index_for_stream.called
     assert not logger.error.called
     assert current_query == 5
 
@@ -819,6 +836,7 @@ def test_read_updates_resume():
     source = SourceFauna()
     source._setup_client = Mock()
     source.client = MagicMock()
+    source.find_index_for_stream = Mock()
     source.client.query = query_hardcoded
     source.find_emitted_at = Mock(return_value=NOW)
 
@@ -838,7 +856,7 @@ def test_read_updates_resume():
                     json_schema={},
                 ),
             ),
-            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
@@ -869,7 +887,7 @@ def test_read_updates_resume():
                     json_schema={},
                 ),
             ),
-            CollectionConfig(index=INDEX, page_size=PAGE_SIZE),
+            CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
@@ -889,5 +907,6 @@ def test_read_updates_resume():
     assert state["ref"] == "10"  # This is set after we finish reading
     assert "after" not in state  # This is some after token, serialized to json
     assert not source._setup_client.called
+    assert not source.find_index_for_stream.called
     assert not logger.error.called
     assert current_query == 3

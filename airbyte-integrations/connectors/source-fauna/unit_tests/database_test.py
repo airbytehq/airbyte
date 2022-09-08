@@ -176,7 +176,6 @@ def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteS
     )
 
     conf = CollectionConfig(
-        name="foo",
         deletions=DeletionsConfig.ignore(),
     )
     results = list(source.read_removes(logger, stream, conf, state={}, deletion_column="my_deletion_col"))
@@ -203,7 +202,6 @@ def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyt
     print(ref1, ref2, ref3)
 
     conf = CollectionConfig(
-        name="foo",
         deletions=DeletionsConfig.ignore(),
         page_size=2,
     )
@@ -296,10 +294,6 @@ def run_general_remove_test(source: SourceFauna, logger):
         {
             "port": 9000,
             "collection": {
-                "data_column": True,
-                "additional_columns": [],
-                "name": "deletions_test",
-                "index": "deletions_test_ts",
                 "deletions": {"deletion_mode": "deleted_field", "column": "deleted_at"},
             },
         }
@@ -311,21 +305,25 @@ def run_general_remove_test(source: SourceFauna, logger):
             "ref": "101",
             "ts": db_data[0]["ts"],
             "data": {"a": 5},
+            "ttl": None,
         },
         {
             "ref": "102",
             "ts": db_data[1]["ts"],
             "data": {"a": 6},
+            "ttl": None,
         },
         {
             "ref": "103",
             "ts": db_data[2]["ts"],
             "data": {"a": 7},
+            "ttl": None,
         },
         {
             "ref": "104",
             "ts": db_data[3]["ts"],
             "data": {"a": 8},
+            "ttl": None,
         },
     ]
 
@@ -398,19 +396,7 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
     conf = config(
         {
             "port": 9000,
-            "collection": {
-                "data_column": False,
-                "additional_columns": [
-                    {
-                        "name": "a",
-                        "path": ["data", "a"],
-                        "type": "integer",
-                        "required": True,
-                    }
-                ],
-                "name": "foo",
-                "index": "foo_ts",
-            },
+            "collection": {},
         }
     )
     handle_check(source.check(logger, conf))
@@ -421,22 +407,26 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
         {
             "ref": db_data["ref"][0].id(),
             "ts": db_data["ts"][0],
-            "a": 5,
+            "data": {"a": 5},
+            "ttl": None,
         },
         {
             "ref": db_data["ref"][1].id(),
             "ts": db_data["ts"][1],
-            "a": 6,
+            "data": {"a": 6},
+            "ttl": None,
         },
         {
             "ref": db_data["ref"][2].id(),
             "ts": db_data["ts"][2],
-            "a": 7,
+            "data": {"a": 7},
+            "ttl": None,
         },
         {
             "ref": db_data["ref"][3].id(),
             "ts": db_data["ts"][3],
-            "a": 8,
+            "data": {"a": 8},
+            "ttl": None,
         },
     ]
     print("=== check: make sure the state resumes")
@@ -467,16 +457,20 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
             "ref": db_data["ref"][1].id(),
             # New ts
             "ts": update_result["ts"],
-            # New value
-            "a": 10,
+            # New data
+            "data": {"a": 10},
+            # Same ttl
+            "ttl": None,
         },
         {
             # New ref
             "ref": "200",
             # New ts
             "ts": create_result["ts"],
-            # New value
-            "a": 10000,
+            # New data
+            "data": {"a": 10000},
+            # Same ttl
+            "ttl": None,
         },
     ]
 

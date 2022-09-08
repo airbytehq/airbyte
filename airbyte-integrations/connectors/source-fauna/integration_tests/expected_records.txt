@@ -1,4 +1,4 @@
-{ "stream": "sample-data", "emitted_at": "1", "data": { "ref": "337567897171787849", "ts": 1658188683585000, "data": { "a": 5, "nested": { "value": 15 } }, "my_a_col": 5, "nested_column": 15, "optional_name": null } }
-{ "stream": "sample-data", "emitted_at": "2", "data": { "ref": "337567897172836425", "ts": 1658271973660000, "data": { "a": 6, "nested": { "value": 20 }, "name": "hello world" }, "my_a_col": 6, "nested_column": 20, "optional_name": "hello world" } }
-{ "stream": "sample-data", "emitted_at": "3", "data": { "ref": "337567897172837449", "ts": 1658188683585000, "data": { "a": 7, "nested": { "value": 25 } }, "my_a_col": 7, "nested_column": 25, "optional_name": null } }
-{ "stream": "sample-data", "emitted_at": "4", "data": { "ref": "337567897173885001", "ts": 1658188683585000, "data": { "a": 8, "nested": { "value": 30 } }, "my_a_col": 8, "nested_column": 30, "optional_name": null } }
+{ "stream": "sample-data", "emitted_at": "1", "data": { "ref": "337567897171787849", "ts": 1658188683585000, "data": { "a": 5, "nested": { "value": 15 } }, "ttl": null } }
+{ "stream": "sample-data", "emitted_at": "2", "data": { "ref": "337567897172836425", "ts": 1658271973660000, "data": { "a": 6, "nested": { "value": 20 }, "name": "hello world" }, "ttl": null } }
+{ "stream": "sample-data", "emitted_at": "3", "data": { "ref": "337567897172837449", "ts": 1658188683585000, "data": { "a": 7, "nested": { "value": 25 } }, "ttl": null } }
+{ "stream": "sample-data", "emitted_at": "4", "data": { "ref": "337567897173885001", "ts": 1658188683585000, "data": { "a": 8, "nested": { "value": 30 } }, "ttl": null } }
