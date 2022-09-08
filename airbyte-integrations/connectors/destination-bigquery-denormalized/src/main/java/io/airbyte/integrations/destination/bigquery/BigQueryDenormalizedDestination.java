@@ -90,15 +90,15 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
     if (existingTable != null)
     {
-      LOGGER.info("Target table already exists. Checking could we use the modern destination processing.");
+      LOGGER.info("Target table already exists. Checking could we use the default destination processing.");
       if (!compareSchemas((formatter.getBigQuerySchema()), existingTable.getDefinition().getSchema())) {
         ((DefaultBigQueryDenormalizedRecordFormatter) formatter).setArrayFormatter(new LegacyArrayFormatter());
-        LOGGER.warn("Existing target table has different structure with the new destination processing. Trying old implementation.");
+        LOGGER.warn("Existing target table has different structure with the new destination processing. Trying legacy implementation.");
       } else {
-        LOGGER.info("Existing target table {} has equal structure with the destination schema. Using the new array processing.", stream.getName());
+        LOGGER.info("Existing target table {} has equal structure with the destination schema. Using the default array processing.", stream.getName());
       }
     } else {
-      LOGGER.info("Target table is not created yet. The modern destination processing will be used.");
+      LOGGER.info("Target table is not created yet. The default destination processing will be used.");
     }
 
     AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
@@ -152,7 +152,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   /**
-   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED.
+   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED, null.
    * Only the REPEATED mode difference is critical. The method fails only if at least one is REPEATED and the second one is not.
    * @param expectedField expected field structure
    * @param existingField existing field structure
@@ -162,10 +162,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     var expectedMode = expectedField.getMode();
     var existingMode = existingField.getMode();
 
-    if (expectedMode == null || existingMode == null) {
-      return expectedMode == null && existingMode == null;
-    } else if (expectedMode.equals(REPEATED) || existingMode.equals(REPEATED)) {
-      return expectedMode.equals(existingMode);
+    if (expectedMode != null && expectedMode.equals(REPEATED) || existingMode != null && existingMode.equals(REPEATED)) {
+      return expectedMode != null && expectedMode.equals(existingMode);
     } else {
       return true;
     }
