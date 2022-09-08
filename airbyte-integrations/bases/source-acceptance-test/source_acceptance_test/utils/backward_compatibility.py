@@ -91,10 +91,11 @@ class BaseDiffChecker(ABC):
             if isinstance(change.t1, str):
                 if not isinstance(change.t2, list):
                     self._raise_error("A 'type' field was changed from string to an invalid value.", diff)
-                # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
+                # If the new type field is a list we want to make sure it contains the original type (t1):
+                # e.g. "str" -> ["str", "null"]
+                #      "int" -> ["int", "str"]
                 # We want to raise an error otherwise.
-                t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
-                if not (len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1):
+                if change.t1 not in change.t2:
                     self._raise_error("The 'type' field was changed to a list with multiple invalid values", diff)
             if isinstance(change.t1, list):
                 if not isinstance(change.t2, str):
