@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CONFIG_DATASET_ID;
-
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -229,7 +227,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return uploaderMap;
   }
 
-  protected void putStreamIntoUploaderMap(final AirbyteStream stream, final UploaderConfig uploaderConfig, final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) throws IOException {
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream,
+                                          final UploaderConfig uploaderConfig,
+                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+      throws IOException {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
         BigQueryUploaderFactory.getUploader(uploaderConfig));

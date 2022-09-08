@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.createGcsConfig;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Schema;

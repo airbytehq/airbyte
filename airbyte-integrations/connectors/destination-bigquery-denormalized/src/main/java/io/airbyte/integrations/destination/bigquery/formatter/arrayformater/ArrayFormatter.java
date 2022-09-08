@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.FieldList;
 import java.util.List;
 
 public interface ArrayFormatter {

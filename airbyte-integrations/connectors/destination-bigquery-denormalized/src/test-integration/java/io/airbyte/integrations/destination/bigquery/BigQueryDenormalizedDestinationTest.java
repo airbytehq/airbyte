@@ -131,7 +131,6 @@ class BigQueryDenormalizedDestinationTest {
 
   }
 
-
   @AfterEach
   void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
@@ -192,7 +191,8 @@ class BigQueryDenormalizedDestinationTest {
     var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
         DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     var actualValue =
-        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
+        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(),
+            DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     assertEquals(expectedValue, actualValue);
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(), getExpectedSchemaForWriteWithFormatTest());
@@ -298,7 +298,7 @@ class BigQueryDenormalizedDestinationTest {
     try {
       runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
     } catch (Exception e) {
-      assert(e.getCause().getMessage().contains("nested too deeply"));
+      assert (e.getCause().getMessage().contains("nested too deeply"));
     }
   }
 
@@ -307,7 +307,8 @@ class BigQueryDenormalizedDestinationTest {
   void testMaxNestedDepth() throws Exception {
     runDestinationWrite(getCommonCatalog(getSchemaMaxNestedDepth(), datasetId), config, MESSAGE_USERS13);
 
-    assertEquals(getDataMaxNestedDepth().findValue("str_value").asText(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0).findValue("str_value").asText());
+    assertEquals(getDataMaxNestedDepth().findValue("str_value").asText(),
+        retrieveRecordsAsJson(USERS_STREAM_NAME).get(0).findValue("str_value").asText());
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
@@ -351,9 +352,8 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   /**
-   * BigQuery returns date values in a different format based on the column type.
-   * Datetime  : YYYY-MM-DD'T'HH:MM:SS
-   * Timestamp : YYYY-MM-DD'T'HH:MM:SS'Z'
+   * BigQuery returns date values in a different format based on the column type. Datetime :
+   * YYYY-MM-DD'T'HH:MM:SS Timestamp : YYYY-MM-DD'T'HH:MM:SS'Z'
    *
    * This method formats all values as Airbite format to simplify test result validation.
    */

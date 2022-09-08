@@ -83,19 +83,22 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   @Override
-  protected void putStreamIntoUploaderMap(AirbyteStream stream, UploaderConfig uploaderConfig,
-      Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) throws IOException {
-    Table existingTable = uploaderConfig.getBigQuery().getTable(uploaderConfig.getConfigStream().getStream().getNamespace(), uploaderConfig.getTargetTableName());
+  protected void putStreamIntoUploaderMap(AirbyteStream stream,
+                                          UploaderConfig uploaderConfig,
+                                          Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+      throws IOException {
+    Table existingTable =
+        uploaderConfig.getBigQuery().getTable(uploaderConfig.getConfigStream().getStream().getNamespace(), uploaderConfig.getTargetTableName());
     BigQueryRecordFormatter formatter = uploaderConfig.getFormatter();
 
-    if (existingTable != null)
-    {
+    if (existingTable != null) {
       LOGGER.info("Target table already exists. Checking could we use the default destination processing.");
       if (!compareSchemas((formatter.getBigQuerySchema()), existingTable.getDefinition().getSchema())) {
         ((DefaultBigQueryDenormalizedRecordFormatter) formatter).setArrayFormatter(new LegacyArrayFormatter());
         LOGGER.warn("Existing target table has different structure with the new destination processing. Trying legacy implementation.");
       } else {
-        LOGGER.info("Existing target table {} has equal structure with the destination schema. Using the default array processing.", stream.getName());
+        LOGGER.info("Existing target table {} has equal structure with the destination schema. Using the default array processing.",
+            stream.getName());
       }
     } else {
       LOGGER.info("Target table is not created yet. The default destination processing will be used.");
@@ -108,11 +111,13 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   /**
-   * Compare calculated bigquery schema and existing schema of the table.
-   * Note! We compare only fields from the calculated schema to avoid manually created fields in the table.
-   * @param expectedSchema BigQuery schema of the table which we calculated using the stream schema config
+   * Compare calculated bigquery schema and existing schema of the table. Note! We compare only fields
+   * from the calculated schema to avoid manually created fields in the table.
+   *
+   * @param expectedSchema BigQuery schema of the table which we calculated using the stream schema
+   *        config
    * @param existingSchema BigQuery schema of the existing table (created by previous run)
-   * @return               Are calculated fields same as we have in the existing table
+   * @return Are calculated fields same as we have in the existing table
    */
   private boolean compareSchemas(com.google.cloud.bigquery.Schema expectedSchema, @Nullable com.google.cloud.bigquery.Schema existingSchema) {
     if (expectedSchema != null && existingSchema == null) {
@@ -152,11 +157,13 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   /**
-   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED, null.
-   * Only the REPEATED mode difference is critical. The method fails only if at least one is REPEATED and the second one is not.
+   * Compare field modes. Field can have on of three modes: NULLABLE, REQUIRED, REPEATED, null. Only
+   * the REPEATED mode difference is critical. The method fails only if at least one is REPEATED and
+   * the second one is not.
+   *
    * @param expectedField expected field structure
    * @param existingField existing field structure
-   * @return              is critical difference in the field modes
+   * @return is critical difference in the field modes
    */
   private boolean compareRepeatedMode(Field expectedField, Field existingField) {
     var expectedMode = expectedField.getMode();

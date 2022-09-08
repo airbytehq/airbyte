@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.PROPERTIES_FIELD;
@@ -47,7 +51,8 @@ public class DefaultArrayFormatter implements ArrayFormatter {
 
   @Override
   public JsonNode formatArrayItems(List<JsonNode> arrayItems) {
-    return Jsons.jsonNode(arrayItems.stream().map(node -> (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node)).toList());
+    return Jsons
+        .jsonNode(arrayItems.stream().map(node -> (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node)).toList());
   }
 
   protected List<JsonNode> findArrays(final JsonNode node) {
@@ -74,4 +79,5 @@ public class DefaultArrayFormatter implements ArrayFormatter {
     }
     return false;
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -16,4 +20,5 @@ public class BigQueryDenormalizedTestConstants {
   public static final String USERS_STREAM_NAME = "users";
 
   public static final String BIGQUERY_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+
 }

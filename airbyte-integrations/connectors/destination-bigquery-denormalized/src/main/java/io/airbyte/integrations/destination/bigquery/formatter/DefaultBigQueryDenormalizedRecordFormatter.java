@@ -120,7 +120,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
   }
 
-
   private JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {

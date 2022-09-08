@@ -160,7 +160,7 @@ public class BigQueryDenormalizedTestDataUtils {
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
-  public static void runDestinationWrite(ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage...messages) throws Exception {
+  public static void runDestinationWrite(ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage... messages) throws Exception {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 

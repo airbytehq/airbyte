@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.PROPERTIES_FIELD;
@@ -58,4 +62,5 @@ public class LegacyArrayFormatter extends DefaultArrayFormatter {
   public JsonNode formatArrayItems(List<JsonNode> arrayItems) {
     return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, arrayItems));
   }
+
 }

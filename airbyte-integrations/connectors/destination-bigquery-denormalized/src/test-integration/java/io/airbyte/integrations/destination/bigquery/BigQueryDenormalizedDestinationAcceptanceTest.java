@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.AIRBYTE_COLUMNS;
-import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.CONFIG_DATASET_ID;
 import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.CONFIG_PROJECT_ID;
 import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.NAME_TRANSFORMER;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.configureBigQuery;
@@ -219,7 +218,6 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery(dataset, bigquery);
   }
-
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
