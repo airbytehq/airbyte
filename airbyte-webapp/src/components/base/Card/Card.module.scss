@@ -21,13 +21,14 @@
   border-bottom: #e8e8ed 1px solid;
   font-weight: 600;
   letter-spacing: 0.008em;
-  border-radius: 10px 10px 0px 0px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 
   &.lightPadding {
     padding: 19px 20px 20px;
   }
 
   &.roundedBottom {
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 10px;
   }
 }
