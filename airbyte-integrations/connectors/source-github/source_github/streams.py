@@ -1342,21 +1342,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     Get all workflow jobs for a workflow run
     API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
     """
-    
-    # Substituindo valor padrão 'completed_at' da classe 'SemiIncrementalMixin',
-    # porque a request não trás esse valor, ela é utilizada
-    # utilizado para streams semi incrementais e incrementais
-    # 
-    # Uma alternativa é implementar o método:
-    # def read_records(
-    #     self,
-    #     sync_mode: SyncMode,
-    #     cursor_field: List[str] = None,
-    #     stream_slice: Mapping[str, Any] = None,
-    #     stream_state: Mapping[str, Any] = None,
-    # ) -> Iterable[Mapping[str, Any]]:
-    #   ...
-    # Para não dar suporte a esse métodos baseado no incremental
+
     cursor_field = "completed_at"
 
     def __init__(self, parent: WorkflowRuns, **kwargs):
@@ -1378,7 +1364,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
             )
             for record in parent_records:
                 yield {"repository": record["repository"]["full_name"], "run_id": record["id"]}
-    
+
     def parse_response(
         self,
         response: requests.Response,
