@@ -1246,7 +1246,7 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should return an empty list if there is no job with the starting ID for this connection")
+    @DisplayName("Should return an empty list if there is no job with the includingJob ID for this connection")
     void testListJobsIncludingIdFromWrongConnection() throws IOException {
       for (int i = 0; i < 10; i++) {
         jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
