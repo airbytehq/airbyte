@@ -8,7 +8,7 @@
   * The `release_stage` describes the certification level of the connector (e.g. Alpha, Beta, Generally Available).
   * The `docker_repository` field is the name of the docker image associated with the connector definition. `docker_image_tag` is the tag of the docker image and the version of the connector definition.
   * The `source_type` field is only used for Sources, and represents the category of the connector definition (e.g. API, Database).
-  * The `resource_requirements` field sets a default resource requirement for any connector of this type. This overrides the default we set for all connector definitions, and it can be overridden by a connection-specific resource requirement.
+  * The `resource_requirements` field sets a default resource requirement for any connector of this type. This overrides the default we set for all connector definitions, and it can be overridden by a connection-specific resource requirement. The column is a JSON blob with the schema defined in [ActorDefinitionResourceRequirements.yaml](airbyte-config/config-models/src/main/resources/types/ActorDefinitionResourceRequirements.yaml)
   * The `public` boolean column, describes if a connector is available to all workspaces or not. For non, `public` connector definitions, they can be provisioned to a workspace using the `actor_definition_workspace_grant` table. `custom` means that the connector is written by a user of the platform (and not packaged into the Airbyte product).
   * Each record contains additional metadata and display data about a connector (e.g. `name` and `icon`), and we should add additional metadata here over time.
 * `actor_definition_workspace_grant`
@@ -30,26 +30,43 @@
   * The `actor_version` column represents the `actor_definition` version that was in use when the fetch event happened. This column is needed, because while we can infer the `actor_definition` from the foreign key relationship with the `actor` table, we cannot do the same for the version, as that can change over time.
   * todo (cgardens) - should we remove the `modified_at` column? These records should be immutable.
 * `connection`
-* `connection_operation`
-* `operation`
-* `stream_reset`
+  * Each record in this table configures a connection (`source_id`, `destination_id`, and relevant configuration).
+  * The `resource_requirements` field sets a default resource requirement for the connection. This overrides the default we set for all connector definitions and the default set for the connector definitions. The column is a JSON blob with the schema defined in [ResourceRequirements.yaml](airbyte-config/config-models/src/main/resources/types/ResourceRequirements.yaml).
+  * The `source_catalog_id` column is a foreign key to the `sourc_catalog` table and represents the catalog that was used to configure the connection. This should not be confused with the `catalog` column which contains the [ConfiguredCatalog](airbyte-protocol.md#catalog) for the connection.
+  * The `schedule_type` column defines what type of schedule is being used. If the `type` is manual, then `schedule_data` will be null. Otherwise, `schedule_data` column is a JSON blob with the schema of [StandardSync#scheduleData](airbyte-config/config-models/src/main/resources/types/StandardSync.yaml#79) that defines the actual schedule. The columns `manual` and `schedule` are deprecated and should be ignored (they will be dropped soon).
+  * The `namespace_type` column configures whether the namespace for the connection should use that defined by the source, the destination, or a user-defined format (`custom`). If `custom` the `namespace_format` column defines the string that will be used as the namespace.
+  * The `status` column describes the activity level of the connector: `active` - current schedule is respected, `inactive` - current schedule is ignored (the connection does not run) but it could be switched back to active, and `deprecated` - the connection is permanently off (cannot be moved to active or inactive).
 * `state`
+  * The `state` table represents the current (last) state for a connection. For a connection with `stream` state, there will be a record per stream. For a connection with `global` state, there will be a record per stream and an additional record to whole the shared (global) state. For a connection with `legacy` state, there will be one record per connection.
+  * In the `stream` and `global` state cases, the `stream_name` and `namespace` columns contains the name of the stream whose state is represented by that record. For the shared state in global `stream_name` and `namespace` will be null.
+  * The `state` column contains the state JSON blob. Depending on the type of the connection, the schema of the blob will be different.
+    * `stream` - this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it.
+    * `global` - this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it. This is true for both the states for each stream and the shared state.
+    * `legacy` - this column is a JSON blob with a top-level key called `state`. Within that `state` is a blackbox to the platform and known only to the connector that generated it.
+* `stream_reset`
+  * Each record in this table represents a stream in a connection that is enqueued to be reset. It can be thought of as a queue. Once the stream is reset, the record is removed from the table.
+* `operation`
+  * The `operation` table transformations for a connection beyond the raw output produced by the destination. The two options are: `normalization`, which outputs Airbyte's basic normalization. The second is `dbt`, which allows a user to configure their own custom dbt transformation. A connection can have multiple operations (e.g. it can do `normalization` and `dbt`).
+  * If the `operation` is `dbt`, then the `operator_dbt` column will be populated with a JSON blob with the schema from [OperatorDbt](airbyte-config/config-models/src/main/resources/types/OperatorDbt.yaml).
+  * If the `operation` is `normalization`, then the `operator_dbt` column will be populated with a JSON blob with the scehma from [OperatorNormalization](airbyte-config/config-models/src/main/resources/types/OperatorNormalization.yaml).
+  * Operations are scoped by workspace, using the `workspace_id` column.
+* `connection_operation`
+  * This table joins the `operation` table to the `connection` for which it is configured. 
 * `workspace_service_account`
+  * I don't know what this is. Should we drop it?
 * `actor_oauth_parameter`
   * The name of this table is misleading. It refers to parameters to be used for any instance of an `actor_definition` (not an `actor`) within a given workspace. For OAuth, the model is that a user is provisioning access to their data to a third party tool (in this case the Airbyte Platform). Each record represents information (e.g. client id, client secret) for that third party that is getting access. 
   * These parameters can be scoped by workspace. If `workspace_id` is not present, then the scope of the parameters is to the whole deployment of the platform (e.g. all workspaces).
   * The `actor_type` column tells us whether the record represents a Source or a Destination.
   * The `configuration` column is a JSON blob. The schema of this JSON blob matches the schema specified in the `spec` column in the `advanced_auth` field of the JSON blob. Keep in mind this schema is specific to each connector (e.g. the schema of Hubspot and Salesforce are different), which is why this column has to be a JSON blob.
-
-## System Tables
-* `airbyte_configs` & `airbyte_configs_migrations` are metadata tables used by Flyway (our database migration tool). They are not used for any application use cases. 
 * `secrets`
   * This table is used to store secrets in open-source versions of the platform that have not set some other secrets store. This table allows us to use the same code path for secrets handling regardless of whether an external secrets store is set or not. This table is used by default for the open-source product.
+* `airbyte_configs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
+* `airbyte_configs`
+  * I don't know what this is. Should we drop it?
 
 # Jobs Database
 * `jobs`
 * `attempts`
-
-## System Tables
-* `airbyte_jobs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
 * `airbyte_metadata`
+* `airbyte_jobs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
