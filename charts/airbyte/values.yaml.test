@@ -6,8 +6,8 @@ global:
   serviceAccountName: &service-account-name "airbyte-admin"
   ##  deploymentMode Deployment mode, whether or not render the default env vars and volumes in deployment spec
   deploymentMode: "oss"
-  image:
-    tag: "dev"
+  #image:
+  #  tag: "dev"
 
 
   ##  database [object] Object used to overrite database configuration(to use external DB)
@@ -667,6 +667,14 @@ worker:
 
   hpa:
     enabled: false
+  ## Container Orchestrator
+  ## enabled -- Enable or disable Orchestrator
+  ## image -- Orchestrator image
+
+  containerOrchestrator:
+    enabled: true
+    image: ""
+
 
 ## @section Metrics parameters
 metrics:

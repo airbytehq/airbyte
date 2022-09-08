@@ -43,7 +43,7 @@ Define imageTag
 */}}
 
 {{- define "metrics.imageTag" -}}
-{{- if .Values.global.image.tag }}
+{{- if ((.Values.global.image).tag) }}
     {{- printf "%s" .Values.global.image.tag }}
 {{- else if .Values.image.tag }}
     {{- printf "%s" .Values.image.tag }}
