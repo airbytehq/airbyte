@@ -1218,25 +1218,17 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should return the normal full page size if there is no job with the target ID for this connection")
+    @DisplayName("Should return an empty list if there is no job with the target ID for this connection")
     void testListJobsIncludingIdFromWrongConnection() throws IOException {
-      final List<Long> ids = new ArrayList<>();
-      for (int i = 0; i < 50; i++) {
-        // This makes each enqueued job have an increasingly higher createdAt time
-        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
-        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
-        ids.add(jobId);
-        // also create an attempt for each job to verify that joining with attempts does not cause failures
-        jobPersistence.createAttempt(jobId, LOG_PATH);
+      for (int i = 0; i < 10; i++) {
+        jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
       }
 
       final long otherConnectionJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SPEC_JOB_CONFIG).orElseThrow();
 
-      final int pageSize = 25;
       final List<Job> actualList =
-          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, pageSize);
-      final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - pageSize, ids.size()));
-      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
+          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, 25);
+      assertEquals(List.of(), actualList);
     }
 
   }

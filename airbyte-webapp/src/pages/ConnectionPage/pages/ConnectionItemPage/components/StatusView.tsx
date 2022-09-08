@@ -7,6 +7,7 @@ import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
+import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -51,15 +52,21 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
-  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
+  const { jobId: linkedJobId } = useAttemptLink();
+  const {
+    jobs,
+    totalJobCount,
+    isPreviousData: isJobPageLoading,
+  } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+    includingJobId: linkedJobId ? Number(linkedJobId) : undefined,
     pagination: {
       pageSize: jobPageSize,
     },
   });
 
-  const moreJobPagesAvailable = jobs.length === jobPageSize;
+  const moreJobPagesAvailable = jobPageSize < totalJobCount;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -73,6 +80,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           // We need to disable button when job is canceled but the job list still has a running job
         } as ActiveJob)
     );
+
+    // necessary if a specific job ID was linked, causing us to get back more jobs than the current page size
+    setJobPageSize((prevJobPageSize) => Math.max(prevJobPageSize, jobs.length));
   }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();

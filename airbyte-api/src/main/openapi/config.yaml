@@ -3995,7 +3995,7 @@ components:
       type: object
       required:
         - jobs
-        - totalCount
+        - totalJobCount
       properties:
         jobs:
           type: array

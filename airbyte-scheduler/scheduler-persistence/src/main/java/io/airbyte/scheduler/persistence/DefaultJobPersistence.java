@@ -6,6 +6,7 @@ package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -388,10 +389,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Long getJobCount(final Set<ConfigType> configTypes, final String connectionId) throws IOException {
-    final Result<Record> result = jobDatabase.query(ctx -> ctx.fetch(
-        "SELECT COUNT(*) FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND scope = '" + connectionId
-            + "'"));
-    return result.get(0).get("count", Long.class);
+    return jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
+        .where(JOBS.CONFIG_TYPE.cast(String.class).in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .fetchOne().into(Long.class));
   }
 
   @Override
@@ -410,33 +411,34 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long targetJobId, final int pagesize)
       throws IOException {
-    // fetch creation time of the target job for this connection
-    final Optional<LocalDateTime> targetJobCreatedAt = jobDatabase.query(ctx -> {
-      final Optional<Record> targetJobRecord = ctx.fetch(
-          "SELECT created_at FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND scope = '"
-              + connectionId + "' AND id = " + targetJobId)
-          .stream().findFirst();
+    final Optional<OffsetDateTime> targetJobCreatedAt = jobDatabase.query(ctx -> ctx.select(JOBS.CREATED_AT).from(JOBS)
+        .where(JOBS.CONFIG_TYPE.cast(String.class).in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .and(JOBS.ID.eq(targetJobId))
+        .stream()
+        .findFirst()
+        .map(record -> record.get(JOBS.CREATED_AT, OffsetDateTime.class)));
 
-      return targetJobRecord.map(record -> record.get("created_at", LocalDateTime.class));
-    });
-
-    // we still want a normal result if the target job cannot be found
     if (targetJobCreatedAt.isEmpty()) {
+      return List.of();
+    }
+
+    final int countIncludingTargetJob = jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
+        .where(JOBS.CONFIG_TYPE.cast(String.class).in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .and(JOBS.CREATED_AT.greaterOrEqual(targetJobCreatedAt.get()))
+        .fetchOne().into(int.class));
+
+    // always want to return at least `pagesize` number of jobs
+    if (countIncludingTargetJob < pagesize) {
       return listJobs(configTypes, connectionId, pagesize, 0);
     }
 
-    // fetch jobs created after and including the target job
+    // list of jobs up to target job is larger than pagesize, so return that list
     final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
         + " AND scope = '" + connectionId + "' AND created_at >= ? ORDER BY created_at DESC, id DESC) AS jobs";
-    final List<Job> jobs = jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
-        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME, targetJobCreatedAt.get())));
-
-    // return a full page of jobs if the above result is smaller than a page
-    if (jobs.size() < pagesize) {
-      return listJobs(configTypes, connectionId, pagesize, 0);
-    }
-
-    return jobs;
+    return jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
+        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME, targetJobCreatedAt.get().toLocalDateTime())));
   }
 
   @Override
