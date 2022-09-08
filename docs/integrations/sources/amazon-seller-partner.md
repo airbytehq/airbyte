@@ -100,7 +100,7 @@ This source is capable of syncing the following tables and their data:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
-| `0.2.26` | 2022-09-08 | [\#00000](https://github.com/airbytehq/airbyte/pull/00000) | Implement slicing for report streams                                   |
+| `0.2.26` | 2022-09-08 | [\#16430](https://github.com/airbytehq/airbyte/pull/16430) | Implement slicing for report streams                                   |
 | `0.2.25` | 2022-07-27 | [\#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                           |
 | `0.2.24` | 2022-07-12 | [\#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                            |
 | `0.2.23` | 2022-06-08 | [\#13604](https://github.com/airbytehq/airbyte/pull/13604) | Add new streams: Fullfiments returns and Settlement reports            |
