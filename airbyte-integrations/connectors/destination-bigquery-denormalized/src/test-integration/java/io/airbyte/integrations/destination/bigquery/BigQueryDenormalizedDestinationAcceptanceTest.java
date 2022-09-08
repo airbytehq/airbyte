@@ -139,7 +139,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    return config.get(CONFIG_DATASET_ID).asText();
+    return BigQueryUtils.getDatasetId(config);
   }
 
   @Override

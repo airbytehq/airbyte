@@ -211,7 +211,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
-      stream.setNamespace(config.get(CONFIG_DATASET_ID).textValue());
+      stream.setNamespace(BigQueryUtils.getDatasetId(config));
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -261,7 +261,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, config.get(CONFIG_DATASET_ID).asText());
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, BigQueryUtils.getDatasetId(config));
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,

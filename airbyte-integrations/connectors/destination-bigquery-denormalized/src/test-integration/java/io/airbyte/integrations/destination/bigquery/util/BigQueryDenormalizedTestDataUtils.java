@@ -246,7 +246,7 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static Dataset getBigQueryDataSet(final JsonNode config, final BigQuery bigQuery) {
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(BigQueryUtils.getDatasetId(config)).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     Dataset dataset = bigQuery.create(datasetInfo);
     trackTestDataSet(dataset, bigQuery);
     return dataset;
