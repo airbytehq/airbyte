@@ -198,9 +198,9 @@ class DefaultJobPersistenceTest {
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).cascade().execute());
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
