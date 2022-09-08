@@ -204,7 +204,7 @@ log:
 ## extraEnv:
 ## - name: JOB_KUBE_TOLERATIONS
 ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
-extraEnv: {}
+extraEnv: []
 
 secrets: {}
 
@@ -226,4 +226,4 @@ extraVolumes: []
 
 extraContainers: []
 
-
+env_vars: {}

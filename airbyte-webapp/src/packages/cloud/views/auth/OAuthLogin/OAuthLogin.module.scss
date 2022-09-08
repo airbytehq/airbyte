@@ -10,19 +10,19 @@
   color: colors.$grey-800;
   text-transform: uppercase;
 
-  &:before,
-  &:after {
+  &::before,
+  &::after {
     content: "";
     flex: 1 1;
     border-bottom: 1px solid colors.$grey-300;
     margin: auto;
   }
 
-  &:before {
+  &::before {
     margin-right: vars.$spacing-md;
   }
 
-  &:after {
+  &::after {
     margin-left: vars.$spacing-md;
   }
 }
@@ -37,6 +37,17 @@
   text-align: center;
 }
 
+.google {
+  background: colors.$white;
+  border: 1px solid colors.$grey-300;
+}
+
+.github {
+  background: #333;
+  color: colors.$white;
+  border: none;
+}
+
 .google,
 .github {
   justify-content: center;
@@ -49,28 +60,17 @@
   padding: vars.$spacing-md;
   gap: vars.$spacing-md;
   border-radius: vars.$border-radius-sm;
-  border: none;
   transition: all vars.$transition;
   cursor: pointer;
 
   &:hover,
   &:focus {
-    box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2), 0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
+    box-shadow: 0 1px 3px rgba(53, 53, 66, 20%), 0 1px 2px rgba(53, 53, 66, 12%), 0 1px 1px rgba(53, 53, 66, 14%);
   }
 
   & > img {
     height: 24px;
   }
-}
-
-.google {
-  background: colors.$white;
-  border: 1px solid colors.$grey-300;
-}
-
-.github {
-  background: #333;
-  color: colors.$white;
 }
 
 .error {

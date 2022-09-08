@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
@@ -55,6 +57,21 @@ public class DefaultJobCreator implements JobCreator {
                                       @Nullable final ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException {
     // reusing this isn't going to quite work.
+
+    final ResourceRequirements mergedOrchestratorResourceReq = ResourceRequirementsUtils.getResourceRequirements(
+        standardSync.getResourceRequirements(),
+        workerResourceRequirements);
+    final ResourceRequirements mergedSrcResourceReq = ResourceRequirementsUtils.getResourceRequirements(
+        standardSync.getResourceRequirements(),
+        sourceResourceReqs,
+        workerResourceRequirements,
+        JobType.SYNC);
+    final ResourceRequirements mergedDstResourceReq = ResourceRequirementsUtils.getResourceRequirements(
+        standardSync.getResourceRequirements(),
+        destinationResourceReqs,
+        workerResourceRequirements,
+        JobType.SYNC);
+
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withNamespaceFormat(standardSync.getNamespaceFormat())
@@ -66,19 +83,9 @@ public class DefaultJobCreator implements JobCreator {
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null)
-        .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
-            standardSync.getResourceRequirements(),
-            workerResourceRequirements))
-        .withSourceResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
-            standardSync.getResourceRequirements(),
-            sourceResourceReqs,
-            workerResourceRequirements,
-            JobType.SYNC))
-        .withDestinationResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
-            standardSync.getResourceRequirements(),
-            destinationResourceReqs,
-            workerResourceRequirements,
-            JobType.SYNC));
+        .withResourceRequirements(mergedOrchestratorResourceReq)
+        .withSourceResourceRequirements(mergedSrcResourceReq)
+        .withDestinationResourceRequirements(mergedDstResourceReq);
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 

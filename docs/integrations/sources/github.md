@@ -12,9 +12,11 @@ This page contains the setup guide and reference information for the GitHub sour
 * Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 * OAuth
 
-**For Airbyte OSS:**
+
+**For Airbyte Open Source:**
 
 * Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+
 
 ## Setup guide
 ### Step 1: Set up GitHub
@@ -38,7 +40,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 8. **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 1. Authenticate with **Personal Access Token**.
 
 ## Supported sync modes
