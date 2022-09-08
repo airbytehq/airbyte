@@ -1,11 +1,11 @@
 
-## @param global.serviceAccountName Name of service account to be associated with service
-## @param deploymentMode Determines deployment mode of airbyte
-## @param secretName Overrides the secrate name with with credentials to S3 Bucket and logging
-## @param database.secretName Name of database secret
-## @param database.secretValue Value of database password key stored in secret
-## @param database.host Hostname of database
-## @param database.port Database port
+##  global.serviceAccountName Name of service account to be associated with service
+##  deploymentMode Determines deployment mode of airbyte
+##  secretName Overrides the secrate name with with credentials to S3 Bucket and logging
+##  database.secretName Name of database secret
+##  database.secretValue Value of database password key stored in secret
+##  database.host Hostname of database
+##  database.port Database port
 global:
   serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
@@ -19,23 +19,23 @@ global:
 
 
 enabled: true
-## @param image.repository The repository to use for the airbyte bootloader image.
-## @param image.pullPolicy the pull policy to use for the airbyte bootloader image
-## @param image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
+##  image.repository The repository to use for the airbyte bootloader image.
+##  image.pullPolicy the pull policy to use for the airbyte bootloader image
+##  image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
 image:
   repository: airbyte/bootloader
   pullPolicy: IfNotPresent
 
-## @param podAnnotations [object] Add extra annotations to the bootloader pod
+##  podAnnotations [object] Add extra annotations to the bootloader pod
 ##
 podAnnotations: {}
 
-## @param nodeSelector [object] Node labels for pod assignment
+##  nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
 nodeSelector: {}
 
-## @param tolerations [array] Tolerations for worker pod assignment.
+##  tolerations [array] Tolerations for worker pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
@@ -46,8 +46,8 @@ tolerations: []
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
-## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+##  bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+##  bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
 resources:
   ## Example:
   ## requests:
@@ -60,12 +60,12 @@ resources:
   ##    memory: 1Gi
   limits: {}
 
-## @param affinity [object] Affinity and anti-affinity for bootloader pod assignment.
+##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
 
-## @param extraEnv [array] Supply extra env variables to main container using full notation
+##  extraEnv [array] Supply extra env variables to main container using full notation
 ## Example: (With default env vars and values taken from generated config map)
 ## extraEnv:
 ##   - name: AIRBYTE_VERSION
@@ -100,20 +100,20 @@ affinity: {}
 ##         key: DATABASE_USER
 ##
 extraEnv: []
-## @param secrets [object] Supply additional secrets to container
+##  secrets [object] Supply additional secrets to container
 ## Example:
 ## secrets:
 ##   DATABASE_PASSWORD: strong-password
 ##   DATABASE_USER: my-db-user
 secrets: {}
 
-## @param env_vars [object] Supply extra env variables to main container using simplified notation
+##  env_vars [object] Supply extra env variables to main container using simplified notation
 ## Example:
 ## env_vars:
 ##   DATABASE_HOST: airbyte-db
 ##   DATABASE_PORT: 5432
 env_vars: {}
-## @param extraContainer [array] Additional container for server pod(s)
+##  extraContainer [array] Additional container for server pod(s)
 ## Example:
 # extraContainers:
 #   - name: otel_collector
@@ -129,7 +129,7 @@ env_vars: {}
 #         readOnly: true
 extraContainers: []
 
-## @param extraInitContainers [array] Additional init containers for server pod(s)
+##  extraInitContainers [array] Additional init containers for server pod(s)
 ## Example:
 # extraInitContainers:
 #   - name: sleepy
@@ -138,7 +138,7 @@ extraContainers: []
 
 extraInitContainers: []
 
-## @param extraVolumeMounts [array] Additional volumeMounts for server container(s).
+##  extraVolumeMounts [array] Additional volumeMounts for server container(s).
 ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumeMounts:
 ##   - name: tmpdir
@@ -146,7 +146,7 @@ extraInitContainers: []
 ##
 extraVolumeMounts: []
 
-## @param extraVolumes [array] Additional volumes for server pod(s).
+##  extraVolumes [array] Additional volumes for server pod(s).
 ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumes:
 ##   - name: tmpdir
