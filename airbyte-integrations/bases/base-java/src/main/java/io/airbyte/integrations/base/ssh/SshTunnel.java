@@ -13,21 +13,15 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.util.List;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
+import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import com.trilead.ssh2.crypto.PEMDecoder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,7 +168,7 @@ public class SshTunnel implements AutoCloseable {
 
     // final int localPort = findFreePort();
 
-    SshTunnel result = new SshTunnel(
+    final SshTunnel result = new SshTunnel(
         config,
         hostKey,
         portKey,
@@ -235,27 +229,17 @@ public class SshTunnel implements AutoCloseable {
    * the keys from the key info, and return the key pair for use in authentication.
    */
   KeyPair getPrivateKeyPair() throws IOException {
-    String validatedKey = validateKey();
-    PemReader pemReader = new PemReader(new StringReader(validatedKey));
-    PemObject pemObject = pemReader.readPemObject();
+    final String validatedKey = validateKey();
+    try {
+      final var kp = SecurityUtils
+          .getKeyPairResourceParser()
+          .loadKeyPairs(null, null, null, new StringReader(validatedKey));
 
-    if (pemObject == null) {
-      throw new IOException("Could not load private key");
+      return kp.iterator().next();
+    } catch (final IOException | GeneralSecurityException e) {
+      LOGGER.error("Failed to get KeyPair for SSH tunnel", e);
     }
-
-    String type = pemObject.getType();
-
-    if ("OPENSSH PRIVATE KEY".equals(type)) {
-      return PEMDecoder.decode(validatedKey.toCharArray(), null);// we do not support encrypted keys for now, otherwise keystore password should be aded to UI
-    } else {
-      final PEMParser pemParser = new PEMParser(new StringReader(validatedKey));
-      final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
-      final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-
-      return new KeyPair(
-          converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
-          converter.getPrivateKey(keypair.getPrivateKeyInfo()));
-    }
+    return null;
   }
 
   private String validateKey() {

@@ -9,7 +9,6 @@ dependencies {
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
 
-    implementation 'org.connectbot:sshlib:2.2.20'
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
