@@ -180,15 +180,12 @@ const useDiscoverSchema = (
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceId]);
+  }, [disableCache, service, sourceId]);
 
   useEffect(() => {
-    (async () => {
-      if (sourceId) {
-        await onDiscoverSchema();
-      }
-    })();
+    if (sourceId) {
+      onDiscoverSchema();
+    }
   }, [onDiscoverSchema, sourceId]);
 
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
