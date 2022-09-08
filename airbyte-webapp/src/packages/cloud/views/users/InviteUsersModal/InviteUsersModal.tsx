@@ -80,14 +80,13 @@ export const InviteUsersModal: React.FC<{
           ],
         }}
         onSubmit={async (values) => {
-          const count = values.users.length;
           await invite(
             { users: values.users, workspaceId },
             {
               onSuccess: () => {
                 registerNotification({
-                  title: formatMessage({ id: "addUsers.success.title" }, { count }),
-                  id: `invite-users-success-${count}`,
+                  title: formatMessage({ id: "addUsers.success.title" }),
+                  id: "invite-users-success",
                 });
                 props.onClose();
               },
