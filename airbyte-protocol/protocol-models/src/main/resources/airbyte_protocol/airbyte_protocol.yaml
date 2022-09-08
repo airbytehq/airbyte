@@ -256,6 +256,12 @@ definitions:
       namespace:
         description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
         type: string
+      available_for_syncing:
+        description: Indicates whether the stream can be synced. A stream might not be syncable because e.g: the input API token doesn't have permissions to sync it. If a stream is unavailable for syncing but is still passed in the configured catalog (i.e: it was requested for syncs) then the connector should ignore it.
+        type: boolean
+      unavailability_reason:
+        description: if available_for_syncing is false, this field contains a human-readable message describing why the stream is not available for syncing e.g: \"API key does not have permission to sync the `users` stream\"
+        type: string
   ConfiguredAirbyteCatalog:
     type: object
     additionalProperties: true
