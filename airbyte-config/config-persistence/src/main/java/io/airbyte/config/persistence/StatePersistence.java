@@ -217,6 +217,7 @@ public class StatePersistence {
    * @return the StateType of the records
    * @throws IllegalStateException If StateRecords have inconsistent types
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
                                                                                             final UUID connectionId,
                                                                                             final List<StateRecord> records) {
