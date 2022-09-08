@@ -17,25 +17,31 @@ interface ScheduleFieldProps {
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
 }
 
+const CRON_DEFAULT_VALUE = {
+  cronTimeZone: "UTC",
+  // Fire at 12:00 PM (noon) every day
+  cronExpression: "0 0 12 * * ?",
+};
+
 const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDropDownSelect }) => {
   const { formatMessage } = useIntl();
   const frequencies = useFrequencyDropdownData(scheduleData);
 
-  const onScheduleChange = (
-    item: DropDownRow.IDataItem,
-    field: FieldInputProps<ConnectionScheduleData>,
-    form: FormikProps<FormikConnectionFormValues>
-  ) => {
+  const onScheduleChange = (item: DropDownRow.IDataItem, form: FormikProps<FormikConnectionFormValues>) => {
     onDropDownSelect?.(item);
 
-    const isManualOrCron = item.value === ConnectionScheduleType.manual || item.value === ConnectionScheduleType.cron;
-
     let scheduleData: ConnectionScheduleData;
+    const isManual = item.value === ConnectionScheduleType.manual;
+    const isCron = item.value === ConnectionScheduleType.cron;
+
+    // Set scheduleType for yup validation
+    const scheduleType = isManual || isCron ? (item.value as ConnectionScheduleType) : ConnectionScheduleType.basic;
 
     // Set scheduleData.basicSchedule
-    if (isManualOrCron) {
+    if (isManual || isCron) {
       scheduleData = {
         basicSchedule: undefined,
+        cron: isCron ? CRON_DEFAULT_VALUE : undefined,
       };
     } else {
       scheduleData = {
@@ -43,11 +49,14 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
       };
     }
 
-    form.setFieldValue(field.name, scheduleData, true);
-
-    // Also set scheduleType for yup validation
-    const scheduleType = isManualOrCron ? (item.value as ConnectionScheduleType) : ConnectionScheduleType.basic;
-    form.setFieldValue("scheduleType", scheduleType, true);
+    form.setValues(
+      {
+        ...form.values,
+        scheduleType,
+        scheduleData,
+      },
+      true
+    );
   };
 
   const getBasicScheduleValue = (value: ConnectionScheduleData, form: FormikProps<FormikConnectionFormValues>) => {
@@ -64,7 +73,7 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
 
   const getZoneValue = (currentSelectedZone: string | undefined): string => {
     if (!currentSelectedZone) {
-      return cronTimeZones[0].value;
+      return "UTC";
     }
 
     return currentSelectedZone;
@@ -118,7 +127,7 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
                 error={!!meta.error && meta.touched}
                 options={frequencies}
                 onChange={(item) => {
-                  onScheduleChange(item, field, form);
+                  onScheduleChange(item, form);
                 }}
                 value={getBasicScheduleValue(field.value, form)}
               />
@@ -133,6 +142,9 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
                   error={!!meta.error && meta.touched}
                   label={formatMessage({
                     id: "form.cronExpression",
+                  })}
+                  message={formatMessage({
+                    id: "form.cronExpression.message",
                   })}
                 />
               </div>

@@ -365,6 +365,7 @@
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.message": "Will sync at 12:00 PM (noon) (UTC) every day",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
 

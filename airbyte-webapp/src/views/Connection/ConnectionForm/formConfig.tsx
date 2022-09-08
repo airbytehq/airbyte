@@ -329,12 +329,12 @@ export const useFrequencyDropdownData = (
     });
     const otherFrequencies = [
       {
-        label: customFrequency,
-        value: customFrequency.toLowerCase(),
-      },
-      {
         label: manualFrequency,
         value: manualFrequency.toLowerCase(),
+      },
+      {
+        label: customFrequency,
+        value: customFrequency.toLowerCase(),
       },
     ];
 
