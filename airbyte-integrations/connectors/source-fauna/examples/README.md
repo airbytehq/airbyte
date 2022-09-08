@@ -15,6 +15,8 @@ Connector.
 
 # Running locally
 
+These examples use the Fauna Shell, which can be downloaded here: https://github.com/fauna/fauna-shell
+
 First, start a local fauna container:
 ```
 docker run --rm --name faunadb -p 8443:8443 fauna/faunadb
