@@ -248,7 +248,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
           recordWorkflowFailureCountMetric(connectionUpdaterInput, FailureCause.CANCELED);
-        } else if (childWorkflowFailure.getCause() instanceof final ActivityFailure af) {
+        } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
           // example, this lets us set the failureOrigin to normalization.
