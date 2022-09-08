@@ -169,15 +169,16 @@ public interface JobPersistence {
   /**
    * @param configTypes - type of config, e.g. sync
    * @param connectionId - id of the connection for which jobs should be retrieved
-   * @param startingJobId - id of the job that should be the start of the list, if it exists in the
-   *        connection
-   * @param pagesize - minimum size of the job list that should be returned
-   * @return List of jobs in descending created_at order, created after and including the starting job
-   *         ID (or the `pagesize` most recent jobs, whichever is larger), if it exists in the
-   *         connection. Otherwise, an empty list is returned.
+   * @param includingJobId - id of the job that should be the included in the list, if it exists in
+   *        the connection
+   * @param pagesize - the pagesize that should be used when building the list (response may include
+   *        multiple pages)
+   * @return List of jobs in descending created_at order including the specified job. Will include
+   *         multiple pages of jobs if required to include the specified job. If the specified job
+   *         does not exist in the connection, the returned list will be empty.
    * @throws IOException
    */
-  List<Job> listJobsStartingWithId(Set<JobConfig.ConfigType> configTypes, String connectionId, long startingJobId, int pagesize) throws IOException;
+  List<Job> listJobsIncludingId(Set<JobConfig.ConfigType> configTypes, String connectionId, long includingJobId, int pagesize) throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 

@@ -417,41 +417,29 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsStartingWithId(final Set<ConfigType> configTypes, final String connectionId, final long startingJobId, final int pagesize)
+  public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long includingJobId, final int pagesize)
       throws IOException {
-    final Optional<OffsetDateTime> startingJobCreatedAt = jobDatabase.query(ctx -> ctx.select(JOBS.CREATED_AT).from(JOBS)
+    final Optional<OffsetDateTime> includingJobCreatedAt = jobDatabase.query(ctx -> ctx.select(JOBS.CREATED_AT).from(JOBS)
         .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
         .and(JOBS.SCOPE.eq(connectionId))
-        .and(JOBS.ID.eq(startingJobId))
+        .and(JOBS.ID.eq(includingJobId))
         .stream()
         .findFirst()
         .map(record -> record.get(JOBS.CREATED_AT, OffsetDateTime.class)));
 
-    if (startingJobCreatedAt.isEmpty()) {
+    if (includingJobCreatedAt.isEmpty()) {
       return List.of();
     }
 
-    final int countIncludingStartingJob = jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
+    final int countIncludingJob = jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
         .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
         .and(JOBS.SCOPE.eq(connectionId))
-        .and(JOBS.CREATED_AT.greaterOrEqual(startingJobCreatedAt.get()))
+        .and(JOBS.CREATED_AT.greaterOrEqual(includingJobCreatedAt.get()))
         .fetchOne().into(int.class));
 
-    // always want to return at least `pagesize` number of jobs
-    if (countIncludingStartingJob < pagesize) {
-      return listJobs(configTypes, connectionId, pagesize, 0);
-    }
-
-    // list of jobs starting with starting job is larger than pagesize, so return that list
-    return jobDatabase.query(ctx -> {
-      final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
-          .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
-          .and(JOBS.SCOPE.eq(connectionId))
-          .and(JOBS.CREATED_AT.greaterOrEqual(startingJobCreatedAt.get()))
-          .getSQL(ParamType.INLINED) + ") AS jobs";
-
-      return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
-    });
+    // calculate the multiple of `pagesize` that includes the target job
+    int pageSizeThatIncludesJob = (countIncludingJob / pagesize + 1) * pagesize;
+    return listJobs(configTypes, connectionId, pageSizeThatIncludesJob, 0);
   }
 
   @Override

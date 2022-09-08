@@ -210,7 +210,7 @@ class JobHistoryHandlerTest {
 
     @Test
     @DisplayName("Should return jobs including specified job id")
-    void testListJobsStartingWithJobId() throws IOException {
+    void testListJobsIncludingJobId() throws IOException {
       final var successfulJob = testJob;
       final int pagesize = 25;
       final int rowOffset = 0;
@@ -221,14 +221,14 @@ class JobHistoryHandlerTest {
           new Job(jobId2, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING,
               null, createdAt2, createdAt2);
 
-      when(jobPersistence.listJobsStartingWithId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
+      when(jobPersistence.listJobsIncludingId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
           .configId(JOB_CONFIG_ID)
-          .startingJobId(jobId2)
+          .includingJobId(jobId2)
           .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 

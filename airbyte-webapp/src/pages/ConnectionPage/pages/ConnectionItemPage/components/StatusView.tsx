@@ -21,7 +21,7 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
-const JOB_PAGE_SIZE_INCREMENT = 25;
+const JOB_PAGE_SIZE_INCREMENT = 100;
 
 enum ActionType {
   RESET = "reset_connection",
