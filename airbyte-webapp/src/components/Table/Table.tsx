@@ -33,6 +33,7 @@ const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   width: 100%;
   max-width: 100%;
   border-radius: 10px;
+  overflow: hidden;
   box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
 };
 `;
@@ -78,8 +79,6 @@ const Td = styled.td<{
 `;
 
 const Th = styled.th<IThProps>`
-  position: sticky;
-  top: -15px;
   background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
   padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
