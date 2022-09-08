@@ -17,7 +17,7 @@ import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } f
 describe("#useFrequencyDropdownData", () => {
   it("should return only default frequencies when no additional frequency is provided", () => {
     const { result } = renderHook(() => useFrequencyDropdownData(undefined), { wrapper });
-    expect(result.current.map((item) => item.value)).toEqual(["manul", "cron", ...frequencyConfig]);
+    expect(result.current.map((item) => item.value)).toEqual(["manual", "cron", ...frequencyConfig]);
   });
 
   it("should return only default frequencies when additional frequency is already present", () => {
