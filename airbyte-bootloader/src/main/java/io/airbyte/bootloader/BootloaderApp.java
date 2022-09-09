@@ -12,6 +12,9 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.ApplyDefinitionsHelper;
+import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -65,7 +68,7 @@ public class BootloaderApp {
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
-  private ConfigPersistence yamlSeedConfigPersistence;
+  private DefinitionsProvider localDefinitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -124,7 +127,11 @@ public class BootloaderApp {
 
     postLoadExecution = () -> {
       try {
-        configPersistence.loadData(yamlSeedConfigPersistence);
+        final ConfigRepository configRepository =
+            new ConfigRepository(configPersistence, configDatabase);
+
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
           if (this.secretMigrator != null) {
@@ -192,8 +199,8 @@ public class BootloaderApp {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
-  private static ConfigPersistence getYamlSeedConfigPersistence() throws IOException {
-    return new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+  private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
+    return new LocalDefinitionsProvider(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
@@ -208,7 +215,7 @@ public class BootloaderApp {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
       configPersistence = getConfigPersistence(configDatabase);
-      yamlSeedConfigPersistence = getYamlSeedConfigPersistence();
+      localDefinitionsProvider = getLocalDefinitionsProvider();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {

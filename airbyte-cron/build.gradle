@@ -2,10 +2,6 @@ plugins {
     id 'application'
 }
 
-configurations {
-    jdbc
-}
-
 dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
