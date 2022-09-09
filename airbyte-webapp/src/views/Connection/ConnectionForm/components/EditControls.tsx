@@ -43,7 +43,7 @@ const EditControls: React.FC<EditControlProps> = ({
 
     if (successMessage && !dirty) {
       return (
-        <Text as="div" size="lg" className={messageStyle}>
+        <Text as="div" size="lg" className={messageStyle} data-id="success-result">
           {successMessage}
         </Text>
       );
