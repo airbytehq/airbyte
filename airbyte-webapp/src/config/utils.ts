@@ -1,6 +1,4 @@
-import FrequencyConfig from "config/FrequencyConfig.json";
-import { ConnectionSchedule } from "core/request/AirbyteClient";
-import { equal } from "utils/objects";
+import { ConnectionScheduleDataBasicSchedule } from "core/request/AirbyteClient";
 
-export const getFrequencyConfig = (schedule?: ConnectionSchedule) =>
-  FrequencyConfig.find((item) => (!schedule && !item.config) || equal(item.config, schedule));
+export const getFrequencyType = (schedule?: ConnectionScheduleDataBasicSchedule) =>
+  schedule ? `${schedule.units} ${schedule.timeUnit}` : "manual";

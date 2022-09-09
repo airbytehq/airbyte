@@ -17,11 +17,9 @@ data:
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   DB_DOCKER_MOUNT: airbyte_db
-  FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
-  INTERNAL_API_HOST: {{ .Release.Name }}-server:{{ .Values.server.service.port }}
-  IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
+  INTERNAL_API_HOST: {{ .Release.Name }}-server-svc:{{ .Values.server.service.port }}
 {{- if $.Values.global.jobs.kube.annotations }}
   JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
 {{- end }}
@@ -54,11 +52,11 @@ data:
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
-  METRIC_CLIENT: ""
-  OTEL_COLLECTOR_ENDPOINT: ""
+  METRIC_CLIENT: {{ .Values.global.metrics.metricClient | default "" | quote }}
+  OTEL_COLLECTOR_ENDPOINT: {{ .Values.global.metrics.otelCollectorEndpoint | default "" | quote }}
   ACTIVITY_MAX_ATTEMPT: ""
   ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
-  USE_STREAM_CAPABLE_STATE: "false"
+  USE_STREAM_CAPABLE_STATE: "true"
 {{- end }}

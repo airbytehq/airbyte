@@ -7,45 +7,59 @@ import json
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 
 
 @pytest.mark.parametrize(
-    "test_name, transform_template, filter_template, body, expected_records",
+    "test_name, field_pointer, filter_template, body, expected_records",
     [
         (
             "test_with_extractor_and_filter",
-            "_.data",
+            ["data"],
             "{{ record['created_at'] > stream_state['created_at'] }}",
             {"data": [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}]},
             [{"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
         ),
         (
             "test_no_record_filter_returns_all_records",
-            "_.data",
+            ["data"],
             None,
             {"data": [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}]},
             [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}],
         ),
         (
             "test_with_extractor_and_filter_with_options",
-            "_.{{ options['options_field'] }}",
+            ["{{ options['options_field'] }}"],
             "{{ record['created_at'] > options['created_at'] }}",
             {"data": [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}]},
             [{"id": 3, "created_at": "06-08-21"}],
         ),
         (
             "test_read_single_record",
-            "_.data",
+            ["data"],
             None,
             {"data": {"id": 1, "created_at": "06-06-21"}},
             [{"id": 1, "created_at": "06-06-21"}],
         ),
+        (
+            "test_no_record",
+            ["data"],
+            None,
+            {"data": []},
+            [],
+        ),
+        (
+            "test_no_record_from_root",
+            [],
+            None,
+            [],
+            [],
+        ),
     ],
 )
-def test_record_filter(test_name, transform_template, filter_template, body, expected_records):
+def test_record_filter(test_name, field_pointer, filter_template, body, expected_records):
     config = {"response_override": "stop_if_you_see_me"}
     options = {"options_field": "data", "created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
@@ -54,7 +68,7 @@ def test_record_filter(test_name, transform_template, filter_template, body, exp
 
     response = create_response(body)
     decoder = JsonDecoder(options={})
-    extractor = JelloExtractor(transform=transform_template, decoder=decoder, config=config, options=options)
+    extractor = DpathExtractor(field_pointer=field_pointer, decoder=decoder, config=config, options=options)
     if filter_template is None:
         record_filter = None
     else:

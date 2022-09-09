@@ -33,18 +33,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AirbyteIntegrationLauncherTest {
 
+  private static final String CONFIG = "config";
+  private static final String CATALOG = "catalog";
+  private static final String CONFIG_ARG = "--config";
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
   private static final Path JOB_ROOT = Path.of("abc");
   public static final String FAKE_IMAGE = "fake_image";
   private static final Map<String, String> CONFIG_FILES = ImmutableMap.of(
-      "config", "{}");
+      CONFIG, "{}");
   private static final Map<String, String> CONFIG_CATALOG_FILES = ImmutableMap.of(
-      "config", "{}",
-      "catalog", "{}");
+      CONFIG, "{}",
+      CATALOG, "{}");
   private static final Map<String, String> CONFIG_CATALOG_STATE_FILES = ImmutableMap.of(
-      "config", "{}",
-      "catalog", "{}",
+      CONFIG, "{}",
+      CATALOG, "{}",
       "state", "{}");
   private static final Map<String, String> JOB_METADATA = Map.of(
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
@@ -75,7 +78,7 @@ class AirbyteIntegrationLauncherTest {
 
   @Test
   void check() throws WorkerException {
-    launcher.check(JOB_ROOT, "config", "{}");
+    launcher.check(JOB_ROOT, CONFIG, "{}");
 
     Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
@@ -83,12 +86,12 @@ class AirbyteIntegrationLauncherTest {
         JOB_METADATA,
         Map.of(),
         "check",
-        "--config", "config");
+        CONFIG_ARG, CONFIG);
   }
 
   @Test
   void discover() throws WorkerException {
-    launcher.discover(JOB_ROOT, "config", "{}");
+    launcher.discover(JOB_ROOT, CONFIG, "{}");
 
     Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
@@ -96,12 +99,12 @@ class AirbyteIntegrationLauncherTest {
         JOB_METADATA,
         Map.of(),
         "discover",
-        "--config", "config");
+        CONFIG_ARG, CONFIG);
   }
 
   @Test
   void read() throws WorkerException {
-    launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
+    launcher.read(JOB_ROOT, CONFIG, "{}", CATALOG, "{}", "state", "{}");
 
     Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
@@ -110,14 +113,14 @@ class AirbyteIntegrationLauncherTest {
         Map.of(),
         Lists.newArrayList(
             "read",
-            "--config", "config",
-            "--catalog", "catalog",
+            CONFIG_ARG, CONFIG,
+            "--catalog", CATALOG,
             "--state", "state").toArray(new String[0]));
   }
 
   @Test
   void write() throws WorkerException {
-    launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
+    launcher.write(JOB_ROOT, CONFIG, "{}", CATALOG, "{}");
 
     Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
@@ -125,8 +128,8 @@ class AirbyteIntegrationLauncherTest {
         JOB_METADATA,
         Map.of(),
         "write",
-        "--config", "config",
-        "--catalog", "catalog");
+        CONFIG_ARG, CONFIG,
+        "--catalog", CATALOG);
   }
 
 }

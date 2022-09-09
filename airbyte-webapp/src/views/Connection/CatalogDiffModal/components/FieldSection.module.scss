@@ -1,32 +1,25 @@
+@use "../../../../scss/colors";
 @use "../../../../scss/variables";
 @use "./DiffSection.module.scss";
-@use "../../../../scss/colors";
-
-ul,
-li {
-  list-style-type: none;
-  list-style-position: inside;
-  margin: 0px;
-  padding: 0px;
-  height: auto;
-  font-weight: 400;
-}
 
 .fieldHeader {
-  @extend .sectionHeader;
+  @extend %sectionHeader;
+
   padding: variables.$spacing-lg variables.$spacing-xl;
 }
 
 .fieldSubHeader {
-  @extend .sectionSubHeader;
-  padding: 0px variables.$spacing-sm 0px 35px;
+  @extend %sectionSubHeader;
+
+  padding: 0 variables.$spacing-sm 0 35px;
 
   .padLeft {
     padding-left: variables.$spacing-xl;
   }
 
   > div {
-    @extend .nameCell;
+    @extend %nameCell;
+
     text-align: left;
     font-weight: 400;
     font-size: 10px;
@@ -38,4 +31,14 @@ li {
 
 .fieldRowsContainer {
   padding-left: variables.$spacing-lg;
+
+  ul,
+  li {
+    list-style-type: none;
+    list-style-position: inside;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    font-weight: 400;
+  }
 }

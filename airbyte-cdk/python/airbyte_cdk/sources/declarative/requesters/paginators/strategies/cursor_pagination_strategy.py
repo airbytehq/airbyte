@@ -30,21 +30,28 @@ class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
     cursor_value: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
-    stop_condition: Optional[InterpolatedBoolean] = None
+    stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
     decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.cursor_value, str):
             self.cursor_value = InterpolatedString.create(self.cursor_value, options=options)
+        if isinstance(self.stop_condition, str):
+            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
+
+        # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
+        # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers = response.headers
+        headers["link"] = response.links
+
         if self.stop_condition:
             should_stop = self.stop_condition.eval(self.config, response=decoded_response, headers=headers, last_records=last_records)
             if should_stop:
                 return None
-        token = self.cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response)
+        token = self.cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers)
         return token if token else None
 
     def reset(self):
