@@ -294,6 +294,12 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
+        - name: MICRONAUT_ENVIRONMENTS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKERS_MICRONAUT_ENVIRONMENTS
+
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
