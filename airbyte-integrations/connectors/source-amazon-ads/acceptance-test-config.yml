@@ -38,5 +38,3 @@ tests:
       ignored_fields:
         "sponsored_products_report_stream": ["updatedAt"]
       timeout_seconds: 3600
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_attribution_report.json"
