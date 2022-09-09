@@ -149,6 +149,12 @@ VERY_NESTED_SCHEMA = {
             {"cpc": 6.6666},
             None,
         ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": "string"}}}},
+            {"value": {"key": "value"}},
+            {"value": {"key": "value"}},
+            "{'key': 'value'} is not of type 'array'",
+        ),
     ],
 )
 def test_transform(schema, actual, expected, expected_warns, caplog):
