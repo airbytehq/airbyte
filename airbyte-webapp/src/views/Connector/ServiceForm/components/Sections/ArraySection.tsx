@@ -65,12 +65,12 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     };
   }, [items, formField.properties]);
 
-  const label = (
-    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}`} optional={false} />
-  );
-
   return (
-    <GroupControls name={path} key={`form-variable-fields-${formField?.fieldKey}`} title={label}>
+    <GroupControls
+      name={path}
+      key={`form-variable-fields-${formField?.fieldKey}`}
+      title={<PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}`} optional={false} />}
+    >
       <SectionContainer>
         <FieldArray
           name={path}
