@@ -5,13 +5,13 @@ import { TextWithHTML } from "components/TextWithHTML";
 
 import styles from "./LabelInfo.module.scss";
 
-interface IProps {
+interface Props {
   label: React.ReactNode;
   examples?: JSONSchema7Type;
   description?: string;
 }
 
-const LabelInfo: React.FC<IProps> = ({ label, examples, description }) => {
+const LabelInfo: React.FC<Props> = ({ label, examples, description }) => {
   const constructExamples = () => {
     if (!examples) {
       return null;
