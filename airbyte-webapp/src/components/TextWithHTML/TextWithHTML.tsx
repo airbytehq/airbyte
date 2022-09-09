@@ -1,8 +1,9 @@
 import React from "react";
 import sanitizeHtml from "sanitize-html";
 
-interface IProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface Props {
   text?: string;
+  className?: string;
 }
 
 const allowedAttributes = {
@@ -10,7 +11,7 @@ const allowedAttributes = {
   a: [...sanitizeHtml.defaults.allowedAttributes["a"], "rel"],
 };
 
-const TextWithHTML: React.FC<IProps> = ({ text, className }) => {
+export const TextWithHTML: React.FC<Props> = ({ text, className }) => {
   if (!text) {
     return null;
   }
@@ -27,5 +28,3 @@ const TextWithHTML: React.FC<IProps> = ({ text, className }) => {
 
   return <span className={className} dangerouslySetInnerHTML={{ __html: sanitizedHtmlText }} />;
 };
-
-export default TextWithHTML;

@@ -1,7 +1,7 @@
 import { JSONSchema7Type } from "json-schema";
 import React from "react";
 
-import { TextWithHTML } from "components";
+import { TextWithHTML } from "components/TextWithHTML";
 
 import styles from "./LabelInfo.module.scss";
 
