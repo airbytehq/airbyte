@@ -6,6 +6,8 @@ import json
 from typing import Any, List, Mapping, Tuple, Optional
 
 import pendulum
+from jsonschema import validate
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -23,6 +25,31 @@ from source_google_search_console.streams import (
     Sites,
     SearchAnalyticsByCustomDimensions,
 )
+
+
+custom_reports_schema = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "minLength": 1
+            },
+            "dimensions": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "required": [
+            "name",
+            "dimensions"
+        ]
+    }
+}
 
 
 class SourceGoogleSearchConsole(AbstractSource):
@@ -72,6 +99,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             return []
 
         reports = json.loads(config["custom_reports"])
+        validate(reports, custom_reports_schema)
 
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
