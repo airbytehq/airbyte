@@ -1,5 +1,3 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 plugins {
     id 'application'
 }
@@ -36,4 +34,8 @@ mainClassName = 'io.airbyte.container_orchestrator.ContainerOrchestratorApp'
 application {
     mainClass = mainClassName
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }

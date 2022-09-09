@@ -294,6 +294,7 @@ subprojects { subproj ->
     if (subproj.hasProperty('dockerImageName')) {
         project.logger.lifecycle("$subproj.name")
 
+        // Todo: explain why this is here.
         tasks.register("copyGeneratedTar", Copy) {
             dependsOn copyDocker
             dependsOn distTar
@@ -301,16 +302,12 @@ subprojects { subproj ->
                 // Assume that tars are named <parent-project-name>-<child-project-name>-*.tar.
                 // Because we only have a handle to the child project, and to keep things simple,
                 // use a * regex to catch all prefixes.
-                include "*-$subproj.name-*.tar"
+                include "*$subproj.name-*.tar"
             }
             into 'build/docker/bin'
         }
 
         tasks.register("buildDockerImage", DockerBuildImage) {
-            dependsOn copyGeneratedTar
-
-            // Only run this code when the task is executed.
-
             // This is currently only used for connectors.
             def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 

@@ -91,4 +91,8 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}
+
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
