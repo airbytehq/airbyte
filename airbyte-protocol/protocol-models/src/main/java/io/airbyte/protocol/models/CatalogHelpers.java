@@ -213,7 +213,7 @@ public class CatalogHelpers {
    */
   @VisibleForTesting
   protected static Set<String> getAllFieldNames(final JsonNode jsonSchema) {
-    return getFullyQualifiedFieldNamesWithTypes(jsonSchema, false)
+    return getFullyQualifiedFieldNamesWithTypes(jsonSchema)
         .stream()
         .map(Pair::getLeft)
         // only need field name, not fully qualified name
@@ -232,7 +232,7 @@ public class CatalogHelpers {
    *         preorder.
    */
   @VisibleForTesting
-  protected static List<Pair<List<String>, JsonNode>> getFullyQualifiedFieldNamesWithTypes(final JsonNode jsonSchema, final boolean withNamedOneOf) {
+  protected static List<Pair<List<String>, JsonNode>> getFullyQualifiedFieldNamesWithTypes(final JsonNode jsonSchema) {
     // if this were ever a performance issue, it could be replaced with a trie. this seems unlikely
     // however.
     final Set<List<String>> fieldNamesThatAreOneOfs = new HashSet<>();
@@ -244,20 +244,7 @@ public class CatalogHelpers {
         .stream()
         // first node is the original object.
         .skip(1)
-        .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(),
-            fieldWithSchema.getRight(),
-            fieldNamesThatAreOneOfs))
-        .map(fieldWithSchema -> {
-          if (withNamedOneOf && isOneOfField(fieldWithSchema.getRight())) {
-            final List<String> newPath = new ArrayList<>(fieldWithSchema.getLeft());
-            newPath.add("oneOf");
-            return Pair.of(
-                newPath,
-                fieldWithSchema.getRight());
-          } else {
-            return fieldWithSchema;
-          }
-        })
+        .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(), fieldWithSchema.getRight(), fieldNamesThatAreOneOfs))
         .toList();
   }
 
@@ -345,10 +332,10 @@ public class CatalogHelpers {
   private static UpdateStreamTransform getStreamDiff(final AirbyteStream streamOld,
                                                      final AirbyteStream streamNew) {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
-    final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema(), true)
+    final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
         .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
-    final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema(), true)
+    final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
         .stream()
         .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
