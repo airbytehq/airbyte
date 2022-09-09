@@ -3775,7 +3775,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-rabbitmq:0.1.0"
+- dockerImage: "airbyte/destination-rabbitmq:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/rabbitmq"
     connectionSpecification:
@@ -3805,7 +3805,9 @@
           description: "The username to connect."
         password:
           type: "string"
+          title: "Password"
           description: "The password to connect."
+          airbyte_secret: true
         exchange:
           type: "string"
           description: "The exchange name."
