@@ -1,5 +1,5 @@
 import { submitButtonClick } from "./common";
-import { createLocalJsonDestination } from "./destination";
+import { createLocalJsonDestination, createPostgresDestination } from "./destination";
 import { createPokeApiSource, createPostgresSource } from "./source";
 import { openAddSource } from "pages/destinationPage";
 import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage";
@@ -12,14 +12,25 @@ export const createTestConnection = (sourceName: string, destinationName: string
     case sourceName.includes("PokeAPI"):
       createPokeApiSource(sourceName, "luxray");
       break;
-    case sourceName.includes("Postgres"):
-      createPostgresSource(sourceName);
+
+    case sourceName.includes('Postgres'):
+      createPostgresSource(sourceName, "ec2-3-229-11-55.compute-1.amazonaws.com", "{selectAll}{del}5432", "d5pcodgtmh9pob", "yuxothkqynerju", "1c1771f795985693bc4f780130d7e8af895a3d48155007b93d21218e4bc07cd9", "demo");
       break;
     default:
       createPostgresSource(sourceName);
   }
 
-  createLocalJsonDestination(destinationName, "/local");
+  switch (true) {
+    case destinationName.includes('Postgres'):
+      createPostgresDestination(destinationName)
+      break;
+    case destinationName.includes('JSON'):
+      createLocalJsonDestination(destinationName);
+      break;
+    default:
+      createLocalJsonDestination(destinationName);
+  }
+  
   cy.wait(5000);
 
   openAddSource();

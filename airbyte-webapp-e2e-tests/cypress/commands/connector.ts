@@ -1,33 +1,19 @@
-import {
-  enterDestinationPath,
-  selectServiceType,
-  enterName,
-  enterHost,
-  enterPort,
-  enterDatabase,
-  enterUsername,
-  enterPassword,
-  enterPokemonName,
-} from "pages/createConnectorPage";
+import { enterDestinationPath, selectServiceType, enterName, enterHost, enterPort, enterDatabase, enterUsername, enterPassword, enterPokemonName, enterSchema } from "pages/createConnectorPage"
 
-export const fillPostgresForm = (
-  name: string,
-  host: string,
-  port: string,
-  database: string,
-  username: string,
-  password: string
-) => {
-  cy.intercept("/api/v1/source_definition_specifications/get").as("getSourceSpecifications");
-
+export const fillPostgresForm = (name: string, host: string, port: string, database: string, username: string, password: string, schema: string) => {
+  cy.intercept("/api/v1/source_definition_specifications/get").as(
+    "getSourceSpecifications"
+  );
+  
   selectServiceType("Postgres");
-
-  cy.wait("@getSourceSpecifications");
-
+    
   enterName(name);
   enterHost(host);
   enterPort(port);
   enterDatabase(database);
+  if (schema != "") {
+    enterSchema(schema);
+  }
   enterUsername(username);
   enterPassword(password);
 };
@@ -36,8 +22,6 @@ export const fillPokeAPIForm = (name: string, pokeName: string) => {
   cy.intercept("/api/v1/source_definition_specifications/get").as("getSourceSpecifications");
 
   selectServiceType("PokeAPI");
-
-  cy.wait("@getSourceSpecifications");
 
   enterName(name);
   enterPokemonName(pokeName);
