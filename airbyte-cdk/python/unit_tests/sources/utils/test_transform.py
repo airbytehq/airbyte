@@ -155,6 +155,12 @@ VERY_NESTED_SCHEMA = {
             {"value": {"key": "value"}},
             "{'key': 'value'} is not of type 'array'",
         ),
+        (
+            {"type": "object", "properties": {"value1": {"type": "object", "properties": {"value2": {"type": "string"}}}}},
+            {"value1": "value2"},
+            {"value1": "value2"},
+            "'value2' is not of type 'object'",
+        ),
     ],
 )
 def test_transform(schema, actual, expected, expected_warns, caplog):
