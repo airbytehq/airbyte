@@ -286,6 +286,11 @@ subprojects { subproj ->
         toolVersion = '4.6.0'
     }
 
+    // If subprojects have the dockerImageName property configured in their gradle property file,
+    // register:
+    // 1) A task to copy the generated tar.
+    // 2) A task to build the docker image that depends on the generated tar.
+    // 3) Make the docker image task depend on the default assemble task.
     if (subproj.hasProperty('dockerImageName')) {
         project.logger.lifecycle("$subproj.name")
 
