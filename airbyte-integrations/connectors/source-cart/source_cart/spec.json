@@ -13,6 +13,13 @@
         "airbyte_secret": true,
         "description": "Access Token for making authenticated requests."
       },
+      "central_api_router":{
+        "type": "boolean",
+        "description": "The central API router provides a single entry point through which any store API request can be handled.",
+        "title": "Central API Router",
+        "examples": [true, false],
+        "default": false
+      },
       "store_name": {
         "type": "string",
         "title": "Store Name",
