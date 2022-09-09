@@ -28,7 +28,7 @@ public class CloudStorageBeanFactory {
   @Named("logStorageConfigs")
   public Optional<CloudStorageConfigs> gcsLogStorageConfigs(
                                                             @Value("${airbyte.cloud.storage.logs.gcs.bucket}") final String gcsLogBucket,
-                                                            @Value("${airbyte.cloud.storage.logs.gcs:application-credentials}") final String googleApplicationCredentials) {
+                                                            @Value("${airbyte.cloud.storage.logs.gcs.application-credentials}") final String googleApplicationCredentials) {
     return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(gcsLogBucket, googleApplicationCredentials)));
   }
 
