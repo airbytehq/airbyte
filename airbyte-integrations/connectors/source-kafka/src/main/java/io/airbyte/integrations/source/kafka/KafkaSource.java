@@ -12,10 +12,9 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class KafkaSource extends BaseConnector implements Source {
 
@@ -25,18 +24,18 @@ public class KafkaSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    KafkaFormat  kafkaFormat =KafkaFormatFactory.getFormat(config);
-    if(kafkaFormat.isAccessible()){
+    KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
+    if (kafkaFormat.isAccessible()) {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     }
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect to the Kafka brokers with provided configuration. \n" );
+    return new AirbyteConnectionStatus()
+        .withStatus(Status.FAILED)
+        .withMessage("Could not connect to the Kafka brokers with provided configuration. \n");
   }
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) {
-    KafkaFormat  kafkaFormat =KafkaFormatFactory.getFormat(config);
+    KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
     final List<AirbyteStream> streams = kafkaFormat.getStreams();
     return new AirbyteCatalog().withStreams(streams);
   }
@@ -48,7 +47,7 @@ public class KafkaSource extends BaseConnector implements Source {
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
-    KafkaFormat  kafkaFormat =KafkaFormatFactory.getFormat(config);
+    KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
     return kafkaFormat.read();
   }
 

@@ -36,7 +36,11 @@
               },
               "deserialization_strategy": {
                 "type": "string",
-                "enum": ["TopicNameStrategy","RecordNameStrategy","TopicRecordNameStrategy"],
+                "enum": [
+                  "TopicNameStrategy",
+                  "RecordNameStrategy",
+                  "TopicRecordNameStrategy"
+                ],
                 "default": "TopicNameStrategy"
               },
               "schema_registry_url": {
@@ -272,7 +276,7 @@
       },
       "max_records_process": {
         "title": "Maximum Records",
-        "description": "The Maximum records needs to be processed per execution",
+        "description": "The Maximum to be processed per execution",
         "type": "integer",
         "default": 100000
       }
