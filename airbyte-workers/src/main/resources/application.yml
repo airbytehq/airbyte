@@ -19,6 +19,7 @@ airbyte:
   cloud:
     storage:
       logs:
+        type: ${WORKER_LOGS_STORAGE_TYPE:}
         gcs:
           application-credentials: ${GOOGLE_APPLICATION_CREDENTIALS:}
           bucket: ${GCS_LOG_BUCKET:}
@@ -33,6 +34,7 @@ airbyte:
           region: ${S3_LOG_BUCKET_REGION:}
           secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
       state:
+        type: ${WORKER_STATE_STORAGE_TYPE:}
         gcs:
           application-credentials: ${STATE_STORAGE_GCS_APPLICATION_CREDENTIALS:}
           bucket: ${STATE_STORAGE_GCS_BUCKET_NAME:}
