@@ -17,6 +17,7 @@ Helm chart to deploy airbyte-temporal
 | affinity | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| env_vars | object | `{}` |  |
 | extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |
@@ -51,6 +52,7 @@ Helm chart to deploy airbyte-temporal
 | replicaCount | int | `1` |  |
 | resources.limits | object | `{}` |  |
 | resources.requests | object | `{}` |  |
+| secrets | object | `{}` |  |
 | service.port | int | `7233` |  |
 | service.type | string | `"ClusterIP"` |  |
 | tolerations | list | `[]` |  |

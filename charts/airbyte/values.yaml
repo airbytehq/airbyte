@@ -254,7 +254,7 @@ webapp:
   ##  webapp.ingress.hosts The list of hostnames to be covered with this ingress record.
   ##  webapp.ingress.tls [array] Custom ingress TLS configuration
   ingress:
-    enabled: true
+    enabled: false
     className: ""
     annotations: {}
     # kubernetes.io/ingress.class: nginx
