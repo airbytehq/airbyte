@@ -93,7 +93,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private void internalLog(final AirbyteLogMessage logMessage) {
     final String combinedMessage =
-        logMessage.getMessage() + (logMessage.getStackTrace() != null ? ("\r\nStack Trace: " + logMessage.getStackTrace()) : "");
+        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator() + "Stack Trace: " + logMessage.getStackTrace()) : "");
 
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(combinedMessage);
