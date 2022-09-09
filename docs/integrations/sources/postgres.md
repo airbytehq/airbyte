@@ -372,6 +372,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.8   | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202) | Adds error messaging factory to UI                                                                                                                                         |
 | 1.0.7   | 2022-08-30 | [16114](https://github.com/airbytehq/airbyte/pull/16114) | Prevent traffic going on an unsecured channel in strict-encryption version of source postgres                                                                              |
 | 1.0.6   | 2022-08-30 | [16138](https://github.com/airbytehq/airbyte/pull/16138) | Remove unnecessary logging                                                                                                                                                 |
 | 1.0.5   | 2022-08-25 | [15993](https://github.com/airbytehq/airbyte/pull/15993) | Add support for connection over SSL in CDC mode                                                                                                                            |
