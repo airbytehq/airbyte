@@ -1,9 +1,10 @@
 import { fireEvent, waitFor } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
-
-import { render } from "utils/testutils";
+import { render } from "test-utils/testutils";
 
 import { Input } from "./Input";
+// eslint-disable-next-line css-modules/no-unused-class
+import styles from "./Input.module.scss";
 
 describe("<Input />", () => {
   test("renders text input", async () => {
@@ -118,7 +119,7 @@ describe("<Input />", () => {
     fireEvent.focus(inputEl);
     fireEvent.focus(inputEl);
 
-    expect(getByTestId("input-container")).toHaveClass("input-container--focused");
+    expect(getByTestId("input-container")).toHaveClass(styles.focused);
   });
 
   test("does not have focused class after blur", async () => {
@@ -129,7 +130,7 @@ describe("<Input />", () => {
     fireEvent.blur(inputEl);
     fireEvent.blur(inputEl);
 
-    expect(getByTestId("input-container")).not.toHaveClass("input-container--focused");
+    expect(getByTestId("input-container")).not.toHaveClass(styles.focused);
   });
 
   test("calls onFocus if passed as prop", async () => {
