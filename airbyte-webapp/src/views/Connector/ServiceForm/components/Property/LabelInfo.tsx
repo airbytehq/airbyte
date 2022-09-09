@@ -11,7 +11,7 @@ interface Props {
   description?: string;
 }
 
-const LabelInfo: React.FC<Props> = ({ label, examples, description }) => {
+export const LabelInfo: React.FC<Props> = ({ label, examples, description }) => {
   const constructExamples = () => {
     if (!examples) {
       return null;
@@ -40,5 +40,3 @@ const LabelInfo: React.FC<Props> = ({ label, examples, description }) => {
     </>
   );
 };
-
-export { LabelInfo };
