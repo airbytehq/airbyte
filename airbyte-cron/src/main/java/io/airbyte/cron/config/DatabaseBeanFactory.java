@@ -4,8 +4,6 @@
 
 package io.airbyte.cron.config;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -35,8 +33,6 @@ public class DatabaseBeanFactory {
   private static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
   private static final Boolean BASELINE_ON_MIGRATION = true;
   private static final String INSTALLED_BY = "AirbyteCron";
-
-  // TODO add jobs db, standardize/share code with airbyte-workers(?)
 
   @Singleton
   @Named("configDatabase")
@@ -81,20 +77,6 @@ public class DatabaseBeanFactory {
     return DatabaseCheckFactory
         .createConfigsDatabaseMigrationCheck(dslContext, configsFlyway, configsDatabaseMinimumFlywayMigrationVersion,
             configsDatabaseInitializationTimeoutMs);
-  }
-
-  // could go elsewhere
-  @Singleton
-  public FeatureFlags featureFlags() {
-    return new EnvVariableFeatureFlags();
-  }
-
-  @Singleton
-  public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
-    return JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
-        .copySecrets(false)
-        .build();
   }
 
 }
