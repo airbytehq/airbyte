@@ -1,3 +1,5 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
     id 'application'
     id 'com.github.eirnym.js2p' version '1.0'
