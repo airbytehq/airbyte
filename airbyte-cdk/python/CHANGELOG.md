@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.1.82
+## 0.1.83
 - Make TypeTransformer more sustainable to incorrect incoming records
+
+## 0.1.82
+- Freeze dataclasses-jsonschema to 2.15.1
 
 ## 0.1.81
 - Fix regression in `_checkpoint_state` arg

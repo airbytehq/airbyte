@@ -256,7 +256,7 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 0.2.6
+  dockerImageTag: 1.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
@@ -449,7 +449,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.82
+  dockerImageTag: 0.1.83
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
