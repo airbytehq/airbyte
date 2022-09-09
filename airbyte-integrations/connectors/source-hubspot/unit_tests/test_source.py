@@ -489,13 +489,13 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == 1641234595251
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
     test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
     # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 250
-    assert test_stream.state["lastUpdated"] == 1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
 def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
@@ -524,4 +524,4 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
-    assert test_stream.state["lastUpdated"] == 1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
