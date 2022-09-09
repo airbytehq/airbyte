@@ -104,8 +104,9 @@ This connector outputs the following incremental streams:
    * read only new records;
    * output only new records.
 
-2. Stream `workflow_runs` is almost pure incremental:
+2. Streams `workflow_runs` and `worflow_jobs` is almost pure incremental:
    * read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   * the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    * output only new records.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
@@ -146,7 +147,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2022-09-09 | [     ](                                               ) | Add new stream `WorkflowJobs` |
+| 0.3.0   | 2022-09-09 | [16534](https://github.com/airbytehq/airbyte/pull/16534) | Add new stream `WorkflowJobs` |
 | 0.2.46  | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730) | Validate input organizations and repositories                                                              |
 | 0.2.45  | 2022-08-11 | [15420](https://github.com/airbytehq/airbyte/pull/15420) | "User" object can be "null"                                                                                |
 | 0.2.44  | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795) | Use GraphQL for `pull_request_comment_reactions` stream                                                    |
