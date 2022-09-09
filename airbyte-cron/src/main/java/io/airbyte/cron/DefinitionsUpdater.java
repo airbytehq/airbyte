@@ -6,15 +6,12 @@ package io.airbyte.cron;
 
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.init.ApplyDefinitionsProvider;
 import io.airbyte.config.init.RemoteDefinitionsProvider;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.scheduling.annotation.Scheduled;
 import java.io.IOException;
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -30,26 +27,32 @@ public class DefinitionsUpdater {
   @Inject
   private ConfigRepository configRepository;
 
-  @Inject
-  private ConfigPersistence configPersistence;
-
-  @Scheduled(fixedRate = "15s")
+  // TODO allow changing rate via config
+  @Scheduled(fixedRate = "30s",
+             initialDelay = "1m")
   void updateDefinitions() throws JsonValidationException, IOException {
+    log.info("Updating definitions...");
     final EnvConfigs envConfigs = new EnvConfigs(); // TODO dependency inject this
-
-    final List<StandardSourceDefinition> defs = configRepository.listStandardSourceDefinitions(false);
-    log.info("FOUND {} DEFINITIONS", defs.size());
 
     // TODO don't run if disabled via env
     envConfigs.getRemoteConnectorCatalogUrl().ifPresent(remoteCatalogUrl -> {
       try {
         final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(remoteCatalogUrl);
-        // apply the thing
-        final ApplyDefinitionsProvider applyHelper = new ApplyDefinitionsProvider(configRepository, remoteDefinitionsProvider);
-        applyHelper.apply(envConfigs.getDeploymentMode() == DeploymentMode.CLOUD);
+        log.info("Retrieved remote definitions: {} sources, {} destinations",
+            remoteDefinitionsProvider.getSourceDefinitions().size(),
+            remoteDefinitionsProvider.getDestinationDefinitions().size());
+
+        try {
+          final ApplyDefinitionsProvider applyHelper = new ApplyDefinitionsProvider(configRepository, remoteDefinitionsProvider);
+          applyHelper.apply(envConfigs.getDeploymentMode() == DeploymentMode.CLOUD);
+
+          log.info("Done applying remote connector definitions");
+        } catch (final Exception e) {
+          log.error("Error while applying remote definitions", e);
+        }
+
       } catch (final Exception e) {
-        log.error("Error when retrieving remote definitions");
-        e.printStackTrace();
+        log.error("Error when retrieving remote definitions", e);
       }
     });
 
