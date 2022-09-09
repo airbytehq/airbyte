@@ -61,6 +61,7 @@ class RemoteDefinitionsProviderTest {
     assertEquals("https://docs.airbyte.io/integrations/sources/stripe", stripeSource.getDocumentationUrl());
     assertEquals("stripe.svg", stripeSource.getIcon());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
+    assertEquals(false, stripeSource.getTombstone());
   }
 
   @Test
@@ -76,6 +77,8 @@ class RemoteDefinitionsProviderTest {
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
+    assertEquals(false, s3Destination.getTombstone());
+
   }
 
   @Test
