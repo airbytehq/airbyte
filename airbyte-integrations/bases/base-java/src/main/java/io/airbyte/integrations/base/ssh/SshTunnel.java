@@ -226,15 +226,19 @@ public class SshTunnel implements AutoCloseable {
   }
 
   /**
-   * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
-   * the keys from the key info, and return the key pair for use in authentication.
+   * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
+   * keys from the key info, and return the key pair for use in authentication.
+   *
+   * @see <a href=
+   *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
   KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException {
     final String validatedKey = validateKey();
-    final var kp = SecurityUtils
+    final var keyPairs = SecurityUtils
         .getKeyPairResourceParser()
         .loadKeyPairs(null, null, null, new StringReader(validatedKey));
-    return kp.iterator().next();
+
+    return (keyPairs == null) ? null : keyPairs.iterator().next();
   }
 
   private String validateKey() {
@@ -257,7 +261,7 @@ public class SshTunnel implements AutoCloseable {
   /**
    * Starts an ssh session; wrap this in a try-finally and use closeTunnel() to close it.
    */
-  private ClientSession openTunnel(final SshClient client) {
+  ClientSession openTunnel(final SshClient client) {
     try {
       client.start();
       final ClientSession session = client.connect(

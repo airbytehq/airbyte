@@ -15,6 +15,8 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.common.util.security.eddsa.EdDSASecurityProviderRegistrar;
 import org.junit.jupiter.api.Test;
@@ -77,7 +79,6 @@ class SshTunnelTest {
   @ValueSource(strings = {SSH_ED25519_PRIVATE_KEY, SSH_RSA_PRIVATE_KEY})
   public void getKeyPair(final String privateKey) throws Exception {
     final JsonNode config = (new ObjectMapper()).readTree(String.format(CONFIG, privateKey));
-    // We do not want to open session to ssh host, so using constructor instead of getInstance()
     final SshTunnel sshTunnel = new SshTunnel(
         config,
         Arrays.asList(new String[] {"host"}),
@@ -89,7 +90,15 @@ class SshTunnelTest {
         privateKey,
         "tunnelUserPassword",
         "fakeHost.com",
-        5432);
+        5432) {
+
+      @Override
+      ClientSession openTunnel(final SshClient client) {
+        return null; // Prevent tunnel from attempting to connect
+      }
+
+    };
+
     final KeyPair authKeyPair = sshTunnel.getPrivateKeyPair();
     assertNotNull(authKeyPair);// actually, all is good if there is no exception on previous line
   }
