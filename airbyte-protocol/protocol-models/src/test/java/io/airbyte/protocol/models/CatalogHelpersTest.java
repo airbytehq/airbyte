@@ -117,7 +117,7 @@ class CatalogHelpersTest {
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
         StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName("users"), new UpdateStreamTransform(Set.of(
             FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get(PROPERTIES).get("COD")),
-            FieldTransform.createRemoveFieldTransform(List.of("something2", "oneOf"), schema1.get(PROPERTIES).get("something2")),
+            FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get(PROPERTIES).get("something2")),
             FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get(PROPERTIES).get("HKD")),
             FieldTransform.createUpdateFieldTransform(List.of(CAD), new UpdateFieldSchemaTransform(
                 schema1.get(PROPERTIES).get(CAD),
