@@ -30,10 +30,10 @@ class ConnectorStateManager:
     def __init__(self, stream_instance_map: Mapping[str, Stream], state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None):
         shared_state, streams, legacy = self._extract_from_state_message(state, stream_instance_map)
         self.shared_state = shared_state
-        self.streams = streams
+        self.per_stream_states = streams
         self.legacy = legacy
 
-    def get_stream_state(self, stream_name: str, namespace: str) -> Mapping[str, Any]:
+    def get_stream_state(self, stream_name: str, namespace: Optional[str]) -> Mapping[str, Any]:
         """
         Retrieves the state of a given stream based on its descriptor (name + namespace) including any global shared state.
         Stream state takes precedence over shared state when there are conflicts
@@ -44,7 +44,7 @@ class ConnectorStateManager:
         combined_state = {}
         if self.shared_state:
             combined_state.update(self.shared_state.dict())
-        target_state = self.streams.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        target_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if target_state and target_state.stream_state:
             combined_state.update(target_state.stream_state.dict())
         return combined_state
@@ -58,10 +58,10 @@ class ConnectorStateManager:
 
     def update_state_for_stream(self, stream_name: str, namespace: str, value: Mapping[str, Any]):
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-        if stream_descriptor in self.streams:
-            self.streams[stream_descriptor].stream_state = AirbyteStateBlob.parse_obj(value)
+        if stream_descriptor in self.per_stream_states:
+            self.per_stream_states[stream_descriptor].stream_state = AirbyteStateBlob.parse_obj(value)
         else:
-            self.streams[stream_descriptor] = AirbyteStreamState(
+            self.per_stream_states[stream_descriptor] = AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream_name, namespace=namespace), stream_state=AirbyteStateBlob.parse_obj(value)
             )
         self.legacy[stream_name] = value

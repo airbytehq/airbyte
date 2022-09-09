@@ -3,30 +3,20 @@
 #
 
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping
 
 import pytest
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor
 from airbyte_cdk.sources.streams import Stream
 
 
 class StreamWithNamespace(Stream):
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    primary_key = None
+    namespace = "public"
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         return {}
-
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return ""
-
-    @property
-    def namespace(self) -> Optional[str]:
-        return "public"
 
 
 @pytest.mark.parametrize(
@@ -202,7 +192,7 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
     with expected_error:
         state_manager = ConnectorStateManager(stream_to_instance_map, input_stream_state)
 
-        assert state_manager.streams == expected_stream_state
+        assert state_manager.per_stream_states == expected_stream_state
         assert state_manager.shared_state == expected_shared_state
         assert state_manager.legacy == expected_legacy_state
 
@@ -446,7 +436,7 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
 
     state_manager.update_state_for_stream(update_name, update_namespace, update_value)
 
-    assert state_manager.streams[HashableStreamDescriptor(name=update_name, namespace=update_namespace)] == AirbyteStreamState(
+    assert state_manager.per_stream_states[HashableStreamDescriptor(name=update_name, namespace=update_namespace)] == AirbyteStreamState(
         stream_descriptor=StreamDescriptor(name=update_name, namespace=update_namespace), stream_state=update_value
     )
     assert state_manager.get_legacy_state() == expected_legacy_state

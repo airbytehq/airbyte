@@ -114,7 +114,7 @@ class AbstractSource(Source, ABC):
                         logger=logger,
                         stream_instance=stream_instance,
                         configured_stream=configured_stream,
-                        connector_state=state_manager,
+                        state_manager=state_manager,
                         internal_config=internal_config,
                     )
                 except AirbyteTracedException as e:
@@ -141,7 +141,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: ConnectorStateManager,
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         self._apply_log_level_to_stream_logger(logger, stream_instance)
@@ -170,7 +170,7 @@ class AbstractSource(Source, ABC):
                 logger,
                 stream_instance,
                 configured_stream,
-                connector_state,
+                state_manager,
                 internal_config,
             )
         else:
@@ -204,7 +204,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: ConnectorStateManager,
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         """Read stream using incremental algorithm
@@ -212,16 +212,16 @@ class AbstractSource(Source, ABC):
         :param logger:
         :param stream_instance:
         :param configured_stream:
-        :param connector_state:
+        :param state_manager:
         :param internal_config:
         :return:
         """
         stream_name = configured_stream.stream.name
 
         if self.per_stream_state_enabled:
-            stream_state = connector_state.get_stream_state(stream_name, stream_instance.namespace)
+            stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
         else:
-            stream_state = connector_state.get_legacy_state().get(stream_name, {})
+            stream_state = state_manager.get_legacy_state().get(stream_name, {})
 
         if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state
@@ -236,7 +236,7 @@ class AbstractSource(Source, ABC):
         total_records_counter = 0
         if not slices:
             # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_instance, stream_state, connector_state)
+            checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
@@ -251,7 +251,7 @@ class AbstractSource(Source, ABC):
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(stream_instance, stream_state, connector_state)
+                    yield self._checkpoint_state(stream_instance, stream_state, state_manager)
 
                 total_records_counter += 1
                 # This functionality should ideally live outside of this method
@@ -261,7 +261,7 @@ class AbstractSource(Source, ABC):
                     # Break from slice loop to save state and exit from _read_incremental function.
                     break
 
-            yield self._checkpoint_state(stream_instance, stream_state, connector_state)
+            yield self._checkpoint_state(stream_instance, stream_state, state_manager)
             if self._limit_reached(internal_config, total_records_counter):
                 return
 
