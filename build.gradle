@@ -251,7 +251,7 @@ subprojects { subproj ->
             buildArgs.put('VERSION', rootProject.ext.version)
 
         }
-        
+
         tasks.named("assemble") {
             dependsOn buildDockerImage
         }

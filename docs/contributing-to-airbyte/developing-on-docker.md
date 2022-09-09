@@ -4,12 +4,14 @@
 
 The docker build is fully incremental for the platform build, which means that it will only build an image if it is needed. We need to keep it that 
 way.
-A task generator, `getDockerBuildTask`, is available for building a docker image for any given module. Behind the scene, it will generate a 
-task which will run the build of a docker image in a specific folder. The goal is to make sure that we have an isolated 
-context which helps with incrementality. All files that need to be present in the docker image will need to be copy into this folder. The generate 
-method takes 2 arguments:
-- The image name, for example if `foo` is given as an image name, the image `airbyte/foo` will be created
-- The project directory folder. It is needed because the `getDockerBuildTask` is declared in the rootProject
+The top level `build.gradle` file defines several convenient tasks for building a docker image.
+1) The `copyGeneratedTar` task copies a generated TAR file from a default location into the default location used by the [docker plugin](https://github.com/bmuschko/gradle-docker-plugin).
+2) The `buildDockerImage` task is a convenience class for configuring the above linked docker plugin that centralizes configuration logic commonly found in our dockerfiles.
+3) Makes the `buildDockerImage` task depend on the Gradle `assemble` task.
+
+These tasks are added to a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property.
+
+This property is sets the build docker image's name.
 
 ## Adding a new docker build
 
