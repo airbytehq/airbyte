@@ -6,6 +6,7 @@ import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CreditsUsage from "./components/CreditsUsage";
@@ -23,7 +24,7 @@ const EmailVerificationHintWithMargin = styled(EmailVerificationHint)`
 
 const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
-
+  useTrackPage(PageTrackingCodes.CREDITS);
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}

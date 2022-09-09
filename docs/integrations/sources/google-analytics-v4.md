@@ -1,8 +1,8 @@
-# Google Analytics (v4)
+# Google Analytics 4 (GA4)
 
 This page guides you through the process of setting up the Google Analytics source connector.
 
-This connector supports [Google Analytics v4](https://developers.google.com/analytics/devguides/collection/ga4).
+This connector supports GA4 properties through the [Analytics Data API v1](https://developers.google.com/analytics/devguides/reporting/data/v1).
 
 ## Prerequisites
 
