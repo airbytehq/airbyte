@@ -24,20 +24,17 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div
-      className={classNames(
-        className,
-        styles.container,
-        fullWidth ? styles.fullWidth : undefined,
-        withPadding ? styles.withPadding : undefined
-      )}
+      className={classNames(className, styles.container, {
+        [styles.fullWidth]: fullWidth,
+        [styles.withPadding]: withPadding,
+      })}
     >
       {title ? (
         <H5
-          className={classNames(
-            styles.title,
-            lightPadding || !children ? styles.lightPadding : undefined,
-            roundedBottom ? styles.roundedBottom : undefined
-          )}
+          className={classNames(styles.title, {
+            [styles.lightPadding]: lightPadding || !children,
+            [styles.roundedBottom]: roundedBottom,
+          })}
         >
           {title}
         </H5>
