@@ -1,0 +1,24 @@
+@use "../../scss/colors";
+
+.formGroup {
+  margin: 41px 0 27px;
+  border: 2px solid colors.$grey-100;
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 0 20px;
+}
+
+.groupTitle {
+  position: relative;
+  transform: translateY(-50%);
+  margin-left: -22px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  width: auto;
+  height: 34px;
+
+  & label {
+    padding-bottom: 0;
+  }
+}

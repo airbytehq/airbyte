@@ -1,0 +1,10 @@
+@use "../../../../../scss/colors";
+
+.groupLabel {
+  width: auto;
+  height: 100%;
+  padding-right: 10px;
+  display: flex;
+  align-items: center;
+  background-color: colors.$white;
+}

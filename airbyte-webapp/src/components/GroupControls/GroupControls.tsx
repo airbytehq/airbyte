@@ -1,46 +1,18 @@
 import React from "react";
-import styled from "styled-components";
 
-import { Label } from "components";
-import { TextWithHTML } from "components/TextWithHTML";
-
-const GroupTitle = styled.div<{ $fullWidthTitle: boolean }>`
-  margin-top: -23px;
-  background: ${({ theme }) => theme.whiteColor};
-  padding: 0 5px;
-  display: inline-block;
-  vertical-align: middle;
-  width: ${({ $fullWidthTitle }) => ($fullWidthTitle ? "100%" : "auto")};
-`;
-
-const FormGroup = styled.div`
-  margin: 41px 0 27px;
-  border: 2px solid ${({ theme }) => theme.greyColor20};
-  box-sizing: border-box;
-  border-radius: 8px;
-  padding: 0 20px;
-`;
+import styles from "./GroupControls.module.scss";
 
 interface GroupControlsProps {
   title: React.ReactNode;
-  description?: string;
   name?: string;
-  fullWidthTitle?: boolean;
 }
 
-const GroupControls: React.FC<GroupControlsProps> = ({
-  title,
-  description,
-  children,
-  name,
-  fullWidthTitle = false,
-}) => {
+const GroupControls: React.FC<GroupControlsProps> = ({ title, children, name }) => {
   return (
-    <FormGroup data-testid={name}>
-      <GroupTitle $fullWidthTitle={fullWidthTitle}>{title}</GroupTitle>
-      {description && <Label message={<TextWithHTML text={description} />} />}
+    <div className={styles.formGroup} data-testid={name}>
+      <div className={styles.groupTitle}>{title}</div>
       {children}
-    </FormGroup>
+    </div>
   );
 };
 

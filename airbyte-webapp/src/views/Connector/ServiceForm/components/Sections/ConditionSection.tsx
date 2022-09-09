@@ -10,9 +10,9 @@ import { isDefined } from "utils/common";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
-import { PropertyLabel } from "../Property/PropertyLabel";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
+import { GroupLabel } from "./GroupLabel";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
@@ -64,24 +64,18 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
   return (
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
-      fullWidthTitle
       title={
-        <div className={styles.sectionTitle}>
-          <PropertyLabel
-            className={styles.groupLabel}
-            property={formField}
-            label={`${formField.title || formField.fieldKey}`}
-            optional={false}
-          />
+        <>
+          <GroupLabel formField={formField} />
           <DropDown
-            className={styles.sectionTitleDropdown}
+            className={styles.groupDropdown}
             options={options}
             onChange={onOptionChange}
             value={currentlySelectedCondition}
             name={formField.path}
             isDisabled={disabled}
           />
-        </div>
+        </>
       }
     >
       <div className={styles.conditionControls}>

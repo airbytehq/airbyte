@@ -1,20 +1,12 @@
-.sectionTitle {
-  display: flex;
-}
+@use "../../../../../scss/colors";
 
-.sectionTitleDropdown {
-  flex: 1 1 auto;
-}
-
-.groupLabel {
-  width: auto;
-  margin-right: 8px;
-  padding-top: 8px;
-  display: inline-block;
-  padding-bottom: 0px;
-  vertical-align: middle;
+.groupDropdown {
+  margin-left: auto;
+  padding: 0 5px;
+  background-color: colors.$white;
+  width: 250px;
 }
 
 .conditionControls {
-  padding-top: 20px;
+  padding-top: 10px;
 }
