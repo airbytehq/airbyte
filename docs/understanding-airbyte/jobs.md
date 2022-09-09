@@ -1,17 +1,17 @@
 # Workers & Jobs
 
-In Airbyte, all interactions with connectors are run as jobs performed by a Worker. There are 4 types of workers:
+In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Examples of workers are:
 
-1. Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\).
-2. Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync.
-3. Discovery worker: retrieves the schema of the source underlying a connector.
-4. Sync worker, used to sync data between a source and destination.
+* Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\)
+* Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync
+* Discovery worker: retrieves the schema of the source underlying a connector
+* Sync worker, used to sync data between a source and destination
 
 ## Worker Responsibilities
 
-The worker has 4 main responsibilities. 
+The worker has 4 main responsibilities in its lifecycle. 
 
-1. Spin up and shut down all processes needed for the job.  
+1. Spin up any connector docker containers that are needed for the job. 
 2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 
 3. Shut down any connector docker containers that it started. 
 4. Return the output of the job. \(See [Airbyte Specification](airbyte-protocol.md) to understand the output of each worker type.\)
@@ -56,3 +56,4 @@ Jobs in the worker follow the following state machine.
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 [Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
+
