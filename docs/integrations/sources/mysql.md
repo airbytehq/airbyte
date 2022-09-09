@@ -188,6 +188,10 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.6.10  | 2022-09-08 | [16007](https://github.com/airbytehq/airbyte/pull/16007)   | Implement per stream state support.                                                                                           |
+| 0.6.9   | 2022-09-03 | [16216](https://github.com/airbytehq/airbyte/pull/16216)   | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |
+| 0.6.8   | 2022-09-01 | [16259](https://github.com/airbytehq/airbyte/pull/16259)   | Emit state messages more frequently |
+| 0.6.7   | 2022-08-30 | [16114](https://github.com/airbytehq/airbyte/pull/16114)   | Prevent traffic going on an unsecured channel in strict-encryption version of source mysql                       |
 | 0.6.6   | 2022-08-25 | [15993](https://github.com/airbytehq/airbyte/pull/15993)   | Improved support for connecting over SSL                                                                         |
 | 0.6.5   | 2022-08-25 | [15917](https://github.com/airbytehq/airbyte/pull/15917)   | Fix temporal data type default value bug                                                                         |
 | 0.6.4   | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)   | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field        |

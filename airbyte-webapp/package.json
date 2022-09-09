@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.3",
+  "version": "0.40.4",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -17,6 +17,8 @@
     "storybook": "start-storybook -p 9009 --quiet",
     "build:storybook": "build-storybook -o 'build/storybook'",
     "lint": "eslint --ext js,ts,tsx src",
+    "stylelint": "stylelint \"**/*.{css,scss}\"",
+    "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
@@ -28,11 +30,11 @@
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
-    "@fullstory/browser": "^1.5.1",
     "@headlessui/react": "^1.6.5",
     "@monaco-editor/react": "^4.4.5",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
+    "@types/segment-analytics": "^0.0.34",
     "classnames": "^2.3.1",
     "dayjs": "^1.11.3",
     "firebase": "^9.8.2",
@@ -45,7 +47,6 @@
     "query-string": "^6.13.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-dropzone": "^11.5.3",
     "react-helmet": "6.1.0",
     "react-intl": "^5.24.8",
     "react-lazylog": "^4.5.3",
@@ -106,6 +107,7 @@
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-css-modules": "^2.11.0",
     "eslint-plugin-jest": "^26.5.3",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.18.1",
@@ -119,6 +121,11 @@
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
     "storybook-addon-mock": "^2.4.1",
+    "stylelint": "^14.9.1",
+    "stylelint-config-css-modules": "^4.1.0",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-standard": "^26.0.0",
+    "stylelint-config-standard-scss": "^5.0.0",
     "tar": "^6.1.11",
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",
@@ -130,8 +137,14 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+    "src/**/*.{js,jsx,ts,tsx,json}": [
+      "eslint --fix"
+    ],
+    "src/**/*.{css,scss,md}": [
       "prettier --write"
+    ],
+    "src/**/*.{css,scss}": [
+      "stylelint --fix"
     ]
   },
   "browserslist": {

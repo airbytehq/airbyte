@@ -27,7 +27,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.1.15
+  dockerImageTag: 1.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -40,7 +40,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.1.15
+  dockerImageTag: 1.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -67,7 +67,7 @@
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
 - name: Databricks Lakehouse
@@ -106,7 +106,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
   resourceRequirements:
@@ -161,7 +161,7 @@
 - name: MQTT
   destinationDefinitionId: f3802bc4-5406-4752-9e8d-01e504ca8194
   dockerRepository: airbyte/destination-mqtt
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mqtt
   icon: mqtt.svg
   releaseStage: alpha
@@ -182,7 +182,7 @@
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
   icon: mongodb.svg
   releaseStage: alpha
@@ -203,7 +203,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.24
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
   releaseStage: alpha
@@ -217,7 +217,7 @@
 - name: RabbitMQ
   destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
   dockerRepository: airbyte/destination-rabbitmq
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
   icon: pulsar.svg
   releaseStage: alpha
@@ -231,7 +231,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.47
+  dockerImageTag: 0.3.49
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:
@@ -250,7 +250,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.14
+  dockerImageTag: 0.3.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -270,7 +270,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.34
+  dockerImageTag: 0.4.35
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:
@@ -314,4 +314,11 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-sqlite
   icon: sqlite.svg
+  releaseStage: alpha
+- name: TiDB
+  destinationDefinitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
+  dockerRepository: airbyte/destination-tidb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/tidb
+  icon: tidb.svg
   releaseStage: alpha

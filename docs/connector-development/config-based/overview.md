@@ -15,22 +15,78 @@ The process then submits HTTP requests to the API endpoint, and extracts records
 
 See the [connector definition section](yaml-structure.md) for more information on the YAML file describing the connector.
 
+## Does this framework support the connector I want to build?
+
+Not all APIs are can be built using this framework because its featureset is still limited.
+This section describes guidelines for determining whether a connector for a given API can be built using the config-based framework. Please let us know through the #lowcode-earlyaccess Slack channel if you'd like to build something that falls outside what we currently support and we'd be happy to discuss and prioritize in the coming months!
+
+Refer to the API's documentation to answer the following questions:
+
+### Is this a HTTP REST API returning data as JSON?
+
+The API documentation should show which HTTP method must be used to retrieve data from the API.
+For example, the [documentation for the Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) says the GET method should be used, and that the response is a JSON object.
+
+Other API types such as SOAP or GraphQL are not supported.
+
+Other encoding schemes such as CSV or Protobuf are not supported.
+
+Integrations that require the use of an SDK are not supported.
+
+### Do queries return the data synchronously or do they trigger a bulk workflow?
+
+Some APIs return the data of interest as part of the response. This is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab) - each request results in a response containing the data we're interested in.
+
+Other APIs use bulk workflows, which means a query will trigger an asynchronous process on the integration's side. [Zendesk bulk queries](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#bulk-mark-tickets-as-spam) are an example of such integrations.
+
+An initial request will trigger the workflow and return an ID and a job status. The actual data then needs to be fetched when the asynchronous job is completed.
+
+Asynchronous bulk workflows are not supported.
+
+### What is the pagination mechanism?
+
+The only pagination mechanisms supported are
+
+* Offset count passed either by query params or request header such as [Sendgrid](https://docs.sendgrid.com/api-reference/bounces-api/retrieve-all-bounces)
+* Page count passed either by query params or request header such as [Greenhouse](https://developers.greenhouse.io/harvest.html#get-list-applications)
+* Cursor field pointing to the URL of the next page of records such as [Sentry](https://docs.sentry.io/api/pagination/)
+
+### What is the authorization mechanism?
+
+Endpoints that require authenticating using a query param or a HTTP header, as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
+
+Endpoints that require authenticating using Basic Auth over HTTPS, as is the case for [Greenhouse](https://developers.greenhouse.io/harvest.html#authentication), are supported.
+
+Endpoints that require authenticating using OAuth 2.0, as is the case for [Strava](https://developers.strava.com/docs/authentication/#introduction), are supported.
+
+Other authentication schemes such as GWT are not supported.
+
+### Is the schema static or dynamic?
+
+Only static schemas are supported.
+
+Dynamically deriving the schema from querying an endpoint is not supported.
+
+### Does the endpoint have a strict rate limit
+
+Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window, such as the [Reddit Ads API](https://ads-api.reddit.com/docs/#section/Rate-Limits), which limits to 1 request per second.
+
 ## Supported features
 
-| Feature                                                      | Support                                                                                                                                                                                                                                      |
-|--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Transport protocol                                           | HTTP                                                                                                                                                                                                                                         |
-| HTTP methods                                                 | GET, POST                                                                                                                                                                                                                                    |
-| Data format                                                  | Json                                                                                                                                                                                                                                         |
-| Resource type                                                | Collections<br/>Sub-collection                                                                                                                                                                       |
-| [Pagination](./pagination.md)                                | [Page limit](./pagination.md#page-increment)<br/>[Offset](./pagination.md#offset-increment)<br/>[Cursor](./pagination.md#cursor)                                                                                                             |
-| [Authentication](./authentication.md)                        | [Header based](./authentication.md#ApiKeyAuthenticator)<br/>[Bearer](./authentication.md#BearerAuthenticator)<br/>[Basic](./authentication.md#BasicHttpAuthenticator)<br/>[OAuth](./authentication.md#OAuth)                                 |
-| Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                                                                                                 |
-| Schema discovery                                             | Only static schemas                                                                                                                                                                                                                          |
-| [Stream slicing](./stream-slicers.md)                        | [Datetime](./stream-slicers.md#Datetime), [lists](./stream-slicers.md#list-stream-slicer), [parent-resource id](./stream-slicers.md#Substream-slicer)                                                                                        |
+| Feature                                                      | Support                                                                                                                                                                                                                                       |
+|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Transport protocol                                           | HTTP                                                                                                                                                                                                                                          |
+| HTTP methods                                                 | GET, POST                                                                                                                                                                                                                                     |
+| Data format                                                  | JSON                                                                                                                                                                                                                                          |
+| Resource type                                                | Collections<br/>Sub-collection                                                                                                                                                                                                                |
+| [Pagination](./pagination.md)                                | [Page limit](./pagination.md#page-increment)<br/>[Offset](./pagination.md#offset-increment)<br/>[Cursor](./pagination.md#cursor)                                                                                                              |
+| [Authentication](./authentication.md)                        | [Header based](./authentication.md#ApiKeyAuthenticator)<br/>[Bearer](./authentication.md#BearerAuthenticator)<br/>[Basic](./authentication.md#BasicHttpAuthenticator)<br/>[OAuth](./authentication.md#OAuth)                                  |
+| Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                                                                                                  |
+| Schema discovery                                             | Only static schemas                                                                                                                                                                                                                           |
+| [Stream slicing](./stream-slicers.md)                        | [Datetime](./stream-slicers.md#Datetime), [lists](./stream-slicers.md#list-stream-slicer), [parent-resource id](./stream-slicers.md#Substream-slicer)                                                                                         |
 | [Record transformation](./record-selector.md)                | [Field selection](./record-selector.md#selecting-a-field)<br/>[Adding fields](./record-selector.md#adding-fields)<br/>[Removing fields](./record-selector.md#removing-fields)<br/>[Filtering records](./record-selector.md#filtering-records) |
-| [Error detection](./error-handling.md)                       | [From HTTP status  code](./error-handling.md#from-status-code)<br/>[From error message](./error-handling.md#from-error-message)                                                                                                              |
-| [Backoff strategies](./error-handling.md#Backoff-Strategies) | [Exponential](./error-handling.md#Exponential-backoff)<br/>[Constant](./error-handling.md#Constant-Backoff)<br/>[Derived from headers](./error-handling.md#Wait-time-defined-in-header)                                                      |
+| [Error detection](./error-handling.md)                       | [From HTTP status  code](./error-handling.md#from-status-code)<br/>[From error message](./error-handling.md#from-error-message)                                                                                                               |
+| [Backoff strategies](./error-handling.md#Backoff-Strategies) | [Exponential](./error-handling.md#Exponential-backoff)<br/>[Constant](./error-handling.md#Constant-Backoff)<br/>[Derived from headers](./error-handling.md#Wait-time-defined-in-header)                                                       |
 
 If a feature you require is not supported, you can [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
 
@@ -67,7 +123,7 @@ There is currently only one implementation, the `SimpleRetriever`, which is defi
 
 1. Requester: Describes how to submit requests to the API source
 2. Paginator: Describes how to navigate through the API's pages
-3. Record selector: Describes how to extract records from an HTTP response
+3. Record selector: Describes how to extract records from a HTTP response
 4. Stream Slicer: Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.

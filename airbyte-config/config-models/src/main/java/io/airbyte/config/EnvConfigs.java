@@ -16,6 +16,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,7 +33,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
+@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -147,6 +148,8 @@ public class EnvConfigs implements Configs {
 
   public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
+
+  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -321,6 +324,16 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public Optional<URI> getRemoteConnectorCatalogUrl() {
+    final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
+    if (remoteConnectorCatalogUrl != null) {
+      return Optional.of(URI.create(remoteConnectorCatalogUrl));
+    } else {
+      return Optional.empty();
+    }
   }
 
   // Docker Only
