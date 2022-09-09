@@ -69,6 +69,27 @@
 
 # Jobs Database
 * `jobs`
+  * Each record in this table represents a job.
+  * The `config_type` column captures the type of job. We only make jobs for `sync` and `reset` (we do not use them for `spec`, `check`, `discover`).
+  * A job represents an attempt to use a connector (or a pair of connectors). The goal of this model is to capture the input of that run. A job can have multiple attempts (see the `attempts` table). The guarantee across all attempts is that the input into each attempt will be the same.
+  * That input is captured in the `config` column. This column is a JSON Blob with the schema of a [JobConfig](airbyte-config/config-models/src/main/resources/types/JobConfig.yaml). Only `sync` and `resetConnection` are ever used in that model.
+    * The other top-level fields are vestigial from when `spec`, `check`, `discover` were used in this model (we will eventually remove them).
+  * The `scope` column contains the `connection_id` for the relevant connection of the job.
+    * Context: It is called `scope` and not `connection_id`, because, this table was originally used for `spec`, `check`, and `discover`, and in those cases the `scope` referred to the relevant actor or actor definition. At this point the scope is always a `connection_id`.
+  * The `status` column contains the job status. The lifecycle of a job is explained in detail in the [Jobs & Workers documentation](jobs.md#job-state-machine).
 * `attempts`
+  * Each record in this table represents an attempt.
+  * Each attempt belongs to a job--this is captured by the `job_id` column. All attempts for a job will run on the same input.
+  * The `id` column is a unique id across all attempts while the `attempt_number` is an ascending number of the attempts for a job.
+  * The output of each attempt, however, can be different. The `output` column is a JSON blob with the schema of a [JobOutput](airbyte-config/config-models/src/main/resources/types/StandardSyncOutput.yaml). Only `sync` is used in that model. Reset jobs will also use the `sync` field, because under the hood `reset` jobs end up just doing a `sync` with special inputs. This object contains all the output info for a sync including stats on how much data was moved.
+    * The other top-level fields are vestigial from when `spec`, `check`, `discover` were used in this model (we will eventually remove them).
+  * The `status` column contains the attempt status. The lifecycle of a job / attempt is explained in detail in the [Jobs & Workers documentation](jobs.md#job-state-machine).
+  * If the attempt fails, the `failure_summary` column will be populated. The column is a JSON blob with the schema of (AttemptFailureReason)[airbyte-config/config-models/src/main/resources/types/AttemptFailureSummary.yaml].
+  * The `log_path` column captures where logs for the attempt will be written.
+  * `created_at`, `started_at`, and `ended_at` track the run time.
+  * The `temporal_workflow_id` column keeps track of what temporal execution is associated with the attempt.
 * `airbyte_metadata`
+  * This table is a key-value store for various metadata about the platform. It is used to track information about what version the platform is currently on as well as tracking the upgrade history.
+  * Logically it does not make a lot of sense that it is in the jobs db. It would make sense if it were either in its own dbs or in the config dbs.
+  * The only two columns are `key` and `value`. It is truly just a key-value store.
 * `airbyte_jobs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
