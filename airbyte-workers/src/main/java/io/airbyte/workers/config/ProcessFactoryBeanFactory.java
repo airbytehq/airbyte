@@ -29,7 +29,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            notEquals = "KUBERNETES")
+            notEquals = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("checkProcessFactory")
@@ -51,7 +51,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            value = "KUBERNETES")
+            value = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("checkProcessFactory")
@@ -67,7 +67,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            notEquals = "KUBERNETES")
+            notEquals = "kubernetes")
   @Named("defaultProcessFactory")
   public ProcessFactory defaultDockerProcessFactory(
                                                     @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -87,7 +87,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            value = "KUBERNETES")
+            value = "kubernetes")
   @Named("defaultProcessFactory")
   public ProcessFactory defaultKubernetesProcessFactory(
                                                         @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -101,7 +101,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            notEquals = "KUBERNETES")
+            notEquals = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("discoverProcessFactory")
@@ -123,7 +123,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            value = "KUBERNETES")
+            value = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("discoverProcessFactory")
@@ -139,7 +139,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            notEquals = "KUBERNETES")
+            notEquals = "kubernetes")
   @Named("replicationProcessFactory")
   public ProcessFactory replicationDockerProcessFactory(
                                                         @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -159,7 +159,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            value = "KUBERNETES")
+            value = "kubernetes")
   @Named("replicationProcessFactory")
   public ProcessFactory replicationKubernetesProcessFactory(
                                                             @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -173,7 +173,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            notEquals = "KUBERNETES")
+            notEquals = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("specProcessFactory")
@@ -195,7 +195,7 @@ public class ProcessFactoryBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.env",
-            value = "KUBERNETES")
+            value = "kubernetes")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("specProcessFactory")
