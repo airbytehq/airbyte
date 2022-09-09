@@ -298,11 +298,15 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
   frontend-build:
     name: "Frontend: Build"
-    needs: start-frontend-runner
+    needs:
+      - start-frontend-runner
+      - find_valid_pat
     runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -333,6 +337,17 @@ jobs:
 
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
+
+      - name: Publish Storybook to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ needs.find_valid_pat.outputs.pat }}
+          workingDir: ./airbyte-webapp/
+          storybookBuildDir: build/storybook/
+          exitOnceUploaded: true
+
+
   frontend-test:
     name: "Frontend: Run End-to-End Tests"
     needs:
