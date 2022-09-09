@@ -483,7 +483,11 @@ class Stream(HttpStream, ABC):
 
         for field_name, field_value in record["properties"].items():
             if field_name not in properties:
-                self.logger.info("Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(record.get("id"), field_name))
+                self.logger.info(
+                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
+                        record.get("id"), field_name
+                    )
+                )
                 continue
             declared_field_types = properties[field_name].get("type", [])
             if not isinstance(declared_field_types, Iterable):
@@ -732,7 +736,7 @@ class IncrementalStream(Stream, ABC):
 
         is_last_slice = False
         if self.last_slice:
-            is_last_slice = (stream_slice == self.last_slice)
+            is_last_slice = stream_slice == self.last_slice
         self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
