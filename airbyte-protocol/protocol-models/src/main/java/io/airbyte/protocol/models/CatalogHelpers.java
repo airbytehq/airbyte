@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.transform_models.UpdateFieldSchemaTransform;
 import io.airbyte.protocol.models.transform_models.UpdateStreamTransform;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -334,10 +335,16 @@ public class CatalogHelpers {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
-        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        .collect(
+            () -> new HashMap<>(),
+            CatalogHelpers::collectInHashMap,
+            CatalogHelpers::combineAccumulator
+        );
     final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
         .stream()
-        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        .collect(() -> new HashMap<>(),
+            CatalogHelpers::collectInHashMap,
+            CatalogHelpers::combineAccumulator);
 
     Sets.difference(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
         .forEach(fieldName -> fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName))));
@@ -352,6 +359,29 @@ public class CatalogHelpers {
       }
     });
     return new UpdateStreamTransform(fieldTransforms);
+  }
+
+  @VisibleForTesting
+  static final JsonNode DUPLICATED_SCHEMA = Jsons.jsonNode("Duplicated Schema");
+
+  @VisibleForTesting
+  static void collectInHashMap(final HashMap<List<String>, JsonNode> accumulator, final Pair<List<String>, JsonNode> value) {
+    if (accumulator.containsKey(value.getKey())) {
+      accumulator.put(value.getKey(), DUPLICATED_SCHEMA);
+    } else {
+      accumulator.put(value.getKey(), value.getValue());
+    }
+  }
+
+  @VisibleForTesting
+  static void combineAccumulator(final HashMap<List<String>, JsonNode> accumulatorLeft, final HashMap<List<String>, JsonNode> accumulatorRight) {
+    accumulatorRight.forEach((key, value) -> {
+      if (accumulatorLeft.containsKey(key)) {
+        accumulatorLeft.put(key, DUPLICATED_SCHEMA);
+      } else {
+        accumulatorLeft.put(key, value);
+      }
+    });
   }
 
 }
