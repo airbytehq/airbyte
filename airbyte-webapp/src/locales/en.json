@@ -111,6 +111,7 @@
   "form.advancedMode.label": "Advanced mode",
   "form.advancedMode.switchLabel": "Enable advanced mode",
   "form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
+  "form.optional": "Optional",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",

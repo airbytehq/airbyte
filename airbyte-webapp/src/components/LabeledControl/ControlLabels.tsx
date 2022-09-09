@@ -1,5 +1,6 @@
 import className from "classnames";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { Text } from "components/base/Text";
 import { InfoTooltip } from "components/base/Tooltip";
@@ -36,7 +37,7 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
       )}
       {props.optional && (
         <Text size="sm" className={styles.optionalText}>
-          Optional
+          <FormattedMessage id="form.optional" />
         </Text>
       )}
     </Label>
