@@ -22,7 +22,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ApplyDefinitionsProviderTest {
+class ApplyDefinitionsHelperTest {
 
   private static final UUID SOURCE_DEF_ID1 = UUID.randomUUID();
   private static final UUID DEST_DEF_ID2 = UUID.randomUUID();
@@ -58,14 +58,14 @@ class ApplyDefinitionsProviderTest {
 
   private ConfigRepository configRepository;
   private DefinitionsProvider definitionsProvider;
-  private ApplyDefinitionsProvider applyDefinitionsProvider;
+  private ApplyDefinitionsHelper applyDefinitionsHelper;
 
   @BeforeEach
   void setup() throws JsonValidationException, IOException {
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
 
-    applyDefinitionsProvider = new ApplyDefinitionsProvider(configRepository, definitionsProvider);
+    applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider);
 
     // default calls to empty.
     when(configRepository.listStandardDestinationDefinitions(true)).thenReturn(Collections.emptyList());
@@ -79,7 +79,7 @@ class ApplyDefinitionsProviderTest {
     when(definitionsProvider.getSourceDefinitions()).thenReturn(List.of(SOURCE_DEF1));
     when(definitionsProvider.getDestinationDefinitions()).thenReturn(List.of(DEST_DEF1));
 
-    applyDefinitionsProvider.apply(true);
+    applyDefinitionsHelper.apply(true);
 
     verify(configRepository).writeStandardSourceDefinition(SOURCE_DEF1);
     verify(configRepository).writeStandardDestinationDefinition(DEST_DEF1);
@@ -97,7 +97,7 @@ class ApplyDefinitionsProviderTest {
     when(definitionsProvider.getSourceDefinitions()).thenReturn(List.of(SOURCE_DEF1));
     when(definitionsProvider.getDestinationDefinitions()).thenReturn(List.of(DEST_DEF1));
 
-    applyDefinitionsProvider.apply(true);
+    applyDefinitionsHelper.apply(true);
 
     verify(configRepository).writeStandardSourceDefinition(SOURCE_DEF1);
     verify(configRepository).writeStandardDestinationDefinition(DEST_DEF1);
@@ -112,7 +112,7 @@ class ApplyDefinitionsProviderTest {
     when(configRepository.listStandardSourceDefinitions(true)).thenReturn(List.of(SOURCE_DEF1));
     when(configRepository.listStandardDestinationDefinitions(true)).thenReturn(List.of(DEST_DEF1));
 
-    applyDefinitionsProvider.apply(true);
+    applyDefinitionsHelper.apply(true);
 
     verify(definitionsProvider).getDestinationDefinitions();
     verify(definitionsProvider).getSourceDefinitions();
@@ -128,7 +128,7 @@ class ApplyDefinitionsProviderTest {
     final ConfigPersistence mConfigPersistence = mock(ConfigPersistence.class);
     when(configRepository.getConfigPersistence()).thenReturn(mConfigPersistence);
 
-    applyDefinitionsProvider.apply();
+    applyDefinitionsHelper.apply();
 
     verify(mConfigPersistence).loadData(any());
     verify(configRepository).getConfigPersistence();

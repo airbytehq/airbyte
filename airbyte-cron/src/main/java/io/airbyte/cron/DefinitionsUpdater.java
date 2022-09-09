@@ -6,12 +6,10 @@ package io.airbyte.cron;
 
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.init.ApplyDefinitionsProvider;
+import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.RemoteDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.scheduling.annotation.Scheduled;
-import java.io.IOException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +28,7 @@ public class DefinitionsUpdater {
   // TODO allow changing rate via config
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
-  void updateDefinitions() throws JsonValidationException, IOException {
+  void updateDefinitions() {
     log.info("Updating definitions...");
     final EnvConfigs envConfigs = new EnvConfigs(); // TODO dependency inject this
 
@@ -43,7 +41,7 @@ public class DefinitionsUpdater {
             remoteDefinitionsProvider.getDestinationDefinitions().size());
 
         try {
-          final ApplyDefinitionsProvider applyHelper = new ApplyDefinitionsProvider(configRepository, remoteDefinitionsProvider);
+          final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configRepository, remoteDefinitionsProvider);
           applyHelper.apply(envConfigs.getDeploymentMode() == DeploymentMode.CLOUD);
 
           log.info("Done applying remote connector definitions");

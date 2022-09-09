@@ -12,13 +12,16 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 
-// TODO naming
-public class ApplyDefinitionsProvider {
+/**
+ * Helper class used to apply actor definitions from a DefinitionsProvider to the database. This is
+ * here to enable easy reuse of definition application logic in bootloader and cron.
+ */
+public class ApplyDefinitionsHelper {
 
   private final ConfigRepository configRepository;
   private final DefinitionsProvider definitionsProvider;
 
-  public ApplyDefinitionsProvider(final ConfigRepository configRepository, final DefinitionsProvider definitionsProvider) {
+  public ApplyDefinitionsHelper(final ConfigRepository configRepository, final DefinitionsProvider definitionsProvider) {
     this.configRepository = configRepository;
     this.definitionsProvider = definitionsProvider;
   }
@@ -27,6 +30,11 @@ public class ApplyDefinitionsProvider {
     apply(false);
   }
 
+  /**
+   * Apply the latest definitions from the provider to the repository.
+   *
+   * @param updateAll - Whether we should overwrite all stored definitions
+   */
   public void apply(final boolean updateAll) throws JsonValidationException, IOException {
     if (updateAll) {
       final List<StandardSourceDefinition> latestSourceDefinitions = definitionsProvider.getSourceDefinitions();
@@ -39,8 +47,8 @@ public class ApplyDefinitionsProvider {
         configRepository.writeStandardDestinationDefinition(def);
       }
     } else {
-      // todo This should be updated to move the logic to apply definition updates outside of the
-      // DatabaseConfigPersistence class
+      // todo (pedroslopez): Logic to apply definitions should be moved outside of the
+      // DatabaseConfigPersistence class and behavior standardized
       final ConfigPersistence dbConfigPersistence = configRepository.getConfigPersistence();
       final ConfigPersistence providerConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(definitionsProvider);
       dbConfigPersistence.loadData(providerConfigPersistence);
