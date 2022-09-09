@@ -145,14 +145,14 @@ class TypeTransformer:
                 return subschema
 
             # Transform object and array values before running json schema type checking for each element.
-            if schema_key == "properties":
+            if schema_key == "properties" and isinstance(instance, dict):
                 for k, subschema in property_value.items():
-                    if k in (instance or {}):
+                    if k in instance:
                         subschema = resolve(subschema)
                         instance[k] = self.__normalize(instance[k], subschema)
-            elif schema_key == "items":
+            elif schema_key == "items" and isinstance(instance, list):
                 subschema = resolve(property_value)
-                for index, item in enumerate((instance or [])):
+                for index, item in enumerate(instance):
                     instance[index] = self.__normalize(item, subschema)
 
             # Running native jsonschema traverse algorithm after field normalization is done.
