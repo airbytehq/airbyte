@@ -76,7 +76,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.38  | 2022-09-09 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix `redeem_by` field type for `customers` stream                                                                                                      |
+| 0.1.38  | 2022-09-09 | [16537](https://github.com/airbytehq/airbyte/pull/16537) | Fix `redeem_by` field type for `customers` stream                                                                                                      |
 | 0.1.37  | 2022-08-16 | [15686](https://github.com/airbytehq/airbyte/pull/15686) | Fix the bug when the stream couldn't be fetched due to limited permission set, if so - it should be skipped                                            |
 | 0.1.36  | 2022-08-04 | [15292](https://github.com/airbytehq/airbyte/pull/15292) | Implement slicing                                                                                                                                      |
 | 0.1.35  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec and schema                                                                                               |
