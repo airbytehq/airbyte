@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from enum import Enum
 from functools import wraps
 from typing import Any, List, Mapping, Tuple
 
@@ -17,12 +18,36 @@ from pendulum.parsing.exceptions import ParserError
 from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, OrderStatuses, Products
 
 
+class AuthMethod(Enum):
+    CENTRAL_API_ROUTER = 1
+    SINGLE_STORE = 2
+
+
 class CustomHeaderAuthenticator(HttpAuthenticator):
-    def __init__(self, access_token):
+    def __init__(self, access_token, store_name):
+        self.auth_method = AuthMethod.SINGLE_STORE
+        self.store_name = store_name
         self._access_token = access_token
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-AC-Auth-Token": self._access_token}
+
+
+class CentralAPIHeaderAuthenticator(HttpAuthenticator):
+    def __init__(self, user_name, user_secret, site_id):
+        self.auth_method = AuthMethod.CENTRAL_API_ROUTER
+        self.user_name = user_name
+        self.user_secret = user_secret
+        self.site_id = site_id
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        """
+        This method is not implemented here because for the Central API Router
+        needs to build the header for each request based
+        on path + parameters (next token, pagination, page size)
+        To solve this the logic was moved to `request_headers` in CartStream class.
+        """
+        return {}
 
 
 class SourceCart(AbstractSource):
@@ -67,11 +92,21 @@ class SourceCart(AbstractSource):
 
     @validate_config_values
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
+        credentials = config.get("credentials", {})
+        auth_method = credentials.get("method")
+
+        if auth_method == AuthMethod.CENTRAL_API_ROUTER:
+            authenticator = CentralAPIHeaderAuthenticator(
+                user_id=credentials["user"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
+            )
+        elif auth_method == AuthMethod.SINGLE_STORE:
+            authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
+        else:
+            raise NotImplementedError("Authentication method not implemented.")
+
         args = {
             "authenticator": authenticator,
             "start_date": config["start_date"],
-            "store_name": config["store_name"],
             "end_date": config.get("end_date"),
         }
         return [

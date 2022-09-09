@@ -4,27 +4,73 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Cart.com Spec",
     "type": "object",
-    "required": ["access_token", "start_date", "store_name"],
+    "required": ["start_date"],
     "additionalProperties": true,
     "properties": {
-      "access_token": {
-        "type": "string",
-        "title": "Access Token",
-        "airbyte_secret": true,
-        "description": "Access Token for making authenticated requests."
-      },
-      "central_api_router":{
-        "type": "boolean",
-        "description": "The central API router provides a single entry point through which any store API request can be handled.",
-        "title": "Central API Router",
-        "examples": [true, false],
-        "default": false
-      },
-      "store_name": {
-        "type": "string",
-        "title": "Store Name",
-        "description": "The name of Cart.com Online Store. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
-      },
+      "credentials": {
+        "title": "Authorization Method",
+        "description": "",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Central API Router",
+            "type": "object",
+            "order": 0,
+            "required": ["user_name", "user_secret", "site_id"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Central API Router",
+                "enum": ["Central API Router"],
+                "default": "Central API Router",
+                "order": 0
+              },
+              "user_name": {
+                "type": "string",
+                "title": "User Name",
+                "description": "Enter your application's User Name",
+                "airbyte_secret": true
+              },
+              "user_secret": {
+                "type": "string",
+                "title": "User Secret",
+                "description": "Enter your application's User Secret",
+                "airbyte_secret": true
+              },
+              "site_id": {
+                "type": "string",
+                "title": "Site ID",
+                "description": "You can determine a site provisioning site Id by hitting https://site.com/store/sitemonitor.aspx and reading the response param PSID",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Single Store Access Token",
+            "type": "object",
+            "order": 1,
+            "required": ["access_token", "store_name"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Single Store Access Token",
+                "enum": ["Single Store Access Token"],
+                "default": "Single Store Access Token",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "airbyte_secret": true,
+                "description": "Access Token for making authenticated requests."
+              },
+              "store_name": {
+                "type": "string",
+                "title": "Store Name",
+                "description": "The name of Cart.com Online Store. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
+              }
+            }
+      }]},
       "start_date": {
         "title": "Start Date",
         "type": "string",
