@@ -4,6 +4,7 @@
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
+version: 0.2.1
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
