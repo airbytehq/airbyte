@@ -12,7 +12,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.scheduling.annotation.Scheduled;
 import java.net.URI;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -27,15 +26,14 @@ public class DefinitionsUpdater {
   @Value("${airbyte.cron.update-definitions.enabled}")
   private boolean shouldUpdateDefinitions;
 
-  private final Optional<URI> remoteCatalogUrl;
-
+  private final URI remoteCatalogUrl;
   private final DeploymentMode deploymentMode;
 
   public DefinitionsUpdater() {
     log.info("Creating connector definitions updater");
 
     final EnvConfigs envConfigs = new EnvConfigs();
-    remoteCatalogUrl = envConfigs.getRemoteConnectorCatalogUrl();
+    remoteCatalogUrl = envConfigs.getRemoteConnectorCatalogUrl().orElse(null);
     deploymentMode = envConfigs.getDeploymentMode();
   }
 
@@ -45,7 +43,7 @@ public class DefinitionsUpdater {
     if (!shouldUpdateDefinitions)
       return;
 
-    if (remoteCatalogUrl.isEmpty()) {
+    if (remoteCatalogUrl == null) {
       log.warn("Tried to update definitions, but the remote catalog url is not set");
       return;
     }
@@ -53,7 +51,7 @@ public class DefinitionsUpdater {
     log.info("Updating definitions...");
 
     try {
-      final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(remoteCatalogUrl.get());
+      final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(remoteCatalogUrl);
       log.info("Retrieved remote definitions: {} sources, {} destinations",
           remoteDefinitionsProvider.getSourceDefinitions().size(),
           remoteDefinitionsProvider.getDestinationDefinitions().size());
