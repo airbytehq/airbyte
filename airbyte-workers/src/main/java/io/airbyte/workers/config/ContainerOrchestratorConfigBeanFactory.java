@@ -33,7 +33,7 @@ public class ContainerOrchestratorConfigBeanFactory {
             value = "true")
   @Named("containerOrchestratorConfig")
   public Optional<ContainerOrchestratorConfig> kubernetesContainerOrchestratorConfig(
-                                                                                     @Named("stateStorageConfigs") final CloudStorageConfigs cloudStateStorageConfiguration,
+                                                                                     @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
                                                                                      @Value("${airbyte.version}") final String airbyteVersion,
                                                                                      @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
                                                                                      @Value("${airbyte.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
@@ -44,7 +44,7 @@ public class ContainerOrchestratorConfigBeanFactory {
     final var kubernetesClient = new DefaultKubernetesClient();
 
     final DocumentStoreClient documentStoreClient = StateClients.create(
-        cloudStateStorageConfiguration,
+        cloudStateStorageConfiguration.orElse(null),
         STATE_STORAGE_PREFIX);
 
     return Optional.of(new ContainerOrchestratorConfig(

@@ -256,6 +256,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // exception since we expect it, we just
         // silently ignore it.
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
+          log.debug("Ignoring canceled failure as it is handled by the cancellation scope.");
           // do nothing, cancellation handled by cancellationScope
         } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
