@@ -1,7 +1,9 @@
+import classNames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
 import { H3 } from "components";
+
+import styles from "./PageTitle.module.scss";
 
 interface PageTitleProps {
   withLine?: boolean;
@@ -11,56 +13,22 @@ interface PageTitleProps {
   title: React.ReactNode;
 }
 
-export const MainContainer = styled.div<{ withLine?: boolean }>`
-  padding: 20px 32px 18px;
-  border-bottom: ${({ theme, withLine }) => (withLine ? `1px solid ${theme.greyColor20}` : "none")};
-  position: relative;
-  z-index: 2;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-export const MiddleBlock = styled.div`
-  flex: 1 0 0;
-  display: flex;
-  justify-content: center;
-`;
-
-export const MiddleTitleBlock = styled(H3)`
-  flex: 1 0 0;
-  display: flex;
-  justify-content: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-export const EndBlock = styled.div`
-  flex: 1 0 0;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-export const TitleBlock = styled(H3)`
-  flex: 1 0 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
 const PageTitle: React.FC<PageTitleProps> = ({ title, withLine, middleComponent, middleTitleBlock, endComponent }) => (
-  <MainContainer withLine={withLine}>
-    <TitleBlock>{title}</TitleBlock>
+  <div className={classNames(styles.container)} data-withLine={withLine}>
+    <H3
+      className={classNames(styles.titleBlock, {
+        [styles.withLine]: withLine,
+      })}
+    >
+      {title}
+    </H3>
     {middleTitleBlock ? (
-      <MiddleTitleBlock>{middleTitleBlock}</MiddleTitleBlock>
+      <H3 className={classNames(styles.middleTitleBlock)}>{middleTitleBlock}</H3>
     ) : (
-      <MiddleBlock>{middleComponent}</MiddleBlock>
+      <div className={classNames(styles.middleBlock)}>{middleComponent}</div>
     )}
-    <EndBlock>{endComponent}</EndBlock>
-  </MainContainer>
+    <div className={classNames(styles.endBlock)}>{endComponent}</div>
+  </div>
 );
 
 export default PageTitle;

@@ -1,0 +1,44 @@
+@use "../../scss/colors";
+
+.container {
+  padding: 20px 32px 18px;
+  position: relative;
+  z-index: 2;
+  color: colors.$dark-blue;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  &.withLine {
+    border-bottom: 1px solid colors.$grey-100;
+  }
+}
+
+.endBlock {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.middleBlock {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+}
+
+.middleTitleBlock {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleBlock {
+  flex: 1 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
