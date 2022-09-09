@@ -1,39 +1,645 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
+      "name": "bill",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
         "properties": {
-          "column1": {
+          "congress": {
+            "type": "integer"
+          },
+          "latestAction": {
+            "properties": {
+              "actionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "number": {
             "type": "string"
           },
-          "column2": {
-            "type": "number"
+          "originChamber": {
+            "type": "string"
+          },
+          "originChamberCode": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "updateDateIncludingText": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["number"]]
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
+      "name": "summaries",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
         "properties": {
-          "column1": {
+          "actionDate": {
             "type": "string"
           },
-          "column2": {
-            "type": "number"
+          "actionDesc": {
+            "type": "string"
+          },
+          "bill": {
+            "properties": {
+              "congress": {
+                "type": "integer"
+              },
+              "number": {
+                "type": "string"
+              },
+              "originChamber": {
+                "type": "string"
+              },
+              "originChamberCode": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "updateDateIncludingText": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "currentChamber": {
+            "type": "string"
+          },
+          "currentChamberCode": {
+            "type": "string"
+          },
+          "lastSummaryUpdateDate": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "versionCode": {
+            "type": "string"
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "amendment",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "congress": {
+            "type": "integer"
+          },
+          "latestAction": {
+            "properties": {
+              "actionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "number": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "congress",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "endYear": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sessions": {
+            "items": {
+              "properties": {
+                "chamber": {
+                  "type": "string"
+                },
+                "endDate": {
+                  "type": ["null", "string"]
+                },
+                "number": {
+                  "type": "integer"
+                },
+                "startDate": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "startYear": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["name"]]
+    },
+    {
+      "name": "member",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "bioguideId": {
+            "type": "string"
+          },
+          "depiction": {
+            "properties": {
+              "attribution": {
+                "type": ["null", "string"]
+              },
+              "imageUrl": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "district": {
+            "type": ["integer", "null"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "party": {
+            "type": "string"
+          },
+          "served": {
+            "properties": {
+              "House": {
+                "items": {
+                  "properties": {
+                    "end": {
+                      "type": ["integer", "null"]
+                    },
+                    "start": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "Senate": {
+                "items": {
+                  "properties": {
+                    "end": {
+                      "type": ["integer", "null"]
+                    },
+                    "start": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "state": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "committee",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "chamber": {
+            "type": "string"
+          },
+          "committeeTypeCode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "systemCode": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "subcommittees": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "systemCode": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "systemCode": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "committee_report",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "citation": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "congressional_record",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "Congress": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "integer"
+          },
+          "Issue": {
+            "type": "string"
+          },
+          "Links": {
+            "properties": {
+              "Digest": {
+                "properties": {
+                  "Label": {
+                    "type": "string"
+                  },
+                  "Ordinal": {
+                    "type": "integer"
+                  },
+                  "PDF": {
+                    "items": {
+                      "properties": {
+                        "Part": {
+                          "type": "string"
+                        },
+                        "Url": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "FullRecord": {
+                "properties": {
+                  "Label": {
+                    "type": "string"
+                  },
+                  "Ordinal": {
+                    "type": "integer"
+                  },
+                  "PDF": {
+                    "items": {
+                      "properties": {
+                        "Part": {
+                          "type": "string"
+                        },
+                        "Url": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "House": {
+                "properties": {
+                  "Label": {
+                    "type": "string"
+                  },
+                  "Ordinal": {
+                    "type": "integer"
+                  },
+                  "PDF": {
+                    "items": {
+                      "properties": {
+                        "Part": {
+                          "type": "string"
+                        },
+                        "Url": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "Remarks": {
+                "properties": {
+                  "Label": {
+                    "type": "string"
+                  },
+                  "Ordinal": {
+                    "type": "integer"
+                  },
+                  "PDF": {
+                    "items": {
+                      "properties": {
+                        "Part": {
+                          "type": "string"
+                        },
+                        "Url": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "Senate": {
+                "properties": {
+                  "Label": {
+                    "type": "string"
+                  },
+                  "Ordinal": {
+                    "type": "integer"
+                  },
+                  "PDF": {
+                    "items": {
+                      "properties": {
+                        "Part": {
+                          "type": "string"
+                        },
+                        "Url": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "PublishDate": {
+            "type": "string"
+          },
+          "Session": {
+            "type": "string"
+          },
+          "Volume": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "house_communication",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "chamber": {
+            "type": "string"
+          },
+          "communicationNumber": {
+            "type": "integer"
+          },
+          "communicationType": {
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "congressNumber": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "nomination",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "citation": {
+            "type": "string"
+          },
+          "congress": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "latestAction": {
+            "items": {
+              "properties": {
+                "actionDate": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nominationType": {
+            "properties": {
+              "isCivilian": {
+                "type": "boolean"
+              },
+              "isMilitary": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "partNumber": {
+            "type": "string"
+          },
+          "receivedDate": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
+    },
+    {
+      "name": "treaty",
+      "json_schema": {
+        "$schema": "http://json-schema.org/schema#",
+        "properties": {
+          "congress": {
+            "type": "integer"
+          },
+          "endCongressId": {
+            "type": ["integer", "null"]
+          },
+          "parts": {
+            "type": "object"
+          },
+          "resolutionText": {
+            "type": ["null", "string"]
+          },
+          "transmittedDate": {
+            "type": ["null", "string"]
+          },
+          "treatyNum": {
+            "type": "integer"
+          },
+          "treatySubject": {
+            "type": ["null", "string"]
+          },
+          "treatySuffix": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "supported_sync_modes": ["full_refresh"]
     }
   ]
 }
