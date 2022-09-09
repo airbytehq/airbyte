@@ -4,7 +4,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from unittest.mock import call
 
 import pytest
@@ -24,10 +24,12 @@ from airbyte_cdk.models import (
     Status,
     StreamDescriptor,
     SyncMode,
-    Type,
 )
+from airbyte_cdk.models import Type
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = logging.getLogger("airbyte")
@@ -51,6 +53,35 @@ class MockSource(AbstractSource):
         if not self._streams:
             raise Exception("Stream is not set")
         return self._streams
+
+
+class MockStreamNoStateMethod(Stream):
+    name = "managers"
+    primary_key = None
+    namespace = "public"
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        return {}
+
+
+class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
+    name = "teams"
+    primary_key = None
+    namespace = "public"
+    cursor_field = "updated_at"
+    _cursor_value = ""
+    start_date = "1984-12-12"
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        return {}
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
 def test_successful_check():
@@ -654,3 +685,22 @@ class TestIncrementalRead:
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert expected == messages
+
+
+def test_checkpoint_state_from_stream_instance():
+    teams_stream = MockStreamOverridesStateMethod()
+    managers_stream = MockStreamNoStateMethod()
+    src = MockSource(streams=[teams_stream, managers_stream])
+    state_manager = ConnectorStateManager({"teams": teams_stream, "managers": managers_stream}, [])
+
+    # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
+    teams_stream.state = {"updated_at": "2022-09-11"}
+    actual_message = src._checkpoint_state(teams_stream, {"ignored": "state"}, state_manager)
+    assert actual_message == AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data={"teams": {"updated_at": "2022-09-11"}}))
+
+    # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
+    actual_message = src._checkpoint_state(managers_stream, {"updated": "expected_here"}, state_manager)
+    assert actual_message == AirbyteMessage(
+        type=MessageType.STATE,
+        state=AirbyteStateMessage(data={"teams": {"updated_at": "2022-09-11"}, "managers": {"updated": "expected_here"}}),
+    )

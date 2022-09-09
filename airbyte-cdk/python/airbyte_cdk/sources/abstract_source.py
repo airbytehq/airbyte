@@ -289,12 +289,12 @@ class AbstractSource(Source, ABC):
                     return
 
     @staticmethod
-    def _checkpoint_state(stream: Stream, stream_state, connector_state):
+    def _checkpoint_state(stream: Stream, stream_state, state_manager):
         try:
-            connector_state.update_state_for_stream(stream.name, stream.namespace, stream.state)
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
-            connector_state.update_state_for_stream(stream.name, stream.namespace, stream_state)
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state.get_legacy_state()))
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
+        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state_manager.get_legacy_state()))
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
