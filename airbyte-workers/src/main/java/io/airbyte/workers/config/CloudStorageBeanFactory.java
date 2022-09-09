@@ -11,7 +11,6 @@ import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
-import java.util.Optional;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -26,68 +25,68 @@ public class CloudStorageBeanFactory {
   @Requires(property = "airbyte.cloud.storage.logs.type",
             value = "GCS")
   @Named("logStorageConfigs")
-  public Optional<CloudStorageConfigs> gcsLogStorageConfigs(
+  public CloudStorageConfigs gcsLogStorageConfigs(
                                                             @Value("${airbyte.cloud.storage.logs.gcs.bucket}") final String gcsLogBucket,
                                                             @Value("${airbyte.cloud.storage.logs.gcs.application-credentials}") final String googleApplicationCredentials) {
-    return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(gcsLogBucket, googleApplicationCredentials)));
+    return CloudStorageConfigs.gcs(new GcsConfig(gcsLogBucket, googleApplicationCredentials));
   }
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.logs.type",
       value = "MINIO")
   @Named("logStorageConfigs")
-  public Optional<CloudStorageConfigs> minioLogStorageConfigs(
+  public CloudStorageConfigs minioLogStorageConfigs(
                                                               @Value("${airbyte.cloud.storage.logs.minio.access-key}") final String awsAccessKeyId,
                                                               @Value("${airbyte.cloud.storage.logs.minio.secret-access-key}") final String awsSecretAccessKey,
                                                               @Value("${airbyte.cloud.storage.logs.minio.bucket}") final String s3LogBucket,
                                                               @Value("${airbyte.cloud.storage.logs.minio.endpoint}") final String s3MinioEndpoint) {
-    return Optional.of(CloudStorageConfigs.minio(new MinioConfig(s3LogBucket, awsAccessKeyId, awsSecretAccessKey, s3MinioEndpoint)));
+    return CloudStorageConfigs.minio(new MinioConfig(s3LogBucket, awsAccessKeyId, awsSecretAccessKey, s3MinioEndpoint));
   }
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.logs.type",
       value = "S3")
   @Named("logStorageConfigs")
-  public Optional<CloudStorageConfigs> s3LogStorageConfigs(
+  public CloudStorageConfigs s3LogStorageConfigs(
                                                            @Value("${airbyte.cloud.storage.logs.s3.access-key}") final String awsAccessKeyId,
                                                            @Value("${airbyte.cloud.storage.logs.s3.secret-access-key}") final String awsSecretAccessKey,
                                                            @Value("${airbyte.cloud.storage.logs.s3.bucket}") final String s3LogBucket,
                                                            @Value("${airbyte.cloud.storage.logs.s3.region}") final String s3LogBucketRegion) {
-    return Optional.of(CloudStorageConfigs.s3(new S3Config(s3LogBucket, awsAccessKeyId, awsSecretAccessKey, s3LogBucketRegion)));
+    return CloudStorageConfigs.s3(new S3Config(s3LogBucket, awsAccessKeyId, awsSecretAccessKey, s3LogBucketRegion));
   }
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
             value = "GCS")
   @Named("stateStorageConfigs")
-  public Optional<CloudStorageConfigs> gcsStateStorageConfiguration(
+  public CloudStorageConfigs gcsStateStorageConfiguration(
                                                                     @Value("${airbyte.cloud.storage.state.gcs.bucket}") final String gcsBucketName,
                                                                     @Value("${airbyte.cloud.storage.state.gcs.application-credentials}") final String gcsApplicationCredentials) {
-    return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(gcsBucketName, gcsApplicationCredentials)));
+    return CloudStorageConfigs.gcs(new GcsConfig(gcsBucketName, gcsApplicationCredentials));
   }
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
       value = "MINIO")
   @Named("stateStorageConfigs")
-  public Optional<CloudStorageConfigs> minioStateStorageConfiguration(
+  public CloudStorageConfigs minioStateStorageConfiguration(
                                                                       @Value("${airbyte.cloud.storage.state.minio.bucket}") final String bucketName,
                                                                       @Value("${airbyte.cloud.storage.state.minio.access-key}") final String awsAccessKey,
                                                                       @Value("${airbyte.cloud.storage.state.minio.secret-access-key}") final String secretAccessKey,
                                                                       @Value("${airbyte.cloud.storage.state.minio.endpoint}") final String endpoint) {
-    return Optional.of(CloudStorageConfigs.minio(new MinioConfig(bucketName, awsAccessKey, secretAccessKey, endpoint)));
+    return CloudStorageConfigs.minio(new MinioConfig(bucketName, awsAccessKey, secretAccessKey, endpoint));
   }
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
       value = "S3")
   @Named("stateStorageConfigs")
-  public Optional<CloudStorageConfigs> s3StateStorageConfiguration(
+  public CloudStorageConfigs s3StateStorageConfiguration(
                                                                    @Value("${airbyte.cloud.storage.state.s3.bucket}") final String bucketName,
                                                                    @Value("${airbyte.cloud.storage.state.s3.access-key}") final String awsAccessKey,
                                                                    @Value("${airbyte.cloud.storage.state.s3.secret-access-key}") final String secretAcessKey,
                                                                    @Value("${airbyte.cloud.storage.state.s3.region}") final String s3Region) {
-    return Optional.of(CloudStorageConfigs.s3(new S3Config(bucketName, awsAccessKey, secretAcessKey, s3Region)));
+    return CloudStorageConfigs.s3(new S3Config(bucketName, awsAccessKey, secretAcessKey, s3Region));
   }
 
 }

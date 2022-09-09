@@ -32,7 +32,7 @@ public class ContainerOrchestratorConfigBeanFactory {
   @Requires(property = "airbyte.container.orchestrator.enabled",
             value = "true")
   @Named("containerOrchestratorConfig")
-  public Optional<ContainerOrchestratorConfig> kubernetesContainerOrchestratorConfig(
+  public ContainerOrchestratorConfig kubernetesContainerOrchestratorConfig(
                                                                                      @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
                                                                                      @Value("${airbyte.version}") final String airbyteVersion,
                                                                                      @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
@@ -47,7 +47,7 @@ public class ContainerOrchestratorConfigBeanFactory {
         cloudStateStorageConfiguration.orElse(null),
         STATE_STORAGE_PREFIX);
 
-    return Optional.of(new ContainerOrchestratorConfig(
+    return new ContainerOrchestratorConfig(
         namespace,
         documentStoreClient,
         kubernetesClient,
@@ -55,15 +55,6 @@ public class ContainerOrchestratorConfigBeanFactory {
         containerOrchestratorSecretMountPath,
         StringUtils.isNotEmpty(containerOrchestratorImage) ? containerOrchestratorImage : "airbyte/container-orchestrator:" + airbyteVersion,
         containerOrchestratorImagePullPolicy,
-        googleApplicationCredentials));
+        googleApplicationCredentials);
   }
-
-  @Singleton
-  @Requires(property = "airbyte.container.orchestrator.enabled",
-            value = "false")
-  @Named("containerOrchestratorConfig")
-  public Optional<ContainerOrchestratorConfig> defaultContainerOrchestratorConfig() {
-    return Optional.empty();
-  }
-
 }
