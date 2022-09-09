@@ -22,6 +22,7 @@ You'll need the following information to configure the Kafka source:
 * **Subscription Method** - You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.
 * **List of topic**
 * **Bootstrap Servers** - A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.
+* **Schema Registry** - Host/port to connect schema registry server. Note: It supports for AVRO format only.
 
 ### For Airbyte Cloud:
 
@@ -41,8 +42,10 @@ The Kafka source connector supports the following[sync modes](https://docs.airby
 | Namespaces | No |  |
 
 ## Supported Format
-   Json - Json value messages 
-   Avro - deserialize Using confluent API. Please refer (https://docs.confluent.io/platform/current/schema-registry/serdes-develop/serdes-avro.html)
+   JSON - Json value messages. It does not support schema registry now.
+   
+   AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/platform/current/schema-registry/serdes-develop/serdes-avro.html)
+   
 
 ## Changelog
 
