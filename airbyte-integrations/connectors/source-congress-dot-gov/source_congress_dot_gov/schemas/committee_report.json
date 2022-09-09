@@ -1,1 +1,15 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "citation": {
+      "type": "string"
+    },
+    "updateDate": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

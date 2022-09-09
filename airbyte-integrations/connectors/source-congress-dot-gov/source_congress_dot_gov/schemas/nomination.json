@@ -1,1 +1,58 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "citation": {
+      "type": "string"
+    },
+    "congress": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
+    "latestAction": {
+      "items": {
+        "properties": {
+          "actionDate": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "nominationType": {
+      "properties": {
+        "isCivilian": {
+          "type": "boolean"
+        },
+        "isMilitary": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "number": {
+      "type": "integer"
+    },
+    "partNumber": {
+      "type": "string"
+    },
+    "receivedDate": {
+      "type": "string"
+    },
+    "updateDate": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,1 +1,68 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "bioguideId": {
+      "type": "string"
+    },
+    "depiction": {
+      "properties": {
+        "attribution": {
+          "type": ["null", "string"]
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "district": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "party": {
+      "type": "string"
+    },
+    "served": {
+      "properties": {
+        "House": {
+          "items": {
+            "properties": {
+              "end": {
+                "type": ["integer", "null"]
+              },
+              "start": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "Senate": {
+          "items": {
+            "properties": {
+              "end": {
+                "type": ["integer", "null"]
+              },
+              "start": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "state": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

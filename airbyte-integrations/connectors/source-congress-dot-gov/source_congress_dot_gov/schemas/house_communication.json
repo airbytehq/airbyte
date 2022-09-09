@@ -1,1 +1,29 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "chamber": {
+      "type": "string"
+    },
+    "communicationNumber": {
+      "type": "integer"
+    },
+    "communicationType": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "congressNumber": {
+      "type": "integer"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

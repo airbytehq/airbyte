@@ -1,1 +1,36 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "congress": {
+      "type": "integer"
+    },
+    "endCongressId": {
+      "type": ["integer", "null"]
+    },
+    "parts": {
+      "type": "object"
+    },
+    "resolutionText": {
+      "type": ["null", "string"]
+    },
+    "transmittedDate": {
+      "type": ["null", "string"]
+    },
+    "treatyNum": {
+      "type": "integer"
+    },
+    "treatySubject": {
+      "type": ["null", "string"]
+    },
+    "treatySuffix": {
+      "type": "string"
+    },
+    "updateDate": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

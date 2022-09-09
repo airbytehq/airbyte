@@ -1,1 +1,59 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "chamber": {
+      "type": "string"
+    },
+    "committeeTypeCode": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "systemCode": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "subcommittees": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "systemCode": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "systemCode": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

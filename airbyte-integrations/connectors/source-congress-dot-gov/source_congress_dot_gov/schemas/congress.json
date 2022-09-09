@@ -1,1 +1,38 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "endYear": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "sessions": {
+      "items": {
+        "properties": {
+          "chamber": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": ["null", "string"]
+          },
+          "number": {
+            "type": "integer"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "startYear": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

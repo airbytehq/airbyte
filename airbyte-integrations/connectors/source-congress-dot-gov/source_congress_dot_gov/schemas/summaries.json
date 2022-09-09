@@ -1,1 +1,59 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "actionDate": {
+      "type": "string"
+    },
+    "actionDesc": {
+      "type": "string"
+    },
+    "bill": {
+      "properties": {
+        "congress": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string"
+        },
+        "originChamber": {
+          "type": "string"
+        },
+        "originChamberCode": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "updateDateIncludingText": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "currentChamber": {
+      "type": "string"
+    },
+    "currentChamberCode": {
+      "type": "string"
+    },
+    "lastSummaryUpdateDate": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "updateDate": {
+      "type": "string"
+    },
+    "versionCode": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

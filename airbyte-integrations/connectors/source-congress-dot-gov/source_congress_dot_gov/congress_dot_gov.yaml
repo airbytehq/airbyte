@@ -7,7 +7,6 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["bills"]
   requester:
     type: HttpRequester
     http_method: "GET"
@@ -51,56 +50,67 @@ streams:
     $options:
       name: "bill"
       path: "bill"
+      field_pointer: ["bills"]
     primary_key: "number"
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "summaries"
       path: "summaries"
+      field_pointer: ["summaries"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "amendment"
       path: "amendment"
+      field_pointer: ["amendments"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "congress"
       path: "congress"
+      field_pointer: ["congresses"]
     primary_key: "name"
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "member"
       path: "member"
+      field_pointer: ["members"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "committee"
-      path: "committee"
+      name: committee
+      path: committee
+      field_pointer: ["committees"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "committee_report"
       path: "committeeReport"
+      field_pointer: ["reports"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "congressional_record"
       path: "congressional-record"
+      field_pointer: ["Results", "Issues"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "house_communication"
       path: "house-communication"
+      field_pointer: ["houseCommunications"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "nomination"
       path: "nomination"
+      field_pointer: ["nominations"]
     primary_key: ""
   - $ref: "*ref(definitions.base_stream)"
     $options:
       name: "treaty"
       path: "treaty"
+      field_pointer: ["treaties"]
     primary_key: ""
 check:
   type: CheckStream

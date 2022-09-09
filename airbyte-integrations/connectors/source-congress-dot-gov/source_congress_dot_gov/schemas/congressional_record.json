@@ -1,1 +1,154 @@
-{}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "Congress": {
+      "type": "string"
+    },
+    "Id": {
+      "type": "integer"
+    },
+    "Issue": {
+      "type": "string"
+    },
+    "Links": {
+      "properties": {
+        "Digest": {
+          "properties": {
+            "Label": {
+              "type": "string"
+            },
+            "Ordinal": {
+              "type": "integer"
+            },
+            "PDF": {
+              "items": {
+                "properties": {
+                  "Part": {
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "FullRecord": {
+          "properties": {
+            "Label": {
+              "type": "string"
+            },
+            "Ordinal": {
+              "type": "integer"
+            },
+            "PDF": {
+              "items": {
+                "properties": {
+                  "Part": {
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "House": {
+          "properties": {
+            "Label": {
+              "type": "string"
+            },
+            "Ordinal": {
+              "type": "integer"
+            },
+            "PDF": {
+              "items": {
+                "properties": {
+                  "Part": {
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "Remarks": {
+          "properties": {
+            "Label": {
+              "type": "string"
+            },
+            "Ordinal": {
+              "type": "integer"
+            },
+            "PDF": {
+              "items": {
+                "properties": {
+                  "Part": {
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "Senate": {
+          "properties": {
+            "Label": {
+              "type": "string"
+            },
+            "Ordinal": {
+              "type": "integer"
+            },
+            "PDF": {
+              "items": {
+                "properties": {
+                  "Part": {
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "PublishDate": {
+      "type": "string"
+    },
+    "Session": {
+      "type": "string"
+    },
+    "Volume": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
