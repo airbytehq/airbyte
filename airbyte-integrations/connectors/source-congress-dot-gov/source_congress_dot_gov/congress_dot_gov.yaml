@@ -10,7 +10,6 @@ definitions:
       field_pointer: ["bills"]
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
     http_method: "GET"
     request_options_provider:
       request_parameters:
@@ -21,15 +20,25 @@ definitions:
   retriever:
     type: SimpleRetriever
     $options:
-      url_base: "https://api.congress.gov/v3/"
+      url_base: https://api.congress.gov/v3/
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
+    paginator:
+      type: LimitPaginator
+      $options:
+        page_size: 250
+      pagination_strategy:
+        type: OffsetIncrement
+      limit_option:
+        inject_into: request_parameter
+        field_name: limit
+      page_token_option:
+        field_name: offset
+        inject_into: request_parameter
     record_selector:
       $ref: "*ref(definitions.selector)"
     requester:
       $ref: "*ref(definitions.requester)"
-    paginator:
-      type: NoPagination
 streams:
   - type: DeclarativeStream
     $options:
