@@ -18,8 +18,6 @@ import io.airbyte.api.client.generated.SourceDefinitionApi;
 import io.airbyte.api.client.generated.SourceDefinitionSpecificationApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
