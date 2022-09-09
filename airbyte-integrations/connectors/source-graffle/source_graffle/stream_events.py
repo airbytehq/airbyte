@@ -27,7 +27,7 @@ class EventsStream(HttpStream):
 
     def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
         try:
-            self._cursor_value = response.json()[0]["eventDate"][:26].replace("+", "") # to get rid of +00:00
+            self._cursor_value = response.json()[0]["eventDate"][:25].replace("+", "") # to get rid of +00:00
             lower_response = json.loads(json.dumps(response.json()).lower()) # transform json to lowercase
             yield from lower_response
         except:
@@ -42,7 +42,7 @@ class EventsStream(HttpStream):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value["eventDate"]
+        self._cursor_value = value["eventDate"].replace("+", "")
 
 
 class MintedEvents(EventsStream):
