@@ -27,7 +27,11 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-            value = "")
+            notEquals = "TESTING_CONFIG_DB_TABLE")
+  @Requires(property = "airbyte.secret.persistence",
+      notEquals = "GOOGLE_SECRET_MANAGER")
+  @Requires(property = "airbyte.secret.persistence",
+      notEquals = "VAULT")
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   @Named("secretPersistence")
