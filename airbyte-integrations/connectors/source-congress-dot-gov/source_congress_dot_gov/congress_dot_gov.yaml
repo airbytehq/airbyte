@@ -23,18 +23,17 @@ definitions:
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
     paginator:
-      type: NoPagination
-      #      type: LimitPaginator
-      #      $options:
-      #        page_size: 1
-      #      pagination_strategy:
-      #        type: OffsetIncrement
-      #      limit_option:
-      #        inject_into: request_parameter
-      #        field_name: limit
-      #      page_token_option:
-      #        field_name: offset
-      #        inject_into: request_parameter
+      type: LimitPaginator
+      $options:
+        page_size: 250
+      pagination_strategy:
+        type: OffsetIncrement
+      limit_option:
+        inject_into: request_parameter
+        field_name: limit
+      page_token_option:
+        field_name: offset
+        inject_into: request_parameter
     record_selector:
       $ref: "*ref(definitions.selector)"
     requester:
