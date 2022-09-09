@@ -1,8 +1,7 @@
 import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
-import styled from "styled-components";
 
-import { Label, DropDown } from "components";
+import { DropDown } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import GroupControls from "components/GroupControls";
 
@@ -14,19 +13,6 @@ import { ServiceFormValues } from "../../types";
 import { PropertyLabel } from "../Property/PropertyLabel";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
-
-const GroupLabel = styled(Label)`
-  width: auto;
-  margin-right: 8px;
-  padding-top: 8px;
-  display: inline-block;
-  padding-bottom: 0px;
-  vertical-align: middle;
-`;
-
-const ConditionControls = styled.div`
-  padding-top: 20px;
-`;
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
@@ -75,17 +61,18 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
     [formField.conditions]
   );
 
-  const label = (
-    <PropertyLabel property={formField} label={`${formField.title || formField.fieldKey}`} optional={false} />
-  );
-
   return (
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
       fullWidthTitle
       title={
         <div className={styles.sectionTitle}>
-          {label ? <GroupLabel>{label}</GroupLabel> : null}
+          <PropertyLabel
+            className={styles.groupLabel}
+            property={formField}
+            label={`${formField.title || formField.fieldKey}`}
+            optional={false}
+          />
           <DropDown
             className={styles.sectionTitleDropdown}
             options={options}
@@ -97,14 +84,14 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
         </div>
       }
     >
-      <ConditionControls>
+      <div className={styles.conditionControls}>
         <FormSection
           blocks={formField.conditions[currentlySelectedCondition]}
           path={path}
           disabled={disabled}
           skipAppend
         />
-      </ConditionControls>
+      </div>
     </GroupControls>
   );
 };
