@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -29,10 +31,15 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
@@ -63,6 +70,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
   public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -70,6 +78,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public MySqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MySqlSourceOperations());
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
@@ -182,6 +191,35 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       }
     }
     return false;
+  }
+
+  @Override
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return AirbyteStateType.LEGACY;
+    }
+
+    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  }
+
+  @Override
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState())));
+    }
+
+    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+      final AirbyteGlobalState globalState = new AirbyteGlobalState()
+          .withSharedState(Jsons.jsonNode(new CdcState()))
+          .withStreamStates(List.of());
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+    } else {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState()));
+    }
   }
 
   @Override
