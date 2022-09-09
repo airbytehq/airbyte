@@ -23,9 +23,6 @@ public class StateClients {
       case GCS -> {
         documentStoreClient = GcsDocumentStoreClient.create(cloudStorageConfigs.getGcsConfig(), prefix);
       }
-      case NONE -> {
-        documentStoreClient = null;
-      }
     }
 
     return documentStoreClient;

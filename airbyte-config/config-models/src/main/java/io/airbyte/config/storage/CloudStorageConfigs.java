@@ -18,8 +18,7 @@ public class CloudStorageConfigs {
   public enum WorkerStorageType {
     S3,
     MINIO,
-    GCS,
-    NONE
+    GCS
   }
 
   private final WorkerStorageType type;
@@ -37,10 +36,6 @@ public class CloudStorageConfigs {
 
   public static CloudStorageConfigs gcs(final GcsConfig config) {
     return new CloudStorageConfigs(WorkerStorageType.GCS, null, null, config);
-  }
-
-  public static CloudStorageConfigs none() {
-    return new CloudStorageConfigs(WorkerStorageType.NONE, null, null, null);
   }
 
   private CloudStorageConfigs(final WorkerStorageType type,
@@ -75,7 +70,6 @@ public class CloudStorageConfigs {
         Preconditions.checkArgument(minioConfig == null);
         Preconditions.checkNotNull(gcsConfig);
       }
-      case NONE -> {}
     }
   }
 
