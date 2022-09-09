@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.82
+- Freeze dataclasses-jsonschema to 2.15.1
+
 ## 0.1.81
 - Fix regression in `_checkpoint_state` arg
 
