@@ -35,6 +35,7 @@ import io.micronaut.core.util.StringUtils;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.inject.Named;
@@ -143,8 +144,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public LogConfigs logConfigs(@Named("logStorageConfigs") final CloudStorageConfigs cloudStorageConfigs) {
-    return new LogConfigs(cloudStorageConfigs);
+  public LogConfigs logConfigs(@Named("logStorageConfigs") final Optional<CloudStorageConfigs> cloudStorageConfigs) {
+    return new LogConfigs(cloudStorageConfigs.orElse(null));
   }
 
   @Singleton
