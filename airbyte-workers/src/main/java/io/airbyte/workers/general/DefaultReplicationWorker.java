@@ -17,6 +17,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.*;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
@@ -336,11 +337,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
+
             try {
-              destination.accept(message);
+              if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+                destination.accept(message);
+              }
             } catch (final Exception e) {
               throw new DestinationException("Destination process message delivery failed", e);
             }
+
             recordsRead += 1;
 
             if (recordsRead % 1000 == 0) {
