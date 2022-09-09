@@ -242,6 +242,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
 
     LOGGER.info("sending airbyte api client request, job id=" + id);
+    LOGGER.info("sending airbyte api client request, address= " + airbyteApiClient.getJobsApi().toString());
     final var jobScope = airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);
 

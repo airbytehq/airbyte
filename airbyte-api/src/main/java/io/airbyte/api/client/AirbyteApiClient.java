@@ -18,6 +18,8 @@ import io.airbyte.api.client.generated.SourceDefinitionApi;
 import io.airbyte.api.client.generated.SourceDefinitionSpecificationApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
@@ -64,6 +66,10 @@ public class AirbyteApiClient {
     healthApi = new HealthApi(apiClient);
     dbMigrationApi = new DbMigrationApi(apiClient);
     attemptApi = new AttemptApi(apiClient);
+
+    apiClient.setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1));
+
+    apiClient.getHttpClient().toString();
   }
 
   public ConnectionApi getConnectionApi() {
