@@ -327,5 +327,12 @@ module.exports = {
          'release_notes/july_2022',
       ],
     },
+    {
+      type: 'category',
+      label: 'Release Notes',
+      items: [
+         'release_notes/august_2022',
+      ],
+    },
   ],
 }
