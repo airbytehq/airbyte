@@ -7,9 +7,9 @@
         "tags": {
           "type": "array",
           "items": {
-            "type": ["null", "object"],
             "anyOf": [
               {
+                "type": "object",
                 "properties": {
                   "id": {
                     "type": "integer"
@@ -21,7 +21,8 @@
                     "type": "string"
                   }
                 }
-              }
+              },
+              {"type":  "null"}
             ]
           }
         }
