@@ -28,7 +28,6 @@ class StateMetricsTrackerTest {
   private static final String SECOND_FIVE = "2022-01-01 12:00:05";
   private static final String SECOND_SIX = "2022-01-01 12:00:06";
 
-
   @BeforeEach
   void setup() {
     this.stateMetricsTracker = new StateMetricsTracker(873813L);
