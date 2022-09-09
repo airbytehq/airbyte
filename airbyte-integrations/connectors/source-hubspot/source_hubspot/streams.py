@@ -705,6 +705,7 @@ class IncrementalStream(Stream, ABC):
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
     state_checkpoint_interval = 500
+    last_slice = None
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -728,7 +729,9 @@ class IncrementalStream(Stream, ABC):
             cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
-        self._update_state(latest_cursor=latest_cursor)
+
+        is_last_slice = (stream_slice == self.last_slice)
+        self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return self.state
@@ -761,16 +764,23 @@ class IncrementalStream(Stream, ABC):
         self._sync_mode = None
         self._init_sync = pendulum.now("utc")
 
-    def _update_state(self, latest_cursor):
+    def _update_state(self, latest_cursor, is_last_record=False):
         """
         The first run uses an endpoint that is not sorted by updated_at but is
         sorted by id because of this instead of updating the state by reading
-        the latest cursor the state will set it with the time the synch started.
-        With the proposed `state strategy`, it would capture all possible
+        the latest cursor the state will set it at the end with the time the synch
+        started. With the proposed `state strategy`, it would capture all possible
         updated entities in incremental synch.
         """
-        self._state = self._init_sync
-        self._start_date = self._state
+        if latest_cursor:
+            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                self._state = new_state
+                self._start_date = self._state
+        if is_last_record:
+            self.logger.info("last_record")
+            self._state = self._init_sync
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -792,6 +802,8 @@ class IncrementalStream(Stream, ABC):
                     "endTimestamp": end_ts,
                 }
             )
+        # Save the last slice to ensure we save the lastest state as the initial sync date
+        self.last_slice = slices[-1]
 
         return slices
 
@@ -928,7 +940,9 @@ class CRMSearchStream(IncrementalStream, ABC):
                 self._update_state(latest_cursor=latest_cursor)
                 next_page_token = None
 
-        self._update_state(latest_cursor=latest_cursor)
+        # Since Search stream does not have slices is safe to save the latest
+        # state as the initial sync date
+        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
