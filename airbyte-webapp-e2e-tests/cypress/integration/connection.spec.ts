@@ -3,15 +3,7 @@ import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
 import { initialSetupCompleted } from "commands/workspaces";
-import {
-  confirmStreamConfigurationChangedPopup,
-  selectSchedule,
-  fillOutDestinationPrefix,
-  goToReplicationTab,
-  setupDestinationNamespaceCustomFormat,
-  selectFullAppendSyncMode,
-  checkSuccessResult,
-} from "pages/replicationPage";
+import { confirmStreamConfigurationChangedPopup, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectSyncMode, checkSuccessResult, searchStream, selectCursorField, checkCursorField} from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
 import { update } from "cypress/types/lodash";
@@ -63,6 +55,84 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
+  it("Connection sync mode Incremental Append", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    createTestConnection("Test update connection Postgres source cypress", "Test update connection Postgres destination cypress");
+
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
+    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+
+    goToReplicationTab();
+
+    searchStream("admins");
+    selectSyncMode("Incremental", "Append");
+    selectCursorField('email');
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, '200');    
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
+    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+
+    goToReplicationTab();
+
+    searchStream("admins");
+
+    checkCursorField("email");
+
+    deleteSource("Test update connection Postgres source cypress");
+    deleteDestination("Test update connection Postgres destination cypress");
+  });
+
+  it("Connection sync mode Incremental Deduped History", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    createTestConnection("Test update connection Postgres source cypress", "Test update connection Postgres destination cypress");
+
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
+    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+
+    goToReplicationTab();
+
+    searchStream("admins");
+    selectSyncMode("Incremental", "Deduped + history");
+    selectCursorField('email');
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait(5000);
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, '200');    
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
+    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+
+    goToReplicationTab();
+
+    searchStream("admins");
+
+    checkCursorField("email");
+
+    deleteSource("Test update connection Postgres source cypress");
+    deleteDestination("Test update connection Postgres destination cypress");
+  });
+
   it("Update connection (pokeAPI)", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
@@ -77,10 +147,10 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule("Every hour");
-    fillOutDestinationPrefix("auto_test");
-    setupDestinationNamespaceCustomFormat("_test");
-    selectFullAppendSyncMode();
+    selectSchedule('Every hour');
+    fillOutDestinationPrefix('auto_test');
+    setupDestinationNamespaceCustomFormat('_test');
+    selectSyncMode("Full refresh", "Append");
 
     const prefix = "auto_test";
     fillOutDestinationPrefix(prefix);

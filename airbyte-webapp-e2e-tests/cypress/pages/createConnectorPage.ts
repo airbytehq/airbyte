@@ -6,6 +6,7 @@ const databaseInput = "input[name='connectionConfiguration.database']";
 const usernameInput = "input[name='connectionConfiguration.username']";
 const passwordInput = "input[name='connectionConfiguration.password']";
 const pokemonNameInput = "input[name='connectionConfiguration.pokemon_name']";
+const schemaInput = "input[name='connectionConfiguration.schemas']";
 const destinationPathInput = "input[name='connectionConfiguration.destination_path']";
 
 export const selectServiceType = (type: string) => {
@@ -43,4 +44,8 @@ export const enterPokemonName = (pokeName: string) => {
 
 export const enterDestinationPath = (destinationPath: string) => {
   cy.get(destinationPathInput).type(destinationPath);
+};
+
+export const enterSchema = (value: string) => {
+  cy.get(schemaInput).clear().clear().type("{selectAll}{del}").type(value);
 };

@@ -8,14 +8,15 @@ export const createPostgresSource = (
   port: string = "{selectAll}{del}5433",
   database: string = "airbyte_ci",
   username: string = "postgres",
-  password: string = "secret_password"
+  password: string = "secret_password",
+  schema: string = ""
 ) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
   cy.intercept("/api/v1/sources/create").as("createSource");
 
   goToSourcePage();
   openNewSourceForm();
-  fillPostgresForm(name, host, port, database, username, password);
+  fillPostgresForm(name, host, port, database, username, password, schema);
   submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
