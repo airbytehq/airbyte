@@ -1,0 +1,45 @@
+version: "0.1.0"
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_congress_dot_gov/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: ["bills"]
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        format: json
+        sort: asc
+        api_key: "{{ config['api_key'] }}"
+    path: "{{ options['path'] }}"
+  retriever:
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.congress.gov/v3/"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    paginator:
+      type: NoPagination
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "bills"
+      path: "bill"
+    primary_key: "number"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+check:
+  type: CheckStream
+  stream_names: ["bills"]
