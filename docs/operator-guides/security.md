@@ -32,7 +32,7 @@ Our security and reliability commitments are only applicable to Airbyte Cloud. A
 
 ### Network Security
 
-Deploy Airbyte Open Source in a private network or use a firewall to filter which IP addresses are allowed to access your host. Airbyte Open Source currently does not include any user management or role-based access controls (RABC) to prevent unauthorized access to the API or UI. Controlling who has access to the hardware and network your Airbyte deployment runs on is your responsibility.
+Deploy Airbyte Open Source in a private network or use a firewall to filter which IP addresses are allowed to access your host. Airbyte Open Source currently does not include any user management or role-based access controls (RBAC) to prevent unauthorized access to the API or UI. Controlling who has access to the hardware and network your Airbyte deployment runs on is your responsibility.
 
 You can secure access to Airbyte using the following methods:
 
@@ -60,7 +60,7 @@ Note that this process is not reversible. Once you have converted to a secret st
 Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS). We recommend configuring your connectors to use the encryption option whenever available.
 
 ### Telemetry
-Airbyte does send anonymized data to our services to improve the product. To disable telemetry, modify the .env file and define the following environment variable:
+Airbyte does send anonymized data to our services to improve the product (especially connector reliability and scale). To disable telemetry, modify the .env file and define the following environment variable:
 
 ```
 TRACKING_STRATEGY=logging
