@@ -257,7 +257,6 @@
   "sources.syncNow": "Sync now",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
-  "sources.linkedJobNotFound": "The linked job could not be found",
   "sources.emptySchema": "Schema is empty",
   "sources.noSources": "Source list is empty",
   "sources.sourceSettings": "Source Settings",
@@ -362,6 +361,8 @@
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
   "connection.canceling": "Canceling...",
+  "connection.linkedJobNotFound": "The linked job could not be found",
+  "connection.returnToSyncHistory": "Return to Sync History",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",

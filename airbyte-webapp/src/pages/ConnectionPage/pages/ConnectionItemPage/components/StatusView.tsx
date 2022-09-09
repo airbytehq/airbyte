@@ -2,6 +2,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { Link, useLocation } from "react-router-dom";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import { Tooltip } from "components/base/Tooltip";
@@ -53,6 +54,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
   const { jobId: linkedJobId } = useAttemptLink();
+  const { pathname } = useLocation();
   const {
     jobs,
     totalJobCount,
@@ -82,7 +84,8 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
         } as ActiveJob)
     );
 
-    setJobPageSize(jobs.length);
+    // necessary because request to listJobs may return a result larger than the current page size if a linkedJobId is passed in
+    setJobPageSize((prevJobPageSize) => Math.max(prevJobPageSize, jobs.length));
   }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -183,7 +186,14 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
         {jobs.length ? (
           <JobsList jobs={jobs} />
         ) : linkedJobNotFound ? (
-          <EmptyResource text={<FormattedMessage id="sources.linkedJobNotFound" />} description="test description" />
+          <EmptyResource
+            text={<FormattedMessage id="connection.linkedJobNotFound" />}
+            description={
+              <Link to={pathname}>
+                <FormattedMessage id="connection.returnToSyncHistory" />
+              </Link>
+            }
+          />
         ) : (
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
