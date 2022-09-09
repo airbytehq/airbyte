@@ -298,7 +298,10 @@ subprojects { subproj ->
             dependsOn copyDocker
             dependsOn distTar
             from('build/distributions') {
-                include "$subproj.name-*.tar"
+                // Assume that tars are named <parent-project-name>-<child-project-name>-*.tar.
+                // Because we only have a handle to the child project, and to keep things simple,
+                // use a * regex to catch all prefixes.
+                include "*-$subproj.name-*.tar"
             }
             into 'build/docker/bin'
         }
