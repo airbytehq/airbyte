@@ -12,6 +12,8 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerPlane;
 import java.io.FileInputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +39,7 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
     this.airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
             .setScheme(scheme)
+            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
