@@ -24,31 +24,84 @@ definitions:
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
     paginator:
-      type: LimitPaginator
-      $options:
-        page_size: 250
-      pagination_strategy:
-        type: OffsetIncrement
-      limit_option:
-        inject_into: request_parameter
-        field_name: limit
-      page_token_option:
-        field_name: offset
-        inject_into: request_parameter
+      type: NoPagination
+      #      type: LimitPaginator
+      #      $options:
+      #        page_size: 1
+      #      pagination_strategy:
+      #        type: OffsetIncrement
+      #      limit_option:
+      #        inject_into: request_parameter
+      #        field_name: limit
+      #      page_token_option:
+      #        field_name: offset
+      #        inject_into: request_parameter
     record_selector:
       $ref: "*ref(definitions.selector)"
     requester:
       $ref: "*ref(definitions.requester)"
-streams:
-  - type: DeclarativeStream
-    $options:
-      name: "bills"
-      path: "bill"
-    primary_key: "number"
+  base_stream:
+    type: DeclarativeStream
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
       $ref: "*ref(definitions.retriever)"
+streams:
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "bill"
+      path: "bill"
+    primary_key: "number"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "summaries"
+      path: "summaries"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "amendment"
+      path: "amendment"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "congress"
+      path: "congress"
+    primary_key: "name"
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "member"
+      path: "member"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "committee"
+      path: "committee"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "committee_report"
+      path: "committeeReport"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "congressional_record"
+      path: "congressional-record"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "house_communication"
+      path: "house-communication"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "nomination"
+      path: "nomination"
+    primary_key: ""
+  - $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "treaty"
+      path: "treaty"
+    primary_key: ""
 check:
   type: CheckStream
   stream_names: ["bills"]
