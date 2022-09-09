@@ -269,13 +269,13 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   @Test
   void testHasNewVersion() {
     assertTrue(DatabaseConfigPersistence.hasNewVersion("0.1.99", "0.2.0"));
-    assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.1.2"));
   }
 
   @Test
   void testHasNewPatchVersion() {
     assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("0.1.99", "0.2.0"));
-    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("invalid_version", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("invalid_version", "0.3.1"));
     assertTrue(DatabaseConfigPersistence.hasNewPatchVersion("0.1.0", "0.1.3"));
   }
 
