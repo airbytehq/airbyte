@@ -183,6 +183,7 @@ class DefaultReplicationWorkerTest {
     verify(destination).start(destinationConfig, jobRoot);
     verify(destination).accept(RECORD_MESSAGE1);
     verify(destination).accept(RECORD_MESSAGE2);
+    verify(destination).accept(RECORD_MESSAGE3);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(), STREAM_NAME);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(), STREAM_NAME);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord(), STREAM_NAME);
@@ -298,8 +299,11 @@ class DefaultReplicationWorkerTest {
   void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
     final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
     final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createTraceMessage("a trace message", 123456.0);
+    when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
+    when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
+    when(source.isFinished()).thenReturn(false, false, false, false, true);
     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(LOG_MESSAGE), Optional.of(TRACE_MESSAGE),
-        Optional.of(RECORD_MESSAGE2), Optional.empty());
+        Optional.of(RECORD_MESSAGE2));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
