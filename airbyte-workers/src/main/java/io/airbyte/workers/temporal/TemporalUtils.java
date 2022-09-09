@@ -11,6 +11,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Value;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -74,13 +75,13 @@ public class TemporalUtils {
   @Property(name = "temporal.cloud.enabled",
             defaultValue = "false")
   private Boolean temporalCloudEnabled;
-  @Property(name = "temporal.cloud.host")
+  @Value("${temporal.cloud.host}")
   private String temporalCloudHost;
-  @Property(name = "temporal.cloud.namespace")
+  @Value("${temporal.cloud.namespace}")
   private String temporalCloudNamespace;
-  @Property(name = "temporal.host")
+  @Value("${temporal.host}")
   private String temporalHost;
-  @Property(name = "temporal.retention")
+  @Value("${temporal.retention}")
   private Integer temporalRetentionInDays;
 
   public TemporalUtils() {}
