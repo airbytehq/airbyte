@@ -80,7 +80,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.s3.region",
-      notEquals = "")
+            notEquals = "")
   @Named("stateStorageConfigs")
   public Optional<CloudStorageConfigs> s3StateStorageConfiguration(
                                                                    @Value("${airbyte.cloud.storage.state.s3.bucket}") final String bucketName,

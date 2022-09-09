@@ -14,11 +14,9 @@ import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.Configs.WorkerPlane;
-import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
@@ -35,7 +33,6 @@ import io.micronaut.core.util.StringUtils;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.inject.Named;
@@ -141,11 +138,6 @@ public class ApplicationBeanFactory {
         .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
-  }
-
-  @Singleton
-  public LogConfigs logConfigs(@Named("logStorageConfigs") final Optional<CloudStorageConfigs> cloudStorageConfigs) {
-    return new LogConfigs(cloudStorageConfigs.orElse(null));
   }
 
   @Singleton
