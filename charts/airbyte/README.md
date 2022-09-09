@@ -212,7 +212,7 @@ Helm chart to deploy airbyte
 | webapp.image.repository | string | `"airbyte/webapp"` |  |
 | webapp.ingress.annotations | object | `{}` |  |
 | webapp.ingress.className | string | `""` |  |
-| webapp.ingress.enabled | bool | `false` |  |
+| webapp.ingress.enabled | bool | `true` |  |
 | webapp.ingress.hosts | list | `[]` |  |
 | webapp.ingress.tls | list | `[]` |  |
 | webapp.livenessProbe.enabled | bool | `true` |  |
@@ -238,6 +238,8 @@ Helm chart to deploy airbyte
 | webapp.service.type | string | `"ClusterIP"` |  |
 | webapp.tolerations | list | `[]` |  |
 | worker.affinity | object | `{}` |  |
+| worker.containerOrchestrator.enabled | bool | `true` |  |
+| worker.containerOrchestrator.image | string | `""` |  |
 | worker.containerSecurityContext | object | `{}` |  |
 | worker.enabled | bool | `true` |  |
 | worker.extraEnv | list | `[]` |  |
