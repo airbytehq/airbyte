@@ -34,3 +34,4 @@ tests:
         search_analytics_by_page: [ "https://airbyte.io", "web", "date" ]
         search_analytics_by_query: [ "https://airbyte.io", "web", "date" ]
         search_analytics_all_fields: [ "https://airbyte.io", "web", "date" ]
+        custom_dimensions: [ "https://airbyte.io", "web", "date" ]
