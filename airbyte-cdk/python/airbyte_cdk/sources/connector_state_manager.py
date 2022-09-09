@@ -5,7 +5,7 @@
 import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, StreamDescriptor
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Extra
 
@@ -28,10 +28,9 @@ class ConnectorStateManager:
     """
 
     def __init__(self, stream_instance_map: Mapping[str, Stream], state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None):
-        shared_state, streams, legacy = self._extract_from_state_message(state, stream_instance_map)
+        shared_state, per_stream_states = self._extract_from_state_message(state, stream_instance_map)
         self.shared_state = shared_state
-        self.per_stream_states = streams
-        self.legacy = legacy
+        self.per_stream_states = per_stream_states
 
     def get_stream_state(self, stream_name: str, namespace: Optional[str]) -> Mapping[str, Any]:
         """
@@ -45,31 +44,25 @@ class ConnectorStateManager:
         if self.shared_state:
             combined_state.update(self.shared_state.dict())
         target_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
-        if target_state and target_state.stream_state:
-            combined_state.update(target_state.stream_state.dict())
+        if target_state:
+            combined_state.update(target_state.dict())
         return combined_state
 
     def get_legacy_state(self) -> MutableMapping[str, Any]:
         """
-        Returns a deep copy of the current legacy state dictionary made up of the state of all streams for a connector
-        :return: A copy of the legacy state
+        Using the current per-stream state, creates a mapping of all the stream states for the connector being synced
+        :return: A deep copy of the mapping of stream name to stream state value
         """
-        return copy.deepcopy(self.legacy, {})
+        return {descriptor.name: per_stream.dict() for descriptor, per_stream in self.per_stream_states.items() if per_stream is not None}
 
     def update_state_for_stream(self, stream_name: str, namespace: str, value: Mapping[str, Any]):
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-        if stream_descriptor in self.per_stream_states:
-            self.per_stream_states[stream_descriptor].stream_state = AirbyteStateBlob.parse_obj(value)
-        else:
-            self.per_stream_states[stream_descriptor] = AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name=stream_name, namespace=namespace), stream_state=AirbyteStateBlob.parse_obj(value)
-            )
-        self.legacy[stream_name] = value
+        self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
 
     @classmethod
     def _extract_from_state_message(
         cls, state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]], stream_instance_map: Mapping[str, Stream]
-    ) -> Tuple[Optional[AirbyteStateBlob], MutableMapping[HashableStreamDescriptor, AirbyteStreamState], MutableMapping[str, Any]]:
+    ) -> Tuple[Optional[AirbyteStateBlob], MutableMapping[HashableStreamDescriptor, AirbyteStateBlob]]:
         """
         Takes an incoming list of state messages or the legacy state format and extracts state attributes according to type
         which can then be assigned to the new state manager being instantiated
@@ -77,53 +70,45 @@ class ConnectorStateManager:
         :return: A tuple of shared state, per stream state, and legacy state assembled from the incoming state list
         """
         if state is None:
-            return None, {}, {}
+            return None, {}
 
         # Incoming pure legacy object format
         if isinstance(state, dict):
             streams = cls._create_stream_from_state_object(state, stream_instance_map)
-            return None, streams, copy.deepcopy(state, {})
+            return None, streams
 
         if not isinstance(state, List):
             raise ValueError("Input state should come in the form of list of Airbyte state messages or a mapping of states")
 
         if cls._is_migrated_legacy_state(state):
             streams = cls._create_stream_from_state_object(state[0].data, stream_instance_map)
-            return None, streams, copy.deepcopy(state[0].data, {})
+            return None, streams
 
         if cls._is_global_state(state):
             global_state = state[0].global_
             shared_state = copy.deepcopy(global_state.shared_state, {})
             streams = {
-                HashableStreamDescriptor(name=per_state.stream_descriptor.name, namespace=per_state.stream_descriptor.namespace): per_state
-                for per_state in global_state.stream_states
-                if per_state
-            }
-            legacy = {
-                per_state.stream_descriptor.name: per_state.stream_state.dict() if per_state.stream_state else {}
+                HashableStreamDescriptor(
+                    name=per_state.stream_descriptor.name, namespace=per_state.stream_descriptor.namespace
+                ): per_state.stream_state
                 for per_state in global_state.stream_states
             }
-            return shared_state, streams, legacy
+            return shared_state, streams
 
         # Assuming all prior conditions were not met this is a per-stream list of states
         streams = {
             HashableStreamDescriptor(
                 name=per_state.stream.stream_descriptor.name, namespace=per_state.stream.stream_descriptor.namespace
-            ): per_state.stream
+            ): per_state.stream.stream_state
             for per_state in state
             if per_state.type == AirbyteStateType.STREAM and hasattr(per_state, "stream")
         }
-        legacy = {
-            per_state.stream.stream_descriptor.name: per_state.stream.stream_state.dict() if per_state.stream.stream_state else {}
-            for per_state in state
-            if per_state.type == AirbyteStateType.STREAM and hasattr(per_state, "stream")
-        }
-        return None, streams, legacy
+        return None, streams
 
     @staticmethod
     def _create_stream_from_state_object(
         state: MutableMapping[str, Any], stream_to_instance_map: Mapping[str, Stream]
-    ) -> MutableMapping[HashableStreamDescriptor, AirbyteStreamState]:
+    ) -> MutableMapping[HashableStreamDescriptor, Optional[AirbyteStateBlob]]:
         """
         Takes incoming state received in the legacy format and transforms it into a mapping of StreamDescriptor to AirbyteStreamState
         :param state: A mapping object representing the complete state of all streams in the legacy format
@@ -134,13 +119,7 @@ class ConnectorStateManager:
         for stream_name, state_value in state.items():
             namespace = stream_to_instance_map[stream_name].namespace if stream_name in stream_to_instance_map else None
             stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-            streams.update(
-                {
-                    stream_descriptor: AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(state_value)
-                    )
-                }
-            )
+            streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value)
         return streams
 
     @staticmethod

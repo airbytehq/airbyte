@@ -34,14 +34,8 @@ class StreamWithNamespace(Stream):
                 },
             ],
             {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                    stream_state=AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
-                ),
-                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses", namespace="public"),
-                    stream_state=AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
-                ),
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
+                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
             None,
             {"actors": {"id": "mando_michael"}, "actresses": {"id": "seehorn_rhea"}},
@@ -68,14 +62,8 @@ class StreamWithNamespace(Stream):
                 },
             ],
             {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                    stream_state=AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
-                ),
-                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses", namespace="public"),
-                    stream_state=AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
-                ),
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
+                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
             AirbyteStateBlob.parse_obj({"television": "better_call_saul"}),
             {"actors": {"id": "mando_michael"}, "actresses": {"id": "seehorn_rhea"}},
@@ -90,15 +78,9 @@ class StreamWithNamespace(Stream):
                 }
             ],
             {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actors"), stream_state=AirbyteStateBlob.parse_obj({"id": "fabian_patrick"})
-                ),
-                HashableStreamDescriptor(name="actresses"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses"), stream_state=AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"})
-                ),
-                HashableStreamDescriptor(name="writers"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="writers"), stream_state=AirbyteStateBlob.parse_obj({"id": "gilligan_vince"})
-                ),
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "fabian_patrick"}),
+                HashableStreamDescriptor(name="actresses"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
+                HashableStreamDescriptor(name="writers"): AirbyteStateBlob.parse_obj({"id": "gilligan_vince"}),
             },
             None,
             {"actors": {"id": "fabian_patrick"}, "actresses": {"id": "seehorn_rhea"}, "writers": {"id": "gilligan_vince"}},
@@ -108,11 +90,7 @@ class StreamWithNamespace(Stream):
         pytest.param([], {}, None, {}, does_not_raise(), id="test_incoming_empty_stream_state"),
         pytest.param(
             [{"type": AirbyteStateType.STREAM, "stream": {"stream_descriptor": {"name": "actresses", "namespace": "public"}}}],
-            {
-                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses", namespace="public")
-                )
-            },
+            {HashableStreamDescriptor(name="actresses", namespace="public"): None},
             None,
             {"actresses": {}},
             does_not_raise(),
@@ -130,10 +108,7 @@ class StreamWithNamespace(Stream):
                 },
             ],
             {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                    stream_state=AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
-                )
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
             },
             None,
             {"actors": {"id": "mando_michael"}},
@@ -152,11 +127,7 @@ class StreamWithNamespace(Stream):
                     },
                 },
             ],
-            {
-                HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses", namespace="public")
-                )
-            },
+            {HashableStreamDescriptor(name="actresses", namespace="public"): None},
             AirbyteStateBlob.parse_obj({"television": "better_call_saul"}),
             {"actresses": {}},
             does_not_raise(),
@@ -165,12 +136,8 @@ class StreamWithNamespace(Stream):
         pytest.param(
             {"actors": {"id": "esposito_giancarlo"}, "actresses": {"id": "seehorn_rhea"}},
             {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actors"), stream_state=AirbyteStateBlob.parse_obj({"id": "esposito_giancarlo"})
-                ),
-                HashableStreamDescriptor(name="actresses"): AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="actresses"), stream_state=AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"})
-                ),
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "esposito_giancarlo"}),
+                HashableStreamDescriptor(name="actresses"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
             None,
             {"actors": {"id": "esposito_giancarlo"}, "actresses": {"id": "seehorn_rhea"}},
@@ -194,7 +161,6 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
 
         assert state_manager.per_stream_states == expected_stream_state
         assert state_manager.shared_state == expected_shared_state
-        assert state_manager.legacy == expected_legacy_state
 
 
 @pytest.mark.parametrize(
@@ -387,6 +353,28 @@ def test_get_legacy_state(input_state, expected_legacy_state, expected_error):
         assert actual_legacy_state == expected_legacy_state
 
 
+def test_get_state_returns_deep_copy():
+    input_state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                stream_state=AirbyteStateBlob.parse_obj({"id": [109]}),
+            ),
+        )
+    ]
+    state_manager = ConnectorStateManager({}, input_state)
+
+    per_stream_state = state_manager.get_stream_state("episodes", "public")
+    per_stream_state["id"].append(309)
+
+    legacy_state = state_manager.get_legacy_state()
+    legacy_state["episodes"]["id"].append(309)
+
+    assert state_manager.get_stream_state("episodes", "public") == {"id": [109]}
+    assert state_manager.get_legacy_state() == {"episodes": {"id": [109]}}
+
+
 @pytest.mark.parametrize(
     "start_state, update_name, update_namespace, update_value, expected_legacy_state",
     [
@@ -428,6 +416,19 @@ def test_get_legacy_state(input_state, expected_legacy_state, expected_error):
             {"actors": {"id": "banks_jonathan"}, "actresses": {"id": "seehorn_rhea"}},
             id="test_update_missing_state",
         ),
+        pytest.param(
+            [
+                {
+                    "type": AirbyteStateType.STREAM,
+                    "stream": {"stream_descriptor": {"name": "actresses", "namespace": "public"}, "stream_state": {"id": "seehorn_rhea"}},
+                }
+            ],
+            "actors",
+            "public",
+            {"id": "banks_jonathan"},
+            {"actors": {"id": "banks_jonathan"}, "actresses": {"id": "seehorn_rhea"}},
+            id="test_ignore_when_per_stream_state_value_is_none",
+        ),
     ],
 )
 def test_update_state_for_stream(start_state, update_name, update_namespace, update_value, expected_legacy_state):
@@ -436,7 +437,7 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
 
     state_manager.update_state_for_stream(update_name, update_namespace, update_value)
 
-    assert state_manager.per_stream_states[HashableStreamDescriptor(name=update_name, namespace=update_namespace)] == AirbyteStreamState(
-        stream_descriptor=StreamDescriptor(name=update_name, namespace=update_namespace), stream_state=update_value
-    )
+    assert state_manager.per_stream_states[
+        HashableStreamDescriptor(name=update_name, namespace=update_namespace)
+    ] == AirbyteStateBlob.parse_obj(update_value)
     assert state_manager.get_legacy_state() == expected_legacy_state
