@@ -70,7 +70,7 @@ class BaseDiffChecker(ABC):
         if new_values_in_type_list:
             self._raise_error("A new value was added to a 'type' field")
 
-    def check_if_type_of_type_field_changed(self, diff: DeepDiff, allow_type_widening=False):
+    def check_if_type_of_type_field_changed(self, diff: DeepDiff, allow_type_widening: bool = False):
         """
         Detect the change of type of a type field on a property
         e.g:
