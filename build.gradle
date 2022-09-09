@@ -204,15 +204,18 @@ allprojects {
 // Java projects common configurations
 subprojects { subproj ->
 
-    // If subprojects have the dockerImageName property configured in their gradle property file,
+    // Common Docker Configuration:
+    // If subprojects have the dockerImageName property configured in their gradle.properties file,
     // register:
-    // 1) A task to copy the generated tar.
-    // 2) A task to build the docker image that depends on the generated tar.
+    // 1) A copyGeneratedTar task to copy generated TARs. Subprojects that produce TARs can use this
+    //    to copy the produced tar into the docker image.
+    // 2) A buildDockerImage task to build the docker image.
     // 3) Make the docker image task depend on the default assemble task.
     if (subproj.hasProperty('dockerImageName')) {
-        project.logger.lifecycle("$subproj.name")
+        project.logger.lifecycle("configuring docker task for $subproj.name")
 
-        // Todo: explain why this is here.
+        // Although this task is defined for every subproject with the dockerImageName property,
+        // It is not necessarily used for all subprojects. Non-TAR producing projects can ignore this.
         tasks.register("copyGeneratedTar", Copy) {
             dependsOn copyDocker
             dependsOn distTar
@@ -248,12 +251,10 @@ subprojects { subproj ->
             buildArgs.put('VERSION', rootProject.ext.version)
 
         }
-
+        
         tasks.named("assemble") {
             dependsOn buildDockerImage
         }
-    } else {
-        project.logger.lifecycle("$subproj.name")
     }
 
     if (subproj.name == 'airbyte-webapp' || subproj.name == 'airbyte-webapp-e2e-tests') {
