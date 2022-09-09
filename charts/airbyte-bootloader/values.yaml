@@ -1,4 +1,3 @@
-
 ## @param global.serviceAccountName Name of service account to be associated with service
 ## @param deploymentMode Determines deployment mode of airbyte
 ## @param secretName Overrides the secrate name with with credentials to S3 Bucket and logging
@@ -9,10 +8,14 @@
 global:
   serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
+  extraContainers: []
   secretName: ""
+  extraContainers: []
   database:
     secretName: ""
     secretValue: ""
+    host: "example.com"
+    port: "5432"
   secrets: {}
   env_vars: {}
 
@@ -29,6 +32,34 @@ image:
 ##
 podAnnotations: {}
 
+## @param bootloader.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## bootloader resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## Examples:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
 ## @param bootloader.nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
@@ -39,31 +70,40 @@ nodeSelector: {}
 ##
 tolerations: []
 
-## Bootloader resource requests and limits
-## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-## We usually recommend not to specify default resources and to leave this as a conscious
-## choice for the user. This also increases chances charts run on environments with little
-## resources, such as Minikube. If you do want to specify resources, uncomment the following
-## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
-## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
-resources:
-  ## Example:
-  ## requests:
-  ##    memory: 256Mi
-  ##    cpu: 250m
-  requests: {}
-  ## Example:
-  ## limits:
-  ##    cpu: 200m
-  ##    memory: 1Gi
-  limits: {}
-
 ## @param bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
-extraEnv: []
-secrets: {}
-env_vars: {}
 
+## @param bootloader.extraEnv [array] Additional env vars for bootloader pod(s).
+## Example:
+##
+## extraEnv:
+## - name: SAMPLE_ENV_VAR
+##   value: "key=sample-value"
+extraEnv: []
+
+## @param bootloader.secrets
+secrets: {}
+
+## @param bootloader.extraVolumeMounts [array] Additional volumeMounts for bootloader container(s).
+## Examples (when using `bootloader.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##
+extraVolumeMounts: []
+
+## @param bootloader.extraVolumes [array] Additional volumes for bootloader pod(s).
+## Examples (when using `bootloader.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##
+extraVolumes: []
+
+## @param bootloader.extraContainers [array] Additional containers to be added to the pod
+extraContainers: []
+
+## @param bootloader.env_vars
+env_vars: {}
