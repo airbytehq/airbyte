@@ -140,10 +140,6 @@ class StateMetricsTrackerTest {
 
   @Test
   void testStreamMaxandMeanSecondsBeforeStateMessageEmitted() {
-    final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(1, STREAM_1);
-    final AirbyteMessage s2 = AirbyteMessageUtils.createGlobalStateMessage(2, STREAM_1);
-    final AirbyteMessage s3 = AirbyteMessageUtils.createGlobalStateMessage(3, STREAM_1);
-
     // first record received at second 0
     stateMetricsTracker.setFirstRecordReceivedAt(LocalDateTime.parse(SECOND_ZERO, FORMATTER));
 
