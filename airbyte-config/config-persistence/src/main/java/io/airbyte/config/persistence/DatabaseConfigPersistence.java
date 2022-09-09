@@ -1908,7 +1908,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
-    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
+    try {
+      return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
+    } catch (final Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
   }
 
   static class ConnectorInfo {

@@ -273,6 +273,13 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
+  void testHasNewPatchVersion() {
+    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("0.1.99", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("invalid_version", "0.2.0"));
+    assertTrue(DatabaseConfigPersistence.hasNewPatchVersion("0.1.0", "0.1.3"));
+  }
+
+  @Test
   void testGetNewFields() {
     final JsonNode o1 = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2 }");
     final JsonNode o2 = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3 }");
