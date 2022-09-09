@@ -35,6 +35,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.event.ApplicationEventListener;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.scheduling.TaskExecutors;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
@@ -139,6 +140,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private WorkerPlane workerPlane;
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
+  @Value("${temporal.cloud.namespace}")
+  private String temporalCloudNamespace;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
@@ -299,19 +302,27 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
    */
   private void waitForTemporalNamespace() {
     boolean namespaceExists = false;
+    final String temporalNamespace = getTemporalNamespace();
     while (!namespaceExists) {
       try {
-        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(TemporalUtils.DEFAULT_NAMESPACE).build());
+        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(temporalNamespace).build());
         namespaceExists = true;
         // This is to allow the configured namespace to be available in the Temporal
         // cache before continuing on with any additional configuration/bean creation.
         Thread.sleep(TimeUnit.SECONDS.toMillis(5));
       } catch (final StatusRuntimeException e) {
-        log.debug("Namespace '{}' does not exist yet.  Re-checking...", TemporalUtils.DEFAULT_NAMESPACE);
+        log.debug("Namespace '{}' does not exist yet.  Re-checking...", temporalNamespace);
       } catch (final InterruptedException e) {
         log.debug("Sleep interrupted.  Exiting loop...");
       }
     }
   }
 
+  /**
+   * Retrieve the Temporal namespace based on the configuration.
+   * @return The Temporal namespace.
+   */
+  private String getTemporalNamespace() {
+    return StringUtils.isNotEmpty(temporalCloudNamespace) ? temporalCloudNamespace : TemporalUtils.DEFAULT_NAMESPACE;
+  }
 }
