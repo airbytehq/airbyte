@@ -779,7 +779,6 @@ class IncrementalStream(Stream, ABC):
                 self._state = new_state
                 self._start_date = self._state
         if is_last_record:
-            self.logger.info("last_record")
             self._state = self._init_sync
 
     def stream_slices(
