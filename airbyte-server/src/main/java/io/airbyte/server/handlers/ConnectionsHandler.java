@@ -317,12 +317,8 @@ public class ConnectionsHandler {
     newStreams.forEach(((streamDescriptor, airbyteStreamConfiguration) -> {
       final AirbyteStreamConfiguration oldConfig = oldStreams.get(streamDescriptor);
 
-      if (oldConfig == null) {
-        // The stream is a new one, the config has not change and it needs to be in the schema change list.
-      } else {
-        if (haveConfigChange(oldConfig, airbyteStreamConfiguration)) {
-          streamWithDifferentConf.add(streamDescriptor);
-        }
+      if (oldConfig != null && haveConfigChange(oldConfig, airbyteStreamConfiguration)) {
+        streamWithDifferentConf.add(streamDescriptor);
       }
     }));
 
