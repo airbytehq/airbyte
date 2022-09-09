@@ -1,6 +1,7 @@
 import { FieldArray, useField } from "formik";
 import React from "react";
 
+import { SecretTextArea } from "components/base/SecretTextArea";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -95,7 +96,14 @@ export const Control: React.FC<ControlProps> = ({
       <ConfirmationControl
         component={
           property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />
+            <SecretTextArea
+              {...field}
+              autoComplete="off"
+              value={value ?? ""}
+              rows={3}
+              disabled={disabled}
+              error={error}
+            />
           ) : (
             <Input
               {...field}
