@@ -730,7 +730,9 @@ class IncrementalStream(Stream, ABC):
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
 
-        is_last_slice = (stream_slice == self.last_slice)
+        is_last_slice = False
+        if self.last_slice:
+            is_last_slice = (stream_slice == self.last_slice)
         self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -802,7 +804,8 @@ class IncrementalStream(Stream, ABC):
                 }
             )
         # Save the last slice to ensure we save the lastest state as the initial sync date
-        self.last_slice = slices[-1]
+        if len(slices) > 0:
+            self.last_slice = slices[-1]
 
         return slices
 
@@ -1285,7 +1288,7 @@ class Engagements(IncrementalStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-        self._update_state(latest_cursor=latest_cursor)
+        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 
 class Forms(Stream):
