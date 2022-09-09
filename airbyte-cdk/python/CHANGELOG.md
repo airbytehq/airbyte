@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.82
+- Make TypeTransformer more sustainable to incorrect incoming records
+
 ## 0.1.81
 - Fix regression in `_checkpoint_state` arg
 
