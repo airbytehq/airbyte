@@ -51,7 +51,7 @@ create table "public"."jobs"(
 );
 create table "public"."sync_stats"(
   "id" uuid not null,
-  "attempt_id" int4 not null,
+  "attempt_id" int8 not null,
   "records_emitted" int8 null,
   "bytes_emitted" int8 null,
   "source_state_messages_emitted" int8 null,
