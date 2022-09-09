@@ -16,7 +16,6 @@ export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
   name,
   disabled,
   value,
-  onChange,
   onMouseUp,
   onBlur,
   error,
@@ -26,7 +25,7 @@ export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
   const hasValue = useMemo(() => !!value && String(value).trim().length > 0, [value]);
   const [isContentVisible, toggleIsContentVisible] = useToggle(!hasValue);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  const textAreaHeightRef = useRef<number>((textAreaProps.rows || 1) * 20);
+  const textAreaHeightRef = useRef<number>((textAreaProps.rows ?? 1) * 20 + 14);
 
   useUpdateEffect(() => {
     if (isContentVisible && textAreaRef.current) {
@@ -46,9 +45,6 @@ export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
           name={name}
           disabled={disabled}
           ref={textAreaRef}
-          onChange={(event) => {
-            onChange?.(event);
-          }}
           onMouseUp={(event) => {
             textAreaHeightRef.current = textAreaRef.current?.offsetHeight ?? textAreaHeightRef.current;
             onMouseUp?.(event);
@@ -84,10 +80,8 @@ export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
             disabled={disabled}
             value={value}
             className={styles.passwordInput}
+            readOnly
             aria-hidden
-            onChange={() => {
-              // eslint-disable-next-line @typescript-eslint/no-empty-function
-            }}
           />
         </>
       )}
