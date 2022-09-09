@@ -377,6 +377,7 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    cursor_field = "purchase-date"
 
 
 class FbaInventoryReports(ReportsAmazonSPStream):
