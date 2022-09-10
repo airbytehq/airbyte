@@ -1,7 +1,10 @@
 # Changelog
 
+## 0.1.84
+- Make TypeTransformer more robust to incorrect incoming records
+
 ## 0.1.83
-- Make TypeTransformer more sustainable to incorrect incoming records
+- Fix per-stream to send legacy format for connectors that override read
 
 ## 0.1.82
 - Freeze dataclasses-jsonschema to 2.15.1
