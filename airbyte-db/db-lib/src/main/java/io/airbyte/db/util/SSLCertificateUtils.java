@@ -47,7 +47,7 @@ public class SSLCertificateUtils {
       throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
     final FileSystem fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault());
     final Path pathToStore = fs.getPath(Objects.toString(directory, ""));
-    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + SecureRandom.getInstanceStrong().nextInt() + KEYSTORE_FILE_TYPE);
+    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + new SecureRandom().nextInt() + KEYSTORE_FILE_TYPE);
     final OutputStream os = Files.newOutputStream(pathToFile);
     keyStore.store(os, keyStorePassword.toCharArray());
     assert (Files.exists(pathToFile) == true);
