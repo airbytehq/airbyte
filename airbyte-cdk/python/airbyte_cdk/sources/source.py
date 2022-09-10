@@ -6,6 +6,7 @@
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Any, Generic, Iterable, List, Mapping, MutableMapping, TypeVar, Union
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
@@ -44,7 +45,7 @@ class Source(
     ABC,
 ):
     # can be overridden to change an input state
-    def read_state(self, state_path: str) -> List[AirbyteStateMessage]:
+    def read_state(self, state_path: str) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
         """
         Retrieves the input state of a sync by reading from the specified JSON file. Incoming state can be deserialized into either
         a JSON object for legacy state input or as a list of AirbyteStateMessages for the per-stream state format. Regardless of the
@@ -55,7 +56,7 @@ class Source(
         if state_path:
             state_obj = json.loads(open(state_path, "r").read())
             if not state_obj:
-                return []
+                return self._emit_legacy_state_format({})
             is_per_stream_state = isinstance(state_obj, List)
             if is_per_stream_state:
                 parsed_state_messages = []
@@ -66,13 +67,23 @@ class Source(
                     parsed_state_messages.append(parsed_message)
                 return parsed_state_messages
             else:
-                # Existing connectors that override read() might not be able to interpret the new state format. We temporarily
-                # send state in the old format for these connectors, but once all have been upgraded, this block can be removed
-                # vars(self.__class__) checks if the current class directly overrides the read() function
-                if "read" in vars(self.__class__):
-                    return state_obj
+                return self._emit_legacy_state_format(state_obj)
+        return self._emit_legacy_state_format({})
+
+    def _emit_legacy_state_format(self, state_obj) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
+        """
+        Existing connectors that override read() might not be able to interpret the new state format. We temporarily
+        send state in the old format for these connectors, but once all have been upgraded, this method can be removed,
+        and we can then emit state in the list format.
+        """
+        # vars(self.__class__) checks if the current class directly overrides the read() function
+        if "read" in vars(self.__class__):
+            return defaultdict(dict, state_obj)
+        else:
+            if state_obj:
                 return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
-        return []
+            else:
+                return []
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
