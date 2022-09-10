@@ -20,9 +20,9 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Central API Router",
-                "enum": ["Central API Router"],
-                "default": "Central API Router",
+                "const": "CENTRAL_API_ROUTER",
+                "enum": ["CENTRAL_API_ROUTER"],
+                "default": "CENTRAL_API_ROUTER",
                 "order": 0
               },
               "user_name": {
@@ -53,9 +53,9 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Single Store Access Token",
-                "enum": ["Single Store Access Token"],
-                "default": "Single Store Access Token",
+                "const": "SINGLE_STORE_ACCESS_TOKEN",
+                "enum": ["SINGLE_STORE_ACCESS_TOKEN"],
+                "default": "SINGLE_STORE_ACCESS_TOKEN",
                 "order": 0
               },
               "access_token": {

@@ -2,6 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
+import codecs
+import hashlib
+import hmac
+import urllib.parse
 from enum import Enum
 from functools import wraps
 from typing import Any, List, Mapping, Tuple
@@ -20,17 +25,23 @@ from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders
 
 class AuthMethod(Enum):
     CENTRAL_API_ROUTER = 1
-    SINGLE_STORE = 2
+    SINGLE_STORE_ACCESS_TOKEN = 2
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
     def __init__(self, access_token, store_name):
-        self.auth_method = AuthMethod.SINGLE_STORE
-        self.store_name = store_name
+        self.auth_method = AuthMethod.SINGLE_STORE_ACCESS_TOKEN
+        self._store_name = store_name
         self._access_token = access_token
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-AC-Auth-Token": self._access_token}
+
+    def url_base(self) -> str:
+        return f"https://{self._store_name}/api/v1/"
+
+    def extra_params(self, params):
+        return {}
 
 
 class CentralAPIHeaderAuthenticator(HttpAuthenticator):
@@ -48,6 +59,29 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
         To solve this the logic was moved to `request_headers` in CartStream class.
         """
         return {}
+
+    def url_base(self) -> str:
+        return "https://public.americommerce.com/api/v1/"
+
+    def extra_params(self, params):
+        return self.generate_auth_signature(self, params)
+
+    def generate_auth_signature(self, params) -> Mapping[str, Any]:
+        """
+        How to build signature:
+        1. build a string concatenated with:
+            request method (uppercase) & request path and query & provisioning user name
+                example: GET&/api/v1/customers&myUser
+        2. Generate HMACSHA256 hash using this string as the input, and the provisioning user secret as the key
+        3. Base64 this hash to be used as the final value in the header
+        """
+        path_with_params = f"{self.path()}&{urllib.parse.encode(params)}"
+        msg = codecs.encode(f"GET&{path_with_params}&{self.authenticator.user_name}")
+        key = codecs.encode(self.authenticator.user_secret)
+        dig = hmac.new(key=key, msg=msg, digestmod=hashlib.sha256).digest()
+        auth_signature = base64.b64encode(dig).decode()
+        return {"X-AC-PUB-Site-ID": self._site_id, "X-AC-PUB-User": self._user_name, "X-AC-PUB-Auth-Signature": auth_signature}
+
 
 
 class SourceCart(AbstractSource):
@@ -93,13 +127,13 @@ class SourceCart(AbstractSource):
     @validate_config_values
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
-        auth_method = credentials.get("method")
+        auth_method = credentials.get("auth_type")
 
         if auth_method == AuthMethod.CENTRAL_API_ROUTER:
             authenticator = CentralAPIHeaderAuthenticator(
                 user_id=credentials["user"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
             )
-        elif auth_method == AuthMethod.SINGLE_STORE:
+        elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN:
             authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
         else:
             raise NotImplementedError("Authentication method not implemented.")
