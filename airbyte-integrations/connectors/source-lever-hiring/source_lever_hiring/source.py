@@ -6,18 +6,22 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, Oauth2Authenticator
 
 from .streams import Applications, Interviews, Notes, Offers, Opportunities, Referrals, Users
 
 
 def _auth_from_config(config):
-    return Oauth2Authenticator(
-        client_id=config["credentials"]["client_id"],
-        client_secret=config["credentials"]["client_secret"],
-        refresh_token=config["credentials"]["refresh_token"],
-        token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
-    )
+
+    if config and config["credemtials"] and 'api_key' in config["credentials"]:
+        return BasicHttpAuthenticator(username=config["credentials"]["api_key"], auth_method="Basic")
+    else:
+        return Oauth2Authenticator(
+            client_id=config["credentials"]["client_id"],
+            client_secret=config["credentials"]["client_secret"],
+            refresh_token=config["credentials"]["refresh_token"],
+            token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
+        )
 
 
 class SourceLeverHiring(AbstractSource):
