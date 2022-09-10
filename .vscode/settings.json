@@ -41,5 +41,8 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": true
     }
-  }
+  },
+  "python.analysis.extraPaths": [
+    "./airbyte-cdk/python"
+  ]
 }
