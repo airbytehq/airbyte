@@ -3,7 +3,6 @@
 #
 
 import logging
-from datetime import timedelta
 from functools import wraps
 
 from .streams import Funnels
@@ -54,8 +53,8 @@ def adapt_validate_if_testing(func):
             logger = logging.getLogger("airbyte")
             logger.info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
             # Take time range in only 1 month
-            if config["end_date"] - config["start_date"] > timedelta(days=AVAILABLE_TESTING_RANGE_DAYS):
-                config["start_date"] = config["end_date"] - timedelta(days=AVAILABLE_TESTING_RANGE_DAYS)
+            if (config["end_date"] - config["start_date"]).days > AVAILABLE_TESTING_RANGE_DAYS:
+                config["start_date"] = config["end_date"].subtract(days=AVAILABLE_TESTING_RANGE_DAYS)
         return config
 
     return wrapper

@@ -4,7 +4,6 @@
 
 import base64
 import logging
-from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -32,18 +31,22 @@ class SourceMixpanel(AbstractSource):
         default_project_timezone = source_spec.connectionSpecification["properties"]["project_timezone"]["default"]
         config["project_timezone"] = pendulum.timezone(config.get("project_timezone", default_project_timezone))
 
-        now = datetime.now(config["project_timezone"]).date()
+        today = pendulum.today(tz=config["project_timezone"]).date()
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.parse(start_date).date()
         else:
-            config["start_date"] = now - timedelta(days=365)
+            config["start_date"] = today.subtract(days=365)
 
         end_date = config.get("end_date")
         if end_date:
             config["end_date"] = pendulum.parse(end_date).date()
         else:
-            config["end_date"] = now
+            config["end_date"] = today
+
+        for k in ["attribution_window", "select_properties_by_default", "region", "date_window_size"]:
+            if k not in config:
+                config[k] = source_spec.connectionSpecification["properties"][k]["default"]
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
