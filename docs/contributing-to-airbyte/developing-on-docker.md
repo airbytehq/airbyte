@@ -9,39 +9,41 @@ The top level `build.gradle` file defines several convenient tasks for building 
 2) The `buildDockerImage` task is a convenience class for configuring the above linked docker plugin that centralizes configuration logic commonly found in our dockerfiles.
 3) Makes the `buildDockerImage` task depend on the Gradle `assemble` task.
 
-These tasks are added to a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property.
-
-This property is sets the build docker image's name.
+These tasks are added to a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property. This property is sets the build docker image's name.
 
 ## Adding a new docker build
 
 Once you have a `Dockerfile`, generating the docker image is done in the following way:
-- specify the artifact name, the project directory, the version, and the tag.
-- make sure that the Dockerfile is properly copied to the docker context dir before building the image
-- make the build docker task to depend on the `assemble` task.
+1. Create a `gradle.properties` file in the subproject with the `dockerImageName` property set to the docker image name.
 
 For example:
 ```groovy
-Task dockerBuildTask = getDockerBuildTask("cli", project.projectDir, rootProject.ext.version, rootProject.ext.image_tag)
-dockerBuildTask.dependsOn(copyDocker)
-assemble.dependsOn(dockerBuildTask)
+// In the gradle.properties file.
+dockerImageName=cron
 ```
 
-If you need to add files in your image you need to copy them in `build/docker/bin` first. The need to happen after the `copyDocker` task.
-The `copyDocker` task clean up the `build/docker` folder as a first step.
+2. If this is a subproject producing a TAR, take advantage of the pre-provided task by configuring the build docker task to
+   depend on the copy TAR task in the subproject's build.gradle.
 
 For example:
+```groovy
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}
+```
+
+3. If this is a subproject with a more custom copy strategy, define your own task to copy the necessary files and configure
+   the build docker task to depend on this custom copy task in the subproject's build.gradle.
 ```groovy
 task copyScripts(type: Copy) {
     dependsOn copyDocker
-
     from('scripts')
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init", project.projectDir, rootProject.ext.version, rootProject.ext.image_tag)
-dockerBuildTask.dependsOn(copyScripts)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyScripts
+}
 ```
 
 ## Building the docker images
