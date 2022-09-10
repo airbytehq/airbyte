@@ -9,7 +9,7 @@ The top level `build.gradle` file defines several convenient tasks for building 
 2) The `buildDockerImage` task is a convenience class for configuring the above linked docker plugin that centralizes configuration logic commonly found in our dockerfiles.
 3) Makes the `buildDockerImage` task depend on the Gradle `assemble` task.
 
-These tasks are added to a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property. This property is sets the build docker image's name.
+These tasks are created in a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property. This property sets the built docker image's name.
 
 ## Adding a new docker build
 
