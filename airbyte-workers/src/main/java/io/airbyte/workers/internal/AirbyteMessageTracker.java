@@ -151,9 +151,10 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
     final LocalDateTime timeEmittedStateMessage = LocalDateTime.now();
-    stateMetricsTracker.updateMaxAndMeanSecondsToReceiveStateMessage(timeEmittedStateMessage);
-    sourceOutputState.set(new State().withState(stateMessage.getData()));
     stateMetricsTracker.incrementTotalSourceEmittedStateMessages();
+    stateMetricsTracker.updateMaxAndMeanSecondsToReceiveStateMessage(timeEmittedStateMessage);
+    stateMetricsTracker.setLastStateMessageReceivedAt(timeEmittedStateMessage);
+    sourceOutputState.set(new State().withState(stateMessage.getData()));
     final int stateHash = getStateHashCode(stateMessage);
 
     try {
@@ -410,7 +411,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     return unreliableStateTimingMetrics;
   }
 
-  private void logMessageAsJSON(final String caller, AirbyteMessage message) {
+  private void logMessageAsJSON(final String caller, final AirbyteMessage message) {
     if (!logConnectorMessages) {
       return;
     }
