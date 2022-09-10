@@ -24,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class SshTunnelTest {
+
   private static final String SSH_ED25519_PRIVATE_KEY = "-----BEGIN OPENSSH PRIVATE KEY-----\\n"
       + "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\\n"
       + "QyNTUxOQAAACDbBP+5jmEtjh1JvhzVQsvvTC2IQrX6P68XzrV7ZbnGsQAAAKBgtw9/YLcP\\n"
