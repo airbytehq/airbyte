@@ -730,107 +730,106 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
 
-
-  helm-acceptance-test:
-    name: "Platform: Acceptance Tests (Helm)"
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-helm-acceptance-test-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-    environment: more-secrets
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "17"
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "lts/gallium"
-
-      - name: Install unzip
-        shell: bash
-        run: sudo apt-get update && sudo apt-get install -y unzip
-
-      - uses: azure/setup-helm@v3
-        with:
-          version: 'latest' 
-          token: ${{ secrets.GITHUB_TOKEN }}
-        id: install
-   
-      - name: Fix EC-2 Runner
-        run: |
-          mkdir -p /home/runner
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Create cluster config file
-        run: |
-          cat > /tmp/kind-config.yaml <<EOF
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-          - role: worker
-          EOF
-
-      - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.2.0
-        with:
-          node_image: kindest/node:v1.21.2
-          config: /tmp/kind-config.yaml
-        # In case of self-hosted EC2 errors, remove this env block.
-        env:
-          USER: root
-          HOME: /home/runner
-          CHANGE_MINIKUBE_NONE_USER: true
-
-      - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
-
-      - name: Run Helm End-to-End Acceptance Tests
-        env:
-          USER: root
-          HOME: /home/runner
-          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        run: |
-          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always()    # run this step even if previous step failed
-        with:
-          name: Platform Helm E2E Test Report
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
-          reporter: java-junit
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: Kubernetes Logs
-          path: /tmp/kubernetes_logs/*
+  # Todo: Kyrylo turn this on.
+#  helm-acceptance-test:
+#    name: "Platform: Acceptance Tests (Helm)"
+#    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+#    needs: start-helm-acceptance-test-runner # required to start the main job when the runner is ready
+#    runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
+#    environment: more-secrets
+#    timeout-minutes: 90
+#    steps:
+#      - name: Checkout Airbyte
+#        uses: actions/checkout@v2
+#
+#      - name: Cache Build Artifacts
+#        uses: ./.github/actions/cache-build-artifacts
+#        with:
+#          cache-key: ${{ secrets.CACHE_VERSION }}
+#          cache-python: "false"
+#
+#      - uses: actions/setup-java@v1
+#        with:
+#          java-version: "17"
+#
+#      - uses: actions/setup-node@v2
+#        with:
+#          node-version: "lts/gallium"
+#
+#      - name: Install unzip
+#        shell: bash
+#        run: sudo apt-get update && sudo apt-get install -y unzip
+#
+#      - uses: azure/setup-helm@v3
+#        with:
+#          version: 'latest'
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#        id: install
+#
+#      - name: Fix EC-2 Runner
+#        run: |
+#          mkdir -p /home/runner
+#
+#      - name: Set up CI Gradle Properties
+#        run: |
+#          mkdir -p ~/.gradle/
+#          cat > ~/.gradle/gradle.properties <<EOF
+#          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+#            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+#            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+#            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+#            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+#          org.gradle.workers.max=8
+#          org.gradle.vfs.watch=false
+#          EOF
+#
+#      - name: Create cluster config file
+#        run: |
+#          cat > /tmp/kind-config.yaml <<EOF
+#          kind: Cluster
+#          apiVersion: kind.x-k8s.io/v1alpha4
+#          nodes:
+#          - role: control-plane
+#          - role: worker
+#          EOF
+#
+#      - name: KIND Kubernetes Cluster Setup
+#        uses: helm/kind-action@v1.2.0
+#        with:
+#          node_image: kindest/node:v1.21.2
+#          config: /tmp/kind-config.yaml
+#        # In case of self-hosted EC2 errors, remove this env block.
+#        env:
+#          USER: root
+#          HOME: /home/runner
+#          CHANGE_MINIKUBE_NONE_USER: true
+#
+#      - name: Build Platform Docker Images
+#        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+#
+#      - name: Run Helm End-to-End Acceptance Tests
+#        env:
+#          USER: root
+#          HOME: /home/runner
+#          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
+#          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+#          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+#          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+#        run: |
+#          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
+#      - name: Generate Test Report
+#        uses: dorny/test-reporter@v1
+#        if: always()    # run this step even if previous step failed
+#        with:
+#          name: Platform Helm E2E Test Report
+#          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
+#          reporter: java-junit
+#
+#      - uses: actions/upload-artifact@v2
+#        if: failure()
+#        with:
+#          name: Kubernetes Logs
+#          path: /tmp/kubernetes_logs/*
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-helm-acceptance-test-runner:
