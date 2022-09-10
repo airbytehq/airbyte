@@ -66,7 +66,7 @@ class Source(
                     parsed_state_messages.append(parsed_message)
                 return parsed_state_messages
             else:
-                # Existing connectors that override read() won't be able to interpret the new state format. We temporarily
+                # Existing connectors that override read() might not be able to interpret the new state format. We temporarily
                 # send state in the old format for these connectors, but once all have been upgraded, this block can be removed
                 # vars(self.__class__) checks if the current class directly overrides the read() function
                 if "read" in vars(self.__class__):
