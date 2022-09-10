@@ -492,7 +492,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.19"
+- dockerImage: "airbyte/source-amazon-ads:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -539,10 +539,10 @@
           order: 4
         report_wait_timeout:
           title: "Report Wait Timeout *"
-          description: "Timeout duration in minutes for Reports. Default is 30 minutes."
-          default: 30
+          description: "Timeout duration in minutes for Reports. Default is 60 minutes."
+          default: 60
           examples:
-          - 30
+          - 60
           - 120
           order: 5
           type: "integer"
