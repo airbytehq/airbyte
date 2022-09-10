@@ -335,10 +335,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
-              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ?",
+              // read source rows where the cursor field is NULL in incremental mode
+              // this can be used by TABLES ingestion where DELETED IS NULL
+              // this can also be used by QUERY_HISTORY ingestion where we first need to set END_TIME to NULL for ongoing queries
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ? OR %s IS NULL",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
                   sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  quotedCursorField));
+                  quotedCursorField, quotedCursorField));
               // if the connector emits intermediate states, the incremental query must be sorted by the cursor
               // field
               if (getStateEmissionFrequency() > 0) {
