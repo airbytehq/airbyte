@@ -123,20 +123,16 @@ class SourceWrike(AbstractSource):
         try:
             headers = {
                 "Accept": "application/json",
-                "Authorization": "Bearer " + config["access_token"],
-            }
+            } | TokenAuthenticator(token=config["access_token"]).get_auth_header()
 
             resp = requests.get(f"https://{config['wrike_instance']}/api/v4/version", headers=headers)
-            status = resp.status_code
-            logger.info(f"Ping response code: {status}")
-            if status == 200:
-                return True, None
+            resp.raise_for_status()
+            return True, None
 
-            error = resp.json()
+        except requests.exceptions.RequestException as e:
+            error = e.response.json()
             message = error.get("errorDescription") or error.get("error")
             return False, message
-        except Exception as e:
-            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -144,12 +140,12 @@ class SourceWrike(AbstractSource):
         """
         start_date = pendulum.parse(config.get("start_date")) if config.get("start_date") else pendulum.now().subtract(days=7)
 
-        auth = TokenAuthenticator(token=config["access_token"])
+        args = {"authenticator": TokenAuthenticator(token=config["access_token"]), "wrike_instance": config["wrike_instance"]}
         return [
-            Tasks(authenticator=auth, wrike_instance=config["wrike_instance"]),
-            Customfields(authenticator=auth, wrike_instance=config["wrike_instance"]),
-            Contacts(authenticator=auth, wrike_instance=config["wrike_instance"]),
-            Workflows(authenticator=auth, wrike_instance=config["wrike_instance"]),
-            Folders(authenticator=auth, wrike_instance=config["wrike_instance"]),
-            Comments(authenticator=auth, wrike_instance=config["wrike_instance"], start_date=start_date),
+            Tasks(**args),
+            Customfields(**args),
+            Contacts(**args),
+            Workflows(**args),
+            Folders(**args),
+            Comments(start_date=start_date, **args),
         ]
