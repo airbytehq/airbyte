@@ -1,29 +1,40 @@
 # Workers & Jobs
 
-In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Examples of workers are:
+In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Each job has a corresponding worker:
 
 * Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\)
 * Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync
 * Discovery worker: retrieves the schema of the source underlying a connector
 * Sync worker, used to sync data between a source and destination
 
+There are 4 types of workers in general.
+
 ## Worker Responsibilities
 
-The worker has 4 main responsibilities in its lifecycle. 
+The worker has the following responsibilities.
 
-1. Spin up any connector docker containers that are needed for the job. 
-2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 
-3. Shut down any connector docker containers that it started. 
-4. Return the output of the job. \(See [Airbyte Specification](airbyte-protocol.md) to understand the output of each worker type.\)
+1. Handle the process lifecycle for job-related processes. This includes starting, monitoring and shutting down processes.
+2. Facilitate message passing to or from various processes, if required. \(more on this [below](jobs.md#worker-types)\).
+3. Handle job-relation operational work such as:
+   1. Basic schema validation.
+   2. Returning job output, including any error messages. \(See [Airbyte Specification](airbyte-protocol.md) to understand the output of each worker type.\)
+   3. Telemetry work e.g. tracking the number and size of records within a sync.
 
-## Message Passing
+Conceptually, **the worker contains the complexity of all non-connector job operations**. This lets each connector be as simple as possible.
+
+### Worker Types
 
 There are 2 flavors of workers: 
 
-1. There are workers that interact with a single connector \(e.g. spec, check, discover\) 
-2. There are workers that interact with 2 connectors \(e.g. sync, reset\)
+1. **Synchronous Job Worker** - Workers that interact with a single connector \(e.g. spec, check, discover\).
 
-In the first case, the worker is generally extracting data from the connector and reporting it back to the scheduler. It does this by listening to STDOUT of the connector. In the second case, the worker is facilitating passing data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
+   The worker extracts data from the connector and reports it to the scheduler.  It does this by listening to the connector's STDOUT.
+   These jobs are synchronous as they are part of the configuration process and need to be immediately run to provide a good user experience. These are also all lightweight operations.
+
+2. **Asynchronous Job Worker** - Workers that interact with 2 connectors \(e.g. sync, reset\)
+
+   The worker passes data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
+   These jobs are asynchronous as they often are long-running resource-intensive processes. They are decoupled from the rest of the platform to simplify development and operation.
 
 For more information on the schema of the messages that are passed, refer to [Airbyte Specification](airbyte-protocol.md).
 
@@ -56,4 +67,3 @@ Jobs in the worker follow the following state machine.
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 [Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
-
