@@ -1,0 +1,58 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_airship/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_key'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_local() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+    step: "1d"
+    datetime_format: "%Y-%m-%d"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+  retriever:
+    type: SimpleRetriever
+    $options:
+      url_base: "https://go.airship.eu"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "events"
+      stream_cursor_field: "date"
+    primary_key: "name"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/api/reports/events?start={{ stream_slice['start_time'] or '2022-08-30' }}T00:00:00.000Z&end={{ stream_slice['start_time'] or '2022-08-30' }}T23:59:59.999Z"
+check:
+  type: CheckStream
+  stream_names: ["events"]
