@@ -30,7 +30,7 @@ The worker has the following responsibilities.
    2. Returning job output, including any error messages. \(See [Airbyte Specification](airbyte-protocol.md) to understand the output of each worker type.\)
    3. Telemetry work e.g. tracking the number and size of records within a sync.
 
-Conceptually, **workers contain the complexity of all non-connector job operations**. This lets each connector be as simple as possible.
+Conceptually, **workers contain the complexity of all non-connector-related job operations**. This lets each connector be as simple as possible.
 
 ### Worker Types
 
@@ -72,9 +72,20 @@ Airbyte offers two deployment types. The underlying process implementations diff
 
 ### Container Orchestrator
 
+Workers being responsible for all non-connector-related job operations means multiple jobs are operationally dependent on a single worker process.
+
+There are two downsides to this:
+1. Any issues to the parent worker process affects all job processes launched by the worker.
+2. Unnecessary complexity of vertically scaling the worker process to deal with IO and processing requirements from multiple jobs.
+
+This gives us a potentially brittle system component that can be operationally tricky to manage. For example, since redeploying Airbyte terminates the worker processes, all running jobs are also terminated.
+
+The Container Orchestrator was introduced to solve this.
 
 
-## Configuration Workers
+The Container Orchestrator is not available for the Docker deployment yet. Users running Airbyte Docker should be aware of the above pitfalls.
+
+## Configuring Workers
 
 Details on configuring workers can be found [here](../operator-guides/configuring-airbyte.md).
 
