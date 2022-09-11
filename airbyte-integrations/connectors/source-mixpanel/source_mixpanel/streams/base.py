@@ -4,12 +4,13 @@
 
 import time
 from abc import ABC
-from datetime import date, datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from datetime import datetime, timedelta
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from pendulum import Date
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -32,9 +33,9 @@ class MixpanelStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
-        region: str = None,
-        start_date: Union[date, str] = None,
-        end_date: Union[date, str] = None,
+        region: str,
+        start_date: Date = None,
+        end_date: Date = None,
         date_window_size: int = 30,  # in days
         attribution_window: int = 0,  # in days
         select_properties_by_default: bool = True,
@@ -45,7 +46,7 @@ class MixpanelStream(HttpStream, ABC):
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
-        self.region = region if region else "US"
+        self.region = region
 
         super().__init__(authenticator=authenticator)
 
