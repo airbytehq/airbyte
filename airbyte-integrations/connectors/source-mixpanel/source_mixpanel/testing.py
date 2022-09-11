@@ -23,9 +23,8 @@ def adapt_streams_if_testing(func):
     Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
     so we're reducing amount of requests by, if `_testing` flag is set in config:
 
-    1. Take time range in only 1 month
-    2. Patch Funnels, so we download data only for one Funnel entity
-    3. Removing RPS limit for faster testing
+    1. Patch Funnels, so we download data only for one Funnel entity
+    2. Removing RPS limit for faster testing
     """
 
     @wraps(func)
@@ -46,6 +45,13 @@ def adapt_streams_if_testing(func):
 
 
 def adapt_validate_if_testing(func):
+    """
+    Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
+    so we're reducing amount of requests by, if `_testing` flag is set in config:
+
+    1. Take time range in only 1 month
+    """
+
     @wraps(func)
     def wrapper(self, config):
         config = func(self, config)
