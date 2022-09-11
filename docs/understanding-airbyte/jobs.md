@@ -78,7 +78,7 @@ There are two downsides to this:
 1. Any issues to the parent worker process affects all job processes launched by the worker.
 2. Unnecessary complexity of vertically scaling the worker process to deal with IO and processing requirements from multiple jobs.
 
-This gives us a potentially brittle system component that can be operationally tricky to manage. For example, since redeploying Airbyte terminates the worker processes, all running jobs are also terminated.
+This gives us a potentially brittle system component that can be operationally tricky to manage. For example, since redeploying Airbyte terminates all worker processes, all running jobs are also terminated.
 
 The Container Orchestrator was introduced to solve this.
 
