@@ -21,7 +21,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      api_key: "{{ config['auth_token'] }}"
+      token: "{{ config['api_key'] }}"
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
