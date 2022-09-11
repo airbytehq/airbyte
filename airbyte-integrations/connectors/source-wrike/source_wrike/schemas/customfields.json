@@ -18,7 +18,7 @@
       "type": ["null", "string"]
     },
     "sharedIds": {
-      "type": ["array"],
+      "type": "array",
       "items": {
         "type": "string"
       }
