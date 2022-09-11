@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "standard": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "hidden": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "customStatuses": {
-      "type": ["array", "null"],
+      "type": ["array"],
       "items": {
         "type": ["object", "null"],
         "properties": {
@@ -23,28 +23,28 @@
             "type": ["string"]
           },
           "name": {
-            "type": ["string", "null"]
+            "type": ["string"]
           },
           "standardName": {
-            "type": ["boolean", "null"]
+            "type": ["boolean"]
           },
           "color": {
             "type": ["string", "null"]
           },
           "standard": {
-            "type": ["string", "null"]
+            "type": ["string"]
           },
           "group": {
-            "type": ["string", "null"]
+            "type": ["string"]
           },
           "hidden": {
-            "type": ["string", "null"]
+            "type": ["string"]
           }
         }
       }
     },
     "title": {
-      "type": ["null", "string"]
+      "type": ["string"]
     }
   }
 }

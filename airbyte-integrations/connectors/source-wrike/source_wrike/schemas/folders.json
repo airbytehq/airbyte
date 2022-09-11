@@ -3,13 +3,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "scope": {
-      "type": ["null", "string"]
-    },
-    "customStatusId": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "createdDate": {
       "type": ["null", "string"],
@@ -21,8 +18,11 @@
         "type": ["string", "null"]
       }
     },
+    "space": {
+      "type": ["boolean"]
+    },
     "title": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "project": {
       "type": ["object", "null"],

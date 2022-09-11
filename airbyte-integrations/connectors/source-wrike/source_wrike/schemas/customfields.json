@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "accountId": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "type": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "title": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "spaceId": {
       "type": ["null", "string"]
     },
     "sharedIds": {
-      "type": ["array", "null"],
+      "type": ["array"],
       "items": {
-        "type": ["string", "null"]
+        "type": ["string"]
       }
     },
     "settings": {

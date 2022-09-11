@@ -15,10 +15,10 @@
       "type": "string"
     },
     "importance": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "scope": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "briefDescription": {
       "type": ["null", "string"]
@@ -27,16 +27,16 @@
       "type": ["null", "string"]
     },
     "customStatusId": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "permalink": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "priority": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "createdDate": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date-time"
     },
     "responsibleIds": {
@@ -78,15 +78,15 @@
       }
     },
     "dates": {
-      "type": ["object", "null"],
+      "type": ["object"],
       "properties": {
         "type": {
-          "type": ["string", "null"]
+          "type": ["string"]
         }
       }
     },
     "updatedDate": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date-time"
     }
   }
