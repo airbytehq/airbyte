@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "authorId": {
-      "type": ["string"]
+      "type": "string"
     },
     "text": {
-      "type": ["string"]
+      "type": "string"
     },
     "taskId": {
-      "type": ["string"]
+      "type": "string"
     },
     "createdDate": {
-      "type": ["string"],
+      "type": "string",
       "format": "date-time"
     },
     "updatedDate": {

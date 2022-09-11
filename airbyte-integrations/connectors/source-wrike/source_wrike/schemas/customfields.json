@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "accountId": {
-      "type": ["string"]
+      "type": "string"
     },
     "type": {
-      "type": ["string"]
+      "type": "string"
     },
     "title": {
-      "type": ["string"]
+      "type": "string"
     },
     "spaceId": {
       "type": ["null", "string"]
@@ -20,7 +20,7 @@
     "sharedIds": {
       "type": ["array"],
       "items": {
-        "type": ["string"]
+        "type": "string"
       }
     },
     "settings": {

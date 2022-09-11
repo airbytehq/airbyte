@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "scope": {
-      "type": ["string"]
+      "type": "string"
     },
     "createdDate": {
       "type": ["null", "string"],
@@ -19,10 +19,10 @@
       }
     },
     "space": {
-      "type": ["boolean"]
+      "type": "boolean"
     },
     "title": {
-      "type": ["string"]
+      "type": "string"
     },
     "project": {
       "type": ["object", "null"],

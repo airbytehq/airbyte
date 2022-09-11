@@ -3,48 +3,48 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "name": {
-      "type": ["string"]
+      "type": "string"
     },
     "standard": {
-      "type": ["string"]
+      "type": "string"
     },
     "hidden": {
-      "type": ["string"]
+      "type": "string"
     },
     "customStatuses": {
-      "type": ["array"],
+      "type": "array",
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string"]
+            "type": "string"
           },
           "name": {
-            "type": ["string"]
+            "type": "string"
           },
           "standardName": {
-            "type": ["boolean"]
+            "type": "boolean"
           },
           "color": {
             "type": ["string", "null"]
           },
           "standard": {
-            "type": ["string"]
+            "type": "string"
           },
           "group": {
-            "type": ["string"]
+            "type": "string"
           },
           "hidden": {
-            "type": ["string"]
+            "type": "string"
           }
         }
       }
     },
     "title": {
-      "type": ["string"]
+      "type": "string"
     }
   }
 }

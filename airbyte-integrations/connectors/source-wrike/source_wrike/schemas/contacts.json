@@ -3,39 +3,39 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "firstName": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "lastName": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "avatarUrl": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "timezone": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "locale": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "deleted": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
     },
     "type": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "profiles": {
-      "type": ["array", "null"],
+      "type": "array",
       "items": {
         "type": ["object", "null"],
         "properties": {
           "accountId": {
-            "type": ["string"]
+            "type": "string"
           },
           "role": {
-            "type": ["string"]
+            "type": "string"
           },
           "external": {
             "type": ["boolean", "null"]
