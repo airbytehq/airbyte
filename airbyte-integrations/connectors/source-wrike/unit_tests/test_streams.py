@@ -91,7 +91,6 @@ def test_request_headers(args):
 
 def test_http_method(args):
     stream = WrikeStream(**args)
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 
