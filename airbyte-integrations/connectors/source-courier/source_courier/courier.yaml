@@ -1,0 +1,139 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_courier/schemas/{{ options['name'] }}.json"
+  root_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  results_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: ["results"]
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://api.courier.com"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['auth_token'] }}"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    paginator:
+      type: NoPagination
+    record_selector:
+      $ref: "*ref(definitions.root_selector)"
+  cursor_paginator:
+    type: LimitPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_token_option:
+      field_name: cursor
+      inject_into: request_parameter
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response.paging.cursor }}"
+    # NOTE page_size and limit_option are required but Courier
+    # does not support the parameter at the time of this commit.
+    page_size: 50
+    limit_option:
+      field_name: page_size
+      inject_into: request_parameter
+  paginated_stream:
+    type: DeclarativeStream
+    $options:
+      name: "messages"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messages"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+      record_selector:
+        $ref: "*ref(definitions.results_selector)"
+
+  ## MESSAGES API ##
+  messages_stream:
+    $ref: "*ref(definitions.paginated_stream)"
+    $options:
+      name: "messages"
+      path: "/messages"
+  message_id_transformer:
+    type: AddFields
+    fields:
+      - path: ["message_id"]
+        value: "{{ stream_slice.id }}"
+  message_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.messages_stream)"
+        parent_key: id
+        stream_slice_field: id
+  message_stream:
+    $ref: "*ref(definitions.paginated_stream)"
+    type: DeclarativeStream
+    $options:
+      name: message
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messages/{{ stream_slice.id }}"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
+  message_history_stream:
+    type: DeclarativeStream
+    $options:
+      name: message_history
+    primary_key: id
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.results_selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messages/{{ stream_slice.id }}/history"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
+    transformations:
+      - $ref: "*ref(definitions.message_id_transformer)"
+  message_output_stream:
+    type: DeclarativeStream
+    $options:
+      name: message_output
+    primary_key: id
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.results_selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messages/{{ stream_slice.id }}/output"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
+    transformations:
+      - $ref: "*ref(definitions.message_id_transformer)"
+
+streams:
+  - "*ref(definitions.messages_stream)"
+  - "*ref(definitions.message_stream)"
+  - "*ref(definitions.message_history_stream)"
+  - "*ref(definitions.message_output_stream)"
+
+check:
+  type: CheckStream
+  stream_names: ["messages"]

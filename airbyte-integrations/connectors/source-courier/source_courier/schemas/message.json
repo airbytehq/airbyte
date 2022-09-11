@@ -1,0 +1,1271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/ContentMessage"
+    },
+    {
+      "$ref": "#/definitions/TemplateMessage"
+    }
+  ],
+  "definitions": {
+    "AudienceRecipient": {
+      "properties": {
+        "audience_id": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        }
+      },
+      "type": "object"
+    },
+    "ChannelClassification": {
+      "enum": ["direct_message", "email", "push"],
+      "type": "string"
+    },
+    "ContentMessage": {
+      "properties": {
+        "brand_id": {
+          "type": "string"
+        },
+        "channels": {
+          "$ref": "#/definitions/MessageChannels"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ElementalContent"
+            },
+            {
+              "$ref": "#/definitions/ElementalContentSugar"
+            }
+          ]
+        },
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MessageMetadata"
+        },
+        "providers": {
+          "$ref": "#/definitions/MessageProviders"
+        },
+        "routing": {
+          "$ref": "#/definitions/Routing"
+        },
+        "timeout": {
+          "$ref": "#/definitions/Timeout"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ListRecipient"
+            },
+            {
+              "$ref": "#/definitions/ListPatternRecipient"
+            },
+            {
+              "$ref": "#/definitions/AudienceRecipient"
+            },
+            {
+              "$ref": "#/definitions/UserRecipient"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/ListRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/ListPatternRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/AudienceRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/UserRecipient"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ElementalActionNode": {
+      "properties": {
+        "actionId": {
+          "type": "string"
+        },
+        "align": {
+          "enum": ["center", "full", "left", "right"],
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "content": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "if": {
+          "type": "string"
+        },
+        "locales": {
+          "additionalProperties": {
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "style": {
+          "enum": ["button", "link"],
+          "type": "string"
+        },
+        "type": {
+          "enum": ["action"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalChannelNode": {
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "elements": {
+          "items": {
+            "$ref": "#/definitions/ElementalNode"
+          },
+          "type": "array"
+        },
+        "if": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "raw": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["channel"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalContent": {
+      "properties": {
+        "brand": {},
+        "elements": {
+          "items": {
+            "$ref": "#/definitions/ElementalNode"
+          },
+          "type": "array"
+        },
+        "version": {
+          "enum": ["2022-01-01"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalContentSugar": {
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalDividerNode": {
+      "properties": {
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "color": {
+          "type": "string"
+        },
+        "if": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["divider"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalGroupNode": {
+      "properties": {
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "elements": {
+          "items": {
+            "$ref": "#/definitions/ElementalNode"
+          },
+          "type": "array"
+        },
+        "if": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["group"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalImageNode": {
+      "properties": {
+        "align": {
+          "enum": ["center", "full", "left", "right"],
+          "type": "string"
+        },
+        "altText": {
+          "type": "string"
+        },
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "href": {
+          "type": "string"
+        },
+        "if": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "src": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["image"],
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalMetaNode": {
+      "properties": {
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "if": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["meta"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalNode": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ElementalTextNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalMetaNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalChannelNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalImageNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalActionNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalDividerNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalGroupNode"
+        },
+        {
+          "$ref": "#/definitions/ElementalQuoteNode"
+        }
+      ]
+    },
+    "ElementalQuoteNode": {
+      "properties": {
+        "align": {
+          "enum": ["center", "full", "left", "right"],
+          "type": "string"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "content": {
+          "type": "string"
+        },
+        "if": {
+          "type": "string"
+        },
+        "locales": {
+          "additionalProperties": {
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "textStyle": {
+          "enum": ["h1", "h2", "subtext", "text"],
+          "type": "string"
+        },
+        "type": {
+          "enum": ["quote"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ElementalTextNode": {
+      "properties": {
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "content": {
+          "type": "string"
+        },
+        "format": {
+          "enum": ["markdown"],
+          "type": "string"
+        },
+        "if": {
+          "type": "string"
+        },
+        "locales": {
+          "additionalProperties": {
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "loop": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["text"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandColors": {
+      "properties": {
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": "string"
+        },
+        "tertiary": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandSettingsEmail": {
+      "properties": {
+        "footer": {
+          "properties": {
+            "content": {
+              "additionalProperties": true,
+              "properties": {},
+              "type": "object"
+            },
+            "inheritDefault": {
+              "type": "boolean"
+            },
+            "markdown": {
+              "type": "string"
+            },
+            "social": {
+              "$ref": "#/definitions/IBrandSettingsSocialPresence"
+            }
+          },
+          "type": "object"
+        },
+        "head": {
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "inheritDefault": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "header": {
+          "properties": {
+            "barColor": {
+              "type": "string"
+            },
+            "inheritDefault": {
+              "type": "boolean"
+            },
+            "logo": {
+              "properties": {
+                "href": {
+                  "type": "string"
+                },
+                "image": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "templateOverride": {
+          "$ref": "#/definitions/IBrandTemplateOverride"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandSettingsInApp": {
+      "properties": {
+        "borderRadius": {
+          "type": "string"
+        },
+        "colors": {
+          "properties": {
+            "invertButtons": {
+              "type": "boolean"
+            },
+            "invertHeader": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "disableMessageIcon": {
+          "type": "boolean"
+        },
+        "fontFamily": {
+          "type": "string"
+        },
+        "icons": {
+          "properties": {
+            "bell": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "placement": {
+          "enum": ["bottom", "left", "right", "top"],
+          "type": "string"
+        },
+        "preferences": {
+          "properties": {
+            "templateIds": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "widgetBackground": {
+          "properties": {
+            "bottomColor": {
+              "type": "string"
+            },
+            "topColor": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandSettingsSocialPresence": {
+      "properties": {
+        "facebook": {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "inheritDefault": {
+          "type": "boolean"
+        },
+        "instagram": {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "linkedin": {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "medium": {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "twitter": {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandSnippet": {
+      "properties": {
+        "format": {
+          "enum": ["handlebars"],
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandSnippets": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/IBrandSnippet"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandTemplate": {
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "blocksBackgroundColor": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "footer": {
+          "type": "string"
+        },
+        "head": {
+          "type": "string"
+        },
+        "header": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IBrandTemplateOverride": {
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "blocksBackgroundColor": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "footer": {
+          "type": "string"
+        },
+        "footerBackgroundColor": {
+          "type": "string"
+        },
+        "footerFullWidth": {
+          "type": "boolean"
+        },
+        "head": {
+          "type": "string"
+        },
+        "header": {
+          "type": "string"
+        },
+        "mjml": {
+          "$ref": "#/definitions/IBrandTemplate"
+        },
+        "width": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IPreference": {
+      "properties": {
+        "channel_preferences": {
+          "items": {
+            "properties": {
+              "channel": {
+                "$ref": "#/definitions/ChannelClassification"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/definitions/ISnoozeRule"
+          },
+          "type": "array"
+        },
+        "source": {
+          "enum": ["list", "recipient", "subscription"],
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/PreferenceStatus"
+        }
+      },
+      "type": "object"
+    },
+    "IPreferences": {
+      "additionalProperties": {
+        "$ref": "#/definitions/IPreference"
+      },
+      "type": "object"
+    },
+    "IProfilePreferences": {
+      "properties": {
+        "categories": {
+          "$ref": "#/definitions/IPreferences"
+        },
+        "notifications": {
+          "$ref": "#/definitions/IPreferences"
+        },
+        "templateId": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ISnoozeRule": {
+      "properties": {
+        "start": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["snooze"],
+          "type": "string"
+        },
+        "until": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ListPatternRecipient": {
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        },
+        "list_id": {
+          "type": "undefined"
+        },
+        "list_pattern": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "undefined"
+        }
+      },
+      "type": "object"
+    },
+    "ListRecipient": {
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        },
+        "list_id": {
+          "type": "string"
+        },
+        "list_pattern": {
+          "type": "undefined"
+        },
+        "user_id": {
+          "type": "undefined"
+        }
+      },
+      "type": "object"
+    },
+    "MessageChannelEmailOverride": {
+      "properties": {
+        "attachments": {
+          "items": {
+            "$ref": "#/definitions/Record<string,any>"
+          },
+          "type": "array"
+        },
+        "bcc": {
+          "type": "string"
+        },
+        "brand": {
+          "properties": {
+            "settings": {
+              "properties": {
+                "colors": {
+                  "$ref": "#/definitions/IBrandColors"
+                },
+                "email": {
+                  "$ref": "#/definitions/IBrandSettingsEmail"
+                }
+              },
+              "type": "object"
+            },
+            "snippets": {
+              "$ref": "#/definitions/IBrandSnippets"
+            }
+          },
+          "type": "object"
+        },
+        "cc": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "html": {
+          "type": "string"
+        },
+        "reply_to": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "tracking": {
+          "$ref": "#/definitions/TrackingOverride"
+        }
+      },
+      "type": "object"
+    },
+    "MessageChannelPushOverride": {
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "brand": {
+          "properties": {
+            "settings": {
+              "properties": {
+                "colors": {
+                  "$ref": "#/definitions/IBrandColors"
+                },
+                "inapp": {
+                  "$ref": "#/definitions/IBrandSettingsInApp"
+                }
+              },
+              "type": "object"
+            },
+            "snippets": {
+              "$ref": "#/definitions/IBrandSnippets"
+            }
+          },
+          "type": "object"
+        },
+        "click_action": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/Record<string,any>"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MessageChannels": {
+      "additionalProperties": {
+        "properties": {
+          "brand_id": {
+            "type": "string"
+          },
+          "if": {
+            "type": "string"
+          },
+          "metadata": {
+            "properties": {
+              "utm": {
+                "$ref": "#/definitions/UTM"
+              }
+            },
+            "type": "object"
+          },
+          "override": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/MessageChannelEmailOverride"
+              },
+              {
+                "$ref": "#/definitions/MessageChannelPushOverride"
+              }
+            ]
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "routing_method": {
+            "enum": ["all", "single"],
+            "type": "string"
+          },
+          "timeouts": {
+            "properties": {
+              "channel": {
+                "type": "number"
+              },
+              "provider": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "type": "object"
+    },
+    "MessageData": {
+      "type": "object"
+    },
+    "MessageMetadata": {
+      "properties": {
+        "event": {
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "utm": {
+          "$ref": "#/definitions/UTM"
+        }
+      },
+      "type": "object"
+    },
+    "MessageProviders": {
+      "additionalProperties": {
+        "properties": {
+          "if": {
+            "type": "string"
+          },
+          "override": {
+            "$ref": "#/definitions/Record<string,any>"
+          },
+          "timeouts": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "type": "object"
+    },
+    "PreferenceStatus": {
+      "enum": ["OPTED_IN", "OPTED_OUT", "REQUIRED"],
+      "type": "string"
+    },
+    "Record<string,any>": {
+      "type": "object"
+    },
+    "Routing": {
+      "properties": {
+        "channels": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RoutingStrategyChannel<Record<string,any>>"
+              },
+              {
+                "$ref": "#/definitions/RoutingStrategyProvider<Record<string,any>>_1"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "method": {
+          "enum": ["all", "single"],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RoutingStrategyChannel<Record<string,any>>": {
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/definitions/Record<string,any>"
+        },
+        "if": {
+          "type": "string"
+        },
+        "method": {
+          "enum": ["all", "single"],
+          "type": "string"
+        },
+        "providers": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RoutingStrategyProvider<Record<string,any>>"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RoutingStrategyProvider<Record<string,any>>": {
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/Record<string,any>"
+        },
+        "if": {
+          "type": "string"
+        },
+        "metadata": {
+          "properties": {
+            "utm": {
+              "$ref": "#/definitions/UTM"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RoutingStrategyProvider<Record<string,any>>_1": {
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/Record<string,any>"
+        },
+        "if": {
+          "type": "string"
+        },
+        "metadata": {
+          "properties": {
+            "utm": {
+              "$ref": "#/definitions/UTM"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TemplateMessage": {
+      "properties": {
+        "brand_id": {
+          "type": "string"
+        },
+        "channels": {
+          "$ref": "#/definitions/MessageChannels"
+        },
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MessageMetadata"
+        },
+        "providers": {
+          "$ref": "#/definitions/MessageProviders"
+        },
+        "routing": {
+          "$ref": "#/definitions/Routing"
+        },
+        "template": {
+          "type": "string"
+        },
+        "timeout": {
+          "$ref": "#/definitions/Timeout"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ListRecipient"
+            },
+            {
+              "$ref": "#/definitions/ListPatternRecipient"
+            },
+            {
+              "$ref": "#/definitions/AudienceRecipient"
+            },
+            {
+              "$ref": "#/definitions/UserRecipient"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/ListRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/ListPatternRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/AudienceRecipient"
+                  },
+                  {
+                    "$ref": "#/definitions/UserRecipient"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Timeout": {
+      "properties": {
+        "channel": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "criteria": {
+          "enum": ["delivered", "engaged", "no-escalation", "viewed"],
+          "type": "string"
+        },
+        "escalation": {
+          "type": "number"
+        },
+        "message": {
+          "type": "number"
+        },
+        "provider": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "TrackingOverride": {
+      "properties": {
+        "open": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "UTM": {
+      "properties": {
+        "campaign": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "medium": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "term": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserRecipient": {
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/MessageData"
+        },
+        "email": {
+          "type": "string"
+        },
+        "list_id": {
+          "type": "undefined"
+        },
+        "list_pattern": {
+          "type": "undefined"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "preferences": {
+          "$ref": "#/definitions/IProfilePreferences"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+}
