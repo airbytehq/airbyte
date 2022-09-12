@@ -2,204 +2,158 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from collections import OrderedDict
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-# Basic full refresh stream
-import requests
+from typing import Any, Iterable, Mapping, Optional, Union
+
 import zeep
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from netsuitesdk import NetSuiteConnection
 
 
-class NetsuiteSoapStream(HttpStream):
+class NetsuiteStream(HttpStream):
 
-    def __init__(self, nc: NetSuiteConnection, config: dict, concurrency_limit: int = 1):
-        self.config = config
-        super().__init__()
+    def __init__(self, config: dict):
+        self.netsuite_con = config["netsuite_con"]
 
-        self.nc = nc
+    primary_key = "internalId"
+    
+    @property
+    def url_base(self) -> str:
+        return "/"
+    
+    @property
+    def data_structure(self) -> str:
+        return "list"
 
-        self.concurrency_limit = concurrency_limit
-
-        self.entities_will_have_array_structure = ["VendorBill", "VendorPayment","JournalEntry", "ExpenseReport", "ExpenseCategories"]
-
-    url_base = "/"
-
-    @staticmethod
-    def as_serialized(data) -> Iterable[Mapping[str, Any]]:
-        return [zeep.helpers.serialize_object(_) for _ in data]
-
-    def is_entities_or_dicts_inside_list(self, data: list) -> bool:
-        if isinstance(data[0], OrderedDict):
-            return False
-        elif isinstance(data[0], list):
-            self.is_entities_or_dicts_inside_list(data[0])
-        return True
-
-    def compromise_structure(self, class_object: list, type_name: str) -> object:
-        if (
-            class_object[0].__class__.__name__ in self.entities_will_have_array_structure
-            or type_name in self.entities_will_have_array_structure
-            or not self.is_entities_or_dicts_inside_list(class_object)
-        ):
-            class_object = [class_object]
-
-        return class_object
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return self.name
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        _record_class = getattr(self.nc, self.name)
-        _records = list(_record_class.get_all_generator())
-        _records = self.compromise_structure(_records, _record_class.type_name)
-
-        return [self.as_serialized(record) for record in _records][0]
-
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield {}
+    
+    @staticmethod
+    def as_serialized(record) -> Iterable[Mapping[str, Any]]:
+        return [zeep.helpers.serialize_object(_) for _ in record]
+    
+    def get_stream(self, stream_name: str) -> Union[object, None]:
+        try:
+            # get stream object reference from NetsuiteConnection
+            return getattr(self.netsuite_con, stream_name)
+        except AttributeError:
+            self.logger.info(f"Stream `{stream_name}` is not available for NetsuiteConnection. Skipping...")
+            return None
+    
+    def fetch_records(self) -> Union[Iterable[Mapping[str, Any]], None]:
+        stream = self.get_stream(self.name)
+        if stream:
+            # prepare build-in generator for data fetch
+            records_producer = stream.get_all_generator()
+            # some streams return data as OrderedDict
+            if self.data_structure == "dict":
+                yield records_producer
+            else:
+                yield from records_producer
+        return None
+
+    def read_records(self, sync_mode: SyncMode, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in self.fetch_records():
+            yield from self.as_serialized(record)
 
 
-class Accounts(NetsuiteSoapStream):
-    name = "accounts"
-    primary_key = "internalId"
+class Accounts(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3739999.html"""
+    
+
+class BillingAccounts(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4779334000.html"""
+    
+
+class Classifications(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3741163.html"""
 
 
-class Classifications(NetsuiteSoapStream):
-    name = "classifications"
-    primary_key = "internalId"
+class Departments(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3742370.html"""
 
 
-class Departments(NetsuiteSoapStream):
-    name = "departments"
-    primary_key = "internalId"
+class Currencies(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3741577.html"""
+    
+    data_structure = "dict"
+    
+
+class Locations(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3747661.html"""
 
 
-class Currencies(NetsuiteSoapStream):
-    name = "currencies"
-    primary_key = "internalId"
+class VendorBills(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3694535.html"""
+    
+    data_structure = "dict"
+    
+
+class Vendors(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3767893.html"""
 
 
-class Locations(NetsuiteSoapStream):
-    name = "locations"
-    primary_key = "internalId"
+class VendorPayments(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3695867.html"""
+    
+    data_structure = "dict"
+    
+
+class Subsidiaries(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3754626.html"""
 
 
-class VendorBills(NetsuiteSoapStream):
-    name = "vendor_bills"
-    primary_key = "internalId"
+class JournalEntries(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3683608.html"""
+    
+    data_structure = "dict"
+    
+
+class Employees(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/preface_3714104131.html"""
 
 
-# class VendorCredits(NetsuiteSoapStream):
-#     primary_key = "internalId"
+class ExpenseCategories(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N913978.html"""
 
 
-class Vendors(NetsuiteSoapStream):
-    name = "vendors"
-    primary_key = "internalId"
+class ExpenseReports(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N908140.html"""
+    
+    data_structure = "dict"
+    
+
+class Folders(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3784601.html"""
 
 
-class VendorPayments(NetsuiteSoapStream):
-    name = "vendor_payments"
-    primary_key = "internalId"
+class Files(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3784054.html"""
 
 
-class Subsidiaries(NetsuiteSoapStream):
-    name = "subsidiaries"
-    primary_key = "internalId"
+class Customers(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3639940.html"""
 
 
-class JournalEntries(NetsuiteSoapStream):
-    name = "journal_entries"
-    primary_key = "internalId"
+class Projects(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/preface_3714107248.html"""
 
 
-class Employees(NetsuiteSoapStream):
-    name = "employees"
-    primary_key = "internalId"
+class Terms(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3767518.html"""
 
 
-class ExpenseCategories(NetsuiteSoapStream):
-    name = "expense_categories"
-    primary_key = "internalId"
+class TaxItems(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3755370.html"""
 
 
-class ExpenseReports(NetsuiteSoapStream):
-    name = "expense_reports"
-    primary_key = "internalId"
+class TaxGroups(NetsuiteStream):
+    """https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N3755021.html"""
 
-
-class Folders(NetsuiteSoapStream):
-    name = "folders"
-    primary_key = "internalId"
-
-
-class Files(NetsuiteSoapStream):
-    name = "files"
-    primary_key = "internalId"
-
-
-class Customers(NetsuiteSoapStream):
-    name = "customers"
-    primary_key = "internalId"
-
-
-class Projects(NetsuiteSoapStream):
-    name = "projects"
-    primary_key = "internalId"
-
-
-class Terms(NetsuiteSoapStream):
-    name = "terms"
-    primary_key = "internalId"
-
-
-class TaxItems(NetsuiteSoapStream):
-    name = "tax_items"
-    primary_key = "internalId"
-
-
-class TaxGroups(NetsuiteSoapStream):
-    name = "tax_groups"
-    primary_key = "internalId"
-
-
-# class BillingAccounts(NetsuiteSoapStream):
-#     primary_key = "internalId"
-
-
-# class CustomLists(NetsuiteSoapStream):
-#     primary_key = "internalId"
-
-
-# class CustomSegments(NetsuiteSoapStream):
-#     primary_key = "internalId"
-
-
-# class CustomRecords(NetsuiteSoapStream):
-#     primary_key = "internalId"
-
-
-# class CustomRecordTypes(NetsuiteSoapStream):
-#     primary_key = "internalId"
-
-# class Usages(NetsuiteSoapStream):
-#     primary_key = "internalId"

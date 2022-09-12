@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceNetsuiteSoap
+from .source import SourceNetsuite
 
-__all__ = ["SourceNetsuiteSoap"]
+__all__ = ["SourceNetsuite"]

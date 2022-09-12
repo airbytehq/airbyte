@@ -11,6 +11,15 @@
     },
     {
       "stream": {
+        "name": "billing_accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "classifications",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]

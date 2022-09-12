@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.56", "zeep==4.1.0", "netsuitesdk==2.13.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.56", "zeep==4.1.0", "netsuitesdk~=2.14.0"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

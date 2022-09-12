@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_netsuite import SourceNetsuiteSoap
+from source_netsuite import SourceNetsuite
 
 if __name__ == "__main__":
-    source = SourceNetsuiteSoap()
+    source = SourceNetsuite()
     launch(source, sys.argv[1:])

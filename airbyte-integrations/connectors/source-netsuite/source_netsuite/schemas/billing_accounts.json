@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "billingSchedule": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "cashSaleForm": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "class": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "string"],
+      "fomat": "date-time"
+    },
+    "currency": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "customer": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "customerDefault": {
+      "type": ["null", "boolean"]
+    },
+    "customFieldList": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "customField": {
+          "type": ["null", "object"],
+          "properties": {
+            "internalId": {
+              "type":["null", "string"]
+            },
+            "scriptId": {
+              "type":["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "customForm": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "department": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "frequency": {
+      "type": ["null", "string"]
+    },
+    "idNumber": {
+      "type": ["null", "string"]
+    },
+    "inactive": {
+      "type": ["null", "boolean"]
+    },
+    "invoiceForm": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "lastBillCycleDate": {
+      "type": ["null", "string"],
+      "fomat": "date-time"
+    },
+    "lastBillDate": {
+      "type": ["null", "string"],
+      "fomat": "date-time"
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "memo": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "nextBillCycleDate": {
+      "type": ["null", "string"],
+      "fomat": "date-time"
+    },
+    "startDate": {
+      "type": ["null", "string"],
+      "fomat": "date-time"
+    },
+    "subsidiary": {
+      "type": ["null", "object"],
+      "properties": {
+        "internalId": {
+          "type":["null", "string"]
+        },
+        "externalId": {
+          "type":["null", "string"]
+        },
+        "type": {
+          "type":["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
