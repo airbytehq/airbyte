@@ -12,6 +12,7 @@ public class IncrementalUtils {
 
   private static final String PROPERTIES = "properties";
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
