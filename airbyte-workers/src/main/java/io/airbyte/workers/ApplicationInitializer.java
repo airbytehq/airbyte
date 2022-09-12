@@ -45,6 +45,8 @@ import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +54,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -142,7 +145,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private String workspaceRoot;
   @Value("${temporal.cloud.namespace}")
   private String temporalCloudNamespace;
-  @Value("${data.sync.task.queue}")
+  @Value("${data.sync.task-queue}")
   private String syncTaskQueue;
 
   @Override
@@ -265,9 +268,12 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   }
 
   private void registerSync(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
-    final Worker syncWorker = factory.newWorker(syncTaskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
-    syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
-    syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
+    final Set<String> taskQueues = getSyncTaskQueue();
+    for(final String taskQueue : taskQueues) {
+      final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+      syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+      syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[]{}));
+    }
     log.info("Sync Workflow registered.");
   }
 
@@ -329,4 +335,15 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     return StringUtils.isNotEmpty(temporalCloudNamespace) ? temporalCloudNamespace : TemporalUtils.DEFAULT_NAMESPACE;
   }
 
+  /**
+   * Retrieve and parse the sync workflow task queue configuration.
+   *
+   * @return A set of Temporal task queues for the sync workflow.
+   */
+  private Set<String> getSyncTaskQueue() {
+    if (StringUtils.isEmpty(syncTaskQueue)) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(syncTaskQueue.split(",")).collect(Collectors.toSet());
+  }
 }
