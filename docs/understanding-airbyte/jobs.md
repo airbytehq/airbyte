@@ -85,7 +85,7 @@ The Container Orchestrator was introduced to solve this.
 #### Container Orchestrator
 When enabled, workers launch the Container Orchestrator process.
 
-This orchestrator process replaces the previous worker process. It now performs the [above listed responsibilities](#worker-responsibilities).
+The worker process delegates the [above listed responsibilities](#worker-responsibilities) to the orchestrator process.
 
 This decoupling introduces a new need for workers to track the orchestrator's, and the job's, state. This is done via a shared Cloud Storage store.
 
