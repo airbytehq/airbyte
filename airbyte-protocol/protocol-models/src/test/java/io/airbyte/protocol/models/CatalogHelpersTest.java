@@ -37,6 +37,9 @@ class CatalogHelpersTest {
   private static final String ITEMS = "items";
   private static final String SOME_ARRAY = "someArray";
   private static final String PROPERTIES = "properties";
+  private static final String USERS = "users";
+  private static final String COMPANIES_VALID = "companies_schema.json";
+  private static final String COMPANIES_INVALID = "companies_schema_invalid.json";
 
   @Test
   void testFieldToJsonSchema() {
@@ -105,17 +108,17 @@ class CatalogHelpersTest {
     final JsonNode schema1 = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final JsonNode schema2 = Jsons.deserialize(MoreResources.readResource("valid_schema2.json"));
     final AirbyteCatalog catalog1 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema1),
+        new AirbyteStream().withName(USERS).withJsonSchema(schema1),
         new AirbyteStream().withName("accounts").withJsonSchema(Jsons.emptyObject())));
     final AirbyteCatalog catalog2 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema2),
+        new AirbyteStream().withName(USERS).withJsonSchema(schema2),
         new AirbyteStream().withName("sales").withJsonSchema(Jsons.emptyObject())));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2);
     final List<StreamTransform> expectedDiff = Stream.of(
         StreamTransform.createAddStreamTransform(new StreamDescriptor().withName("sales")),
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
-        StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName("users"), new UpdateStreamTransform(Set.of(
+        StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName(USERS), new UpdateStreamTransform(Set.of(
             FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get(PROPERTIES).get("COD")),
             FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get(PROPERTIES).get("something2")),
             FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get(PROPERTIES).get("HKD")),
@@ -162,7 +165,7 @@ class CatalogHelpersTest {
   @Test
   void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
     CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
-        Jsons.deserialize(MoreResources.readResource("companies_schema.json"))).stream().collect(
+        Jsons.deserialize(MoreResources.readResource(COMPANIES_VALID))).stream().collect(
             () -> new HashMap<>(),
             CatalogHelpers::collectInHashMap,
             CatalogHelpers::combineAccumulator);
@@ -171,7 +174,7 @@ class CatalogHelpersTest {
   @Test
   void testGetFullyQualifiedFieldNamesWithTypesOnInvalidSchema() throws IOException {
     val resultField = CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
-        Jsons.deserialize(MoreResources.readResource("companies_schema_invalid.json"))).stream().collect(
+        Jsons.deserialize(MoreResources.readResource(COMPANIES_INVALID))).stream().collect(
             () -> new HashMap<>(),
             CatalogHelpers::collectInHashMap,
             CatalogHelpers::combineAccumulator);
@@ -185,12 +188,12 @@ class CatalogHelpersTest {
 
   @Test
   void testGetCatalogDiffWithInvalidSchema() throws IOException {
-    final JsonNode schema1 = Jsons.deserialize(MoreResources.readResource("companies_schema_invalid.json"));
-    final JsonNode schema2 = Jsons.deserialize(MoreResources.readResource("companies_schema.json"));
+    final JsonNode schema1 = Jsons.deserialize(MoreResources.readResource(COMPANIES_INVALID));
+    final JsonNode schema2 = Jsons.deserialize(MoreResources.readResource(COMPANIES_VALID));
     final AirbyteCatalog catalog1 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema1)));
+        new AirbyteStream().withName(USERS).withJsonSchema(schema1)));
     final AirbyteCatalog catalog2 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema2)));
+        new AirbyteStream().withName(USERS).withJsonSchema(schema2)));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2);
 
@@ -202,12 +205,12 @@ class CatalogHelpersTest {
 
   @Test
   void testGetCatalogDiffWithBothInvalidSchema() throws IOException {
-    final JsonNode schema1 = Jsons.deserialize(MoreResources.readResource("companies_schema_invalid.json"));
-    final JsonNode schema2 = Jsons.deserialize(MoreResources.readResource("companies_schema_invalid.json"));
+    final JsonNode schema1 = Jsons.deserialize(MoreResources.readResource(COMPANIES_INVALID));
+    final JsonNode schema2 = Jsons.deserialize(MoreResources.readResource(COMPANIES_INVALID));
     final AirbyteCatalog catalog1 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema1)));
+        new AirbyteStream().withName(USERS).withJsonSchema(schema1)));
     final AirbyteCatalog catalog2 = new AirbyteCatalog().withStreams(List.of(
-        new AirbyteStream().withName("users").withJsonSchema(schema2)));
+        new AirbyteStream().withName(USERS).withJsonSchema(schema2)));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2);
 

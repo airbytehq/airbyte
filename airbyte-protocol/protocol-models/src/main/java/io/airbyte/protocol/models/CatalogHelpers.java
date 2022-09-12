@@ -365,7 +365,7 @@ public class CatalogHelpers {
   static final JsonNode DUPLICATED_SCHEMA = Jsons.jsonNode("Duplicated Schema");
 
   @VisibleForTesting
-  static void collectInHashMap(final HashMap<List<String>, JsonNode> accumulator, final Pair<List<String>, JsonNode> value) {
+  static void collectInHashMap(final Map<List<String>, JsonNode> accumulator, final Pair<List<String>, JsonNode> value) {
     if (accumulator.containsKey(value.getKey())) {
       accumulator.put(value.getKey(), DUPLICATED_SCHEMA);
     } else {
@@ -374,7 +374,7 @@ public class CatalogHelpers {
   }
 
   @VisibleForTesting
-  static void combineAccumulator(final HashMap<List<String>, JsonNode> accumulatorLeft, final HashMap<List<String>, JsonNode> accumulatorRight) {
+  static void combineAccumulator(final Map<List<String>, JsonNode> accumulatorLeft, final Map<List<String>, JsonNode> accumulatorRight) {
     accumulatorRight.forEach((key, value) -> {
       if (accumulatorLeft.containsKey(key)) {
         accumulatorLeft.put(key, DUPLICATED_SCHEMA);
