@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.2.3
-Backward compatibility tests: improve `check_if_type_of_type_field_changed` to make it less radical when validating specs and allow `'str' -> ['str', 'another_str']` type changes.[#16429](https://github.com/airbytehq/airbyte/pull/16429/)
+Backward compatibility tests: improve `check_if_type_of_type_field_changed` to make it less radical when validating specs and allow `'str' -> ['str', '<another_type>']` type changes.[#16429](https://github.com/airbytehq/airbyte/pull/16429/)
 
 ## 0.2.2
 Backward compatibility tests: improve `check_if_cursor_field_was_changed` to make it less radical and allow stream addition to catalog.[#15835](https://github.com/airbytehq/airbyte/pull/15835/)
