@@ -99,6 +99,11 @@ Objects in the `engagements` stream can have one of the following types: `note`,
 HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 :::
 
+### New state strategy on Incremental streams
+
+Due to some data loss because an entity was updated during the synch, instead of updating the state by reading the latest record the state will be save with the initial synch time. With the proposed `state strategy`, it would capture all possible updated entities in incremental synch.
+
+
 ## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
@@ -129,6 +134,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.83  | 2022-09-01 | [16214](https://github.com/airbytehq/airbyte/pull/16214) | Update Tickets, fix missing properties and change how state is updated.                                                                        |
 | 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    | 
 | 0.1.81  | 2022-08-05 | [15354](https://github.com/airbytehq/airbyte/pull/15354) | Fix `Deals` stream schema                                                                                                                      |
 | 0.1.80  | 2022-08-01 | [15156](https://github.com/airbytehq/airbyte/pull/15156) | Fix 401 error while retrieving associations using OAuth                                                                                        |
