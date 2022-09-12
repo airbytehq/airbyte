@@ -130,4 +130,4 @@ If you are not satisfied with how transformations are applied on top of the appe
 
 ## Related tutorial
 
-For an in-depth hands-on deep-dive into incremental sync, see: [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization)
+For an in-depth hands-on deep-dive into incremental sync, see: [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).
