@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from airbyte_cdk.models import SyncMode
+
 
 # Basic full refresh stream
 class KustomerStream(HttpStream, ABC):
