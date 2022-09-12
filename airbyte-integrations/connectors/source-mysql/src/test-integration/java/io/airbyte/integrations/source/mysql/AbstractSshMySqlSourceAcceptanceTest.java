@@ -85,4 +85,8 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
 }
