@@ -1,6 +1,6 @@
 # worker
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
 
 Helm chart to deploy airbyte-worker
 
@@ -17,8 +17,10 @@ Helm chart to deploy airbyte-worker
 | affinity | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| env_vars | object | `{}` |  |
 | extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
+| extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
 | global.credVolumeOverride | string | `""` |  |
@@ -27,7 +29,6 @@ Helm chart to deploy airbyte-worker
 | global.database.secretName | string | `""` |  |
 | global.database.secretValue | string | `""` |  |
 | global.extraContainers | list | `[]` |  |
-| global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |
 | global.jobs.kube.main_container_image_pull_secret | string | `""` |  |
 | global.jobs.kube.nodeSelector | object | `{}` |  |
@@ -72,6 +73,7 @@ Helm chart to deploy airbyte-worker
 | replicaCount | int | `1` |  |
 | resources.limits | object | `{}` |  |
 | resources.requests | object | `{}` |  |
+| secrets | object | `{}` |  |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------
