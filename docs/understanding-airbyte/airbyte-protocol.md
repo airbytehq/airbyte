@@ -33,7 +33,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 | 0.1.1   | 2022-06-06 | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                              | Add a namespace in association with the stream name                              |
 | 0.1.0   | 2022-05-03 | [12458](https://github.com/airbytehq/airbyte/pull/12458) and [12581](https://github.com/airbytehq/airbyte/pull/12581) | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions |
 | 0.0.2   | 2021-11-15 | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                                | Support oAuth Connectors (internal)                                              |
-| 0.0.1   | 2021-11-19 | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                | Remove sub-JSONSchemas                                                           |
+| 0.0.1   | 2021-11-19 | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                | Remove sub-JSON Schemas                                                           |
 | 0.0.0   | 2020-11-18 | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                  | Initial version described via JSON Schema                                        |
 
 ## Actor Interface
