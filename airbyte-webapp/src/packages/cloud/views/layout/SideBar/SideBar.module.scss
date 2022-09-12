@@ -6,8 +6,10 @@
   cursor: pointer;
   display: block;
   height: 21px;
-  background-color: rgba(255, 255, 255, 0.2);
+  width: 100%;
+  border: 0;
   border-radius: 10px;
+  background-color: rgba(255, 255, 255, 20%);
   margin-top: 13px;
   padding: 0 8px;
   line-height: 21px;
@@ -17,4 +19,5 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   text-align: center;
+  outline: none;
 }

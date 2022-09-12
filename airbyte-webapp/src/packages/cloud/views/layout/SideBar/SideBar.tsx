@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
-import { useIntercom } from "react-use-intercom";
 
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
@@ -13,6 +12,7 @@ import { CreditsIcon } from "components/icons/CreditsIcon";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
@@ -51,58 +51,58 @@ const SideBar: React.FC = () => {
         </Link>
         <WorkspacePopout>
           {({ onOpen, value }) => (
-            <div className={styles.workspaceButton} onClick={onOpen}>
+            <button className={styles.workspaceButton} onClick={onOpen}>
               {value}
-            </div>
+            </button>
           )}
         </WorkspacePopout>
-        <div className={styles.menu}>
+        <ul className={styles.menu}>
           {workspace.displaySetupWizard ? (
-            <div>
+            <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <span className={styles.text}>
                   <FormattedMessage id="sidebar.onboarding" />
                 </span>
               </NavLink>
-            </div>
+            </li>
           ) : null}
-          <div>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.connections" />
               </span>
             </NavLink>
-          </div>
-          <div>
+          </li>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.sources" />
               </span>
             </NavLink>
-          </div>
-          <div>
+          </li>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.destinations" />
               </span>
             </NavLink>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
-      <div className={styles.menu}>
-        <div>
+      <ul className={styles.menu}>
+        <li>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
             <CreditsIcon />
             <span className={styles.text}>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </span>
           </NavLink>
-        </div>
-        <div>
+        </li>
+        <li>
           <SidebarDropdownMenu
             options={[
               {
@@ -136,8 +136,8 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.resources" />
             </span>
           </SidebarDropdownMenu>
-        </div>
-        <div>
+        </li>
+        <li>
           <SidebarDropdownMenu
             options={[
               {
@@ -159,8 +159,8 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.support" />
             </span>
           </SidebarDropdownMenu>
-        </div>
-        <div>
+        </li>
+        <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <IfFeatureEnabled feature={FeatureItem.AllowUpdateConnectors}>
               <React.Suspense fallback={null}>
@@ -172,8 +172,8 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.settings" />
             </span>
           </NavLink>
-        </div>
-      </div>
+        </li>
+      </ul>
     </nav>
   );
 };

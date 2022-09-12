@@ -24,7 +24,6 @@ interface MenuItemButton {
 }
 
 export const SidebarDropdownMenu: React.FC<{
-  children: React.ReactNode;
   options?: Array<MenuItemLink | MenuItemButton>;
 }> = ({ children, options }) => {
   function menuItem(active: boolean, item: MenuItemLink | MenuItemButton): React.ReactNode {

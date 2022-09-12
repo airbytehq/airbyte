@@ -47,53 +47,53 @@ const SideBar: React.FC = () => {
         <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
-        <div className={styles.menu}>
+        <ul className={styles.menu}>
           {workspace.displaySetupWizard ? (
-            <div>
+            <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <span className={styles.text}>
                   <FormattedMessage id="sidebar.onboarding" />
                 </span>
               </NavLink>
-            </div>
+            </li>
           ) : null}
-          <div>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.connections" />
               </span>
             </NavLink>
-          </div>
-          <div>
+          </li>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.sources" />
               </span>
             </NavLink>
-          </div>
-          <div>
+          </li>
+          <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
               <span className={styles.text}>
                 <FormattedMessage id="sidebar.destinations" />
               </span>
             </NavLink>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
-      <div className={styles.menu}>
-        <div>
+      <ul className={styles.menu}>
+        <li>
           <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
             <span className={styles.text}>
               <FormattedMessage id="sidebar.update" />
             </span>
           </a>
-        </div>
-        <div>
+        </li>
+        <li>
           <SidebarDropdownMenu
             options={[
               {
@@ -121,8 +121,8 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.resources" />
             </span>
           </SidebarDropdownMenu>
-        </div>
-        <div>
+        </li>
+        <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <React.Suspense fallback={null}>
               <NotificationIndicator />
@@ -132,13 +132,13 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.settings" />
             </span>
           </NavLink>
-        </div>
+        </li>
         {config.version ? (
-          <div>
+          <li>
             <Version primary />
-          </div>
+          </li>
         ) : null}
-      </div>
+      </ul>
     </nav>
   );
 };
