@@ -217,7 +217,7 @@
 - name: RabbitMQ
   destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
   dockerRepository: airbyte/destination-rabbitmq
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
   icon: pulsar.svg
   releaseStage: alpha
