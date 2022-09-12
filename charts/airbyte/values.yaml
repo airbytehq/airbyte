@@ -43,6 +43,7 @@ global:
     ##  logs.externalMinio.enabled Switch to enable or disable an external Minio instance
     ##  logs.externalMinio.host External Minio Host
     ##  logs.externalMinio.port External Minio Port
+    ##  logs.externalMinio.endpoint Fully qualified hostname for s3-compatible storage
     externalMinio:
       enabled: false
       host: localhost
