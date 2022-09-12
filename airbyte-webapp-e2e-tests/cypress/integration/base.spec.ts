@@ -10,9 +10,7 @@ describe("Error handling view", () => {
 
     cy.visit("/");
 
-    cy.get("div")
-      .contains("Version mismatch between 0.0.1-ci and 0.0.2-ci.")
-      .should("exist");
+    cy.get("div").contains("Version mismatch between 0.0.1-ci and 0.0.2-ci.").should("exist");
   });
 
   it("Shows Server Unavailable page", () => {
@@ -23,8 +21,6 @@ describe("Error handling view", () => {
 
     cy.visit("/");
 
-    cy.get("div")
-      .contains("Cannot reach server. The server may still be starting up.")
-      .should("exist");
+    cy.get("div").contains("Cannot reach server. The server may still be starting up.").should("exist");
   });
 });

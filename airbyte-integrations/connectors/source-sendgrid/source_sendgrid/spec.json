@@ -15,9 +15,9 @@
       },
       "start_time": {
         "title": "Start time",
-        "type": "integer",
-        "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
-        "examples": [1558359837],
+        "type": ["integer", "string"],
+        "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
+        "examples": ["2021-12-12", "2021-02-01 13:30:00", "2020-07-18T13:30:00.000Z", "2020-07-18 13:30:00+02:00"],
         "order": 1
       }
     }

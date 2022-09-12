@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'java-library'
 }
@@ -92,8 +94,8 @@ task copyInitSql(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyInitSql)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyInitSql
+}
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
