@@ -32,7 +32,6 @@ function useGetJobService() {
 
 export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
-  console.log(`listParams: ${JSON.stringify(listParams)}`);
   const result = useQuery(
     jobsKeys.list(listParams.configId, listParams.includingJobId, listParams.pagination),
     () => service.list(listParams),
