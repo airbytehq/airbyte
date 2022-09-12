@@ -43,6 +43,9 @@
     .arrow {
       transform: rotate(-0deg);
     }
+
+    height: unset;
+    padding: 12px 0;
   }
 
   &.failed {

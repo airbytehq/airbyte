@@ -1,5 +1,8 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
 .textContainer {
-  margin: 4px 0 0 0;
+  margin: 4px 0 0;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
@@ -14,9 +17,9 @@
 .text {
   display: inline-block;
   padding: 0 5px;
-  background: #f8f8fa;
-  border: 1px solid #e8e8ed;
-  border-radius: 4px;
+  background: colors.$grey-50;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-xs;
   margin-right: 8px;
   margin-bottom: 6px;
   white-space: nowrap;

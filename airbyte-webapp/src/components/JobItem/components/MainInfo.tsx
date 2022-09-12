@@ -90,7 +90,9 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
               {!streamsToReset && (
                 <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
               )}
-              {streamsToReset && <ResetStreamsDetails names={streamsToReset.map((stream) => stream.name)} />}
+              {streamsToReset && (
+                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset.map((stream) => stream.name)} />
+              )}
             </>
           )}
         </div>
