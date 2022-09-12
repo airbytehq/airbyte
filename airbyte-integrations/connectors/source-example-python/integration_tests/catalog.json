@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stock_prices",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "date"
+        ],
+        "json_schema": {
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
+            },
+            "stock_ticker": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "cursor_field": ["date"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
