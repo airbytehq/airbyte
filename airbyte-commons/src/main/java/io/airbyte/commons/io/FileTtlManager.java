@@ -75,7 +75,8 @@ public class FileTtlManager {
       }
     });
     sb.append("---\n");
-    LOGGER.info(sb.toString());
+    final String toLog = sb.toString();
+    LOGGER.info(toLog);
   }
 
 }
