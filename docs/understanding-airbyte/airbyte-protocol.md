@@ -751,6 +751,9 @@ AirbyteLogMessage:
     message:
       description: "log message"
       type: string
+    stack_trace:
+      description: "an optional stack trace if the log message corresponds to an exception"
+      type: string
 ```
 
 ## AirbyteTraceMessage
