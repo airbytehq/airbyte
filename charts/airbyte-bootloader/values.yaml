@@ -8,9 +8,7 @@
 global:
   serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
-  extraContainers: []
   secretName: ""
-  extraContainers: []
   database:
     secretName: ""
     secretValue: ""
@@ -33,12 +31,7 @@ image:
 ##
 podAnnotations: {}
 
-## bootloader.nodeSelector [object] Node labels for pod assignment
-## Ref: https://kubernetes.io/docs/user-guide/node-selection/
-##
-nodeSelector: {}
-
-## bootloader.containerSecurityContext Security context for the container
+##  containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
 ##    runAsNonRoot: true
@@ -70,21 +63,10 @@ resources:
   ##    cpu: 200m
   ##    memory: 1Gi
   limits: {}
-  ## Examples:
   ## requests:
   ##    memory: 256Mi
   ##    cpu: 250m
   requests: {}
-
-## @param bootloader.nodeSelector [object] Node labels for pod assignment
-## Ref: https://kubernetes.io/docs/user-guide/node-selection/
-##
-nodeSelector: {}
-
-## @param bootloader.tolerations [array] Tolerations for worker pod assignment.
-## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-##
-tolerations: []
 
 ##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
@@ -133,14 +115,6 @@ extraEnv: []
 ##   DATABASE_PASSWORD: strong-password
 ##   DATABASE_USER: my-db-user
 secrets: {}
-
-## @param bootloader.extraVolumeMounts [array] Additional volumeMounts for bootloader container(s).
-## Examples (when using `bootloader.containerSecurityContext.readOnlyRootFilesystem=true`):
-## extraVolumeMounts:
-##   - name: tmpdir
-##     mountPath: /tmp
-##
-extraVolumeMounts: []
 
 ##  extraContainer [array] Additional container for server pod(s)
 ## Example:
