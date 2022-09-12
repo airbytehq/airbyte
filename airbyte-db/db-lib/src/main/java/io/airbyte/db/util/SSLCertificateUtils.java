@@ -26,6 +26,7 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ public class SSLCertificateUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(SSLCertificateUtils.class);
   private static final String PKCS_12 = "PKCS12";
   private static final String X509 = "X.509";
+  private static final Random RANDOM = new SecureRandom();
   public static final String KEYSTORE_ENTRY_PREFIX = "ab_";
   public static final String KEYSTORE_FILE_NAME = KEYSTORE_ENTRY_PREFIX + "keystore_";
   public static final String KEYSTORE_FILE_TYPE = ".p12";
@@ -47,7 +49,7 @@ public class SSLCertificateUtils {
       throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
     final FileSystem fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault());
     final Path pathToStore = fs.getPath(Objects.toString(directory, ""));
-    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + SecureRandom.getInstanceStrong().nextInt() + KEYSTORE_FILE_TYPE);
+    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + RANDOM.nextInt() + KEYSTORE_FILE_TYPE);
     final OutputStream os = Files.newOutputStream(pathToFile);
     keyStore.store(os, keyStorePassword.toCharArray());
     assert (Files.exists(pathToFile) == true);

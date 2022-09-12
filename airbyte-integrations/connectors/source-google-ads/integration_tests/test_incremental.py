@@ -35,7 +35,7 @@ GAP_DAYS = 14
 
 def test_incremental_sync(config, configured_catalog):
     today = pendulum.now().date()
-    start_date = today.subtract(months=2)
+    start_date = today.subtract(months=3)
     config["start_date"] = start_date.to_date_string()
 
     google_ads_client = SourceGoogleAds()

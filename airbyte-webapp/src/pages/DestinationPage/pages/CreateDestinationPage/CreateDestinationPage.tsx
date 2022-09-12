@@ -6,6 +6,7 @@ import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
@@ -14,9 +15,10 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { DestinationForm } from "./components/DestinationForm";
 
 export const CreateDestinationPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.DESTINATION_NEW);
+
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { mutateAsync: createDestination } = useCreateDestination();
 

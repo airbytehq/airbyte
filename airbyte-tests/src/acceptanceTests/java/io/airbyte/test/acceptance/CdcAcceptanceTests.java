@@ -505,6 +505,7 @@ class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private void assertDestinationMatches(final String streamName, final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers)
       throws Exception {
     final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, streamName));

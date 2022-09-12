@@ -6,6 +6,8 @@ metadata:
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-weight: "-1"
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
@@ -17,10 +19,9 @@ data:
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   DB_DOCKER_MOUNT: airbyte_db
-  FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
-  INTERNAL_API_HOST: {{ .Release.Name }}-server-svc:{{ .Values.server.service.port }}
+  INTERNAL_API_HOST: {{ .Release.Name }}-airbyte-server-svc:{{ .Values.server.service.port }}
 {{- if $.Values.global.jobs.kube.annotations }}
   JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
 {{- end }}
@@ -49,15 +50,17 @@ data:
   TEMPORAL_HOST: {{ .Release.Name }}-temporal:{{ .Values.temporal.service.port }}
   TEMPORAL_WORKER_PORTS: 9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,9038,9039,9040
   TRACKING_STRATEGY: segment
-  WEBAPP_URL: http://{{ .Release.Name }}-webapp:{{ .Values.webapp.service.port }}
+  WEBAPP_URL: http://{{ .Release.Name }}-airbyte-webapp-svc:{{ .Values.webapp.service.port }}
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
-  METRIC_CLIENT: ""
-  OTEL_COLLECTOR_ENDPOINT: ""
+  METRIC_CLIENT: {{ .Values.global.metrics.metricClient | default "" | quote }}
+  OTEL_COLLECTOR_ENDPOINT: {{ .Values.global.metrics.otelCollectorEndpoint | default "" | quote }}
   ACTIVITY_MAX_ATTEMPT: ""
   ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: ""
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
   USE_STREAM_CAPABLE_STATE: "true"
+  CONTAINER_ORCHESTRATOR_ENABLED: {{ .Values.worker.containerOrchestrator.enabled | quote }}
+  CONTAINER_ORCHESTRATOR_IMAGE: {{ .Values.worker.containerOrchestrator.image | quote }}
 {{- end }}

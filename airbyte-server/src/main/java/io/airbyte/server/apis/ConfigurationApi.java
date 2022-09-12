@@ -42,8 +42,6 @@ import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.HealthCheckRead;
-import io.airbyte.api.model.generated.ImportRead;
-import io.airbyte.api.model.generated.ImportRequestBody;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
@@ -86,7 +84,6 @@ import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
-import io.airbyte.api.model.generated.UploadRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
@@ -843,33 +840,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
     return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
-  }
-
-  // ARCHIVES
-
-  @Override
-  public File exportArchive() {
-    return execute(archiveHandler::exportData);
-  }
-
-  @Override
-  public ImportRead importArchive(final File archiveFile) {
-    return execute(() -> archiveHandler.importData(archiveFile));
-  }
-
-  @Override
-  public File exportWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> archiveHandler.exportWorkspace(workspaceIdRequestBody));
-  }
-
-  @Override
-  public UploadRead uploadArchiveResource(final File archiveFile) {
-    return execute(() -> archiveHandler.uploadArchiveResource(archiveFile));
-  }
-
-  @Override
-  public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
-    return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
   }
 
   @Override

@@ -5,7 +5,7 @@
     "title": "Open Weather Spec",
     "type": "object",
     "required": ["appid", "lat", "lon"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "lat": {
         "title": "Latitude",

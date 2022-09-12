@@ -4,23 +4,18 @@ kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "airbyte.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    helm.sh/chart: {{ include "airbyte.chart" . }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+    {{- include "airbyte.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      airbyte: server
+      {{- include "airbyte.selectorLabels" . | nindent 6 }}
   strategy:
     type: Recreate # Needed due to volume claims
   template:
     metadata:
       labels:
-        airbyte: server
+        {{- include "airbyte.selectorLabels" . | nindent 8 }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
@@ -30,7 +25,7 @@ spec:
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
-          {{- printf "- name: %s" .name | nindent 2 }}
+          {{- printf "- name: %s" .name | nindent 8 }}
         {{- end }}
       {{- end }}
       {{- if .Values.nodeSelector }}
@@ -44,7 +39,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-server-container
-        image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "server.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
@@ -61,8 +56,8 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
+              name: {{ .Values.global.database.secretName | default (printf "%s-airbyte-secrets" .Release.Name ) }}
+              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -146,13 +141,13 @@ spec:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-minio
-              key: root-user
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_ACCESS_KEY
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-minio
-              key: root-password
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
         {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
@@ -242,23 +237,26 @@ spec:
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
         volumeMounts:
-        {{- if eq .Values.deploymentMode "oss" }}
+        {{- if eq .Values.global.deploymentMode "oss" }}
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
         {{- end }}
 
         {{- if .Values.extraVolumeMounts }}
-  {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
+          {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        {{- if .Values.global.extraVolumeMounts }}
+          {{ toYaml .Values.global.extraVolumeMounts | nindent 8 }}
         {{- end }}
       {{- if .Values.extraContainers }}
-      {{ toYaml .Values.extraContainers | indent 8 }}
+        {{ toYaml .Values.extraContainers | indent 6 }}
       {{- end }}
       {{- if .Values.global.extraContainers }}
-      {{ toYaml .Values.global.extraContainers | indent 8 }}
+        {{ toYaml .Values.global.extraContainers | indent 6 }}
       {{- end }}
       volumes:
-      {{- if eq .Values.deploymentMode "oss" }}
+      {{- if eq .Values.global.deploymentMode "oss" }}
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}

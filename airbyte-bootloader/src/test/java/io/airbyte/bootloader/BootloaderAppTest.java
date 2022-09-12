@@ -128,7 +128,7 @@ class BootloaderAppTest {
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.4.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
