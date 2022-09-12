@@ -60,7 +60,7 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
   };
 
   const getBasicScheduleValue = (value: ConnectionScheduleData, form: FormikProps<FormikConnectionFormValues>) => {
-    const scheduleType = form.values.scheduleType;
+    const { scheduleType } = form.values;
 
     if (scheduleType === ConnectionScheduleType.basic) {
       return value.basicSchedule;
