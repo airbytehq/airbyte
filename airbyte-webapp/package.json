@@ -137,10 +137,10 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json}": [
+    "src/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix"
     ],
-    "src/**/*.{css,scss,md}": [
+    "src/**/*.{css,scss,md,json}": [
       "prettier --write"
     ],
     "src/**/*.{css,scss}": [
