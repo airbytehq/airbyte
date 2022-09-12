@@ -6,9 +6,9 @@ import selectEvent from "react-select-event";
 import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
-import { ServiceForm } from "views/Connector/ServiceForm";
+import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
+import { ServiceForm, ServiceFormProps } from "views/Connector/ServiceForm";
 
-import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "./types";
 
@@ -376,6 +376,71 @@ describe("Service Form", () => {
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },
       ]);
+    });
+  });
+
+  describe("conditionally render form submit button", () => {
+    const renderServiceForm = (props: ServiceFormProps) =>
+      render(<ServiceForm {...props} formValues={{ name: "test-name", serviceType: "test-service-type" }} />);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const onSubmitClb = () => {};
+    const connectorDefSpec = {
+      connectionSpecification: schema,
+      sourceDefinitionId: "test-service-type",
+      documentationUrl: "",
+    };
+
+    it("should render <CreateControls /> if connector is selected", async () => {
+      const { getByText } = await renderServiceForm({
+        selectedConnectorDefinitionSpecification:
+          // @ts-expect-error Partial objects for testing
+          connectorDefSpec as DestinationDefinitionSpecificationRead,
+        formType: "destination",
+        availableServices: [],
+        onSubmit: onSubmitClb,
+      });
+      expect(getByText(/Set up destination/)).toBeInTheDocument();
+    });
+
+    it("should not render <CreateControls /> if connector is not selected", async () => {
+      const { container } = await renderServiceForm({
+        selectedConnectorDefinitionSpecification: undefined,
+        formType: "destination",
+        availableServices: [],
+        onSubmit: onSubmitClb,
+      });
+
+      const submitBtn = container.querySelector('button[type="submit"]');
+
+      expect(submitBtn).toBeNull();
+    });
+
+    it("should render <EditControls /> if connector is selected", async () => {
+      const { getByText } = await renderServiceForm({
+        selectedConnectorDefinitionSpecification:
+          // @ts-expect-error Partial objects for testing
+          connectorDefSpec as DestinationDefinitionSpecificationRead,
+        formType: "destination",
+        availableServices: [],
+        onSubmit: onSubmitClb,
+        isEditMode: true,
+      });
+
+      expect(getByText(/Save changes and test/)).toBeInTheDocument();
+    });
+
+    it("should render <EditControls /> if connector is not selected", async () => {
+      const { container } = await renderServiceForm({
+        selectedConnectorDefinitionSpecification: undefined,
+        formType: "destination",
+        availableServices: [],
+        onSubmit: onSubmitClb,
+        isEditMode: true,
+      });
+
+      const submitBtn = container.querySelector('button[type="submit"]');
+
+      expect(submitBtn).toBeInTheDocument();
     });
   });
 });
