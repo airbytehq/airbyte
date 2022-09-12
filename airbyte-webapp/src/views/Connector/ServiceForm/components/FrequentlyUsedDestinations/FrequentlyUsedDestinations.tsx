@@ -10,7 +10,7 @@ import styles from "./FrequentlyUsedDestinations.module.scss";
 export interface FrequentlyUsedDestinationsProps {
   propertyPath: string;
   destinations: DestinationConnectorCard[];
-  onDestinationSelect: ((id: string) => void) | undefined;
+  onDestinationSelect?: (id: string) => void;
   isLoading?: boolean;
 }
 
