@@ -41,7 +41,7 @@ def get_json_schema(self):
 
 ## Type transformation
 
-It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema \(e.g. when data is stored in a SQL database, you can't put CHAT type into INTEGER column\). In the case of changes to API output \(which is almost guaranteed to happen over time\) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
+It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema \(e.g. when data is stored in a SQL database, you can't put CHAR type into INTEGER column\). In the case of changes to API output \(which is almost guaranteed to happen over time\) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
 
 To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have this transform configuration available. It is \_disabled_ by default and can be configured per stream within a source connector.
 

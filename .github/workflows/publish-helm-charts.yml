@@ -56,7 +56,7 @@ jobs:
       - name: "Helm package"
         shell: bash
         run: |
-          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker")
+          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
           for val in ${StringArray[@]}; do
             cd ./airbyte/charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
             helm package ./airbyte/charts/${val} -d airbyte-oss  --version ${{ needs.generate-semantic-version.outputs.next-version }}

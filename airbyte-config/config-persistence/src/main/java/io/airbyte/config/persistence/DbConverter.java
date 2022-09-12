@@ -100,6 +100,7 @@ public class DbConverter {
         .withSourceType(record.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
             : Enums.toEnum(record.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
         .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
+        .withProtocolVersion(record.get(ACTOR_DEFINITION.PROTOCOL_VERSION, String.class))
         .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
         .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
         .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
@@ -121,6 +122,7 @@ public class DbConverter {
         .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
         .withName(record.get(ACTOR_DEFINITION.NAME))
         .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
+        .withProtocolVersion(record.get(ACTOR_DEFINITION.PROTOCOL_VERSION, String.class))
         .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
         .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
         .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))

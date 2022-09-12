@@ -4,8 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -85,7 +84,7 @@ class JobNotifierTest {
     when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(getWorkspace());
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId())).thenReturn(WORKSPACE_ID);
-    when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
+    when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString(), anyLong())).thenReturn(true);
 
     jobNotifier.failJob("JobNotifierTest was running", job);
     final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
@@ -94,7 +93,8 @@ class JobNotifierTest {
         "destination-test",
         String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
             formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
-        String.format("http://localhost:8000/workspaces/%s/connections/%s", WORKSPACE_ID, job.getScope()));
+        String.format("http://localhost:8000/workspaces/%s/connections/%s", WORKSPACE_ID, job.getScope()),
+        job.getId());
 
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", UUID.fromString(job.getScope()));

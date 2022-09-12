@@ -119,6 +119,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT
             - name: S3_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:
@@ -210,6 +230,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_ENABLED
+            - name: CONTAINER_ORCHESTRATOR_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONTAINER_ORCHESTRATOR_IMAGE
             - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
               valueFrom:
                 configMapKeyRef:

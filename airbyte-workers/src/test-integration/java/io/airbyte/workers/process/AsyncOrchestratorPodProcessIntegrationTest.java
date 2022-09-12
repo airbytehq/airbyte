@@ -31,7 +31,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @Disabled
@@ -95,12 +96,14 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         Path.of("/"));
   }
 
-  @Test
-  public void test() throws InterruptedException {
-    final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+  @ValueSource(strings = {"IfNotPresent", " Always"})
+  @ParameterizedTest
+  public void testAsyncOrchestratorPodProcess(final String pullPolicy) throws InterruptedException {
 
+    final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final var mainContainerInfo = new KubeContainerInfo("airbyte/container-orchestrator:dev", pullPolicy);
     // make kubepodinfo
-    final var kubePodInfo = new KubePodInfo("default", podName);
+    final var kubePodInfo = new KubePodInfo("default", podName, mainContainerInfo);
 
     // another activity issues the request to create the pod process -> here we'll just create it
     final var asyncProcess = new AsyncOrchestratorPodProcess(
@@ -109,7 +112,6 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         kubernetesClient,
         null,
         null,
-        "airbyte/container-orchestrator:dev",
         null,
         true);
 
@@ -137,6 +139,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     assertEquals(0, exitValue);
     assertTrue(output.isPresent());
     assertEquals("expected output", output.get());
+
   }
 
   @AfterAll

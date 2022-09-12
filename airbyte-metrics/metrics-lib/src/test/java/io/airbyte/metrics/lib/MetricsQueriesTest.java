@@ -24,6 +24,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
@@ -49,6 +50,10 @@ public class MetricsQueriesTest {
 
   private static final String USER = "user";
   private static final String PASS = "hunter2";
+  private static final String SRC = "src";
+  private static final String DEST = "dst";
+  private static final String DISPLAY_NAME = "should not error out or return any result if not applicable";
+  private static final String CONN = "conn";
 
   private static final UUID SRC_DEF_ID = UUID.randomUUID();
   private static final UUID DST_DEF_ID = UUID.randomUUID();
@@ -104,15 +109,15 @@ public class MetricsQueriesTest {
       // create src and dst
       configDb.transaction(
           ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
-              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
+              .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
               .execute());
       final var res = configDb.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
       assertEquals(List.of(ReleaseStage.beta, ReleaseStage.generally_available), res);
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, UUID.randomUUID(), UUID.randomUUID()));
       assertEquals(0, res.size());
@@ -137,8 +142,8 @@ public class MetricsQueriesTest {
       // create src and dst
       configDb.transaction(
           ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
-              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
+              .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
               .execute());
       final var connId = UUID.randomUUID();
       // create connection
@@ -146,7 +151,7 @@ public class MetricsQueriesTest {
           ctx -> ctx
               .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
                   CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
-              .values(connId, NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true)
+              .values(connId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
               .execute());
       // create job
       final var jobId = 1L;
@@ -158,7 +163,7 @@ public class MetricsQueriesTest {
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var missingJobId = 100000L;
       final var res = configDb.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, missingJobId));
@@ -181,8 +186,8 @@ public class MetricsQueriesTest {
       final var dstId = UUID.randomUUID();
       configDb.transaction(
           ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
-              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
+              .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
               .execute());
       final UUID activeConnectionId = UUID.randomUUID();
       final UUID inactiveConnectionId = UUID.randomUUID();
@@ -190,8 +195,8 @@ public class MetricsQueriesTest {
           ctx -> ctx
               .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.STATUS, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID,
                   CONNECTION.DESTINATION_ID, CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
-              .values(activeConnectionId, StatusType.active, NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true)
-              .values(inactiveConnectionId, StatusType.inactive, NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true)
+              .values(activeConnectionId, StatusType.active, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
+              .values(inactiveConnectionId, StatusType.inactive, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
               .execute());
 
       // non-pending jobs
@@ -284,7 +289,7 @@ public class MetricsQueriesTest {
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       configDb.transaction(
           ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
@@ -331,7 +336,7 @@ public class MetricsQueriesTest {
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       configDb.transaction(
           ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
@@ -370,16 +375,16 @@ public class MetricsQueriesTest {
           ctx -> ctx
               .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
                   ACTOR.TOMBSTONE)
-              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
-              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
+              .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
               .execute());
 
       configDb.transaction(
           ctx -> ctx
               .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
                   CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
               .execute());
 
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
@@ -401,18 +406,18 @@ public class MetricsQueriesTest {
           ctx -> ctx
               .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
                   ACTOR.TOMBSTONE)
-              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
-              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
+              .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
               .execute());
 
       configDb.transaction(
           ctx -> ctx
               .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
                   CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.deprecated)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.inactive)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.deprecated)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.inactive)
               .execute());
 
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
@@ -434,15 +439,15 @@ public class MetricsQueriesTest {
           ctx -> ctx
               .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
                   ACTOR.TOMBSTONE)
-              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
-              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
+              .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
               .execute());
 
       configDb.transaction(
           ctx -> ctx
               .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
                   CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
-              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
               .execute());
 
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
@@ -450,7 +455,7 @@ public class MetricsQueriesTest {
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
       assertEquals(0, res.size());
@@ -554,10 +559,111 @@ public class MetricsQueriesTest {
     }
 
     @Test
-    @DisplayName("should not error out or return any result if not applicable")
+    @DisplayName(DISPLAY_NAME)
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
       assertEquals(0, res.size());
+    }
+
+  }
+
+  @Nested
+  class AbnormalJobsInLastDay {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+      configDb.transaction(ctx -> ctx.truncate(CONNECTION).cascade().execute());
+    }
+
+    @Test
+    @DisplayName("should return correct number for abnormal jobs")
+    void shouldCountInJobsWithMissingRun() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var connectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(connectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 6, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+              .execute());
+
+      // Jobs running in prior day will not be counted
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(5, ChronoUnit.HOURS), updateAt, syncConfigType)
+              .execute());
+
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      assertEquals(1, abnormalConnectionResult);
+    }
+
+    @Test
+    @DisplayName("normal jobs should not be counted")
+    void shouldNotCountNormalJobsInAbnormalMetric() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var inactiveConnectionId = UUID.randomUUID();
+      final var activeConnectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(inactiveConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.inactive, updateAt, updateAt)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+                  CONNECTION.UPDATED_AT)
+              .values(activeConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+                  JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(1L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt,
+                  syncConfigType)
+              .execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+              .values(2L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt,
+                  syncConfigType)
+              .execute());
+
+      final var totalConnectionResult = configDb.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = configDb.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      assertEquals(0, abnormalConnectionResult);
     }
 
   }

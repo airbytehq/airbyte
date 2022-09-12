@@ -137,6 +137,10 @@
           "host": {
             "type": "string",
             "path_in_connector_config": ["host"]
+          },
+          "role": {
+            "type": "string",
+            "path_in_connector_config": ["role"]
           }
         }
       },

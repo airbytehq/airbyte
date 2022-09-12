@@ -2,18 +2,20 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class SingleSlice(StreamSlicer):
+@dataclass
+class SingleSlice(StreamSlicer, JsonSchemaMixin):
     """Stream slicer returning only a single stream slice"""
 
-    def __init__(self, **options):
-        pass
+    options: InitVar[Mapping[str, Any]]
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass
@@ -21,7 +23,7 @@ class SingleSlice(StreamSlicer):
     def get_stream_state(self) -> StreamState:
         return {}
 
-    def request_params(
+    def get_request_params(
         self,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
@@ -29,7 +31,7 @@ class SingleSlice(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(
+    def get_request_headers(
         self,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
@@ -37,7 +39,7 @@ class SingleSlice(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(
+    def get_request_body_data(
         self,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
@@ -45,7 +47,7 @@ class SingleSlice(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(
+    def get_request_body_json(
         self,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,

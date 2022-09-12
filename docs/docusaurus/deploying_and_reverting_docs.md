@@ -2,9 +2,9 @@
 
 ![docs are fun](../assets/docs/docs.jpg)
 
-Docusaurus has a strange deployment pattern.  Luckily that pattern is abstracted away from you.
+We use Github Pages for hosting this docs website, and Docusaurus as the docs framework. Docusaurus has a strange deployment pattern.  Luckily that pattern is abstracted away from you.
 
-If you were looking for the contribution guide [check this doc out](contributing_to_docs.md)
+The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. 
 
 Docs will deploy from whatever branch you are in. You will probably want to deploy from master, but that is at your discretion.
 
@@ -14,7 +14,6 @@ You will need a github ssh key, the tool will properly tell you if you don't hav
 At it's simplest just open the airbyte repo and run `./tools/bin/deploy_docusaurus`
 
 A typical deployment will look like this
-
 
 ```bash
 cd airbyte
@@ -34,3 +33,6 @@ cd airbyte
 git checkout $SOME_OLDER_BRANCH
 ./tools/bin/deploy_docusaurus
 ```
+
+Automating this process via CI is currently not easy because we push to a [dedicated repo hosting the Github pages](https://airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet.
+

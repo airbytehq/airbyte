@@ -40,13 +40,15 @@ import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;
@@ -158,7 +160,7 @@ public class JobConverter {
     return new AttemptStats()
         .bytesEmitted(totalStats.getBytesEmitted())
         .recordsEmitted(totalStats.getRecordsEmitted())
-        .stateMessagesEmitted(totalStats.getStateMessagesEmitted())
+        .stateMessagesEmitted(totalStats.getSourceStateMessagesEmitted())
         .recordsCommitted(totalStats.getRecordsCommitted());
   }
 
@@ -167,7 +169,11 @@ public class JobConverter {
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
         .map(StandardSyncSummary::getStreamStats)
-        .orElse(Collections.emptyList());
+        .orElse(null);
+
+    if (streamStats == null) {
+      return null;
+    }
 
     return streamStats.stream()
         .map(streamStat -> new AttemptStreamStats()
@@ -175,7 +181,7 @@ public class JobConverter {
             .stats(new AttemptStats()
                 .bytesEmitted(streamStat.getStats().getBytesEmitted())
                 .recordsEmitted(streamStat.getStats().getRecordsEmitted())
-                .stateMessagesEmitted(streamStat.getStats().getStateMessagesEmitted())
+                .stateMessagesEmitted(streamStat.getStats().getSourceStateMessagesEmitted())
                 .recordsCommitted(streamStat.getStats().getRecordsCommitted())))
         .collect(Collectors.toList());
   }

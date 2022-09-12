@@ -2,9 +2,10 @@
 set -e
 
 # List of directories without "airbyte-" prefix.
-projectDir=( 
+projectDir=(
   "workers"
   "cli"
+  "cron"
   "webapp"
   "server"
   "temporal"
@@ -22,7 +23,7 @@ ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 
 # Iterate over all directories in list to build one by one.
-# metrics-reporter are exception due to wrong artifact naming 
+# metrics-reporter are exception due to wrong artifact naming
 for workdir in "${projectDir[@]}"
   do
     case $workdir in
@@ -42,6 +43,9 @@ for workdir in "${projectDir[@]}"
         artifactName=${workdir%/*}
         ;;
     esac
+
+    echo "Publishing airbyte/$artifactName..."
+    sleep 1
 
     docker buildx create --use --name $artifactName &&      \
     docker buildx build -t "airbyte/$artifactName:$VERSION" \

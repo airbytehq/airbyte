@@ -1,4 +1,4 @@
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -21,14 +21,12 @@ const useSyncActions = (): {
       })
     );
 
-    const frequency = getFrequencyConfig(connection.schedule);
-
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
     const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
     analyticsService.track(Namespace.CONNECTION, trackableAction, {
-      frequency: frequency?.type,
+      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,

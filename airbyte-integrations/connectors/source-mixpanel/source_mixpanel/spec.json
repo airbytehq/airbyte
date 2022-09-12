@@ -8,9 +8,9 @@
     "properties": {
       "api_secret": {
         "order": 0,
-        "title": "Project Token",
+        "title": "Project Secret",
         "type": "string",
-        "description": "Mixpanel project token. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-\">docs</a> for more information on how to obtain this.",
+        "description": "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\">docs</a> for more information on how to obtain this.",
         "airbyte_secret": true
       },
       "attribution_window": {

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: cron
+  template:
+    metadata:
+      labels:
+        airbyte: cron
+    spec:
+      containers:
+        - name: airbyte-cron-container
+          image: airbyte/cron
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_USER
+            - name: POSTGRES_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_PASSWORD
+            - name: DB
+              value: "postgresql"
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PORT
+            - name: POSTGRES_SEEDS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_HOST
+          volumeMounts:
+            - name: airbyte-volume-configs
+              mountPath: /configs
+            - name: gcs-log-creds-volume
+              mountPath: /secrets/gcs-log-creds
+              readOnly: true
+      volumes:
+        - name: airbyte-volume-configs
+          persistentVolumeClaim:
+            claimName: airbyte-volume-configs
+        - name: gcs-log-creds-volume
+          secret:
+            secretName: gcs-log-creds

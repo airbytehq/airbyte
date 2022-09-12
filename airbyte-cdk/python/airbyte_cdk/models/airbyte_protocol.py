@@ -278,6 +278,10 @@ class ConnectorSpecification(BaseModel):
         None,
         description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
     )
+    protocol_version: Optional[str] = Field(
+        None,
+        description="the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. ",
+    )
 
 
 class AirbyteStateMessage(BaseModel):

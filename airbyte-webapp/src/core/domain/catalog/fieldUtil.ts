@@ -4,8 +4,12 @@ import { NamespaceDefinitionType } from "../../request/AirbyteClient";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 
+type AirbyteJsonSchema = JSONSchema7Definition & {
+  airbyte_type?: string;
+};
+
 const traverseSchemaToField = (
-  jsonSchema: JSONSchema7Definition | undefined,
+  jsonSchema: AirbyteJsonSchema | undefined,
   key: string | undefined
 ): SyncSchemaField[] => {
   // For the top level we should not insert an extra object
@@ -13,7 +17,7 @@ const traverseSchemaToField = (
 };
 
 const traverseJsonSchemaProperties = (
-  jsonSchema: JSONSchema7Definition | undefined,
+  jsonSchema: AirbyteJsonSchema | undefined,
   key: string | undefined = "",
   path: string[] = []
 ): SyncSchemaField[] => {
@@ -38,6 +42,8 @@ const traverseJsonSchemaProperties = (
         (Array.isArray(jsonSchema?.type)
           ? jsonSchema?.type.find((t) => t !== "null") ?? jsonSchema?.type[0]
           : jsonSchema?.type) ?? "null",
+      airbyte_type: jsonSchema?.airbyte_type,
+      format: jsonSchema?.format,
     },
   ];
 };

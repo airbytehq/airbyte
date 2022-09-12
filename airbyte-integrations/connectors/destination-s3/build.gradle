@@ -32,7 +32,7 @@ dependencies {
     }
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
+    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
     testImplementation "org.mockito:mockito-inline:4.1.0"

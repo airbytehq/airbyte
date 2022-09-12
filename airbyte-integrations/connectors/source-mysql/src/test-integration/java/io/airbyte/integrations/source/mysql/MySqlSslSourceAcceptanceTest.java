@@ -6,13 +6,13 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -24,6 +24,13 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "STANDARD")
+            .build());
+
+    var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "required")
+        .build();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -32,18 +39,18 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put(JdbcUtils.SSL_MODE_KEY, sslMode)
+        .put("replication_method", replicationMethod)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?%s",
+        String.format("jdbc:mysql://%s:%s/%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText(),
-            String.join("&", SSL_PARAMETERS)),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 

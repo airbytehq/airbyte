@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from datetime import timedelta
 from unittest.mock import MagicMock
 
@@ -407,7 +408,7 @@ def export_response():
         {
             "event": "Viewed E-commerce Page",
             "properties": {
-                "time": 1623860880,
+                "time": 1623860880,  # 2021-06-16T16:28:00
                 "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
                 "$browser": "Chrome",
                 "$browser_version": "91.0.4472.101",
@@ -426,10 +427,26 @@ def test_export_stream(requests_mock, export_response):
 
     stream = Export(authenticator=MagicMock())
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
+
+
+def test_export_stream_request_params():
+    stream = Export(authenticator=MagicMock())
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_state = {"date": "2021-06-16T17:00:00"}
+
+    request_params = stream.request_params(stream_state=None, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
+    assert "where" in request_params
+    timestamp = int(datetime.datetime.fromisoformat("2021-06-16T17:00:00").timestamp())
+    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'

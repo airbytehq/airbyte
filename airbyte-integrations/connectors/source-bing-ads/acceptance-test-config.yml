@@ -14,7 +14,8 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-  # incremental test doesn't work if a single stream has multiple states
+      empty_streams: ["account_performance_report_hourly","ad_group_performance_report_hourly","ad_performance_report_hourly","campaign_performance_report_hourly","keyword_performance_report_hourly"]
+  # incremental test doesn"t work if a single stream has multiple states
   #incremental:
   #  - config_path: "secrets/config.json"
   #    configured_catalog_path: "integration_tests/configured_catalog.json"

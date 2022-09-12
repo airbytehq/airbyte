@@ -79,10 +79,15 @@ class MixpanelStream(HttpStream, ABC):
         for record in data:
             yield record
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        **kwargs,
+    ) -> Iterable[Mapping]:
 
         # parse the whole response
-        yield from self.process_response(response, **kwargs)
+        yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
         if self.reqs_per_hour_limit > 0:
             # we skip this block, if self.reqs_per_hour_limit = 0,

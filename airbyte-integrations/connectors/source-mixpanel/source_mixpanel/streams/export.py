@@ -4,7 +4,7 @@
 
 import json
 from datetime import datetime
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -149,3 +149,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        mapping = {"from_date": stream_slice["start_date"], "to_date": stream_slice["end_date"]}
+        if stream_state and "date" in stream_state:
+            mapping["where"] = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+        return mapping

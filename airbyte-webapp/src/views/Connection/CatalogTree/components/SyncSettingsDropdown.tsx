@@ -106,6 +106,7 @@ const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
       Option,
       Control: DropdownControl,
     }}
+    data-testid="syncSettingsDropdown"
     $withBorder
   />
 );

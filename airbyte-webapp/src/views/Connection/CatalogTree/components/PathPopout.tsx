@@ -1,33 +1,24 @@
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import styled from "styled-components";
 
 import { Popout } from "components";
+import { Tooltip } from "components/base/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
-import Tooltip from "./Tooltip";
+import styles from "./PathPopout.module.scss";
+import { PathPopoutButton } from "./PathPopoutButton";
 
 export function pathDisplayName(path: Path): string {
   return path.join(".");
 }
 
-const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
-  color: ${({ theme }) => theme.greyColor40};
-  margin-left: 6px;
-  transform: ${({ isOpen }) => isOpen && "rotate(180deg)"};
-  transition: 0.3s;
-  vertical-align: sub;
-`;
-
 export type IndexerType = null | "required" | "sourceDefined";
 
-type PathPopoutProps = {
+interface PathPopoutBaseProps {
   paths: Path[];
   pathType: "required" | "sourceDefined";
   placeholder?: React.ReactNode;
-} & (PathMultiProps | PathProps);
+}
 
 interface PathMultiProps {
   path?: Path[];
@@ -41,6 +32,8 @@ interface PathProps {
   isMulti?: false;
 }
 
+type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
+
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
     if (props.path) {
@@ -50,7 +43,11 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
           : pathDisplayName(props.path)
         : "";
 
-      return <>{text}</>;
+      return (
+        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+          {text}
+        </Tooltip>
+      );
     }
     return <>{"<sourceDefined>"}</>;
   }
@@ -81,11 +78,9 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       placeholder={props.placeholder}
       components={props.isMulti ? { MultiValue: () => null } : undefined}
       targetComponent={({ onOpen }) => (
-        <div onClick={onOpen}>
+        <PathPopoutButton items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} onClick={onOpen}>
           {text}
-          <Arrow icon={faSortDown} />
-          <Tooltip items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} />
-        </div>
+        </PathPopoutButton>
       )}
     />
   );

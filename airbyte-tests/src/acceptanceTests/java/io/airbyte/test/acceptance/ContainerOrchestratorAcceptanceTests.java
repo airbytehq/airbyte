@@ -56,6 +56,8 @@ import org.slf4j.MDC;
 class ContainerOrchestratorAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorAcceptanceTests.class);
+  private static final String AIRBYTE_WORKER = "airbyte-worker";
+  private static final String DEFAULT = "default";
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
@@ -119,10 +121,10 @@ class ContainerOrchestratorAcceptanceTests {
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
     LOGGER.info("Scaling down worker...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(0, true);
 
     LOGGER.info("Scaling up worker...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
 
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
 
@@ -156,8 +158,8 @@ class ContainerOrchestratorAcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(0, true);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
@@ -190,7 +192,7 @@ class ContainerOrchestratorAcceptanceTests {
     Thread.sleep(1000);
 
     LOGGER.info("Scale down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(0, true);
 
     LOGGER.info("Starting background cancellation request...");
     final var pool = Executors.newSingleThreadExecutor();
@@ -210,7 +212,7 @@ class ContainerOrchestratorAcceptanceTests {
     Thread.sleep(2000);
 
     LOGGER.info("Scaling up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
 
     LOGGER.info("Waiting for cancellation to go into effect...");
     assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());

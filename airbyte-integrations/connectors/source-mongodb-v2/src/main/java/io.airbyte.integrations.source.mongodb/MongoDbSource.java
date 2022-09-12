@@ -5,6 +5,15 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
+import static org.bson.BsonType.DATE_TIME;
+import static org.bson.BsonType.DECIMAL128;
+import static org.bson.BsonType.DOCUMENT;
+import static org.bson.BsonType.DOUBLE;
+import static org.bson.BsonType.INT32;
+import static org.bson.BsonType.INT64;
+import static org.bson.BsonType.OBJECT_ID;
+import static org.bson.BsonType.STRING;
+import static org.bson.BsonType.TIMESTAMP;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -53,6 +62,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String REPLICA_SET = "replica_set";
   private static final String AUTH_SOURCE = "auth_source";
   private static final String PRIMARY_KEY = "_id";
+  private static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
+      INT32, TIMESTAMP, INT64, DECIMAL128);
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -185,6 +196,15 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String cursorValue) {
     final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursorValue));
     return queryTable(database, columnNames, tableName, greaterComparison);
+  }
+
+  @Override
+  public boolean isCursorType(BsonType bsonType) {
+    // while reading from mongo primary key "id" is always added, so there will be no situation
+    // when we have no cursor field here, at least id could be used as cursor here.
+    // This logic will be used feather when we will implement part which will show only list of possible
+    // cursor fields on UI
+    return ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,

@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,6 +18,9 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -39,11 +43,14 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,6 +66,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +76,42 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+  public static final String SSL_MODE = "sslMode";
+
+  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
+  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
+  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
+  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
+  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
+  public static final String PARAM_MODE = "mode";
+  Pair<URI, String> caCertKeyStorePair;
+  Pair<URI, String> clientCertKeyStorePair;
+
+  public enum SslMode {
+
+    DISABLED("disable"),
+    ALLOWED("allow"),
+    PREFERRED("preferred", "prefer"),
+    REQUIRED("required", "require"),
+    VERIFY_CA("verify_ca", "verify-ca"),
+    VERIFY_IDENTITY("verify_identity", "verify-full");
+
+    public final List<String> spec;
+
+    SslMode(final String... spec) {
+      this.spec = Arrays.asList(spec);
+    }
+
+    public static Optional<SslMode> bySpec(final String spec) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.spec.contains(spec))
+          .findFirst();
+    }
+
+  }
+
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -78,8 +123,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected Collection<DataSource> dataSources = new ArrayList<>();
 
   public AbstractJdbcSource(final String driverClass,
-                            final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
-                            final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
+      final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
+      final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
@@ -93,7 +138,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
+      database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -123,10 +168,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
-        // retrieve column metadata from the database
-        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
-        // store essential column metadata to a Json object from the result set about each column
-        this::getColumnMetadata)
+            // retrieve column metadata from the database
+            connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
+            // store essential column metadata to a Json object from the result set about each column
+            this::getColumnMetadata)
         .stream()
         .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
@@ -147,16 +192,26 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields(extractCursorFields(fields))
             .build())
         .collect(Collectors.toList());
   }
 
+  private List<String> extractCursorFields(final List<JsonNode> fields) {
+    return fields.stream()
+        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
+        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
+        .collect(Collectors.toList());
+  }
+
   protected Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
-                                                           final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+      final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return isNotInternalSchema(jsonNode, internalSchemas);
@@ -164,7 +219,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
@@ -190,6 +245,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
         .build());
   }
 
@@ -214,13 +270,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-                                                          final List<TableInfo<CommonField<Datatype>>> tableInfos) {
+      final List<TableInfo<CommonField<Datatype>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(TableInfo::getName).collect(
         Collectors.toSet()));
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
+          connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -244,7 +300,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                   .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
+                    connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (final SQLException e) {
@@ -260,13 +316,18 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
+  public boolean isCursorType(final Datatype type) {
+    return sourceOperations.isCursorType(type);
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final String cursorField,
-                                                               final Datatype cursorFieldType,
-                                                               final String cursorValue) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final String cursorField,
+      final Datatype cursorFieldType,
+      final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -319,7 +380,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
     return database;
   }
 
@@ -345,7 +405,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @throws IllegalArgumentException
    */
   protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-                                                                             final Map<String, String> defaultParameters) {
+      final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -381,4 +441,85 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     dataSources.clear();
   }
 
+  /**
+   * Parses SSL related configuration and generates keystores to be used by connector
+   *
+   * @param config configuration
+   * @return map containing relevant parsed values including location of keystore or an empty map
+   */
+  public Map<String, String> parseSSLConfig(final JsonNode config) {
+    LOGGER.debug("source config: {}", config);
+
+    final Map<String, String> additionalParameters = new HashMap<>();
+    // assume ssl if not explicitly mentioned.
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
+        final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
+        additionalParameters.put(SSL_MODE,
+            SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
+        if (Objects.isNull(caCertKeyStorePair)) {
+          caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
+        }
+
+        if (Objects.nonNull(caCertKeyStorePair)) {
+          LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
+          try {
+            additionalParameters.putAll(Map.of(
+                TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
+                TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
+                TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+          } catch (final MalformedURLException e) {
+            throw new RuntimeException("Unable to get a URL for trust key store");
+          }
+
+        }
+
+        if (Objects.isNull(clientCertKeyStorePair)) {
+          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config);
+        }
+
+        if (Objects.nonNull(clientCertKeyStorePair)) {
+          LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
+          try {
+            additionalParameters.putAll(Map.of(
+                CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
+                CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
+                CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
+          } catch (final MalformedURLException e) {
+            throw new RuntimeException("Unable to get a URL for client key store");
+          }
+        }
+      } else {
+        additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
+      }
+    }
+    LOGGER.debug("additional params: {}", additionalParameters);
+    return additionalParameters;
+  }
+
+  /**
+   * Generates SSL related query parameters from map of parsed values.
+   *
+   * @apiNote Different connector may need an override for specific implementation
+   * @param sslParams
+   * @return SSL portion of JDBC question params or and empty string
+   */
+  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams) ? ""
+        : sslParams.entrySet()
+            .stream()
+            .map((entry) -> {
+              if (entry.getKey().equals(SSL_MODE)) {
+                return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
+              } else {
+                return entry.getKey() + EQUALS + entry.getValue();
+              }
+            })
+            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+  }
+
+  protected String toSslJdbcParam(final SslMode sslMode) {
+    // Default implementation
+    return sslMode.name();
+  }
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -44,6 +45,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
+
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
 
@@ -55,6 +58,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                        final WorkerEnvironment workerEnvironment,
                                        final LogConfigs logConfigs,
                                        final JobPersistence jobPersistence,
+                                       final AirbyteApiClient airbyteApiClient,
                                        final String airbyteVersion) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
@@ -65,6 +69,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -101,7 +106,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                   workerFactory,
                   inputSupplier,
                   new CancellationHandler.TemporalCancellationHandler(context),
-                  jobPersistence,
+                  airbyteApiClient,
                   airbyteVersion,
                   () -> context);
 

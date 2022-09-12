@@ -35,6 +35,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   private List<String> schemas;
 
@@ -75,13 +76,14 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     final Protocol protocol = config.has(JdbcUtils.ENCRYPTION_KEY)
         ? obtainConnectionProtocol(config.get(JdbcUtils.ENCRYPTION_KEY), additionalParameters)
         : Protocol.TCP;
-    String connectionString;
+    final String connectionString;
     if (config.has(CONNECTION_DATA)) {
-      JsonNode connectionData = config.get(CONNECTION_DATA);
+      final JsonNode connectionData = config.get(CONNECTION_DATA);
       final String connectionType = connectionData.has("connection_type") ? connectionData.get("connection_type").asText()
           : UNRECOGNIZED;
       connectionString = switch (connectionType) {
-        case SERVICE_NAME -> buildConnectionString(config, protocol.toString(), SERVICE_NAME.toUpperCase(), config.get(CONNECTION_DATA).get(SERVICE_NAME).asText());
+        case SERVICE_NAME -> buildConnectionString(config, protocol.toString(), SERVICE_NAME.toUpperCase(),
+            config.get(CONNECTION_DATA).get(SERVICE_NAME).asText());
         case SID -> buildConnectionString(config, protocol.toString(), SID.toUpperCase(), config.get(CONNECTION_DATA).get(SID).asText());
         default -> throw new IllegalArgumentException("Unrecognized connection type: " + connectionType);
       };
@@ -196,6 +198,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     return ";";
   }
 
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Source source = OracleSource.sshWrappedSource();
     LOGGER.info("starting source: {}", OracleSource.class);
@@ -203,7 +210,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     LOGGER.info("completed source: {}", OracleSource.class);
   }
 
-  private String buildConnectionString(JsonNode config, String protocol, String connectionTypeName, String connectionTypeValue) {
+  private String buildConnectionString(final JsonNode config, final String protocol, final String connectionTypeName, final String connectionTypeValue) {
     return String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(%s=%s)))",
         protocol,
@@ -212,4 +219,5 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         connectionTypeName,
         connectionTypeValue);
   }
+
 }

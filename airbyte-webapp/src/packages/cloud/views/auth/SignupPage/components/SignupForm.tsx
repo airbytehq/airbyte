@@ -1,5 +1,5 @@
 import { Field, FieldProps, Formik } from "formik";
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
@@ -7,6 +7,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { useExperiment } from "hooks/services/Experiment";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -20,16 +21,7 @@ interface FormValues {
   email: string;
   password: string;
   news: boolean;
-  security: boolean;
 }
-
-const SignupPageValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error").required("form.empty.error"),
-  password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
-  name: yup.string().required("form.empty.error"),
-  companyName: yup.string().required("form.empty.error"),
-  security: yup.boolean().oneOf([true], "form.empty.error"),
-});
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -138,39 +130,26 @@ export const NewsField: React.FC = () => {
   );
 };
 
-export const SecurityField: React.FC = () => {
-  const { formatMessage } = useIntl();
+export const Disclaimer: React.FC = () => {
   const config = useConfig();
-
   return (
-    <Field name="security">
-      {({ field, meta }: FieldProps<string>) => (
-        <CheckBoxControl
-          {...field}
-          onChange={(e) => field.onChange(e)}
-          checked={!!field.value}
-          checkbox
-          label={
-            <FormattedMessage
-              id="login.security"
-              values={{
-                terms: (terms: React.ReactNode) => (
-                  <Link $clear target="_blank" href={config.links.termsLink} as="a">
-                    {terms}
-                  </Link>
-                ),
-                privacy: (privacy: React.ReactNode) => (
-                  <Link $clear target="_blank" href={config.links.privacyLink} as="a">
-                    {privacy}
-                  </Link>
-                ),
-              }}
-            />
-          }
-          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-        />
-      )}
-    </Field>
+    <div className={styles.disclaimer}>
+      <FormattedMessage
+        id="login.disclaimer"
+        values={{
+          terms: (terms: React.ReactNode) => (
+            <Link $clear target="_blank" href={config.links.termsLink} as="a">
+              {terms}
+            </Link>
+          ),
+          privacy: (privacy: React.ReactNode) => (
+            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
+              {privacy}
+            </Link>
+          ),
+        }}
+      />
+    </div>
   );
 };
 
@@ -197,6 +176,25 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
 
+  const showName = !useExperiment("authPage.signup.hideName", false);
+  const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
+
+  const validationSchema = useMemo(() => {
+    const shape = {
+      email: yup.string().email("form.email.error").required("form.empty.error"),
+      password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
+      name: yup.string(),
+      companyName: yup.string(),
+    };
+    if (showName) {
+      shape.name = shape.name.required("form.empty.error");
+    }
+    if (showCompanyName) {
+      shape.companyName = shape.companyName.required("form.empty.error");
+    }
+    return yup.object().shape(shape);
+  }, [showName, showCompanyName]);
+
   return (
     <Formik<FormValues>
       initialValues={{
@@ -205,9 +203,8 @@ export const SignupForm: React.FC = () => {
         email: "",
         password: "",
         news: true,
-        security: false,
       }}
-      validationSchema={SignupPageValidationSchema}
+      validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
         signUp(values).catch((err) => {
           if (err instanceof FieldError) {
@@ -220,12 +217,14 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, values, status }) => (
+      {({ isValid, isSubmitting, status }) => (
         <Form>
-          <RowFieldItem>
-            <NameField />
-            <CompanyNameField />
-          </RowFieldItem>
+          {(showName || showCompanyName) && (
+            <RowFieldItem>
+              {showName && <NameField />}
+              {showCompanyName && <CompanyNameField />}
+            </RowFieldItem>
+          )}
 
           <FieldItem>
             <EmailField />
@@ -235,10 +234,9 @@ export const SignupForm: React.FC = () => {
           </FieldItem>
           <FieldItem>
             <NewsField />
-            <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+            <SignupButton isLoading={isSubmitting} disabled={!isValid} />
             {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
           </BottomBlock>
         </Form>

@@ -40,15 +40,15 @@ import org.testcontainers.utility.MountableFile;
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String NAMESPACE = "public";
+  protected static final String SLOT_NAME_BASE = "debezium_slot";
+  protected static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final String PUBLICATION = "publication";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
 
-  private PostgreSQLContainer<?> container;
-  private JsonNode config;
+  protected PostgreSQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -143,20 +143,20 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 

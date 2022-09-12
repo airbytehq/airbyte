@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
+import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -88,6 +90,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String TABLE_NAME_WITH_SPACES = "id and name";
   public static String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
+  public static String TABLE_NAME_WITHOUT_CURSOR_TYPE = "table_without_cursor_type";
+  public static String TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "table_with_null_cursor_type";
 
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
@@ -95,6 +99,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COL_FIRST_NAME = "first_name";
   public static String COL_LAST_NAME = "last_name";
   public static String COL_LAST_NAME_WITH_SPACE = "last name";
+  public static String COL_CURSOR = "cursor_field";
   public static Number ID_VALUE_1 = 1;
   public static Number ID_VALUE_2 = 2;
   public static Number ID_VALUE_3 = 3;
@@ -102,10 +107,15 @@ public abstract class JdbcSourceAcceptanceTest {
   public static Number ID_VALUE_5 = 5;
 
   public static String DROP_SCHEMA_QUERY = "DROP SCHEMA IF EXISTS %s CASCADE";
-  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
-  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
-  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL";
+  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL";
+  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK =
+      "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL";
 
+  public static String CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s bit NOT NULL);";
+  public static String INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(0);";
+  public static String CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20));";
+  public static String INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   public JsonNode config;
   public DataSource dataSource;
   public JdbcDatabase database;
@@ -168,7 +178,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected JdbcSourceOperations getSourceOperations() {
-    return new JdbcSourceOperations();
+    return getDefaultSourceOperations();
   }
 
   protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
@@ -212,7 +222,7 @@ public abstract class JdbcSourceAcceptanceTest {
         JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
-        JdbcUtils.getDefaultSourceOperations(),
+        getDefaultSourceOperations(),
         AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
@@ -314,6 +324,41 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
+  @Test
+  protected void testDiscoverWithNonCursorFields() throws Exception {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format(CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
+    });
+    final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
+    AirbyteStream stream =
+        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_TYPE)).findFirst().orElse(null);
+    assertNotNull(stream);
+    assertEquals(TABLE_NAME_WITHOUT_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
+    assertEquals(1, stream.getSupportedSyncModes().size());
+    assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
+  }
+
+  @Test
+  protected void testDiscoverWithNullableCursorFields() throws Exception {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format(CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE),
+              COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
+          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
+    });
+    final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
+    AirbyteStream stream =
+        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)).findFirst().orElse(null);
+    assertNotNull(stream);
+    assertEquals(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
+    assertEquals(1, stream.getSupportedSyncModes().size());
+    assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
+  }
+
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
@@ -338,7 +383,7 @@ public abstract class JdbcSourceAcceptanceTest {
     // add table and data to a separate schema.
     database.execute(connection -> {
       connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))",
+          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
               sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
