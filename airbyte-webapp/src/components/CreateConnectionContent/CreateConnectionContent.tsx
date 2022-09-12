@@ -2,7 +2,6 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Button, ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -13,25 +12,14 @@ import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnectionContent.module.scss";
 
-const SkipButton = styled.div`
-  margin-top: 6px;
-
-  & > button {
-    min-width: 239px;
-    margin-left: 9px;
-  }
-`;
-
 interface CreateConnectionContentProps {
-  additionBottomControls?: React.ReactNode;
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
@@ -41,7 +29,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,
-  additionBottomControls,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
@@ -104,10 +91,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard>
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
+        <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
       </ContentCard>
     );
@@ -120,7 +104,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       <ConnectionForm
         mode="create"
         connection={connection}
-        additionBottomControls={additionBottomControls}
         onDropDownSelect={onSelectFrequency}
         onSubmit={onSubmitConnectionStep}
         additionalSchemaControl={

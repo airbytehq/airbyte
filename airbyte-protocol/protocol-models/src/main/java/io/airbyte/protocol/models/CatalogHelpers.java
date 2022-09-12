@@ -287,7 +287,7 @@ public class CatalogHelpers {
   }
 
   private static boolean isObjectWithSubFields(final Field field) {
-    return field.getType() == JsonSchemaType.OBJECT && field.getSubFields() != null && !field.getSubFields().isEmpty();
+    return field.getType().equals(JsonSchemaType.OBJECT) && field.getSubFields() != null && !field.getSubFields().isEmpty();
   }
 
   public static StreamDescriptor extractStreamDescriptor(final AirbyteStream airbyteStream) {

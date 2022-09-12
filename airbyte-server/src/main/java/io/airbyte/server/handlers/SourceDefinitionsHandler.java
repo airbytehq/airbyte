@@ -24,6 +24,8 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -85,6 +87,7 @@ public class SourceDefinitionsHandler {
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
+          .protocolVersion(standardSourceDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardSourceDefinition))
           .releaseDate(getReleaseDate(standardSourceDefinition))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
@@ -201,6 +204,8 @@ public class SourceDefinitionsHandler {
       throws IOException {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
+    final AirbyteVersion airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+
     final UUID id = uuidSupplier.get();
     return new StandardSourceDefinition()
         .withSourceDefinitionId(id)
@@ -210,6 +215,7 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
@@ -231,6 +237,8 @@ public class SourceDefinitionsHandler {
         ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
         : currentSourceDefinition.getResourceRequirements();
 
+    final AirbyteVersion airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
@@ -239,6 +247,7 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(currentSourceDefinition.getTombstone())
         .withPublic(currentSourceDefinition.getPublic())
         .withCustom(currentSourceDefinition.getCustom())

@@ -5,9 +5,10 @@
     "plugin:jest/recommended",
     "prettier",
     "plugin:prettier/recommended",
-    "plugin:css-modules/recommended"
+    "plugin:css-modules/recommended",
+    "plugin:jsx-a11y/recommended"
   ],
-  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules"],
+  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -16,6 +17,7 @@
     }
   },
   "rules": {
+    "jsx-a11y/label-has-associated-control": "error",
     "curly": "warn",
     "css-modules/no-undef-class": ["error", { "camelCase": true }],
     "css-modules/no-unused-class": ["error", { "camelCase": true }],

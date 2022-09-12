@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -55,6 +56,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() throws Exception {
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD.call())
@@ -219,5 +221,11 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
 
 }

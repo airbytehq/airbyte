@@ -66,7 +66,6 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
           targetComponent,
           onOpen: toggleOpen,
         }}
-        autoFocus
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
