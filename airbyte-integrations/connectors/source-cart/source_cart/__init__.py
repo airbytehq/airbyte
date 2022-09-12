@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .source import SourceCart
+from .source import SourceCart, CentralAPIHeaderAuthenticator, CustomHeaderAuthenticator
 
-__all__ = ["SourceCart"]
+__all__ = ["SourceCart", "CentralAPIHeaderAuthenticator", "CustomHeaderAuthenticator"]

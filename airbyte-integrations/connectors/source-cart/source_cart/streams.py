@@ -10,7 +10,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_cart.source import CentralAPIHeaderAuthenticator, CustomHeaderAuthenticator
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 
 class CartStream(HttpStream, ABC):
@@ -20,17 +20,18 @@ class CartStream(HttpStream, ABC):
         self,
         start_date: str,
         end_date: str = None,
-        authenticator: Union[CustomHeaderAuthenticator, CentralAPIHeaderAuthenticator] = None,
+        authenticator: HttpAuthenticator = None,
         **kwargs,
     ):
+        super().__init__(**kwargs)
         self._start_date = start_date
         self._end_date = end_date
-        self.authenticator = authenticator
-        super().__init__(**kwargs)
+        self._authenticator = authenticator
+        
 
     @property
     def url_base(self) -> str:
-        return self.authenticator.url_base()
+        return self._authenticator.url_base()
 
     @property
     def data_field(self) -> str:
@@ -73,9 +74,9 @@ class CartStream(HttpStream, ABC):
             return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        auth_signature = {}
-        params = self.request_params(self, **kwargs)
-        extra_params = self.authenticator.extra_params(params)
+        extra_params = {}
+        params = self.request_params(**kwargs)
+        extra_params = self._authenticator.extra_params(self, params)
         return dict({"Cache-Control": "no-cache", "Content-Type": "application/json"}, **extra_params)
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -90,7 +91,6 @@ class CartStream(HttpStream, ABC):
         if next_page_token:
             params.update(next_page_token)
         return params
-
 
 
 class IncrementalCartStream(CartStream, ABC):

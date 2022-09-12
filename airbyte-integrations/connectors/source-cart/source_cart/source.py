@@ -63,10 +63,10 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
     def url_base(self) -> str:
         return "https://public.americommerce.com/api/v1/"
 
-    def extra_params(self, params):
-        return self.generate_auth_signature(self, params)
+    def extra_params(self, stream, params):
+        return self.generate_auth_signature(stream, params)
 
-    def generate_auth_signature(self, params) -> Mapping[str, Any]:
+    def generate_auth_signature(self, stream, params) -> Mapping[str, Any]:
         """
         How to build signature:
         1. build a string concatenated with:
@@ -75,13 +75,12 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
         2. Generate HMACSHA256 hash using this string as the input, and the provisioning user secret as the key
         3. Base64 this hash to be used as the final value in the header
         """
-        path_with_params = f"{self.path()}&{urllib.parse.encode(params)}"
-        msg = codecs.encode(f"GET&{path_with_params}&{self.authenticator.user_name}")
-        key = codecs.encode(self.authenticator.user_secret)
+        path_with_params = f"/api/v1/{stream.path()}?{urllib.parse.urlencode(params)}"
+        msg = codecs.encode(f"GET&{path_with_params}&{self.user_name}")
+        key = codecs.encode(self.user_secret)
         dig = hmac.new(key=key, msg=msg, digestmod=hashlib.sha256).digest()
         auth_signature = base64.b64encode(dig).decode()
-        return {"X-AC-PUB-Site-ID": self._site_id, "X-AC-PUB-User": self._user_name, "X-AC-PUB-Auth-Signature": auth_signature}
-
+        return {"X-AC-PUB-Site-ID": self.site_id, "X-AC-PUB-User": self.user_name, "X-AC-PUB-Auth-Signature": auth_signature}
 
 
 class SourceCart(AbstractSource):
@@ -129,14 +128,17 @@ class SourceCart(AbstractSource):
         credentials = config.get("credentials", {})
         auth_method = credentials.get("auth_type")
 
-        if auth_method == AuthMethod.CENTRAL_API_ROUTER:
+
+        if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
             authenticator = CentralAPIHeaderAuthenticator(
-                user_id=credentials["user"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
+                user_name=credentials["user_name"], 
+                user_secret=credentials["user_secret"],
+                site_id=credentials["site_id"]
             )
-        elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN:
+        elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
             authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
         else:
-            raise NotImplementedError("Authentication method not implemented.")
+            raise NotImplementedError(f"Authentication method: {auth_method} not implemented.")
 
         args = {
             "authenticator": authenticator,
