@@ -9365,7 +9365,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.13"
+- dockerImage: "airbyte/source-sendgrid:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -9384,11 +9384,16 @@
           order: 0
         start_time:
           title: "Start time"
-          type: "integer"
-          description: "Start time in timestamp integer format. Any data before this\
-            \ timestamp will not be replicated."
+          type:
+          - "integer"
+          - "string"
+          description: "Start time in ISO8601 format. Any data before this time point\
+            \ will not be replicated."
           examples:
-          - 1558359837
+          - "2021-12-12"
+          - "2021-02-01 13:30:00"
+          - "2020-07-18T13:30:00.000Z"
+          - "2020-07-18 13:30:00+02:00"
           order: 1
     supportsNormalization: false
     supportsDBT: false
