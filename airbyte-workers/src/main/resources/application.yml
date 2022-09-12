@@ -60,6 +60,8 @@ airbyte:
     plane:
       auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
   data:
+    sync:
+      task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
     plane:
       connection-ids-mvp: ${CONNECTION_IDS_FOR_MVP_DATA_PLANE:}
       service-account:

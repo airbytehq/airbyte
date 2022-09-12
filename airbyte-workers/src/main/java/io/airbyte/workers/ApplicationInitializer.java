@@ -142,6 +142,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private String workspaceRoot;
   @Value("${temporal.cloud.namespace}")
   private String temporalCloudNamespace;
+  @Value("${data.sync.task.queue}")
+  private String syncTaskQueue;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
@@ -263,7 +265,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   }
 
   private void registerSync(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+    final Worker syncWorker = factory.newWorker(syncTaskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
     syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Sync Workflow registered.");
