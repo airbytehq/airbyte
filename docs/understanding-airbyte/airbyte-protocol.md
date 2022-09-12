@@ -28,7 +28,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                          |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| 0.2.1   | 2022-09-09 | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                              | `AirbyteLogMessage.stack_trace` added                                            |
+| 0.3.0   | 2022-09-09 | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                              | `AirbyteLogMessage.stack_trace` added                                            |
 | 0.2.0   | 2022-06-10 | [13573](https://github.com/airbytehq/airbyte/pull/13573) and [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
 | 0.1.1   | 2022-06-06 | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                              | Add a namespace in association with the stream name                              |
 | 0.1.0   | 2022-05-03 | [12458](https://github.com/airbytehq/airbyte/pull/12458) and [12581](https://github.com/airbytehq/airbyte/pull/12581) | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions |
