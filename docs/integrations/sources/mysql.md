@@ -207,23 +207,20 @@ Starting with version 0.6.9, `replication_method` configuration parameter is sav
 ```
 
 After upgrading MySQL Source connector from 0.6.8 or older version to 0.6.9 or newer version you need to fix source configurations in the `actor` table
-in Airbyte database. To do so, you need to run the following two SQL queries:
+in Airbyte database. To do so, you need to run the following two SQL queries. Follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
+run SQL queries on Airbyte database.
 
-if you have connections with MySQL Source using _Standard_ replication method:
+If you have connections with MySQL Source using _Standard_ replication method, run this SQL:
 ```sql
 update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'STANDARD');
 ```
 
-if you have connections with MySQL Source using _Logicai Replication (CDC)_ method:
-
+If you have connections with MySQL Source using _Logicai Replication (CDC)_ method, run this SQL:
 ```sql
 update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'CDC');
 ```
-
-follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
-run SQL queries on Airbyte database.
 
 ## Changelog
 
