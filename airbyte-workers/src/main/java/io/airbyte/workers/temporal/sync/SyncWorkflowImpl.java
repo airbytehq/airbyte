@@ -29,21 +29,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 2;
 
-  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions",
-                        activityGeneratorBeanName = "multiCloudTemporalActivityStubGeneratorFunction",
-                        workflowVersionChangeId = "sync-workflow")
+  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions",
-                        activityGeneratorBeanName = "multiCloudTemporalActivityStubGeneratorFunction",
-                        workflowVersionChangeId = "sync-workflow")
+  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private NormalizationActivity normalizationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions",
-                        activityGeneratorBeanName = "multiCloudTemporalActivityStubGeneratorFunction",
-                        workflowVersionChangeId = "sync-workflow")
+  @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private DbtTransformationActivity dbtTransformationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions",
-                        activityGeneratorBeanName = "multiCloudTemporalActivityStubGeneratorFunction",
-                        workflowVersionChangeId = "sync-workflow")
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private PersistStateActivity persistActivity;
 
   @Override

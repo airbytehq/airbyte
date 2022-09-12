@@ -19,14 +19,6 @@ import java.lang.annotation.Target;
 public @interface TemporalActivityStub {
 
   /**
-   * The name of the singleton bean that holds the Temporal activity stub generator function used to
-   * create a new stub.
-   *
-   * @return The name of the singleton bean that holds the Temporal activity stub generator function.
-   */
-  String activityGeneratorBeanName() default "defaultTemporalActivityStubGeneratorFunction";
-
-  /**
    * The name of the singleton bean that holds the Temporal activity options for the Temporal activity
    * stub annotated by this annotation. This bean must exist in the application context.
    *
@@ -34,7 +26,4 @@ public @interface TemporalActivityStub {
    *         activity stub.
    */
   String activityOptionsBeanName();
-
-  String workflowVersionChangeId() default "";
-
 }
