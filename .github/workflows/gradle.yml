@@ -832,31 +832,32 @@ jobs:
 #          path: /tmp/kubernetes_logs/*
 
   # In case of self-hosted EC2 errors, remove this block.
-  stop-helm-acceptance-test-runner:
-    name: "Platform: Stop Helm Acceptance Test EC2 Runner"
-    timeout-minutes: 10
-    needs:
-      - start-helm-acceptance-test-runner # required to get output from the start-runner job
-      - helm-acceptance-test # required to wait when the main job is done
-      - find_valid_pat
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-helm-acceptance-test-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
+  # Todo: Kyryl turn this on.
+#  stop-helm-acceptance-test-runner:
+#    name: "Platform: Stop Helm Acceptance Test EC2 Runner"
+#    timeout-minutes: 10
+#    needs:
+#      - start-helm-acceptance-test-runner # required to get output from the start-runner job
+#      - helm-acceptance-test # required to wait when the main job is done
+#      - find_valid_pat
+#    runs-on: ubuntu-latest
+#    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+#    # Thus, we check for skipped here.
+#    if: ${{ always() && needs.start-helm-acceptance-test-runner.result != 'skipped'}}
+#    steps:
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+#          aws-region: us-east-2
+#      - name: Stop EC2 runner
+#        uses: supertopher/ec2-github-runner@base64v1.0.10
+#        with:
+#          mode: stop
+#          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+#          label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
+#          ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
 
 
 
@@ -869,7 +870,8 @@ jobs:
       - octavia-cli-build
       - platform-build
       - kube-acceptance-test
-      - helm-acceptance-test
+      # Todo: Kyryl turn this on.
+      # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Publish to OSS Build Failure Slack Channel
@@ -894,7 +896,8 @@ jobs:
       - octavia-cli-build
       - platform-build
       - kube-acceptance-test
-      - helm-acceptance-test
+      # Todo: Kyryl turn this on.
+      # - helm-acceptance-test
     if: success()
     steps:
       - name: Get Previous Workflow Status
