@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class RechargeStream(HttpStream, ABC):
@@ -163,19 +164,14 @@ class Orders(IncrementalRechargeStream):
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     """
 
-    def get_stream_data(self, response_data: Any) -> List[dict]:
-        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
-        # Cast these down to int if possible, and error if not.
-        data = super().get_stream_data(response_data)
-        for record in data:
-            if "total_weight" in record:
-                total_weight = record["total_weight"]
-                int_total_weight = int(total_weight)
-                if total_weight == int_total_weight:
-                    record["total_weight"] = int_total_weight
-                else:
-                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
-        return data
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
+
+    @transformer.registerCustomTransform
+    def transform_function(original_value: str, field_schema: int) -> int:
+        value = original_value
+        if "type" in field_schema and "integer" in field_schema["type"]:
+            value = int(original_value)
+        return value
 
 
 class Products(RechargeStream):
