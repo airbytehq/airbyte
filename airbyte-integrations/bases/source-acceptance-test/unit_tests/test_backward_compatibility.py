@@ -939,6 +939,26 @@ VALID_SPEC_TRANSITIONS = [
         name="Nested level: Removing the enum field should not fail.",
         should_fail=False,
     ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "integer"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": ["integer", "string"]},
+                },
+            }
+        ),
+        name="Changing a 'type' field from a string to a list containing that same string should not fail.",
+        should_fail=False,
+    ),
 ]
 
 # Checking that all transitions in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
@@ -1131,6 +1151,28 @@ FAILING_CATALOG_TRANSITIONS = [
             ),
         },
     ),
+    Transition(
+        name="Changing a 'type' field from a string to something else than a list containing just that string and null should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "integer"}}}}},
+                    "default_cursor_field": ["a"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["integer", "string"]}}}}},
+                    "default_cursor_field": ["b"],
+                }
+            ),
+        },
+    )
 ]
 
 VALID_CATALOG_TRANSITIONS = [
