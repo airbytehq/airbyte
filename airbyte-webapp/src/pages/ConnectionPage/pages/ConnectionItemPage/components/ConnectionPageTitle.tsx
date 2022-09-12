@@ -52,7 +52,6 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
         id: ConnectionSettingsRoutes.SETTINGS,
         name: <FormattedMessage id="sources.settings" />,
       });
-
     return steps;
   }, [connection.status]);
 
