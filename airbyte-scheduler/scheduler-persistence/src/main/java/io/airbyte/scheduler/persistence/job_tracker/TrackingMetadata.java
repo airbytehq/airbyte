@@ -13,9 +13,11 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
@@ -35,7 +37,9 @@ public class TrackingMetadata {
     metadata.put("connection_id", standardSync.getConnectionId());
 
     final String frequencyString;
-    if (standardSync.getManual()) {
+    if (standardSync.getScheduleType() != null) {
+      frequencyString = getFrequencyStringFromScheduleType(standardSync.getScheduleType(), standardSync.getScheduleData());
+    } else if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
       final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
@@ -162,6 +166,24 @@ public class TrackingMetadata {
     linkedHashMap.put("timestamp", failureReason.getTimestamp());
 
     return Jsons.jsonNode(linkedHashMap);
+  }
+
+  private static String getFrequencyStringFromScheduleType(final ScheduleType scheduleType, final ScheduleData scheduleData) {
+    switch (scheduleType) {
+      case MANUAL -> {
+        return "manual";
+      }
+      case BASIC_SCHEDULE -> {
+        return TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(scheduleData.getBasicSchedule())) + " min";
+      }
+      case CRON -> {
+        // TODO(https://github.com/airbytehq/airbyte/issues/2170): consider something more detailed.
+        return "cron";
+      }
+      default -> {
+        throw new RuntimeException("Unexpected schedule type");
+      }
+    }
   }
 
 }
