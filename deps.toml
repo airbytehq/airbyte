@@ -9,11 +9,7 @@ slf4j = "1.7.36"
 lombok = "1.18.24"
 jooq = "3.13.4"
 junit-jupiter = "5.9.0"
-<<<<<<< HEAD
-micronaut = "3.6.2"
-=======
 micronaut = "3.6.3"
->>>>>>> 9e6e5178e73985802a414cdf4eb1d0d0de26478d
 micronaut-test = "3.5.0"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
