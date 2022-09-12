@@ -100,7 +100,7 @@ const LoginPage: React.FC = () => {
                 >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <Button className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
+                <Button customStyles={styles.logInBtn} type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
                 </Button>
               </>

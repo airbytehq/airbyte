@@ -137,7 +137,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
   const cancelJobBtn = (
     <Button
-      className={styles.cancelButton}
+      customStyles={styles.cancelButton}
       disabled={!activeJob?.id || activeJob.isCanceling}
       onClick={onCancelJob}
       icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
@@ -157,11 +157,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
               <div className={styles.actions}>
                 {!activeJob?.action && (
                   <>
-                    <Button className={styles.resetButton} variant="secondary" onClick={onResetDataButtonClick}>
+                    <Button customStyles={styles.resetButton} variant="secondary" onClick={onResetDataButtonClick}>
                       <FormattedMessage id="connection.resetData" />
                     </Button>
                     <Button
-                      className={styles.syncButton}
+                      customStyles={styles.syncButton}
                       disabled={!allowSync}
                       onClick={onSyncNowButtonClick}
                       icon={

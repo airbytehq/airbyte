@@ -22,8 +22,9 @@ export const Header: React.FC<HeaderProps> = ({ toLogin }) => (
         // @ts-ignore
         as={Link}
         to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}
-        label={<FormattedMessage id={toLogin ? "login.login" : "login.signup"} />}
-      />
+      >
+        <FormattedMessage id={toLogin ? "login.login" : "login.signup"} />
+      </Button>
     </div>
   </div>
 );
