@@ -3,7 +3,6 @@
 #
 
 import datetime
-import pendulum
 import urllib
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
