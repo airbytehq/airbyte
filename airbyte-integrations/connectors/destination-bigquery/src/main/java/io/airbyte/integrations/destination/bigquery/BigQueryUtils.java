@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
@@ -46,6 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,18 +233,28 @@ public class BigQueryUtils {
    *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
    *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final ObjectNode data) {
+  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
     dateTimeFields.forEach(e -> {
-      if (data.findValue(e) != null && !data.get(e).isNull()) {
-        final String googleBigQueryDateFormat = QueryParameterValue
-            .dateTime(new DateTime(convertDateToInstantFormat(data
-                .findValue(e)
-                .asText()))
-                    .toString(BIG_QUERY_DATETIME_FORMAT))
-            .getValue();
-        data.put(e, googleBigQueryDateFormat);
+      if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
+        ObjectNode dataObject = (ObjectNode) data;
+        JsonNode value = data.findValue(e);
+        if (value.isArray()) {
+          ArrayNode arrayNode = (ArrayNode) value;
+          ArrayNode newArrayNode = dataObject.putArray(e);
+          arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
+        } else if (value.isTextual()) {
+          dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
+        } else {
+          throw new RuntimeException("Unexpected transformation case");
+        }
       }
     });
+  }
+
+  private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
+    return (dateTimeValue != null ? QueryParameterValue
+        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
+        : null);
   }
 
   /**
