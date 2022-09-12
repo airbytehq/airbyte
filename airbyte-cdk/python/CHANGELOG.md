@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.83
+- Fix per-stream to send legacy format for connectors that override read
+
 ## 0.1.82
 - Freeze dataclasses-jsonschema to 2.15.1
 
