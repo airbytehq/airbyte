@@ -226,7 +226,9 @@ class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
               && changedStateEvent.getField() != StateField.SUCCESS
-              && changedStateEvent.getField() != StateField.DONE_WAITING)
+              && changedStateEvent.getField() != StateField.DONE_WAITING
+              && changedStateEvent.getField() != StateField.SET_FAILURE_CAUSE
+              && changedStateEvent.getField() != StateField.SET_SYNC_OUTPUT)
               && changedStateEvent.isValue())
           .isEmpty();
     }
@@ -267,7 +269,9 @@ class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
               && changedStateEvent.getField() != StateField.SUCCESS
-              && changedStateEvent.getField() != StateField.DONE_WAITING)
+              && changedStateEvent.getField() != StateField.DONE_WAITING
+              && changedStateEvent.getField() != StateField.SET_FAILURE_CAUSE
+              && changedStateEvent.getField() != StateField.SET_SYNC_OUTPUT)
               && changedStateEvent.isValue())
           .isEmpty();
     }
@@ -315,7 +319,9 @@ class ConnectionManagerWorkflowTest {
               changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
                   && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING
                   && changedStateEvent.getField() != StateField.SUCCESS
-                  && changedStateEvent.getField() != StateField.DONE_WAITING)
+                  && changedStateEvent.getField() != StateField.DONE_WAITING
+                  && changedStateEvent.getField() != StateField.SET_FAILURE_CAUSE
+                  && changedStateEvent.getField() != StateField.SET_SYNC_OUTPUT)
                   && changedStateEvent.isValue())
           .isEmpty();
     }

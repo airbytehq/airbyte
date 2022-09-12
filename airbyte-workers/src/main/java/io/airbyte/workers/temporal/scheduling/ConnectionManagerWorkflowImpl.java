@@ -836,7 +836,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState.setSyncOutput(syncCheckConnectionFailure.buildFailureOutput());
         workflowState.setFailed(getFailStatus(workflowState.getStandardSyncOutput()));
         workflowState.setFailureCause(FailureCause.CONNECTION);
-        reportFailure(connectionUpdaterInput, workflowState.getStandardSyncOutput(), FailureCause.CONNECTION);
       } else {
         workflowState.setSyncOutput(runChildWorkflow(jobInputs));
         workflowState.setFailed(getFailStatus(workflowState.getStandardSyncOutput()));
@@ -846,7 +845,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         }
       }
 
-      prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
     } catch (final ChildWorkflowFailure childWorkflowFailure) {
       // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
       // exception since we expect it, we just
@@ -865,16 +863,28 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             workflowInternalState.getJobId(),
             workflowInternalState.getAttemptNumber()));
         workflowState.setFailureCause(FailureCause.ACTIVITY);
+        workflowState.setFailed(true);
       } else {
         workflowInternalState.getFailures().add(
             FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                 workflowInternalState.getAttemptNumber()));
         workflowState.setFailureCause(FailureCause.WORKFLOW);
+        workflowState.setFailed(true);
       }
     }
   }
 
   private void reportJobStatus(final ConnectionUpdaterInput connectionUpdaterInput) {
+    if (workflowState.isDeleted()) {
+      if (workflowState.isRunning()) {
+        log.info("Cancelling the current running job because a connection deletion was requested");
+        reportCancelled();
+      }
+      log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
+      deleteConnectionBeforeTerminatingTheWorkflow();
+      return;
+    }
+
     // this means that the current workflow is being cancelled so that a reset can be run instead.
     if (workflowState.isCancelledForReset()) {
       reportCancelledAndContinueWith(true, connectionUpdaterInput);
@@ -891,6 +901,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       reportSuccess(connectionUpdaterInput, workflowState.getStandardSyncOutput());
     }
+
+    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
   /**
