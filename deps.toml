@@ -9,7 +9,7 @@ slf4j = "1.7.36"
 lombok = "1.18.24"
 jooq = "3.13.4"
 junit-jupiter = "5.9.0"
-micronaut = "3.6.2"
+micronaut = "3.6.3"
 micronaut-test = "3.5.0"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
@@ -100,7 +100,7 @@ javax-inject = { module = "javax.inject:javax.inject", version = "1" }
 javax-transaction = { module = "javax.transaction:javax.transaction-api", version = "1.3" }
 micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
 micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version = "3.7.2" }
-micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.0" }
+micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.1" }
 micronaut-inject = { module = "io.micronaut:micronaut-inject" }
 micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
 micronaut-http-server-netty = { module = "io.micronaut:micronaut-http-server-netty" }
