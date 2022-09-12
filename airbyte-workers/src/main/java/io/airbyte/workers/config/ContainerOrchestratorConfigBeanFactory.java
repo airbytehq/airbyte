@@ -32,22 +32,22 @@ public class ContainerOrchestratorConfigBeanFactory {
   @Requires(property = "airbyte.container.orchestrator.enabled",
             value = "true")
   @Named("containerOrchestratorConfig")
-  public Optional<ContainerOrchestratorConfig> kubernetesContainerOrchestratorConfig(
-                                                                                     @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
-                                                                                     @Value("${airbyte.version}") final String airbyteVersion,
-                                                                                     @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
-                                                                                     @Value("${airbyte.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
-                                                                                     @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
-                                                                                     @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
-                                                                                     @Value("${google.application.credentials}") final String googleApplicationCredentials,
-                                                                                     @Value("${airbyte.worker.job.kube.namespace}") final String namespace) {
+  public ContainerOrchestratorConfig kubernetesContainerOrchestratorConfig(
+                                                                           @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
+                                                                           @Value("${airbyte.version}") final String airbyteVersion,
+                                                                           @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
+                                                                           @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
+                                                                           @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
+                                                                           @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
+                                                                           @Value("${google.application.credentials}") final String googleApplicationCredentials,
+                                                                           @Value("${airbyte.worker.job.kube.namespace}") final String namespace) {
     final var kubernetesClient = new DefaultKubernetesClient();
 
     final DocumentStoreClient documentStoreClient = StateClients.create(
         cloudStateStorageConfiguration.orElse(null),
         STATE_STORAGE_PREFIX);
 
-    return Optional.of(new ContainerOrchestratorConfig(
+    return new ContainerOrchestratorConfig(
         namespace,
         documentStoreClient,
         kubernetesClient,
@@ -55,15 +55,7 @@ public class ContainerOrchestratorConfigBeanFactory {
         containerOrchestratorSecretMountPath,
         StringUtils.isNotEmpty(containerOrchestratorImage) ? containerOrchestratorImage : "airbyte/container-orchestrator:" + airbyteVersion,
         containerOrchestratorImagePullPolicy,
-        googleApplicationCredentials));
-  }
-
-  @Singleton
-  @Requires(property = "airbyte.container.orchestrator.enabled",
-            value = "false")
-  @Named("containerOrchestratorConfig")
-  public Optional<ContainerOrchestratorConfig> defaultContainerOrchestratorConfig() {
-    return Optional.empty();
+        googleApplicationCredentials);
   }
 
 }

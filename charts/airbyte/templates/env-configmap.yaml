@@ -64,4 +64,6 @@ data:
   CONTAINER_ORCHESTRATOR_ENABLED: {{ .Values.worker.containerOrchestrator.enabled | quote }}
   CONTAINER_ORCHESTRATOR_IMAGE: {{ .Values.worker.containerOrchestrator.image | quote }}
   WORKERS_MICRONAUT_ENVIRONMENTS: "control"
+  WORKER_LOGS_STORAGE_TYPE: {{ .Values.global.logs.storage.type | quote }}
+  WORKER_STATE_STORAGE_TYPE:  {{ .Values.global.state.storage.type | quote }}
 {{- end }}

@@ -35,6 +35,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.event.ApplicationEventListener;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.scheduling.TaskExecutors;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
@@ -44,6 +45,8 @@ import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -51,6 +54,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -139,6 +143,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private WorkerPlane workerPlane;
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
+  @Value("${temporal.cloud.namespace}")
+  private String temporalCloudNamespace;
+  @Value("${airbyte.data.sync.task-queue}")
+  private String syncTaskQueue;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
@@ -260,9 +268,20 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   }
 
   private void registerSync(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
-    syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
-    syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
+    final Set<String> taskQueues = getSyncTaskQueue();
+
+    // There should be a default value provided by the application framework.  If not, do this
+    // as a safety check to ensure we don't attempt to register against no task queue.
+    if(taskQueues.isEmpty()) {
+      throw new IllegalStateException("Sync workflow task queue must be provided.");
+    }
+
+    for(final String taskQueue : taskQueues) {
+      log.info("Registering sync workflow for task queue '{}'...", taskQueue);
+      final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+      syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+      syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[]{}));
+    }
     log.info("Sync Workflow registered.");
   }
 
@@ -299,19 +318,40 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
    */
   private void waitForTemporalNamespace() {
     boolean namespaceExists = false;
+    final String temporalNamespace = getTemporalNamespace();
     while (!namespaceExists) {
       try {
-        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(TemporalUtils.DEFAULT_NAMESPACE).build());
+        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(temporalNamespace).build());
         namespaceExists = true;
         // This is to allow the configured namespace to be available in the Temporal
         // cache before continuing on with any additional configuration/bean creation.
         Thread.sleep(TimeUnit.SECONDS.toMillis(5));
       } catch (final StatusRuntimeException e) {
-        log.debug("Namespace '{}' does not exist yet.  Re-checking...", TemporalUtils.DEFAULT_NAMESPACE);
+        log.debug("Namespace '{}' does not exist yet.  Re-checking...", temporalNamespace);
       } catch (final InterruptedException e) {
         log.debug("Sleep interrupted.  Exiting loop...");
       }
     }
   }
 
+  /**
+   * Retrieve the Temporal namespace based on the configuration.
+   *
+   * @return The Temporal namespace.
+   */
+  private String getTemporalNamespace() {
+    return StringUtils.isNotEmpty(temporalCloudNamespace) ? temporalCloudNamespace : TemporalUtils.DEFAULT_NAMESPACE;
+  }
+
+  /**
+   * Retrieve and parse the sync workflow task queue configuration.
+   *
+   * @return A set of Temporal task queues for the sync workflow.
+   */
+  private Set<String> getSyncTaskQueue() {
+    if (StringUtils.isEmpty(syncTaskQueue)) {
+      return Set.of();
+    }
+    return Arrays.stream(syncTaskQueue.split(",")).collect(Collectors.toSet());
+  }
 }
