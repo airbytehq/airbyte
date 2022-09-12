@@ -10,6 +10,35 @@ import styles from "./SlickSlider.module.scss";
 
 import "./slider.css";
 
+const PrevArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
+  <button
+    className={classnames(styles.leftArrow, {
+      [styles.arrowDisabled]: onClick === null,
+    })}
+    onClick={onClick}
+    tabIndex={0}
+    type="button"
+    aria-label="previous slide"
+    data-testid="previous-slide-btn"
+  >
+    <FontAwesomeIcon icon={faChevronLeft} className={classnames(className)} {...restProps} />
+  </button>
+);
+const NextArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
+  <button
+    className={classnames(styles.rightArrow, {
+      [styles.arrowDisabled]: onClick === null,
+    })}
+    onClick={onClick}
+    tabIndex={0}
+    type="button"
+    aria-label="next slide"
+    data-testid="next-slide-btn"
+  >
+    <FontAwesomeIcon icon={faChevronRight} className={classnames(className)} {...restProps} />
+  </button>
+);
+
 interface SlickSliderProps {
   title?: string;
   sliderSettings?: SliderProps;
@@ -17,35 +46,6 @@ interface SlickSliderProps {
 }
 
 export const SlickSlider: React.FC<SlickSliderProps> = ({ title, sliderSettings, children }) => {
-  const PrevArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
-    <button
-      className={classnames(styles.leftArrow, {
-        [styles.arrowDisabled]: onClick === null,
-      })}
-      onClick={onClick}
-      tabIndex={0}
-      type="button"
-      aria-label="previous slide"
-      data-testid="previous-slide-btn"
-    >
-      <FontAwesomeIcon icon={faChevronLeft} className={classnames(className)} {...restProps} />
-    </button>
-  );
-  const NextArrow = ({ slideCount, currentSlide, className, onClick, ...restProps }: CustomArrowProps) => (
-    <button
-      className={classnames(styles.rightArrow, {
-        [styles.arrowDisabled]: onClick === null,
-      })}
-      onClick={onClick}
-      tabIndex={0}
-      type="button"
-      aria-label="next slide"
-      data-testid="next-slide-btn"
-    >
-      <FontAwesomeIcon icon={faChevronRight} className={classnames(className)} {...restProps} />
-    </button>
-  );
-
   const settings: SliderProps = useMemo(
     () => ({
       arrows: true,
