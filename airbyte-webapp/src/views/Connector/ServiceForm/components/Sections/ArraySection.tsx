@@ -7,7 +7,6 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import { SectionContainer } from "./common";
 import { GroupLabel } from "./GroupLabel";
 import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
@@ -71,43 +70,41 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
       key={`form-variable-fields-${formField?.fieldKey}`}
       title={<GroupLabel formField={formField} />}
     >
-      <SectionContainer>
-        <FieldArray
-          name={path}
-          render={(arrayHelpers) => (
-            <ArrayOfObjectsEditor
-              editableItemIndex={editIndex}
-              onStartEdit={setEditIndex}
-              onRemove={arrayHelpers.remove}
-              items={items}
-              renderItemName={renderItemName}
-              renderItemDescription={renderItemDescription}
-              disabled={disabled}
-              editModalSize="sm"
-              renderItemEditorForm={(item) => (
-                <VariableInputFieldForm
-                  formField={formField}
-                  path={`${path}[${editIndex ?? 0}]`}
-                  disabled={disabled}
-                  item={item}
-                  onDone={(updatedItem) => {
-                    const updatedValue =
-                      editIndex !== undefined && editIndex < items.length
-                        ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
-                        : [...items, updatedItem];
+      <FieldArray
+        name={path}
+        render={(arrayHelpers) => (
+          <ArrayOfObjectsEditor
+            editableItemIndex={editIndex}
+            onStartEdit={setEditIndex}
+            onRemove={arrayHelpers.remove}
+            items={items}
+            renderItemName={renderItemName}
+            renderItemDescription={renderItemDescription}
+            disabled={disabled}
+            editModalSize="sm"
+            renderItemEditorForm={(item) => (
+              <VariableInputFieldForm
+                formField={formField}
+                path={`${path}[${editIndex ?? 0}]`}
+                disabled={disabled}
+                item={item}
+                onDone={(updatedItem) => {
+                  const updatedValue =
+                    editIndex !== undefined && editIndex < items.length
+                      ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
+                      : [...items, updatedItem];
 
-                    fieldHelper.setValue(updatedValue);
-                    setEditIndex(undefined);
-                  }}
-                  onCancel={() => {
-                    setEditIndex(undefined);
-                  }}
-                />
-              )}
-            />
-          )}
-        />
-      </SectionContainer>
+                  fieldHelper.setValue(updatedValue);
+                  setEditIndex(undefined);
+                }}
+                onCancel={() => {
+                  setEditIndex(undefined);
+                }}
+              />
+            )}
+          />
+        )}
+      />
     </GroupControls>
   );
 };

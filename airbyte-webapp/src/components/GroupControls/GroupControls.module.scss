@@ -1,24 +1,11 @@
 @use "../../scss/colors";
 
-.formGroup {
+.groupControlSection {
   margin-bottom: 27px;
-  border-color: colors.$grey-100;
-  border-style: solid;
-  border-width: 0 2px 2px 2px;
-  // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
-  box-shadow: 0px 2px colors.$grey-100 inset;
-  box-sizing: border-box;
-  border-radius: 8px;
-  padding: 0 20px;
-
-  & > :first-child {
-    padding-top: 30px;
-  }
+  min-height: 36px;
 }
 
 .groupTitle {
-  position: relative;
-  transform: translateY(50%);
   margin-right: 20px;
   display: flex;
   flex-flow: row nowrap;
@@ -28,5 +15,21 @@
 
   & label {
     padding-bottom: 0;
+  }
+}
+
+.formGroup {
+  border-color: colors.$grey-100;
+  border-style: solid;
+  border-width: 0 2px 2px 2px;
+  // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
+  box-shadow: 0px 2px colors.$grey-100 inset;
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 0 20px;
+  margin-top: -16px;
+
+  & > :first-child {
+    padding-top: 30px;
   }
 }
