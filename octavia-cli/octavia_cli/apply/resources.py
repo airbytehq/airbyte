@@ -503,7 +503,9 @@ class Source(SourceAndDestination):
             AirbyteCatalog: The catalog issued by schema discovery.
         """
         schema = self.api_instance.discover_schema_for_source(self.source_discover_schema_request_body)
-        return schema.catalog
+        if schema.job_info.succeeded:
+            return schema.catalog
+        raise Exception("Could not discover schema for source", self.source_discover_schema_request_body, schema.job_info.logs)
 
     @property
     def definition(self) -> SourceDefinitionSpecificationRead:

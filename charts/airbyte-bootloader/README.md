@@ -1,6 +1,6 @@
 # airbyte-bootloader
 
-![Version: 0.45.2](https://img.shields.io/badge/Version-0.45.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
 
 Helm chart to deploy airbyte-bootloader
 
@@ -15,20 +15,17 @@ Helm chart to deploy airbyte-bootloader
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
 | env_vars | object | `{}` |  |
 | extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
+| extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| global.database.host | string | `"example.com"` |  |
-| global.database.port | string | `"5432"` |  |
 | global.database.secretName | string | `""` |  |
 | global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
 | global.env_vars | object | `{}` |  |
-| global.extraContainers | list | `[]` |  |
 | global.extraContainers | list | `[]` |  |
 | global.secretName | string | `""` |  |
 | global.secrets | object | `{}` |  |
