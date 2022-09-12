@@ -2,7 +2,7 @@
 @use "../../../scss/variables";
 
 .textContainer {
-  margin: 4px 0 0;
+  margin: variables.$spacing-sm 0 0;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
@@ -16,14 +16,14 @@
 
 .text {
   display: inline-block;
-  padding: 0 5px;
+  padding: 0 variables.$spacing-sm;
   background: colors.$grey-50;
   border: variables.$border-thin solid colors.$grey-100;
   border-radius: variables.$border-radius-xs;
-  margin-right: 8px;
-  margin-bottom: 6px;
+  margin-right: variables.$spacing-md;
+  margin-bottom: variables.$spacing-sm;
   white-space: nowrap;
   font-weight: 400;
   font-size: 12px;
-  color: #8b8ba0;
+  color: colors.$grey-400;
 }

@@ -45,7 +45,7 @@
     }
 
     height: unset;
-    padding: 12px 0;
+    padding: variables.$spacing-lg 0;
   }
 
   &.failed {

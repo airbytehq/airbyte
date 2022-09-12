@@ -8,26 +8,9 @@ interface ResetStreamsDetailsProps {
   isOpen?: boolean;
 }
 
-export const ResetStreamsDetails: React.FC<ResetStreamsDetailsProps> = ({ isOpen }) => (
+export const ResetStreamsDetails: React.FC<ResetStreamsDetailsProps> = ({ names, isOpen }) => (
   <p className={classNames(styles.textContainer, { [styles.open]: isOpen })}>
-    {[
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-      "eqwefgqwegqweg",
-      "eqwegqwegqweg",
-    ].map((name) => (
+    {names.map((name) => (
       <span key={name} className={styles.text}>
         {name}
       </span>
