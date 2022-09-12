@@ -78,14 +78,12 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
         </>
       }
     >
-      <div className={styles.conditionControls}>
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          disabled={disabled}
-          skipAppend
-        />
-      </div>
+      <FormSection
+        blocks={formField.conditions[currentlySelectedCondition]}
+        path={path}
+        disabled={disabled}
+        skipAppend
+      />
     </GroupControls>
   );
 };
