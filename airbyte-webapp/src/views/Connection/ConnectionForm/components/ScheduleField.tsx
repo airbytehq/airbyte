@@ -71,13 +71,7 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
     }).toLowerCase();
   };
 
-  const getZoneValue = (currentSelectedZone: string | undefined): string => {
-    if (!currentSelectedZone) {
-      return "UTC";
-    }
-
-    return currentSelectedZone;
-  };
+  const getZoneValue = (currentSelectedZone = "UTC") => currentSelectedZone;
 
   const onCronChange = (
     event: DropDownRow.IDataItem | ChangeEvent<HTMLInputElement>,
