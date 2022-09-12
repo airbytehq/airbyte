@@ -9,7 +9,7 @@ import styles from "./StartWithDestination.module.scss";
 
 export interface StartWithDestinationProps {
   destination: DestinationConnectorCard | undefined;
-  onDestinationSelect: ((id: string) => void) | undefined;
+  onDestinationSelect?: (id: string) => void;
 }
 
 export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ destination, onDestinationSelect }) => {
