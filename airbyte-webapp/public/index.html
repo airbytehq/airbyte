@@ -13,6 +13,12 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="stylesheet" href="%PUBLIC_URL%/index.css">
     <title>Airbyte</title>
+    <% if (process.env.REACT_APP_OSANO) { %>
+      <style>
+        .osano-cm-widget { display: none; }
+      </style>
+      <script src="https://cmp.osano.com/%REACT_APP_OSANO%/osano.js"></script>
+    <% } %>
   </head>
   <body>
     <noscript>
