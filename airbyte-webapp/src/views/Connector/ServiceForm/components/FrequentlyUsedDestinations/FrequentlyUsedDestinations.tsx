@@ -28,9 +28,7 @@ export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProp
   }
   const onSlideClick = (id: string) => {
     setValue(id);
-    if (onDestinationSelect) {
-      onDestinationSelect(id);
-    }
+      onDestinationSelect?.(id);
   };
   return (
     <div className={styles.container}>
