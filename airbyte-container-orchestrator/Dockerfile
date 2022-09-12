@@ -28,7 +28,7 @@ RUN wget -O /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.
 RUN apt-get update && apt-get install -y kubectl
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.40.4
+ARG VERSION=0.40.5
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}
