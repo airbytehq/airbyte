@@ -492,7 +492,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.19"
+- dockerImage: "airbyte/source-amazon-ads:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -539,10 +539,10 @@
           order: 4
         report_wait_timeout:
           title: "Report Wait Timeout *"
-          description: "Timeout duration in minutes for Reports. Default is 30 minutes."
-          default: 30
+          description: "Timeout duration in minutes for Reports. Default is 60 minutes."
+          default: 60
           examples:
-          - 30
+          - 60
           - 120
           order: 5
           type: "integer"
@@ -2233,7 +2233,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-exchange-rates:0.2.6"
+- dockerImage: "airbyte/source-exchange-rates:1.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -2243,7 +2243,7 @@
       required:
       - "start_date"
       - "access_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         start_date:
           type: "string"
@@ -2253,7 +2253,7 @@
           - "YYYY-MM-DD"
         access_key:
           type: "string"
-          description: "Your API Access Key. See <a href=\"https://exchangeratesapi.io/documentation/\"\
+          description: "Your API Key. See <a href=\"https://apilayer.com/marketplace/exchangerates_data-api\"\
             >here</a>. The key is case sensitive."
           airbyte_secret: true
         base:
@@ -4315,7 +4315,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.82"
+- dockerImage: "airbyte/source-hubspot:0.1.83"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6480,7 +6480,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.6.9"
+- dockerImage: "airbyte/source-mysql:0.6.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -9365,7 +9365,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.13"
+- dockerImage: "airbyte/source-sendgrid:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -9384,11 +9384,16 @@
           order: 0
         start_time:
           title: "Start time"
-          type: "integer"
-          description: "Start time in timestamp integer format. Any data before this\
-            \ timestamp will not be replicated."
+          type:
+          - "integer"
+          - "string"
+          description: "Start time in ISO8601 format. Any data before this time point\
+            \ will not be replicated."
           examples:
-          - 1558359837
+          - "2021-12-12"
+          - "2021-02-01 13:30:00"
+          - "2020-07-18T13:30:00.000Z"
+          - "2020-07-18 13:30:00+02:00"
           order: 1
     supportsNormalization: false
     supportsDBT: false
