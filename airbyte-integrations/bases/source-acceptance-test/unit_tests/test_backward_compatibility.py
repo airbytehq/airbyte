@@ -1167,12 +1167,14 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["integer", "string"]}}}}},
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"username": {"type": ["integer", "string"]}}}}
+                    },
                     "default_cursor_field": ["b"],
                 }
             ),
         },
-    )
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
