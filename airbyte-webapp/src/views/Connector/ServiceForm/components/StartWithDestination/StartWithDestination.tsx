@@ -24,7 +24,7 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
 
   const connectorCardClickHandler = () => {
     setValue(destinationDefinitionId);
-      onDestinationSelect?.(destinationDefinitionId);
+    onDestinationSelect?.(destinationDefinitionId);
   };
 
   return (
