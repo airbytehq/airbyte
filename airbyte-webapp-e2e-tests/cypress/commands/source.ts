@@ -1,6 +1,6 @@
 import { deleteEntity, openSettingForm, submitButtonClick, updateField } from "./common";
-import { goToSourcePage, openNewSourceForm} from "pages/sourcePage";
-import { fillPostgresForm, fillPokeAPIForm } from "./connector"
+import { goToSourcePage, openNewSourceForm } from "pages/sourcePage";
+import { fillPostgresForm, fillPokeAPIForm } from "./connector";
 
 export const createPostgresSource = (
   name: string,
@@ -10,9 +10,7 @@ export const createPostgresSource = (
   username: string = "postgres",
   password: string = "secret_password"
 ) => {
-  cy.intercept("/api/v1/scheduler/sources/check_connection").as(
-    "checkSourceUpdateConnection"
-  );
+  cy.intercept("/api/v1/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
   cy.intercept("/api/v1/sources/create").as("createSource");
 
   goToSourcePage();
@@ -25,9 +23,7 @@ export const createPostgresSource = (
 };
 
 export const createPokeApiSource = (name: string, pokeName: string) => {
-  cy.intercept("/api/v1/scheduler/sources/check_connection").as(
-    "checkSourceUpdateConnection"
-  );
+  cy.intercept("/api/v1/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
   cy.intercept("/api/v1/sources/create").as("createSource");
 
   goToSourcePage();
@@ -40,9 +36,7 @@ export const createPokeApiSource = (name: string, pokeName: string) => {
 };
 
 export const updateSource = (name: string, field: string, value: string) => {
-  cy.intercept("/api/v1/sources/check_connection_for_update").as(
-    "checkSourceConnection"
-  );
+  cy.intercept("/api/v1/sources/check_connection_for_update").as("checkSourceConnection");
   cy.intercept("/api/v1/sources/update").as("updateSource");
 
   goToSourcePage();
@@ -52,7 +46,7 @@ export const updateSource = (name: string, field: string, value: string) => {
 
   cy.wait("@checkSourceConnection");
   cy.wait("@updateSource");
-}
+};
 
 export const deleteSource = (name: string) => {
   cy.intercept("/api/v1/sources/delete").as("deleteSource");
@@ -60,4 +54,4 @@ export const deleteSource = (name: string) => {
   openSettingForm(name);
   deleteEntity();
   cy.wait("@deleteSource");
-}
+};
