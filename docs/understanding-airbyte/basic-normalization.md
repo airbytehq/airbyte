@@ -351,7 +351,6 @@ Note that Basic Normalization is packaged in a docker image `airbyte/normalizati
 
 Therefore, in order to "upgrade" to the desired normalization version, you need to use the corresponding Airbyte version that it's being released in:
 
-
 | Airbyte Version | Normalization Version | Date       | Pull Request                                                | Subject                                                                                                              |
 |:----------------|:----------------------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
 |                 | 0.2.22                | 2022-09-05 | [\#16339](https://github.com/airbytehq/airbyte/pull/16339)  | Update Clickhouse DBT to 1.1.8                                                                                       |
