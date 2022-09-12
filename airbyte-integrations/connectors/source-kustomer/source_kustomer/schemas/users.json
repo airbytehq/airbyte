@@ -1,0 +1,233 @@
+{
+    "additionalProperties": false,
+    "type": [
+      "null",
+      "object"
+    ],
+    "properties": {
+      "avatar_url": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "created_at": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "format": "date-time"
+      },
+      "created_by": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "deleted_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "display_name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "email": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "email_signature": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "email_verified_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "first_email_verified_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "id": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "links": {
+        "additionalProperties": false,
+        "properties": {
+          "self": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "mobile": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "modified_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "modified_by": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "org": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "password": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_new": {
+            "type": "boolean"
+          },
+          "force_new": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "role_groups": {
+        "anyOf": [
+          {
+            "items": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "roles": {
+        "anyOf": [
+          {
+            "items": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "updated_at": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "format": "date-time"
+      },
+      "user_type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    }
+  }

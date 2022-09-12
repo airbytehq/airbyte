@@ -1,0 +1,138 @@
+{
+    "additionalProperties": false,
+    "type": "object",
+    "properties": {
+      "created_at": {
+        "type": ["null", "string"]
+      },
+      "custom": {
+        "additionalProperties": false,
+        "properties": {
+          "billing_status_str": {
+            "type": ["null", "string"]
+          },
+          "comment_txt": {
+            "type": ["null", "string"]
+          },
+          "delighted_link_str": {
+            "type": ["null", "string"]
+          },
+          "order_created_at": {
+            "type": ["null", "string"]
+          },
+          "order_number_str": {
+            "type": ["null", "string"]
+          },
+          "order_updated_at": {
+            "type": ["null", "string"]
+          },
+          "purchase_amount_num": {
+            "type": "integer"
+          },
+          "score_num": {
+            "type": "integer"
+          },
+          "shipping_address_str": {
+            "type": ["null", "string"]
+          },
+          "shipping_country_str": {
+            "type": ["null", "string"]
+          },
+          "shipping_state_str": {
+            "type": ["null", "string"]
+          },
+          "shipping_zip_str": {
+            "type": ["null", "string"]
+          },
+          "skus_txt": {
+            "type": ["null", "string"]
+          },
+          "special_instructions_str": {
+            "type": ["null", "string"]
+          },
+          "tags_str": {
+            "type": ["null", "string"]
+          },
+          "total_price_num": {
+            "type": "number"
+          },
+          "total_price_str": {
+            "type": ["null", "string"]
+          },
+          "updated_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "customer": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "description": {
+        "type": ["null", "string"]
+      },
+      "external_id": {
+        "type": ["null", "string"]
+      },
+      "icon": {
+        "type": ["null", "string"]
+      },
+      "id": {
+        "type": ["null", "string"]
+      },
+      "images": {
+        "type": "array"
+      },
+      "klass": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "links": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "self": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "org": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "tags": {
+        "type": "array"
+      },
+      "title": {
+        "type": ["null", "string"]
+      },
+      "type": {
+        "type": ["null", "string"]
+      },
+      "updated_at": {
+        "type": ["null", "string"]
+      }
+    }
+  }

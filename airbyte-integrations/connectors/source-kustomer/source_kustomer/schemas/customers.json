@@ -1,0 +1,567 @@
+{
+    "additionalProperties": false,
+    "type": "object",
+    "properties": {
+      "active_users": {
+        "type": ["null", "string"]
+      },
+      "avatar_url": {
+        "type": ["null", "string"]
+      },
+      "birthday_at": {
+        "type": ["null", "string"]
+      },
+      "conversation_counts": {
+        "additionalProperties": false,
+        "properties": {
+          "all": {
+            "type": ["null", "integer"]
+          },
+          "done": {
+            "type": ["null", "integer"]
+          },
+          "open": {
+            "type": ["null", "integer"]
+          },
+          "snoozed": {
+            "type": ["null", "integer"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "created_at": {
+        "type": ["null", "string"]
+      },
+      "created_by": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "custom": {
+        "additionalProperties": false,
+        "properties": {
+          "accepts_marketing_bool": {
+            "type": ["null", "boolean"]
+          },
+          "activation_date_str": {
+            "type": ["null", "string"]
+          },
+          "app_version_str": {
+            "type": ["null", "string"]
+          },
+          "august_id_str": {
+            "type": ["null", "string"]
+          },
+          "august_serial_number_str": {
+            "type": ["null", "string"]
+          },
+          "bridge_date_installed_at": {
+            "type": ["null", "string"]
+          },
+          "bridge_serial_number_str": {
+            "type": ["null", "string"]
+          },
+          "connect_firmware_version_str": {
+            "type": ["null", "string"]
+          },
+          "connect_serial_number_str": {
+            "type": ["null", "string"]
+          },
+          "doorbell_date_installed_at": {
+            "type": ["null", "string"]
+          },
+          "doorbell_firmware_version_str": {
+            "type": ["null", "string"]
+          },
+          "doorbell_serial_str": {
+            "type": ["null", "string"]
+          },
+          "firmware_version_str": {
+            "type": ["null", "string"]
+          },
+          "keypad_firmware_version_str": {
+            "type": ["null", "string"]
+          },
+          "keypad_installed_at": {
+            "type": ["null", "string"]
+          },
+          "keypad_serial_str": {
+            "type": ["null", "string"]
+          },
+          "last_autoresponse_at": {
+            "type": ["null", "string"]
+          },
+          "last_order_id_num": {
+            "type": ["integer", "null"]
+          },
+          "last_order_name_str": {
+            "type": ["null", "string"]
+          },
+          "latest_csat_num": {
+            "type": ["integer", "null"]
+          },
+          "latest_nps_num": {
+            "type": ["integer", "null"]
+          },
+          "lock_date_installed_at": {
+            "type": ["null", "string"]
+          },
+          "lock_firmware_version_str": {
+            "type": ["null", "string"]
+          },
+          "lock_serial_number_str": {
+            "type": ["null", "string"]
+          },
+          "orders_count_num": {
+            "type": ["integer", "null"]
+          },
+          "os00_str": {
+            "type": ["null", "string"]
+          },
+          "owner_guest_str": {
+            "type": ["null", "string"]
+          },
+          "products_owned_str": {
+            "type": ["null", "string"]
+          },
+          "proof_of_purchase_str": {
+            "type": ["null", "string"]
+          },
+          "purchase_date_str": {
+            "type": ["null", "string"]
+          },
+          "sales_force_id_str": {
+            "type": ["null", "string"]
+          },
+          "total_spent_num": {
+            "type": ["integer", "null"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "deleted": {
+        "type": ["null", "string"]
+      },
+      "display_color": {
+        "type": ["null", "string"]
+      },
+      "display_icon": {
+        "type": ["null", "string"]
+      },
+      "display_name": {
+        "type": ["null", "string"]
+      },
+      "emails": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "verified": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "external_id": {
+        "type": ["null", "string"]
+      },
+      "external_ids": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "external_id": {
+                  "type": ["null", "string"]
+                },
+                "verified": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "facebook_ids": {
+        "type": ["null", "string"]
+      },
+      "first_name": {
+        "type": ["null", "string"]
+      },
+      "gender": {
+        "type": ["null", "string"]
+      },
+      "id": {
+        "type": ["null", "string"]
+      },
+      "imported_at": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "instagram_ids": {
+        "type": ["null", "string"]
+      },
+      "last_activity_at": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "last_conversation": {
+        "additionalProperties": false,
+        "properties": {
+          "channels": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "sentiment": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "polarity": {
+                "type": ["null", "integer"]
+              },
+              "confidence": {
+                "type": ["null", "number"]
+              }
+            }
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "last_customer_activity_at": {
+        "type": ["null", "string"]
+      },
+      "last_message_at": {
+        "type": ["null", "string"]
+      },
+      "last_message_in": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": ["null", "string"]
+          },
+          "sent_at": {
+            "type": ["null", "string"]
+          },
+          "sentiment": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "last_message_out": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "sent_at": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "last_message_unresponded_to": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": ["null", "string"]
+          },
+          "sent_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "last_name": {
+        "type": ["null", "string"]
+      },
+      "last_seen_at": {
+        "type": ["null", "string"]
+      },
+      "links": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "self": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "locale": {
+        "type": ["null", "string"]
+      },
+      "locations": {
+        "type": ["null", "string"]
+      },
+      "modified_at": {
+        "type": ["null", "string"]
+      },
+      "modified_by": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "org": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "phones": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "phone": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "verified": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "preview": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": ["null", "string"]
+          },
+          "preview_at": {
+            "type": ["null", "string"]
+          },
+          "subject": {
+            "type": ["null", "string"]
+          },
+          "text": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "progressive_status": {
+        "type": ["null", "string"]
+      },
+      "recent_items": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "meta": {
+                  "type": ["null", "object"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "klass_name": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "updated_at": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "recent_location": {
+        "additionalProperties": false,
+        "properties": {
+          "updated_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "rev": {
+        "type": ["null", "integer"]
+      },
+      "role_group_versions": {
+        "type": ["null", "string"]
+      },
+      "satisfaction_level": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "first_satisfaction": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "sent_by_teams": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "last_satisfaction": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "sent_by_teams": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "sentiment": {
+        "type": ["null", "object"],
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "type": "number"
+          },
+          "polarity": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "shared_emails": {
+        "type": ["null", "string"]
+      },
+      "shared_external_ids": {
+        "type": ["null", "string"]
+      },
+      "shared_phones": {
+        "type": ["null", "string"]
+      },
+      "shared_socials": {
+        "type": ["null", "string"]
+      },
+      "signed_up_at": {
+        "type": ["null", "string"]
+      },
+      "smooch_ids": {
+        "type": ["null", "string"]
+      },
+      "socials": {
+        "type": ["null", "string"]
+      },
+      "tags": {
+        "type": ["null", "string"]
+      },
+      "time_zone": {
+        "type": ["null", "string"]
+      },
+      "updated_at": {
+        "type": ["null", "string"]
+      },
+      "urls": {
+        "type": ["null", "string"]
+      },
+      "username": {
+        "type": ["null", "string"]
+      },
+      "verified": {
+        "type": ["null", "boolean"]
+      },
+      "watchers": {
+        "type": ["null", "string"]
+      },
+      "whatsapps": {
+        "type": ["null", "string"]
+      }
+    }
+  }

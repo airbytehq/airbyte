@@ -59,6 +59,80 @@ class KustomerStream(HttpStream, ABC):
         """
         yield from response.json().get("data")
 
+class Conversations(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "/v1/conversations"
+
+class Customers(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "/v1/customers"
+"""
+class KObjects(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        # Should be https://api.kustomerapp.com/v1/klasses/{name}
+        # https://developer.kustomer.com/kustomer-api-docs/reference/getkobjects
+        return ""
+"""
+class Messages(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "/v1/messages"
+
+class Notes(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "/v1/notes"
+"""
+class Shortcuts(KustomerStream):
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        # Should be https://api.kustomerapp.com/v1/shortcuts/{id}
+        # https://developer.kustomer.com/kustomer-api-docs/reference/getashortcut
+        return ""
+"""
+class Tags(KustomerStream):
+# Need to create tags in Kustomer to test this properly
+
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "/v3/kb/tags"
 
 class Teams(KustomerStream):
 
@@ -67,27 +141,19 @@ class Teams(KustomerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
+
         return "/v1/teams"
 
-
-class Tags(KustomerStream):
-# Need to create tags in Kustomer to test this properly
-# Currently using schema from kustomer-tap but maybe it's out of date.
+class Users(KustomerStream):
 
     primary_key = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "/v3/kb/tags"
+    
+        return "/v1/users"
+
 
 # Source
 class SourceKustomer(AbstractSource):
@@ -118,4 +184,4 @@ class SourceKustomer(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token=config["api_token"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Teams(authenticator=auth), Tags(authenticator=auth)]
+        return [Conversations(authenticator=auth), Customers(authenticator=auth), Messages(authenticator=auth), Notes(authenticator=auth), Tags(authenticator=auth), Teams(authenticator=auth), Tags(authenticator=auth), Users(authenticator=auth)]
