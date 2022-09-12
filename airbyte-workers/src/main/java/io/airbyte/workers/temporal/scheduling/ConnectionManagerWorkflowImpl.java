@@ -151,26 +151,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         recordWorkflowFailureCountMetric(connectionUpdaterInput, FailureCause.CANCELED);
       }
 
-      if (workflowState.isDeleted()) {
-        if (workflowState.isRunning()) {
-          log.info("Cancelling the current running job because a connection deletion was requested");
-          reportCancelled();
-        }
-        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-        deleteConnectionBeforeTerminatingTheWorkflow();
-        return;
-      }
-
-      // this means that the current workflow is being cancelled so that a reset can be run instead.
-      if (workflowState.isCancelledForReset()) {
-        reportCancelledAndContinueWith(true, connectionUpdaterInput);
-      }
-
-      // "Cancel" button was pressed on a job
-      if (workflowState.isCancelled()) {
-        deleteResetJobStreams();
-        reportCancelledAndContinueWith(false, connectionUpdaterInput);
-      }
+      reportJobStatus(connectionUpdaterInput);
 
     } catch (final Exception e) {
       log.error("The connection update workflow has failed, will create a new attempt.", e);
@@ -181,92 +162,27 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
-      connectionId = connectionUpdaterInput.getConnectionId();
-
-      // workflow state is only ever set in test cases. for production cases, it will always be null.
-      if (connectionUpdaterInput.getWorkflowState() != null) {
-        workflowState = connectionUpdaterInput.getWorkflowState();
-      }
-
-      if (connectionUpdaterInput.isSkipScheduling()) {
-        workflowState.setSkipScheduling(true);
-      }
+      initInternalState(connectionUpdaterInput);
 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
       // This catches cases where the temporal workflow was terminated and restarted while a job was
       // actively running, leaving that job in an orphaned and non-terminal state.
       ensureCleanJobState(connectionUpdaterInput);
 
-      final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
+      waitUntilNextRun(connectionUpdaterInput);
 
-      Workflow.await(timeToWait,
-          () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+      final boolean needToRun = needToRun(connectionUpdaterInput);
 
-      workflowState.setDoneWaiting(true);
-
-      if (workflowState.isDeleted()) {
-        log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
+      if (!needToRun) {
         return;
-      }
-
-      if (workflowState.isUpdated()) {
-        // Act as a return
-        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
       }
 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
       workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
 
-      final GeneratedJobInput jobInputs = getJobInput();
+      final GeneratedJobInput jobInputs = generateJobInput(connectionUpdaterInput);
 
-      reportJobStarting();
-      StandardSyncOutput standardSyncOutput = null;
-
-      try {
-        final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
-        if (syncCheckConnectionFailure.isFailed()) {
-          final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
-          workflowState.setFailed(getFailStatus(checkFailureOutput));
-          reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION);
-        } else {
-          standardSyncOutput = runChildWorkflow(jobInputs);
-          workflowState.setFailed(getFailStatus(standardSyncOutput));
-
-          if (workflowState.isFailed()) {
-            reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.UNKNOWN);
-          } else {
-            reportSuccess(connectionUpdaterInput, standardSyncOutput);
-          }
-        }
-
-        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-      } catch (final ChildWorkflowFailure childWorkflowFailure) {
-        // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
-        // exception since we expect it, we just
-        // silently ignore it.
-        if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
-          // do nothing, cancellation handled by cancellationScope
-          recordWorkflowFailureCountMetric(connectionUpdaterInput, FailureCause.CANCELED);
-        } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
-          // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
-          // activity throws an exception, for
-          // example, this lets us set the failureOrigin to normalization.
-          workflowInternalState.getFailures().add(FailureHelper.failureReasonFromWorkflowAndActivity(
-              childWorkflowFailure.getWorkflowType(),
-              af.getActivityType(),
-              af.getCause(),
-              workflowInternalState.getJobId(),
-              workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.ACTIVITY);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-        } else {
-          workflowInternalState.getFailures().add(
-              FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
-                  workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.WORKFLOW);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-        }
-      }
+      checkConnectionAndRunSync(connectionUpdaterInput, jobInputs);
     });
   }
 
@@ -868,10 +784,119 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return metricAttributes;
   }
 
+  private void initInternalState(final ConnectionUpdaterInput connectionUpdaterInput) {
+    connectionId = connectionUpdaterInput.getConnectionId();
+
+    // workflow state is only ever set in test cases. for production cases, it will always be null.
+    if (connectionUpdaterInput.getWorkflowState() != null) {
+      workflowState = connectionUpdaterInput.getWorkflowState();
+    }
+
+    if (connectionUpdaterInput.isSkipScheduling()) {
+      workflowState.setSkipScheduling(true);
+    }
+  }
+
+  private void waitUntilNextRun(final ConnectionUpdaterInput connectionUpdaterInput) {
+    final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
+
+    Workflow.await(timeToWait,
+        () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+    workflowState.setDoneWaiting(true);
+  }
+
+  private boolean needToRun(final ConnectionUpdaterInput connectionUpdaterInput) {
+    if (workflowState.isDeleted()) {
+      log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
+      return false;
+    }
+
+    if (workflowState.isUpdated()) {
+      // Act as a return
+      prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+    }
+
+    return true;
+  }
+
+  private GeneratedJobInput generateJobInput(final ConnectionUpdaterInput connectionUpdaterInput) {
+    workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
+    workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
+
+    return getJobInput();
+  }
+
+  private void checkConnectionAndRunSync(final ConnectionUpdaterInput connectionUpdaterInput, final GeneratedJobInput jobInputs) {
+    reportJobStarting();
+
+    try {
+      final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
+      if (syncCheckConnectionFailure.isFailed()) {
+        workflowState.setSyncOutput(syncCheckConnectionFailure.buildFailureOutput());
+        workflowState.setFailed(getFailStatus(workflowState.getStandardSyncOutput()));
+        workflowState.setFailureCause(FailureCause.CONNECTION);
+        reportFailure(connectionUpdaterInput, workflowState.getStandardSyncOutput(), FailureCause.CONNECTION);
+      } else {
+        workflowState.setSyncOutput(runChildWorkflow(jobInputs));
+        workflowState.setFailed(getFailStatus(workflowState.getStandardSyncOutput()));
+
+        if (workflowState.isFailed()) {
+          workflowState.setFailureCause(FailureCause.UNKNOWN);
+        }
+      }
+
+      prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+    } catch (final ChildWorkflowFailure childWorkflowFailure) {
+      // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
+      // exception since we expect it, we just
+      // silently ignore it.
+      if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
+        // do nothing, cancellation handled by cancellationScope
+        recordWorkflowFailureCountMetric(connectionUpdaterInput, FailureCause.CANCELED);
+      } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
+        // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
+        // activity throws an exception, for
+        // example, this lets us set the failureOrigin to normalization.
+        workflowInternalState.getFailures().add(FailureHelper.failureReasonFromWorkflowAndActivity(
+            childWorkflowFailure.getWorkflowType(),
+            af.getActivityType(),
+            af.getCause(),
+            workflowInternalState.getJobId(),
+            workflowInternalState.getAttemptNumber()));
+        workflowState.setFailureCause(FailureCause.ACTIVITY);
+      } else {
+        workflowInternalState.getFailures().add(
+            FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
+                workflowInternalState.getAttemptNumber()));
+        workflowState.setFailureCause(FailureCause.WORKFLOW);
+      }
+    }
+  }
+
+  private void reportJobStatus(final ConnectionUpdaterInput connectionUpdaterInput) {
+    // this means that the current workflow is being cancelled so that a reset can be run instead.
+    if (workflowState.isCancelledForReset()) {
+      reportCancelledAndContinueWith(true, connectionUpdaterInput);
+    }
+
+    // "Cancel" button was pressed on a job
+    if (workflowState.isCancelled()) {
+      deleteResetJobStreams();
+      reportCancelledAndContinueWith(false, connectionUpdaterInput);
+    }
+
+    if (workflowState.isFailed()) {
+      reportFailure(connectionUpdaterInput, workflowState.getStandardSyncOutput(), workflowState.getFailureCause());
+    } else {
+      reportSuccess(connectionUpdaterInput, workflowState.getStandardSyncOutput());
+    }
+  }
+
   /**
    * Enumeration of workflow failure causes.
    */
-  private enum FailureCause {
+  public enum FailureCause {
     ACTIVITY,
     CANCELED,
     CONNECTION,

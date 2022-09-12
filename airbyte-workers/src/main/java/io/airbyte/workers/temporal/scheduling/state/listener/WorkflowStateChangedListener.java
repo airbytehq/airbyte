@@ -37,6 +37,8 @@ public interface WorkflowStateChangedListener {
     CANCELLED_FOR_RESET,
     RESET_WITH_SCHEDULING,
     DONE_WAITING,
+    SET_FAILURE_CAUSE,
+    SET_SYNC_OUTPUT
   }
 
   @Value

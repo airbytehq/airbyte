@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.state;
 
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl.FailureCause;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
@@ -39,6 +41,8 @@ public class WorkflowState {
   @Deprecated
   private final boolean resetWithScheduling = false;
   private boolean doneWaiting = false;
+  private FailureCause failureCause = FailureCause.UNKNOWN;
+  private StandardSyncOutput standardSyncOutput = null;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -128,6 +132,22 @@ public class WorkflowState {
     this.doneWaiting = doneWaiting;
   }
 
+  public void setFailureCause(final FailureCause failureCause) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SET_FAILURE_CAUSE,
+        doneWaiting);
+    stateChangedListener.addEvent(id, event);
+    this.failureCause = failureCause;
+  }
+
+  public void setSyncOutput(final StandardSyncOutput standardSyncOutput) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SET_SYNC_OUTPUT,
+        doneWaiting);
+    stateChangedListener.addEvent(id, event);
+    this.standardSyncOutput = standardSyncOutput;
+  }
+
   // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
   // event.
   public void reset() {
@@ -141,6 +161,7 @@ public class WorkflowState {
     this.setSuccess(false);
     this.setQuarantined(false);
     this.setDoneWaiting(false);
+    this.setFailureCause(FailureCause.UNKNOWN);
   }
 
 }
