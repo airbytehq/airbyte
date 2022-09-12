@@ -32,12 +32,12 @@ paginator:
   type: "LimitPaginator"
   page_size: 5
   limit_option:
-    option_type: request_parameter
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
   page_token:
-    option_type: "request_parameter"
+    inject_into: "request_parameter"
     field_name: "page"
 ```
 
@@ -59,7 +59,7 @@ paginator:
   type: "LimitPaginator"
   page_size: 5
   limit_option:
-    option_type: request_parameter
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "OffsetIncrement"
