@@ -180,6 +180,10 @@ public class ApiPojoConverters {
     return Enums.convertTo(apiTimeUnit, BasicSchedule.TimeUnit.class);
   }
 
+  public static Schedule.TimeUnit toLegacyScheduleTimeUnit(final ConnectionScheduleDataBasicSchedule.TimeUnitEnum timeUnit) {
+    return Enums.convertTo(timeUnit, Schedule.TimeUnit.class);
+  }
+
   public static ConnectionScheduleDataBasicSchedule.TimeUnitEnum toApiBasicScheduleTimeUnit(final BasicSchedule.TimeUnit timeUnit) {
     return Enums.convertTo(timeUnit, ConnectionScheduleDataBasicSchedule.TimeUnitEnum.class);
   }
