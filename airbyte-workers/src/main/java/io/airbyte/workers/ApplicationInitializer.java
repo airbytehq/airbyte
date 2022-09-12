@@ -145,7 +145,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private String workspaceRoot;
   @Value("${temporal.cloud.namespace}")
   private String temporalCloudNamespace;
-  @Value("${data.sync.task-queue}")
+  @Value("${airbyte.data.sync.task-queue}")
   private String syncTaskQueue;
 
   @Override
@@ -350,7 +350,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
    */
   private Set<String> getSyncTaskQueue() {
     if (StringUtils.isEmpty(syncTaskQueue)) {
-      return new HashSet<>();
+      return Set.of();
     }
     return Arrays.stream(syncTaskQueue.split(",")).collect(Collectors.toSet());
   }
