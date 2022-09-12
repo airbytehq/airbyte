@@ -26,15 +26,15 @@ Each of these concepts is described in greater depth in their respective section
 
 The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
 
-| Version | Date       | Pull Request                                                                                                          | Subject                                                                          |
-| :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| 0.3.0   | 2022-09-09 | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                              | `AirbyteLogMessage.stack_trace` added                                            |
-| 0.2.0   | 2022-06-10 | [13573](https://github.com/airbytehq/airbyte/pull/13573) and [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
-| 0.1.1   | 2022-06-06 | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                              | Add a namespace in association with the stream name                              |
-| 0.1.0   | 2022-05-03 | [12458](https://github.com/airbytehq/airbyte/pull/12458) and [12581](https://github.com/airbytehq/airbyte/pull/12581) | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions |
-| 0.0.2   | 2021-11-15 | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                                | Support oAuth Connectors (internal)                                              |
-| 0.0.1   | 2021-11-19 | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                | Remove sub-JSON Schemas                                                           |
-| 0.0.0   | 2020-11-18 | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                  | Initial version described via JSON Schema                                        |
+| Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
+| :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
+| `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
+| `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
+| `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                            | Add a namespace in association with the stream name                              |
+| `v0.1.0` | 2022-05-03     | [12458](https://github.com/airbytehq/airbyte/pull/12458) & [12581](https://github.com/airbytehq/airbyte/pull/12581) | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions |
+| `v0.0.2` | 2021-11-15     | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                              | Support oAuth Connectors (internal)                                              |
+| `v0.0.1` | 2021-11-19     | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                              | Remove sub-JSON Schemas                                                          |
+| `v0.0.0` | 2020-11-18     | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                | Initial version described via JSON Schema                                        |
 
 ## Actor Interface
 
