@@ -41,6 +41,14 @@ const config = {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
                         },
+                        {
+                            from: '/project-overview/security',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/operator-guides/securing-airbyte',
+                            to: '/operator-guides/security',
+                        },
 
 //                        {
 //                         from: '/some-lame-path',
