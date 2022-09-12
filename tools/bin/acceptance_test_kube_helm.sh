@@ -10,12 +10,12 @@ assert_root
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 if [ -n "$CI" ]; then
   echo "Loading images into KIND..."
-  kind load docker-image airbyte/server:dev --name chart-testing &
-  kind load docker-image airbyte/webapp:dev --name chart-testing &
-  kind load docker-image airbyte/worker:dev --name chart-testing &
-  kind load docker-image airbyte/db:dev --name chart-testing &
-  kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
-  kind load docker-image airbyte/bootloader:dev --name chart-testing &
+  kind load docker-image airbyte/server:dev --name helm-testing &
+  kind load docker-image airbyte/webapp:dev --name helm-testing &
+  kind load docker-image airbyte/worker:dev --name helm-testing &
+  kind load docker-image airbyte/db:dev --name helm-testing &
+  kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
+  kind load docker-image airbyte/bootloader:dev --name helm-testing &
   wait
 fi
 
@@ -64,7 +64,7 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+kubectl port-forward svc/airbyte-airbyte-server-svc 8001:8001 &
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
