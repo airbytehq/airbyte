@@ -59,7 +59,7 @@
     "react-use": "^15.3.8",
     "react-use-intercom": "^1.5.2",
     "react-widgets": "^4.6.1",
-    "recharts": "^2.1.10",
+    "recharts": "^2.1.13",
     "rehype-slug": "^5.0.1",
     "rehype-urls": "^1.1.1",
     "remark-directive": "^2.0.1",
