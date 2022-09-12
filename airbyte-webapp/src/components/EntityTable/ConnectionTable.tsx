@@ -8,7 +8,7 @@ import styled from "styled-components";
 import Table from "components/Table";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import ConnectorCell from "./components/ConnectorCell";
@@ -33,7 +33,7 @@ interface IProps {
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
   const navigate = useNavigate();
-  const query = useQuery();
+  const query = useQuery() as { sortBy?: string; order?: SortOrderEnum };
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
