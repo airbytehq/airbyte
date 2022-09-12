@@ -5,7 +5,7 @@
 import datetime
 import urllib
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -72,9 +72,13 @@ class SendgridStreamOffsetPagination(SendgridStream):
 class SendgridStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "created"
 
-    def __init__(self, start_time: int, **kwargs):
+    def __init__(self, start_time: Optional[Union[int, str]], **kwargs):
         super().__init__(**kwargs)
+        self._start_time = start_time or 0
+        # for backward compatibility
         self._start_time = start_time
+        if isinstance(self._start_time, str):
+            self._start_time = int(pendulum.parse(self._start_time).timestamp())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
