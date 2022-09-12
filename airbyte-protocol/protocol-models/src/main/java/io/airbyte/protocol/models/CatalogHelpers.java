@@ -338,8 +338,7 @@ public class CatalogHelpers {
         .collect(
             () -> new HashMap<>(),
             CatalogHelpers::collectInHashMap,
-            CatalogHelpers::combineAccumulator
-        );
+            CatalogHelpers::combineAccumulator);
     final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
         .stream()
         .collect(() -> new HashMap<>(),

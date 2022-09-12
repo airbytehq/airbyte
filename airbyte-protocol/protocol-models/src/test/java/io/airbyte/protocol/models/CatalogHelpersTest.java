@@ -163,26 +163,24 @@ class CatalogHelpersTest {
   void testGetFullyQualifiedFieldNamesWithTypes() throws IOException {
     CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
         Jsons.deserialize(MoreResources.readResource("companies_schema.json"))).stream().collect(
-        () -> new HashMap<>(),
-        CatalogHelpers::collectInHashMap,
-        CatalogHelpers::combineAccumulator);
+            () -> new HashMap<>(),
+            CatalogHelpers::collectInHashMap,
+            CatalogHelpers::combineAccumulator);
   }
 
   @Test
   void testGetFullyQualifiedFieldNamesWithTypesOnInvalidSchema() throws IOException {
     val resultField = CatalogHelpers.getFullyQualifiedFieldNamesWithTypes(
         Jsons.deserialize(MoreResources.readResource("companies_schema_invalid.json"))).stream().collect(
-        () -> new HashMap<>(),
-        CatalogHelpers::collectInHashMap,
-        CatalogHelpers::combineAccumulator);
+            () -> new HashMap<>(),
+            CatalogHelpers::collectInHashMap,
+            CatalogHelpers::combineAccumulator);
 
     Assertions.assertThat(resultField)
         .contains(
             Map.entry(
                 List.of("tags", "tags", "items"),
-                CatalogHelpers.DUPLICATED_SCHEMA
-            )
-        );
+                CatalogHelpers.DUPLICATED_SCHEMA));
   }
 
   @Test
@@ -215,4 +213,5 @@ class CatalogHelpersTest {
 
     Assertions.assertThat(actualDiff).hasSize(0);
   }
+
 }
