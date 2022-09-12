@@ -33,14 +33,14 @@ public class ContainerOrchestratorConfigBeanFactory {
             value = "true")
   @Named("containerOrchestratorConfig")
   public ContainerOrchestratorConfig kubernetesContainerOrchestratorConfig(
-                                                                                     @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
-                                                                                     @Value("${airbyte.version}") final String airbyteVersion,
-                                                                                     @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
-                                                                                     @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
-                                                                                     @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
-                                                                                     @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
-                                                                                     @Value("${google.application.credentials}") final String googleApplicationCredentials,
-                                                                                     @Value("${airbyte.worker.job.kube.namespace}") final String namespace) {
+                                                                           @Named("stateStorageConfigs") final Optional<CloudStorageConfigs> cloudStateStorageConfiguration,
+                                                                           @Value("${airbyte.version}") final String airbyteVersion,
+                                                                           @Value("${airbyte.container.orchestrator.image}") final String containerOrchestratorImage,
+                                                                           @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
+                                                                           @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
+                                                                           @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
+                                                                           @Value("${google.application.credentials}") final String googleApplicationCredentials,
+                                                                           @Value("${airbyte.worker.job.kube.namespace}") final String namespace) {
     final var kubernetesClient = new DefaultKubernetesClient();
 
     final DocumentStoreClient documentStoreClient = StateClients.create(
@@ -57,4 +57,5 @@ public class ContainerOrchestratorConfigBeanFactory {
         containerOrchestratorImagePullPolicy,
         googleApplicationCredentials);
   }
+
 }

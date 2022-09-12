@@ -320,9 +320,11 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
   /**
    * Retrieve the Temporal namespace based on the configuration.
+   *
    * @return The Temporal namespace.
    */
   private String getTemporalNamespace() {
     return StringUtils.isNotEmpty(temporalCloudNamespace) ? temporalCloudNamespace : TemporalUtils.DEFAULT_NAMESPACE;
   }
+
 }
