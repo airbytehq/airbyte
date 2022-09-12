@@ -33,7 +33,6 @@ export const Button: React.FC<ButtonProps> = (props) => {
         <FontAwesomeIcon
           className={classNames(styles.buttonIcon, {
             [styles.isSpinnerIcon]: true,
-            ...buttonStyles,
           })}
           icon={faCircleNotch}
         />
@@ -45,7 +44,6 @@ export const Button: React.FC<ButtonProps> = (props) => {
             [styles.positionLeft]: true,
             [styles.isRegularIcon]: true,
             [styles.withLabel]: Boolean(props.children),
-            ...buttonStyles,
           }),
         })}
       {props.children}
@@ -56,7 +54,6 @@ export const Button: React.FC<ButtonProps> = (props) => {
             [styles.positionRight]: true,
             [styles.isRegularIcon]: true,
             [styles.withLabel]: Boolean(props.children),
-            ...buttonStyles,
           }),
         })}
     </button>
