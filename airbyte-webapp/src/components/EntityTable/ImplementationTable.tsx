@@ -6,7 +6,7 @@ import { CellProps } from "react-table";
 
 import Table from "components/Table";
 
-import { useQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";

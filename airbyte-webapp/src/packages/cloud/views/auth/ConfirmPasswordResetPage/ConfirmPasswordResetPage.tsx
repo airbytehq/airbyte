@@ -8,7 +8,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { useQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -23,7 +23,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
   const navigate = useNavigate();
-  const query = useQuery();
+  const query = useQuery() as { oobCode?: string };
   const { formatMessage } = useIntl();
 
   return (

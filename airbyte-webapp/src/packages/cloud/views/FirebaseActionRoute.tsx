@@ -7,7 +7,7 @@ import LoadingPage from "components/LoadingPage";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
-import { useQuery } from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import { CloudRoutes } from "../cloudRoutes";
@@ -21,7 +21,7 @@ export enum FirebaseActionMode {
 }
 
 export const VerifyEmailAction: React.FC = () => {
-  const query = useQuery();
+  const query = useQuery() as { mode?: FirebaseActionMode; oobCode?: string };
   const { verifyEmail } = useAuthService();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
