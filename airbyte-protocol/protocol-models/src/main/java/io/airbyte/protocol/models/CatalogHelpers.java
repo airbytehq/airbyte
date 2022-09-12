@@ -336,12 +336,13 @@ public class CatalogHelpers {
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
         .collect(
-            () -> new HashMap<>(),
+            HashMap::new,
             CatalogHelpers::collectInHashMap,
             CatalogHelpers::combineAccumulator);
     final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
         .stream()
-        .collect(() -> new HashMap<>(),
+        .collect(
+            HashMap::new,
             CatalogHelpers::collectInHashMap,
             CatalogHelpers::combineAccumulator);
 
