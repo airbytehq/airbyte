@@ -409,7 +409,9 @@ class BasicAcceptanceTests {
         testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC,
             BASIC_SCHEDULE_DATA).getConnectionId();
 
-    for (int i = 0; i < 10; i++) {
+    // Retry for up to 5 minutes.
+    int i;
+    for (i = 0; i < 10; i++) {
       sleep(Duration.ofSeconds(30).toMillis());
       try {
         final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
@@ -418,6 +420,9 @@ class BasicAcceptanceTests {
       } catch (Exception e) {
         // Retry.
       }
+    }
+    if (i == 10) {
+      LOGGER.error("Sync job did not complete within 5 minutes");
     }
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
@@ -431,6 +436,7 @@ class BasicAcceptanceTests {
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
+    // NOTE: this cron should run once every two minutes.
     final ConnectionScheduleData connectionScheduleData = new ConnectionScheduleData().cron(
         new ConnectionScheduleDataCron().cronExpression("* */2 * * * ?").cronTimeZone("UTC"));
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -441,7 +447,8 @@ class BasicAcceptanceTests {
         testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.CRON,
             connectionScheduleData).getConnectionId();
 
-    for (int i = 0; i < 10; i++) {
+    int i;
+    for (i = 0; i < 10; i++) {
       sleep(Duration.ofSeconds(30).toMillis());
       try {
         final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
@@ -451,6 +458,11 @@ class BasicAcceptanceTests {
         // Retry.
       }
     }
+
+    if (i == 10) {
+      LOGGER.error("Sync job did not complete within 5 minutes");
+    }
+
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
