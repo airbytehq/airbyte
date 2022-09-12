@@ -223,7 +223,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [availableServices, frequentlyUsedDestinationIds]
   );
 
-  const startWithDestination: DestinationConnectorCard | undefined = useMemo(() => {
+  const startWithDestination = useMemo<DestinationConnectorCard | undefined>(() => {
     const destination = availableServices.find(
       (service): service is DestinationDefinitionReadWithLatestTag =>
         isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
