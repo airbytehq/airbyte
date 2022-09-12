@@ -164,14 +164,7 @@ class Orders(IncrementalRechargeStream):
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     """
 
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
-
-    @transformer.registerCustomTransform
-    def transform_function(original_value: str, field_schema: int) -> int:
-        value = original_value
-        if "type" in field_schema and "integer" in field_schema["type"]:
-            value = int(original_value)
-        return value
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class Products(RechargeStream):
