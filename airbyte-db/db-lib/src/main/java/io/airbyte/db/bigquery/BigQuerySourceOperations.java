@@ -99,7 +99,7 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
           }
         }
       } catch (final UnsupportedOperationException e) {
-        LOGGER.error("Failed to parse Object field with name: ", fieldName, e.getMessage());
+        LOGGER.error("Failed to parse Object field with name: {}, {}", fieldName, e.getMessage());
       }
     }
   }

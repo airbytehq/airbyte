@@ -73,20 +73,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-workers-*.tar'
-    }
-    into 'build/docker/bin'
-}
-
-Task dockerBuildTask = getDockerBuildTask("worker", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)
-
 task cloudStorageIntegrationTest(type: Test) {
     useJUnitPlatform {
         includeTags cloudStorageTestTagName
@@ -94,6 +80,10 @@ task cloudStorageIntegrationTest(type: Test) {
     testLogging {
         events "passed", "skipped", "failed"
     }
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

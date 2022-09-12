@@ -7,6 +7,7 @@ package io.airbyte.scheduler.persistence;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -30,6 +31,9 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -198,9 +202,10 @@ class DefaultJobPersistenceTest {
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(SYNC_STATS));
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
@@ -245,18 +250,44 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should be able to read what is written")
-  void testWriteOutput() throws IOException {
+  void testWriteOutput() throws IOException, SQLException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
-    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
+    final SyncStats syncStats =
+        new SyncStats().withBytesEmitted(100L).withRecordsEmitted(9L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
+            .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
+            .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
+    final StandardSyncOutput standardSyncOutput =
+        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats));
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput);
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
+        jobOutput.getSync().getStandardSyncSummary().getTotalStats());
 
     final Job updated = jobPersistence.getJob(jobId);
+
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+
+    final Optional<Record> record =
+        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst());
+
+    final Long attemptId = record.get().get("id", Long.class);
+
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+    assertEquals(100L, storedSyncStats.getBytesEmitted());
+    assertEquals(9L, storedSyncStats.getRecordsEmitted());
+    assertEquals(10L, storedSyncStats.getRecordsCommitted());
+    assertEquals(4L, storedSyncStats.getSourceStateMessagesEmitted());
+    assertEquals(1L, storedSyncStats.getDestinationStateMessagesEmitted());
+    assertEquals(5L, storedSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(2L, storedSyncStats.getMeanSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
+    assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
+
   }
 
   @Test

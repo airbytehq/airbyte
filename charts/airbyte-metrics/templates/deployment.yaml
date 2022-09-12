@@ -44,7 +44,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-metrics-container
-        image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "metrics.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}

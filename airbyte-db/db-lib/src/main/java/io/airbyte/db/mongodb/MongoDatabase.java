@@ -117,7 +117,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
           });
 
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to read data from collection: ", collectionName, e.getMessage());
+      LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.getMessage());
       throw new RuntimeException(e);
     }
   }

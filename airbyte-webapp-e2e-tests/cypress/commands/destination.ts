@@ -1,6 +1,6 @@
 import { deleteEntity, openSettingForm, submitButtonClick, updateField } from "./common";
-import { fillLocalJsonForm } from "./connector"
-import { goToDestinationPage, openNewDestinationForm } from "pages/destinationPage"
+import { fillLocalJsonForm } from "./connector";
+import { goToDestinationPage, openNewDestinationForm } from "pages/destinationPage";
 
 export const createLocalJsonDestination = (name: string, destinationPath: string) => {
   cy.intercept("/api/v1/scheduler/destinations/check_connection").as("checkDestinationConnection");
@@ -14,7 +14,7 @@ export const createLocalJsonDestination = (name: string, destinationPath: string
   cy.wait(3000);
   cy.wait("@checkDestinationConnection");
   cy.wait("@createDestination");
-}
+};
 
 export const updateDestination = (name: string, field: string, value: string) => {
   cy.intercept("/api/v1/destinations/check_connection_for_update").as("checkDestinationUpdateConnection");
@@ -27,7 +27,7 @@ export const updateDestination = (name: string, field: string, value: string) =>
 
   cy.wait("@checkDestinationUpdateConnection");
   cy.wait("@updateDestination");
-}
+};
 
 export const deleteDestination = (name: string) => {
   cy.intercept("/api/v1/destinations/delete").as("deleteDestination");
@@ -35,4 +35,4 @@ export const deleteDestination = (name: string) => {
   openSettingForm(name);
   deleteEntity();
   cy.wait("@deleteDestination");
-}
+};

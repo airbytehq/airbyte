@@ -135,7 +135,7 @@ class ArchiveHandlerTest {
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
-        .build();;
+        .build();
     configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);

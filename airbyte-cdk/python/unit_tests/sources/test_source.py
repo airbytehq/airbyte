@@ -6,7 +6,7 @@ import json
 import logging
 import tempfile
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Mapping, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -39,6 +39,14 @@ class MockSource(Source):
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]):
         pass
+
+
+class MockAbstractSource(AbstractSource):
+    def check_connection(self, *args, **kwargs) -> Tuple[bool, Optional[Any]]:
+        return True, ""
+
+    def streams(self, *args, **kwargs) -> List[Stream]:
+        return []
 
 
 @pytest.fixture
@@ -212,11 +220,7 @@ def abstract_source(mocker):
         ),
         pytest.param(
             {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
-            [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
-                )
-            ],
+            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
             does_not_raise(),
             id="test_incoming_legacy_state",
         ),
@@ -281,6 +285,20 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
         with expected_error:
             actual = source.read_state(state_file.name)
             assert actual == expected_state
+
+
+def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
+    expected_state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
+        )
+    ]
+    source = MockAbstractSource()
+    with tempfile.NamedTemporaryFile("w") as state_file:
+        state_file.write(json.dumps({"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}))
+        state_file.flush()
+        actual = source.read_state(state_file.name)
+        assert actual == expected_state
 
 
 def test_read_state_nonexistent(source):
