@@ -31,11 +31,11 @@ public class ApiClientBeanFactory {
 
   @Singleton
   public AirbyteApiClient airbyteApiClient(
-                                           @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-                                           @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-                                           @Named("internalApiAuthToken") final String internalApiAuthToken,
-                                           @Named("internalApiScheme") final String internalApiScheme,
-                                           final WorkerPlane workerPlane) {
+      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+      @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
+      @Named("internalApiAuthToken") final String internalApiAuthToken,
+      @Named("internalApiScheme") final String internalApiScheme,
+      final WorkerPlane workerPlane) {
     return new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
             .setScheme(internalApiScheme)
@@ -55,27 +55,26 @@ public class ApiClientBeanFactory {
   public String internalApiScheme(final WorkerPlane workerPlane) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
-    return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
+//    return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
+    return "http";
   }
 
   /**
-   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request.
-   *
-   * For Data Plane workers, generate a signed JWT as described here:
-   * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
-   *
+   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor for each request.
+   * <p>
+   * For Data Plane workers, generate a signed JWT as described here: https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
+   * <p>
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */
   @Singleton
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
-                                     @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-                                     @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
-                                     @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
-                                     @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
-                                     @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
-                                     final WorkerPlane workerPlane) {
+      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
+      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
+      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
+      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
+      final WorkerPlane workerPlane) {
     if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
@@ -101,7 +100,9 @@ public class ApiClientBeanFactory {
         final Algorithm algorithm = Algorithm.RSA256(null, key);
         return "Bearer " + token.sign(algorithm);
       } catch (final Exception e) {
-        log.warn("An issue occurred while generating a data plane auth token. Defaulting to empty string.", e);
+        log.warn(
+            "An issue occurred while generating a data plane auth token. Defaulting to empty string. Error Message: {}",
+            e.getMessage());
         return "";
       }
     } else {
