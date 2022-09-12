@@ -704,30 +704,32 @@ jobs:
   ## Kube Acceptance Tests
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
-  start-helm-acceptance-test-runner:
-    name: "Platform: Start Helm Acceptance Test Runner"
-    needs:
-      - changes
-      - find_valid_pat
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
-          ec2-image-id: ami-0c1a9bc22624339d8
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+  # TODO:
+  # Kyryl to fix issue
+  # start-helm-acceptance-test-runner:
+  #   name: "Platform: Start Helm Acceptance Test Runner"
+  #   needs:
+  #     - changes
+  #     - find_valid_pat
+  #   # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+  #   if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+  #   timeout-minutes: 10
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     label: ${{ steps.start-ec2-runner.outputs.label }}
+  #     ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+  #   steps:
+  #     - name: Checkout Airbyte
+  #       uses: actions/checkout@v2
+  #     - name: Start AWS Runner
+  #       id: start-ec2-runner
+  #       uses: ./.github/actions/start-aws-runner
+  #       with:
+  #         # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
+  #         ec2-image-id: ami-0c1a9bc22624339d8
+  #         aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+  #         github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
 
   # Todo: Kyrylo turn this on.
