@@ -106,6 +106,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
    * data from the job database).
    */
   @VisibleForTesting
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   static Optional<Database> getJobsDatabase(final String databaseUser, final String databasePassword, final String databaseUrl) {
     try {
       if (databaseUrl == null || "".equals(databaseUrl.trim())) {
