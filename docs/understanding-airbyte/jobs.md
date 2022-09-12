@@ -70,7 +70,7 @@ Airbyte offers two deployment types. The underlying process implementations diff
 2. The Kubernetes deployment - Each process is a backed by a Kubernetes pod. As Kubernetes does not make process-locality guarantees, Airbyte has implemented mechanisms to hide the remote process execution.
    See [this blogpost](https://airbyte.com/blog/scaling-data-pipelines-kubernetes) for more details.
 
-### Container Orchestrator
+### Decoupling Worker and Job Processes
 
 Workers being responsible for all non-connector-related job operations means multiple jobs are operationally dependent on a single worker process.
 
@@ -82,8 +82,24 @@ This gives us a potentially brittle system component that can be operationally t
 
 The Container Orchestrator was introduced to solve this.
 
+#### Container Orchestrator
+When enabled, workers launch the Container Orchestrator process.
 
-The Container Orchestrator is not available for the Docker deployment yet. Users running Airbyte Docker should be aware of the above pitfalls.
+This orchestrator process replaces the previous worker process. It now performs the [above listed responsibilities](#worker-responsibilities).
+
+This decoupling introduces a new need for workers to track the orchestrator's, and the job's, state. This is done via a shared Cloud Storage store.
+
+Brief description of how this works,
+1. Workers constantly poll the Cloud Storage location for job state.
+2. As an Orchestrator process executes, it writes status marker files to the Cloud Storage location i.e. `NOT_STARTED`, `INITIALIZING`, `RUNNING`, `SUCCESS`, `FAILURE`.
+3. If the Orchestrator process runs into issues at any point, it writes a `FAILURE`.
+4. If the Orchestrator process succeeds, it writes a job summary as part of the `SUCCESS` marker file.
+
+The Cloud Storage store is treated as the source-of-truth of execution state.
+
+The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm charts/Kustomize deploys.
+
+Users running Airbyte Docker should be aware of the above pitfalls.
 
 ## Configuring Workers
 
