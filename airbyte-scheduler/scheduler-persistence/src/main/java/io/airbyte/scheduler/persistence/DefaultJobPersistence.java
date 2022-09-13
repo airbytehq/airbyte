@@ -346,16 +346,18 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
           .execute();
 
-      ctx.insertInto(NORMALIZATION_SUMMARIES)
-          .set(NORMALIZATION_SUMMARIES.ID, UUID.randomUUID())
-          .set(NORMALIZATION_SUMMARIES.UPDATED_AT, now)
-          .set(NORMALIZATION_SUMMARIES.CREATED_AT, now)
-          .set(NORMALIZATION_SUMMARIES.ATTEMPT_ID, attemptId)
-          .set(NORMALIZATION_SUMMARIES.START_TIME,
-              OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getStartTime()), ZoneOffset.UTC))
-          .set(NORMALIZATION_SUMMARIES.END_TIME, OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getEndTime()), ZoneOffset.UTC))
-          .set(NORMALIZATION_SUMMARIES.FAILURES, JSONB.valueOf(String.valueOf(normalizationSummary.getFailures())))
-          .execute();
+      if (normalizationSummary != null) {
+        ctx.insertInto(NORMALIZATION_SUMMARIES)
+            .set(NORMALIZATION_SUMMARIES.ID, UUID.randomUUID())
+            .set(NORMALIZATION_SUMMARIES.UPDATED_AT, now)
+            .set(NORMALIZATION_SUMMARIES.CREATED_AT, now)
+            .set(NORMALIZATION_SUMMARIES.ATTEMPT_ID, attemptId)
+            .set(NORMALIZATION_SUMMARIES.START_TIME,
+                OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getStartTime()), ZoneOffset.UTC))
+            .set(NORMALIZATION_SUMMARIES.END_TIME, OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getEndTime()), ZoneOffset.UTC))
+            .set(NORMALIZATION_SUMMARIES.FAILURES, JSONB.valueOf(String.valueOf(normalizationSummary.getFailures())))
+            .execute();
+      }
       return null;
     });
 

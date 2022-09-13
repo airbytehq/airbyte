@@ -31,6 +31,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
@@ -258,8 +259,10 @@ class DefaultJobPersistenceTest {
         new SyncStats().withBytesEmitted(100L).withRecordsEmitted(9L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
             .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
             .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
+    final NormalizationSummary normalizationSummary = new NormalizationSummary().withStartTime(10L).withEndTime(500L);
     final StandardSyncOutput standardSyncOutput =
-        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats));
+        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats))
+            .withNormalizationSummary(normalizationSummary);
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
