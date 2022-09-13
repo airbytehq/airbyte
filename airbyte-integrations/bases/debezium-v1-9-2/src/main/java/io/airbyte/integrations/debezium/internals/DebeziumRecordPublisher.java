@@ -13,9 +13,11 @@ import io.debezium.engine.spi.OffsetCommitPolicy;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,9 +63,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            boolean inserted = false;
-            while (!inserted) {
-              inserted = queue.offer(e);
+            if (queue instanceof BlockingQueue<ChangeEvent<String, String>> bq) {
+              try {
+                bq.put(e);
+              } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(ex);
+              }
+            } else {
+              // We always use a blocking queue (see AirbyteDebeziumHandler#getIncrementalIterators), so this branch is just to satisfy the compiler.
+              // This will always trigger an SAT failure, so should never happen in production.
+              throw new RuntimeException("Non-BlockingQueue implementation was used: " + queue.getClass());
             }
           }
         })
