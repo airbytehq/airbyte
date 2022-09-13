@@ -11,6 +11,8 @@ from jsonschema import Draft7Validator, validators
 
 logger = logging.getLogger("airbyte")
 
+simple_types = {"string": str, "number": float, "integer": int, "boolean": bool, "null": type(None)}
+
 
 class TransformConfig(Flag):
     """
@@ -115,7 +117,8 @@ class TypeTransformer:
                     return strtobool(original_item) == 1
                 return bool(original_item)
             elif target_type == "array":
-                if isinstance(original_item, (str, int, bool)):
+                item_types = set(subschema.get("items", {}).get("type", set()))
+                if item_types.issubset(simple_types) and type(original_item) in simple_types.values():
                     return [original_item]
         except (ValueError, TypeError):
             return original_item

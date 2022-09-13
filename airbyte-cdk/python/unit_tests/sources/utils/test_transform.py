@@ -114,8 +114,8 @@ VERY_NESTED_SCHEMA = {
             # Array without items and value is not an array
             {"type": "object", "properties": {"value": {"type": "array"}}},
             {"value": "12"},
-            {"value": "12"},
-            "'12' is not of type 'array'",
+            {"value": ["12"]},
+            None,
         ),
         (
             # Schema root object is not an object, no convertion should happen
