@@ -1,5 +1,7 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
+import { Card } from "components/base";
+
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { SectionContainer } from "views/Connector/ServiceForm/components/Sections/common";
 import { GroupLabel } from "views/Connector/ServiceForm/components/Sections/GroupLabel";
@@ -11,7 +13,11 @@ export default {
   component: GroupControls,
 } as ComponentMeta<typeof GroupControls>;
 
-const Template: ComponentStory<typeof GroupControls> = (args) => <GroupControls {...args} />;
+const Template: ComponentStory<typeof GroupControls> = (args) => (
+  <Card style={{ padding: "20px" }}>
+    <GroupControls {...args} />
+  </Card>
+);
 
 const propOneFormBlock: FormBlock = {
   title: "propOne",

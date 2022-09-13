@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Input } from "components";
+import { Card, Input } from "components";
 
 import { PropertyLabel } from "./PropertyLabel";
 
@@ -9,7 +9,11 @@ export default {
   component: PropertyLabel,
 } as ComponentMeta<typeof PropertyLabel>;
 
-const Template: ComponentStory<typeof PropertyLabel> = (args) => <PropertyLabel {...args} />;
+const Template: ComponentStory<typeof PropertyLabel> = (args) => (
+  <Card style={{ padding: "20px" }}>
+    <PropertyLabel {...args} />
+  </Card>
+);
 
 export const Primary = Template.bind({});
 Primary.args = {
