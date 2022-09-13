@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.1.84
+## 0.1.85
 - Make TypeTransformer more robust to incorrect incoming records
+
+## 0.1.84
+- Emit legacy format when state is unspecified for read override connectors
 
 ## 0.1.83
 - Fix per-stream to send legacy format for connectors that override read
