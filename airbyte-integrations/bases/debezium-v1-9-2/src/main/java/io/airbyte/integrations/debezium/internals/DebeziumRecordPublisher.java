@@ -53,7 +53,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.engineLatch = new CountDownLatch(1);
   }
 
-  public void start(final Queue<ChangeEvent<String, String>> queue) {
+  public void start(final BlockingQueue<ChangeEvent<String, String>> queue) {
     engine = DebeziumEngine.create(Json.class)
         .using(debeziumPropertiesManager.getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
@@ -63,17 +63,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            if (queue instanceof BlockingQueue<ChangeEvent<String, String>> bq) {
-              try {
-                bq.put(e);
-              } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(ex);
-              }
-            } else {
-              // We always use a blocking queue (see AirbyteDebeziumHandler#getIncrementalIterators), so this branch is just to satisfy the compiler.
-              // This will always trigger an SAT failure, so should never happen in production.
-              throw new RuntimeException("Non-BlockingQueue implementation was used: " + queue.getClass());
+            try {
+              queue.put(e);
+            } catch (InterruptedException ex) {
+              Thread.currentThread().interrupt();
+              throw new RuntimeException(ex);
             }
           }
         })
