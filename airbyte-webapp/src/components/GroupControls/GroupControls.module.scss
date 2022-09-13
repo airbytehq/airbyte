@@ -21,7 +21,8 @@
 .formGroup {
   border-color: colors.$grey-100;
   border-style: solid;
-  border-width: 0 2px 2px 2px;
+  border-width: 0 2px 2px;
+
   // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
   box-shadow: 0px 2px colors.$grey-100 inset;
   box-sizing: border-box;
