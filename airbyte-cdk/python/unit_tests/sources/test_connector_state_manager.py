@@ -305,6 +305,20 @@ def test_get_stream_state(input_state, stream_name, namespace, expected_state):
             does_not_raise(),
             id="test_get_legacy_from_legacy_state_blob",
         ),
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="actresses", namespace="public"),
+                        stream_state=None,
+                    ),
+                )
+            ],
+            {"actresses": {}},
+            does_not_raise(),
+            id="test_get_legacy_from_stream_state",
+        ),
     ],
 )
 def test_get_legacy_state(input_state, expected_legacy_state, expected_error):

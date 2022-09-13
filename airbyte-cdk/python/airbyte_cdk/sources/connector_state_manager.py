@@ -56,7 +56,7 @@ class ConnectorStateManager:
         Using the current per-stream state, creates a mapping of all the stream states for the connector being synced
         :return: A deep copy of the mapping of stream name to stream state value
         """
-        return {descriptor.name: per_stream.dict() for descriptor, per_stream in self.per_stream_states.items() if per_stream is not None}
+        return {descriptor.name: per_stream.dict() if per_stream else {} for descriptor, per_stream in self.per_stream_states.items()}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]):
         """
@@ -72,7 +72,7 @@ class ConnectorStateManager:
     @classmethod
     def _extract_from_state_message(
         cls, state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]], stream_instance_map: Mapping[str, Stream]
-    ) -> Tuple[Optional[AirbyteStateBlob], MutableMapping[HashableStreamDescriptor, AirbyteStateBlob]]:
+    ) -> Tuple[Optional[AirbyteStateBlob], MutableMapping[HashableStreamDescriptor, Optional[AirbyteStateBlob]]]:
         """
         Takes an incoming list of state messages or the legacy state format and extracts state attributes according to type
         which can then be assigned to the new state manager being instantiated
@@ -131,7 +131,7 @@ class ConnectorStateManager:
         for stream_name, state_value in state.items():
             namespace = stream_to_instance_map[stream_name].namespace if stream_name in stream_to_instance_map else None
             stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-            streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value)
+            streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value or {})
         return streams
 
     @staticmethod
