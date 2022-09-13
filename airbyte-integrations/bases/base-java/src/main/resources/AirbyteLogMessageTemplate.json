@@ -8,6 +8,13 @@
     "message": {
       "$resolver": "message",
       "stringified": true
+    },
+    "stack_trace": {
+      "$resolver": "exception",
+      "field": "stackTrace",
+      "stackTrace": {
+        "stringified": true
+      }
     }
   }
 }
