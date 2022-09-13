@@ -27,7 +27,6 @@ class CartStream(HttpStream, ABC):
         self._start_date = start_date
         self._end_date = end_date
         self._authenticator = authenticator
-        
 
     @property
     def url_base(self) -> str:

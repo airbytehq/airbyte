@@ -128,12 +128,9 @@ class SourceCart(AbstractSource):
         credentials = config.get("credentials", {})
         auth_method = credentials.get("auth_type")
 
-
         if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
             authenticator = CentralAPIHeaderAuthenticator(
-                user_name=credentials["user_name"], 
-                user_secret=credentials["user_secret"],
-                site_id=credentials["site_id"]
+                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
             )
         elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
             authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
