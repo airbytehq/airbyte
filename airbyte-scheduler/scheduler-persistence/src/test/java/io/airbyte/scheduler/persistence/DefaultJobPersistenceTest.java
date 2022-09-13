@@ -1050,7 +1050,7 @@ class DefaultJobPersistenceTest {
     @Test
     @DisplayName("Should return the total job count for the connection")
     void testGetJobCount() throws IOException {
-      int numJobsToCreate = 10;
+      final int numJobsToCreate = 10;
       for (int i = 0; i < numJobsToCreate; i++) {
         jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
       }

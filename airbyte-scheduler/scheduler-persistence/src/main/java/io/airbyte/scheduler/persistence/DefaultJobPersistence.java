@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
@@ -409,22 +408,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper(final Long attemptId) {
+    return record -> new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
+        .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
+        .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null : deserializeFailureReasons(record, attemptId));
+  }
+
+  private static List<FailureReason> deserializeFailureReasons(final Record record, final Long attemptId) {
     final ObjectMapper mapper = new ObjectMapper();
-    return record -> {
-      try {
-        return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
-            .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
-            .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null
-                : Lists.newArrayList(mapper.readValue(String.valueOf(record.get(NORMALIZATION_SUMMARIES.FAILURES)), FailureReason[].class)));
-      } catch (final JsonProcessingException e) {
-        // There was an error deserializing the FailureReasons into a list of FailureReason Objects,
-        // so we are returning null Failures
-        LOGGER.error("There was an error deserializing NormalizationSummary Failures for attempt id " + attemptId);
-        return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
-            .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
-            .withFailures(null);
-      }
-    };
+    try {
+      return List.of(mapper.readValue(String.valueOf(record.get(NORMALIZATION_SUMMARIES.FAILURES)), FailureReason[].class));
+    } catch (final JsonProcessingException e) {
+      LOGGER.error("There was an error deserializing NormalizationSummary Failures for attempt id " + attemptId);
+      return List.of(null);
+    }
   }
 
   @Override
