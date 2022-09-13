@@ -159,6 +159,9 @@
     ]
   },
   "jest": {
-    "transformIgnorePatterns": []
+    "transformIgnorePatterns": [],
+    "coveragePathIgnorePatterns": [
+      ".stories.tsx"
+    ]
   }
 }
