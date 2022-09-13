@@ -72,6 +72,10 @@ class AirbyteLogMessage(BaseModel):
 
     level: Level = Field(..., description="log level")
     message: str = Field(..., description="log message")
+    stack_trace: Optional[str] = Field(
+        None,
+        description="an optional stack trace if the log message corresponds to an exception",
+    )
 
 
 class TraceType(Enum):
