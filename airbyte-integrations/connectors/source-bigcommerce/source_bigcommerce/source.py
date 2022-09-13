@@ -15,6 +15,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
+import logging 
+
+logger = logging.getLogger("airbyte")
 
 class BigcommerceStream(HttpStream, ABC):
     # Latest Stable Release
@@ -58,6 +61,7 @@ class BigcommerceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://api.bigcommerce.com/stores/{self.store_hash}/{self.api_version}/"
+        
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
@@ -78,6 +82,7 @@ class BigcommerceStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params[self.filter_field] = self.start_date
+        logger.info(f"request_params output: {params}")
         return params
 
     def request_headers(
@@ -85,6 +90,7 @@ class BigcommerceStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         headers.update({"Accept": "application/json", "Content-Type": "application/json"})
+        logger.info(f"request_headers output: {headers}")
         return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -218,6 +224,19 @@ class Channels(IncrementalBigcommerceStream):
         return f"{self.data_field}"
 
 
+class Store(BigcommerceStream):
+    data_field = "store"
+    cursor_field = "id"
+    api_version = "v2"
+    data = None
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        yield from [json_response]
+
 class BigcommerceAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
         self.token = token
@@ -258,4 +277,5 @@ class SourceBigcommerce(AbstractSource):
             Transactions(**args),
             Products(**args),
             Channels(**args),
+            Store(**args),
         ]

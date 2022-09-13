@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": ["null", "string"]
+        },
+        "account_uuid": {
+            "type": ["null", "string"]
+        },
+        "domain": {
+            "type": ["null", "string"]
+        },
+        "secure_url": {
+            "type": ["null", "string"]
+        },
+        "control_panel_base_url": {
+            "type": ["null", "string"]
+        },
+        "status": {
+            "type": ["null", "string"]
+        },
+        "name": {
+            "type": ["null", "string"]
+        },
+        "first_name": {
+            "type": ["null", "string"]
+        },
+        "last_name": {
+            "type": ["null", "string"]
+        },
+        "address": {
+            "type": ["null", "string"]
+        },
+        "country": {
+            "type": ["null", "string"]
+        },
+        "phone": {
+            "type": ["null", "string"]
+        },
+        "admin_email": {
+            "type": ["null", "string"]
+        },
+        "order_email": {
+            "type": ["null", "string"]
+        },
+        "favicon_url": {
+            "type": ["null", "string"]
+        }
+    }
+}
