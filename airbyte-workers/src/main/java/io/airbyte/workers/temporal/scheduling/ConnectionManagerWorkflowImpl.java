@@ -177,9 +177,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         return;
       }
 
-      workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
-      workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
-
       final GeneratedJobInput jobInputs = generateJobInput(connectionUpdaterInput);
 
       checkConnectionAndRunSync(connectionUpdaterInput, jobInputs);
