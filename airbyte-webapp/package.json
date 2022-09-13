@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.5",
+  "version": "0.40.6",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -161,6 +161,9 @@
     ]
   },
   "jest": {
-    "transformIgnorePatterns": []
+    "transformIgnorePatterns": [],
+    "coveragePathIgnorePatterns": [
+      ".stories.tsx"
+    ]
   }
 }

@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import React from "react";
 
+import styles from "./ContentWrapper.module.scss";
+
 interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
@@ -10,6 +12,7 @@ interface IProps {
 const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
   return (
     <motion.div
+      className={styles.container}
       animate={!isOpen ? "closed" : "open"}
       onAnimationComplete={onToggled}
       variants={{
