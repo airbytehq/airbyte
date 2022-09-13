@@ -118,6 +118,42 @@ VERY_NESTED_SCHEMA = {
             None,
         ),
         (
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": 12},
+            {"value": [12]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": None},
+            {"value": [None]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": ["null", "array"]}}},
+            {"value": None},
+            {"value": None},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["string"]}}}},
+            {"value": 10},
+            {"value": ["10"]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["object"]}}}},
+            {"value": "string"},
+            {"value": "string"},
+            "'string' is not of type 'array'",
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["object"]}}}},
+            {"value": {"key": "value"}},
+            {"value": {"key": "value"}},
+            "{'key': 'value'} is not of type 'array'",
+        ),
+        (
             # Schema root object is not an object, no convertion should happen
             {"type": "integer"},
             {"value": "12"},
