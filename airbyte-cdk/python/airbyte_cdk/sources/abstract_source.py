@@ -286,8 +286,9 @@ class AbstractSource(Source, ABC):
 
     @staticmethod
     def _checkpoint_state(stream: Stream, stream_state, state_manager):
-        # First attempt to retrieve the current state using the stream's state property. If that is undefined, then as a fallback
-        # we use the stream_state retrieved from the depreated
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
