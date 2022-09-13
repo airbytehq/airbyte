@@ -95,6 +95,8 @@ jobs:
       - name: Release main helm chart
         shell: bash
         run: |
+          echo "Waiting for published charts to be synced in helm-charts repo"
+          sleep 300
           cd ./charts/airbyte && helm dep update && cd -
           helm package ./charts/airbyte -d ./.github/helm-charts --version ${{ steps.release_airbyte.outputs.NEW_VERSION }}
           helm repo index ./.github/helm-charts/
