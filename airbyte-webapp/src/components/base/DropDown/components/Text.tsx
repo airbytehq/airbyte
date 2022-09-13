@@ -27,7 +27,6 @@ const Text = styled.div<IProps>`
   font-family: ${({ theme }) => theme.regularFont};
   font-style: normal;
   font-weight: normal;
-  max-width: 94%;
   color: ${(props) => setColor(props)};
 
   .rw-list-option.rw-state-selected & {
