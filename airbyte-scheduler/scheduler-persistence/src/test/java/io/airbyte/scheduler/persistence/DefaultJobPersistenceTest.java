@@ -264,7 +264,7 @@ class DefaultJobPersistenceTest {
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
     jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
-        jobOutput.getSync().getStandardSyncSummary().getTotalStats());
+        jobOutput.getSync().getStandardSyncSummary().getTotalStats(), jobOutput.getSync().getNormalizationSummary());
 
     final Job updated = jobPersistence.getJob(jobId);
 

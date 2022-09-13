@@ -6,6 +6,7 @@ package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.NORMALIZATION_SUMMARIES;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -310,7 +312,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output, final SyncStats syncStats) throws IOException {
+  public <T> void writeOutput(final long jobId,
+                              final int attemptNumber,
+                              final T output,
+                              final SyncStats syncStats,
+                              final NormalizationSummary normalizationSummary)
+      throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
@@ -338,6 +345,17 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
           .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
           .execute();
+
+      ctx.insertInto(NORMALIZATION_SUMMARIES)
+          .set(NORMALIZATION_SUMMARIES.ID, UUID.randomUUID())
+          .set(NORMALIZATION_SUMMARIES.UPDATED_AT, now)
+          .set(NORMALIZATION_SUMMARIES.CREATED_AT, now)
+          .set(NORMALIZATION_SUMMARIES.ATTEMPT_ID, attemptId)
+          .set(NORMALIZATION_SUMMARIES.START_TIME,
+              OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getStartTime()), ZoneOffset.UTC))
+          .set(NORMALIZATION_SUMMARIES.END_TIME, OffsetDateTime.ofInstant(Instant.ofEpochMilli(normalizationSummary.getEndTime()), ZoneOffset.UTC))
+          .set(NORMALIZATION_SUMMARIES.FAILURES, JSONB.valueOf(String.valueOf(normalizationSummary.getFailures())))
+          .execute();
       return null;
     });
 
@@ -364,6 +382,15 @@ public class DefaultJobPersistence implements JobPersistence {
             .toList());
   }
 
+  @Override
+  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException {
+    return jobDatabase
+        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("normalization_summaries")).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
+            .fetch(getNormalizationSummaryRecordMapper())
+            .stream()
+            .toList());
+  }
+
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
     return record -> new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
         .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
@@ -373,6 +400,11 @@ public class DefaultJobPersistence implements JobPersistence {
         .withMaxSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
         .withMeanSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))
         .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED));
+  }
+
+  private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper() {
+    return record -> new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
+        .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli());
   }
 
   @Override
@@ -438,7 +470,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetchOne().into(int.class));
 
     // calculate the multiple of `pagesize` that includes the target job
-    int pageSizeThatIncludesJob = (countIncludingJob / pagesize + 1) * pagesize;
+    final int pageSizeThatIncludesJob = (countIncludingJob / pagesize + 1) * pagesize;
     return listJobs(configTypes, connectionId, pageSizeThatIncludesJob, 0);
   }
 
