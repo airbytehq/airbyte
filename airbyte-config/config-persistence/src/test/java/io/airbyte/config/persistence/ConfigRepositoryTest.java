@@ -233,8 +233,7 @@ class ConfigRepositoryTest {
         new StandardDestinationDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.3.0")),
         // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
         new StandardDestinationDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
-        new StandardDestinationDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification())
-    );
+        new StandardDestinationDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification()));
 
     when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(allSourceDefinitions);
@@ -251,8 +250,7 @@ class ConfigRepositoryTest {
         new StandardSourceDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.3.0")),
         // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
         new StandardSourceDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
-        new StandardSourceDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification())
-    );
+        new StandardSourceDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification()));
 
     when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(allSourceDefinitions);
