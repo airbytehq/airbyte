@@ -153,6 +153,8 @@ class BasicAcceptanceTests {
   private static final String FIELD = "field";
   private static final String ID_AND_NAME = "id_and_name";
 
+  private static final int MAX_SCHEDULED_JOB_RETRIES = 10;
+
   private static final ConnectionScheduleData BASIC_SCHEDULE_DATA = new ConnectionScheduleData().basicSchedule(
       new ConnectionScheduleDataBasicSchedule().units(1L).timeUnit(TimeUnitEnum.HOURS));
 
@@ -411,17 +413,17 @@ class BasicAcceptanceTests {
 
     // Retry for up to 5 minutes.
     int i;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_SCHEDULED_JOB_RETRIES; i++) {
       sleep(Duration.ofSeconds(30).toMillis());
       try {
         final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
         waitForSuccessfulJob(apiClient.getJobsApi(), jobInfo);
         break;
       } catch (Exception e) {
-        // Retry.
+        LOGGER.info("Something went wrong querying jobs API, retrying...");
       }
     }
-    if (i == 10) {
+    if (i == MAX_SCHEDULED_JOB_RETRIES) {
       LOGGER.error("Sync job did not complete within 5 minutes");
     }
 
@@ -448,18 +450,18 @@ class BasicAcceptanceTests {
             connectionScheduleData).getConnectionId();
 
     int i;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_SCHEDULED_JOB_RETRIES; i++) {
       sleep(Duration.ofSeconds(30).toMillis());
       try {
         final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
         waitForSuccessfulJob(apiClient.getJobsApi(), jobInfo);
         break;
       } catch (Exception e) {
-        // Retry.
+        LOGGER.info("Something went wrong querying jobs API, retrying...");
       }
     }
 
-    if (i == 10) {
+    if (i == MAX_SCHEDULED_JOB_RETRIES) {
       LOGGER.error("Sync job did not complete within 5 minutes");
     }
 
