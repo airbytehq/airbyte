@@ -140,7 +140,6 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
-        'operator-guides/securing-airbyte',
       ],
     },
     {
@@ -280,6 +279,10 @@ module.exports = {
     },
     {
       type: 'doc',
+      id: "operator-guides/security",
+    },
+    {
+      type: 'doc',
       id: "api-documentation",
     },
     {
@@ -298,7 +301,6 @@ module.exports = {
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
-        'project-overview/security',
         {
           type: 'link',
           label: 'Airbyte Repository',
@@ -325,6 +327,7 @@ module.exports = {
       label: 'Release Notes',
       items: [
          'release_notes/july_2022',
+         'release_notes/august_2022',
       ],
     },
   ],

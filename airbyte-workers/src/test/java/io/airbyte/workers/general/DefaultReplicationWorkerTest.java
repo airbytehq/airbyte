@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +41,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.protocol.models.AirbyteLogMessage.Level;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -181,6 +183,7 @@ class DefaultReplicationWorkerTest {
     verify(destination).start(destinationConfig, jobRoot);
     verify(destination).accept(RECORD_MESSAGE1);
     verify(destination).accept(RECORD_MESSAGE2);
+    verify(destination).accept(RECORD_MESSAGE3);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(), STREAM_NAME);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(), STREAM_NAME);
     verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord(), STREAM_NAME);
@@ -290,6 +293,36 @@ class DefaultReplicationWorkerTest {
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
+    final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
+    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createTraceMessage("a trace message", 123456.0);
+    when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
+    when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
+    when(source.isFinished()).thenReturn(false, false, false, false, true);
+    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(LOG_MESSAGE), Optional.of(TRACE_MESSAGE),
+        Optional.of(RECORD_MESSAGE2));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter);
+
+    worker.run(syncInput, jobRoot);
+
+    verify(source).start(sourceConfig, jobRoot);
+    verify(destination).start(destinationConfig, jobRoot);
+    verify(destination).accept(RECORD_MESSAGE1);
+    verify(destination).accept(RECORD_MESSAGE2);
+    verify(destination, never()).accept(LOG_MESSAGE);
+    verify(destination, never()).accept(TRACE_MESSAGE);
   }
 
   @Test
