@@ -182,7 +182,7 @@ class Properties(ChildStreamMixin, ZenloopStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        # select answers and surveys to be able to link answer to a survey
+        # select properties and surveys to be able to link properties to a survey
         yield from response_json.get("properties", [])
 
 
