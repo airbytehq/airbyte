@@ -289,7 +289,13 @@ def _state(state_data: Dict[str, Any]):
 
 
 class TestIncrementalRead:
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_with_state_attribute(self, mocker, use_legacy):
         """Test correct state passing for the streams that have a state attribute"""
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
@@ -353,7 +359,13 @@ class TestIncrementalRead:
             call(),  # get state in the end of slice for s2
         ]
 
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_with_checkpoint_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
         after reading N records within a stream.
@@ -408,7 +420,13 @@ class TestIncrementalRead:
 
         assert expected == messages
 
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_with_no_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs
         a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
@@ -451,7 +469,13 @@ class TestIncrementalRead:
 
         assert expected == messages
 
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_with_slices(self, mocker, use_legacy):
         """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
         if use_legacy:
@@ -522,7 +546,13 @@ class TestIncrementalRead:
 
         assert expected == messages
 
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_no_slices(self, mocker, use_legacy):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
@@ -593,7 +623,13 @@ class TestIncrementalRead:
 
         assert expected == messages
 
-    @pytest.mark.parametrize("use_legacy", [True, False])
+    @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
     def test_with_slices_and_interval(self, mocker, use_legacy):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
