@@ -20,7 +20,6 @@ import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionSchedule;
 import io.airbyte.api.client.model.generated.ConnectionScheduleData;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
