@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard } from "components";
+import { Button, Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
@@ -78,10 +78,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard>
+      <Card>
         <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
-      </ContentCard>
+      </Card>
     );
   }
 
