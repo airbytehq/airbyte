@@ -17,11 +17,15 @@ import static org.bson.BsonType.TIMESTAMP;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
@@ -92,12 +96,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config)
-      throws Exception {
+  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config) {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new Exception("Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
       }
@@ -145,17 +148,24 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * find or any other action, on the database resource, the command lists all collections in the
      * database.
      */
-    final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-        .append("authorizedCollections", true)
-        .append("nameOnly", true))
-        .append("filter", "{ 'type': 'collection' }");
-    return document.toBsonDocument()
-        .get("cursor").asDocument()
-        .getArray("firstBatch")
-        .stream()
-        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-        .collect(Collectors.toSet());
+    try {
+      final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+              .append("authorizedCollections", true)
+              .append("nameOnly", true))
+          .append("filter", "{ 'type': 'collection' }");
+      return document.toBsonDocument()
+          .get("cursor").asDocument()
+          .getArray("firstBatch")
+          .stream()
+          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+          .collect(Collectors.toSet());
 
+    } catch (final MongoSecurityException e) {
+      final MongoCommandException exception = (MongoCommandException) e.getCause();
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
+    } catch (final MongoException e) {
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
+    }
   }
 
   @Override
@@ -199,7 +209,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public boolean isCursorType(BsonType bsonType) {
+  public boolean isCursorType(final BsonType bsonType) {
     // while reading from mongo primary key "id" is always added, so there will be no situation
     // when we have no cursor field here, at least id could be used as cursor here.
     // This logic will be used feather when we will implement part which will show only list of possible
