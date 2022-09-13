@@ -1,7 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 
 import { NamespaceDefinitionType } from "../../request/AirbyteClient";
-import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 
 type AirbyteJsonSchema = JSONSchema7Definition & {
@@ -66,11 +65,7 @@ function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomF
     case NamespaceDefinitionType.destination:
       return destinationSetting;
     case NamespaceDefinitionType.customformat:
-    default: // Default is never hit, but typescript prefers it declared
-      if (!opt.sourceNamespace?.trim()) {
-        return destinationSetting;
-      }
-      return opt.namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
+      return opt.namespaceFormat;
   }
 }
 
