@@ -1,4 +1,6 @@
 {{ config(
+    table_type = "fact",
+    primary_index = ["_airbyte_unique_key", "_airbyte_emitted_at"],
     unique_key = "_airbyte_unique_key",
     schema = "test_normalization",
     tags = [ "top-level" ]

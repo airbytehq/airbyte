@@ -1,4 +1,6 @@
 {{ config(
+    table_type = "fact",
+    primary_index = "_airbyte_emitted_at",
     schema = "test_normalization",
     tags = [ "nested" ]
 ) }}

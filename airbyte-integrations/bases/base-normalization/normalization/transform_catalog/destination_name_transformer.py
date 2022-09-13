@@ -208,6 +208,7 @@ class DestinationNameTransformer:
         if self.destination_type.value == DestinationType.ORACLE.value:
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.FIREBOLT.value:
+            # https://docs.firebolt.io/general-reference/identifier-requirements.html
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.BIGQUERY.value:
             # Can start with number: datasetId, table

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from json import dumps
 from typing import Any, Union
 from unittest.mock import ANY, MagicMock, call, patch
 
@@ -50,18 +51,23 @@ def test_sql_create(connection: MagicMock, writer: Union[FireboltSQLWriter, Fire
 
 def test_data_buffering(sql_writer: FireboltSQLWriter) -> None:
     sql_writer.queue_write_data("dummy", "id1", 20200101, '{"key": "value"}')
-    sql_writer._buffer["dummy"][0] == ("id1", 20200101, '{"key": "value"}')
+    assert sql_writer._buffer["dummy"][0] == ("id1", 20200101, '{"key": "value"}')
     assert len(sql_writer._buffer["dummy"]) == 1
     assert len(sql_writer._buffer.keys()) == 1
     sql_writer.queue_write_data("dummy", "id2", 20200102, '{"key2": "value2"}')
-    sql_writer._buffer["dummy"][0] == ("id2", 20200102, '{"key2": "value2"}')
+    assert sql_writer._buffer["dummy"][1] == ("id2", 20200102, '{"key2": "value2"}')
     assert len(sql_writer._buffer["dummy"]) == 2
     assert len(sql_writer._buffer.keys()) == 1
     sql_writer.queue_write_data("dummy2", "id3", 20200103, '{"key3": "value3"}')
-    sql_writer._buffer["dummy"][0] == ("id3", 20200103, '{"key3": "value3"}')
+    assert sql_writer._buffer["dummy2"][0] == ("id3", 20200103, '{"key3": "value3"}')
     assert len(sql_writer._buffer["dummy"]) == 2
     assert len(sql_writer._buffer["dummy2"]) == 1
     assert len(sql_writer._buffer.keys()) == 2
+
+
+def test_data_buffering_special_characters(sql_writer: FireboltSQLWriter) -> None:
+    sql_writer.queue_write_data("dummy", "id3", 20200103, dumps({'key"4': "value4"}))
+    assert sql_writer._buffer["dummy"][0] == ("id3", 20200103, '{"key\\"4": "value4"}')
 
 
 def test_data_auto_flush_one_table(connection: MagicMock, sql_writer: FireboltSQLWriter) -> None:

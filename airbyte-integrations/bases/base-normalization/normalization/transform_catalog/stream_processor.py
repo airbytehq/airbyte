@@ -1308,6 +1308,24 @@ where 1 = 1
             else:
                 return TableMaterializationType.TABLE
 
+    def _get_firebolt_partition_config(self, partition_by: PartitionScheme) -> Dict:
+        """
+        Defines partition and indexing information specific to Firebolt
+        """
+        config = {}
+        # see https://docs.getdbt.com/reference/resource-configs/firebolt-configs#model-configuration-for-fact-tables
+        config["table_type"] = '"fact"'
+        if partition_by == PartitionScheme.ACTIVE_ROW:
+            config["primary_index"] = f'["_airbyte_active_row", "{self.airbyte_unique_key}_scd", "{self.airbyte_emitted_at}"]'
+        elif partition_by == PartitionScheme.UNIQUE_KEY:
+            config["primary_index"] = f'["{self.airbyte_unique_key}", "{self.airbyte_emitted_at}"]'
+        elif partition_by == PartitionScheme.NOTHING:
+            # Only dimension tables support no primary index
+            config["table_type"] = '"dimension"'
+        else:
+            config["primary_index"] = f'"{self.airbyte_emitted_at}"'
+        return config
+
     def get_model_partition_config(self, partition_by: PartitionScheme, unique_key: str) -> Dict:
         """
         Defines partition, clustering and unique key parameters for each destination.
@@ -1371,6 +1389,8 @@ where 1 = 1
                 pass
             else:
                 config["cluster_by"] = f'["{self.airbyte_emitted_at.upper()}"]'
+        elif self.destination_type == DestinationType.FIREBOLT:
+            config = self._get_firebolt_partition_config(partition_by)
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
         elif not self.parent:

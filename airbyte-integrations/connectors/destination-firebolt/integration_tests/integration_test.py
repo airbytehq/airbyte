@@ -107,14 +107,26 @@ def airbyte_message2(test_table_name: str):
     )
 
 
+@fixture
+def airbyte_message_special_characters(test_table_name: str):
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=test_table_name,
+            data={'key"1': 'value"2'},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
 @mark.parametrize("config", ["invalid_config", "invalid_config_s3"])
-def test_check_fails(config, request):
+def test_check_fails(config):
     destination = DestinationFirebolt()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.FAILED
 
 
-def test_check_succeeds(config, request):
+def test_check_succeeds(config):
     destination = DestinationFirebolt()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.SUCCEEDED
@@ -127,7 +139,6 @@ def test_write(
     airbyte_message2: AirbyteMessage,
     test_table_name: str,
     cleanup,
-    request,
 ):
     destination = DestinationFirebolt()
     generator = destination.write(config, configured_catalogue, [airbyte_message1, airbyte_message2])
@@ -145,3 +156,21 @@ def test_write(
     assert len(result) == 2
     assert result[0][2] == dumps(airbyte_message1.record.data)
     assert result[1][2] == dumps(airbyte_message2.record.data)
+
+
+def test_write_special_characters(
+    config: Dict[str, str],
+    configured_catalogue: ConfiguredAirbyteCatalog,
+    airbyte_message_special_characters: AirbyteMessage,
+    test_table_name: str,
+    cleanup,
+):
+    destination = DestinationFirebolt()
+    generator = destination.write(config, configured_catalogue, [airbyte_message_special_characters])
+    list(generator)
+    with establish_connection(config, MagicMock()) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""SELECT JSON_EXTRACT("_airbyte_data", 'key\"1', 'STRING') as key1 FROM """ + f"_airbyte_raw_{test_table_name}")
+            result = cursor.fetchall()
+    assert len(result) == 1
+    assert result[0][0] == airbyte_message_special_characters.record.data['key"1']
