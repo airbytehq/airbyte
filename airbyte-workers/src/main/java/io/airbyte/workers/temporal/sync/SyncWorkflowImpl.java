@@ -37,6 +37,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private DbtTransformationActivity dbtTransformationActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private PersistStateActivity persistActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private CheckNormalizationStatusActivity checkNormalizationStatusActivity;
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -59,7 +61,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
       for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
+          // check here to see that there is anything to normalize
+          final Boolean shouldNormalize = checkNormalizationStatusActivity.shouldNormalize();
           final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput);
+
           final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
           syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
