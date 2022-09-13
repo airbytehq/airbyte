@@ -13,11 +13,13 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerPlane;
 import java.io.FileInputStream;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 
 @Slf4j
 public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
@@ -39,7 +41,6 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
     this.airbyteApiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
             .setScheme(scheme)
-            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api")
@@ -72,6 +73,8 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
       return configs.getAirbyteApiAuthHeaderValue();
     } else if (configs.getWorkerPlane().equals(WorkerPlane.DATA_PLANE)) {
       try {
+        log.warn("Signing request, time: " + new DateTime());
+
         final Date now = new Date();
         final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));
         final String saEmail = configs.getDataPlaneServiceAccountEmail();
@@ -90,6 +93,8 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
         final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
         final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
         final Algorithm algorithm = Algorithm.RSA256(null, key);
+
+        log.warn("Done request, time: " + new DateTime());
         return "Bearer " + token.sign(algorithm);
       } catch (final Exception e) {
         log.warn("An issue occurred while generating a data plane auth token. Defaulting to empty string.", e);

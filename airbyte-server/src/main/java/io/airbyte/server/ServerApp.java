@@ -67,7 +67,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.flywaydb.core.Flyway;
@@ -130,6 +134,13 @@ public class ServerApp implements ServerRunnable {
     handler.addServlet(configServlet, "/api/*");
 
     server.setHandler(handler);
+    HttpConfiguration httpConfig = new HttpConfiguration();
+
+    HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
+    HTTP2CServerConnectionFactory h2c = new HTTP2CServerConnectionFactory(httpConfig);
+
+    ServerConnector connector = new ServerConnector(server, http11, h2c);
+    server.addConnector(connector);
 
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");

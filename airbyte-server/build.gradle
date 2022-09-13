@@ -27,6 +27,7 @@ dependencies {
     implementation 'org.apache.cxf:cxf-core:3.4.2'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
+    implementation 'org.eclipse.jetty.http2:http2-server:11.0.11'
     implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
     implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
