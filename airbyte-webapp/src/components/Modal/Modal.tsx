@@ -2,8 +2,7 @@ import { Dialog } from "@headlessui/react";
 import classNames from "classnames";
 import React, { useState } from "react";
 
-import ContentCard from "components/ContentCard";
-
+import { Card } from "../base/Card";
 import styles from "./Modal.module.scss";
 
 export interface ModalProps {
@@ -37,9 +36,9 @@ const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cardless,
           {cardless ? (
             children
           ) : (
-            <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
+            <Card title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
               {children}
-            </ContentCard>
+            </Card>
           )}
         </Dialog.Panel>
       </div>
