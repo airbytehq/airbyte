@@ -20,7 +20,7 @@ class StreamWithNamespace(Stream):
 
 
 @pytest.mark.parametrize(
-    "input_stream_state, expected_stream_state, expected_shared_state, expected_legacy_state, expected_error",
+    "input_stream_state, expected_stream_state, expected_error",
     (
         pytest.param(
             [
@@ -37,10 +37,30 @@ class StreamWithNamespace(Stream):
                 HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
                 HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
-            None,
-            {"actors": {"id": "mando_michael"}, "actresses": {"id": "seehorn_rhea"}},
             does_not_raise(),
             id="test_incoming_per_stream_state",
+        ),
+        pytest.param(
+            [
+                {
+                    "type": AirbyteStateType.LEGACY,
+                    "data": {"actors": {"id": "fabian_patrick"}, "actresses": {"id": "seehorn_rhea"}, "writers": {"id": "gilligan_vince"}},
+                }
+            ],
+            {
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "fabian_patrick"}),
+                HashableStreamDescriptor(name="actresses"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
+                HashableStreamDescriptor(name="writers"): AirbyteStateBlob.parse_obj({"id": "gilligan_vince"}),
+            },
+            does_not_raise(),
+            id="test_incoming_legacy_state_and_uses_stream_namespace",
+        ),
+        pytest.param([], {}, does_not_raise(), id="test_incoming_empty_stream_state"),
+        pytest.param(
+            [{"type": AirbyteStateType.STREAM, "stream": {"stream_descriptor": {"name": "actresses", "namespace": "public"}}}],
+            {HashableStreamDescriptor(name="actresses", namespace="public"): None},
+            does_not_raise(),
+            id="test_stream_states_that_have_none_state_blob",
         ),
         pytest.param(
             [
@@ -65,36 +85,8 @@ class StreamWithNamespace(Stream):
                 HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
                 HashableStreamDescriptor(name="actresses", namespace="public"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
-            AirbyteStateBlob.parse_obj({"television": "better_call_saul"}),
-            {"actors": {"id": "mando_michael"}, "actresses": {"id": "seehorn_rhea"}},
-            does_not_raise(),
-            id="test_incoming_global_state",
-        ),
-        pytest.param(
-            [
-                {
-                    "type": AirbyteStateType.LEGACY,
-                    "data": {"actors": {"id": "fabian_patrick"}, "actresses": {"id": "seehorn_rhea"}, "writers": {"id": "gilligan_vince"}},
-                }
-            ],
-            {
-                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "fabian_patrick"}),
-                HashableStreamDescriptor(name="actresses"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
-                HashableStreamDescriptor(name="writers"): AirbyteStateBlob.parse_obj({"id": "gilligan_vince"}),
-            },
-            None,
-            {"actors": {"id": "fabian_patrick"}, "actresses": {"id": "seehorn_rhea"}, "writers": {"id": "gilligan_vince"}},
-            does_not_raise(),
-            id="test_incoming_legacy_state_and_uses_stream_namespace",
-        ),
-        pytest.param([], {}, None, {}, does_not_raise(), id="test_incoming_empty_stream_state"),
-        pytest.param(
-            [{"type": AirbyteStateType.STREAM, "stream": {"stream_descriptor": {"name": "actresses", "namespace": "public"}}}],
-            {HashableStreamDescriptor(name="actresses", namespace="public"): None},
-            None,
-            {"actresses": {}},
-            does_not_raise(),
-            id="test_stream_states_that_have_none_state_blob",
+            pytest.raises(ValueError),
+            id="test_incoming_global_state_with_shared_state_throws_error",
         ),
         pytest.param(
             [
@@ -110,8 +102,6 @@ class StreamWithNamespace(Stream):
             {
                 HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
             },
-            None,
-            {"actors": {"id": "mando_michael"}},
             does_not_raise(),
             id="test_incoming_global_state_without_shared",
         ),
@@ -120,7 +110,27 @@ class StreamWithNamespace(Stream):
                 {
                     "type": AirbyteStateType.GLOBAL,
                     "global": {
-                        "shared_state": {"television": "better_call_saul"},
+                        "shared_state": None,
+                        "stream_states": [
+                            {
+                                "stream_descriptor": StreamDescriptor(name="actors", namespace="public"),
+                                "stream_state": AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
+                            },
+                        ],
+                    },
+                },
+            ],
+            {
+                HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "mando_michael"}),
+            },
+            does_not_raise(),
+            id="test_incoming_global_state_with_none_shared",
+        ),
+        pytest.param(
+            [
+                {
+                    "type": AirbyteStateType.GLOBAL,
+                    "global": {
                         "stream_states": [
                             {"stream_descriptor": {"name": "actresses", "namespace": "public"}},
                         ],
@@ -128,8 +138,6 @@ class StreamWithNamespace(Stream):
                 },
             ],
             {HashableStreamDescriptor(name="actresses", namespace="public"): None},
-            AirbyteStateBlob.parse_obj({"television": "better_call_saul"}),
-            {"actresses": {}},
             does_not_raise(),
             id="test_incoming_global_state_without_stream_state",
         ),
@@ -139,28 +147,23 @@ class StreamWithNamespace(Stream):
                 HashableStreamDescriptor(name="actors", namespace="public"): AirbyteStateBlob.parse_obj({"id": "esposito_giancarlo"}),
                 HashableStreamDescriptor(name="actresses"): AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
             },
-            None,
-            {"actors": {"id": "esposito_giancarlo"}, "actresses": {"id": "seehorn_rhea"}},
             does_not_raise(),
             id="test_incoming_legacy_json_blob_and_uses_stream_namespace",
         ),
-        pytest.param({}, {}, None, {}, does_not_raise(), id="test_legacy_state_empty_object"),
-        pytest.param(
-            "strings_are_not_allowed", {}, None, {}, pytest.raises(ValueError), id="test_value_error_is_raised_on_invalid_state_input"
-        ),
+        pytest.param({}, {}, does_not_raise(), id="test_legacy_state_empty_object"),
+        pytest.param("strings_are_not_allowed", {}, pytest.raises(ValueError), id="test_value_error_is_raised_on_invalid_state_input"),
     ),
 )
-def test_initialize_state_manager(input_stream_state, expected_stream_state, expected_shared_state, expected_legacy_state, expected_error):
+def test_initialize_state_manager(input_stream_state, expected_stream_state, expected_error):
     stream_to_instance_map = {"actors": StreamWithNamespace()}
 
     if isinstance(input_stream_state, List):
-        input_stream_state = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in input_stream_state]
+        input_stream_state = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_stream_state)]
 
     with expected_error:
         state_manager = ConnectorStateManager(stream_to_instance_map, input_stream_state)
 
         assert state_manager.per_stream_states == expected_stream_state
-        assert state_manager.shared_state == expected_shared_state
 
 
 @pytest.mark.parametrize(
@@ -213,37 +216,6 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
             id="test_get_stream_from_legacy_state",
         ),
         pytest.param(
-            [{"type": AirbyteStateType.GLOBAL, "global": {"shared_state": {"shared": "value"}, "stream_states": []}}],
-            "users",
-            "public",
-            {"shared": "value"},
-            id="test_get_shared_only",
-        ),
-        pytest.param(
-            [
-                {
-                    "type": AirbyteStateType.GLOBAL,
-                    "global": {
-                        "shared_state": {"shared": "value"},
-                        "stream_states": [
-                            {
-                                "stream_descriptor": {"name": "users", "namespace": "public"},
-                                "stream_state": AirbyteStateBlob.parse_obj({"created_at": 12345}),
-                            },
-                            {
-                                "stream_descriptor": {"name": "accounts", "namespace": "public"},
-                                "stream_state": AirbyteStateBlob.parse_obj({"id": "abc"}),
-                            },
-                        ],
-                    },
-                },
-            ],
-            "accounts",
-            "public",
-            {"id": "abc", "shared": "value"},
-            id="test_get_stream_with_shared",
-        ),
-        pytest.param(
             [
                 {
                     "type": AirbyteStateType.STREAM,
@@ -275,41 +247,30 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
             {},
             id="test_get_stream_wrong_namespace",
         ),
+        pytest.param([], "users", "public", {}, id="test_get_empty_stream_state_defaults_to_empty_dictionary"),
         pytest.param(
             [
                 {
-                    "type": AirbyteStateType.GLOBAL,
-                    "global": {
-                        "shared_state": {"shared": "value"},
-                        "stream_states": [
-                            {
-                                "stream_descriptor": {"name": "users", "namespace": "public"},
-                                "stream_state": AirbyteStateBlob.parse_obj({"created_at": 12345}),
-                            },
-                            {
-                                "stream_descriptor": {"name": "accounts", "namespace": "public"},
-                                "stream_state": AirbyteStateBlob.parse_obj({"id": "abc"}),
-                            },
-                        ],
-                    },
+                    "type": AirbyteStateType.STREAM,
+                    "stream": {"stream_descriptor": {"name": "users", "namespace": "public"}, "stream_state": None},
                 },
             ],
-            "missing",
+            "users",
             "public",
-            {"shared": "value"},
-            id="test_get_missing_still_includes_shared_stream",
+            {},
+            id="test_get_stream_with_stream_state_none_returns_empty_map",
         ),
-        pytest.param([], "users", "public", {}, id="test_get_empty_stream_state_defaults_to_empty_dictionary"),
     ],
 )
 def test_get_stream_state(input_state, stream_name, namespace, expected_state):
     stream_to_instance_map = {"users": StreamWithNamespace()}
-    state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in input_state]
+    state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_state)]
     state_manager = ConnectorStateManager(stream_to_instance_map, state_messages)
 
     actual_state = state_manager.get_stream_state(stream_name, namespace)
 
     assert actual_state == expected_state
+    # todo add a test where the state is None and we still return an empty mapping
 
 
 @pytest.mark.parametrize(
@@ -432,7 +393,7 @@ def test_get_state_returns_deep_copy():
     ],
 )
 def test_update_state_for_stream(start_state, update_name, update_namespace, update_value, expected_legacy_state):
-    state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in start_state]
+    state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(start_state)]
     state_manager = ConnectorStateManager({}, state_messages)
 
     state_manager.update_state_for_stream(update_name, update_namespace, update_value)

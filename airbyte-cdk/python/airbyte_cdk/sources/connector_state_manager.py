@@ -29,7 +29,13 @@ class ConnectorStateManager:
 
     def __init__(self, stream_instance_map: Mapping[str, Stream], state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None):
         shared_state, per_stream_states = self._extract_from_state_message(state, stream_instance_map)
-        self.shared_state = shared_state
+
+        # We explicitly throw an error if we receive a GLOBAL state message that contains a shared_state because API sources are
+        # designed to checkpoint state independently of one another. API sources should never be emitting a state message where
+        # shared_state is populated. Rather than define how to handle shared_state without a clear use case, we're opting to throw an
+        # error instead and if/when we find one, we will then implement processing of the shared_state value.
+        if shared_state:
+            raise ValueError("API source connectors do not currently support GLOBAL AirbyteStateMessages that contain a shared_state")
         self.per_stream_states = per_stream_states
 
     def get_stream_state(self, stream_name: str, namespace: Optional[str]) -> Mapping[str, Any]:
@@ -40,22 +46,26 @@ class ConnectorStateManager:
         :param namespace: Namespace of the stream being fetched
         :return: The combined shared state and per-stream state of a stream
         """
-        combined_state = {}
-        if self.shared_state:
-            combined_state.update(self.shared_state.dict())
-        target_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
-        if target_state:
-            combined_state.update(target_state.dict())
-        return combined_state
+        per_stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        if per_stream_state:
+            return per_stream_state.dict()
+        return {}
 
-    def get_legacy_state(self) -> MutableMapping[str, Any]:
+    def get_legacy_state(self) -> Mapping[str, Any]:
         """
         Using the current per-stream state, creates a mapping of all the stream states for the connector being synced
         :return: A deep copy of the mapping of stream name to stream state value
         """
         return {descriptor.name: per_stream.dict() for descriptor, per_stream in self.per_stream_states.items() if per_stream is not None}
 
-    def update_state_for_stream(self, stream_name: str, namespace: str, value: Mapping[str, Any]):
+    def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]):
+        """
+        Overwrites the state blob of a specific stream based on the provided stream name and optional namespace
+        :param stream_name: The name of the stream whose state is being updated
+        :param namespace: The namespace of the stream if it exists
+        :param value: A stream state mapping that is being updated for a stream
+        :return:
+        """
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
         self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
 
@@ -80,6 +90,8 @@ class ConnectorStateManager:
         if not isinstance(state, List):
             raise ValueError("Input state should come in the form of list of Airbyte state messages or a mapping of states")
 
+        # When processing incoming state in source.read_state(), legacy state gets deserialized into List[AirbyteStateMessage]
+        # which can be translated into independent per-stream state values
         if cls._is_migrated_legacy_state(state):
             streams = cls._create_stream_from_state_object(state[0].data, stream_instance_map)
             return None, streams
