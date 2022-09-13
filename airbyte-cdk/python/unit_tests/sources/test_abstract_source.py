@@ -55,7 +55,7 @@ class MockSource(AbstractSource):
         return self._streams
 
 
-class MockStreamNoStateMethod(Stream):
+class StreamNoStateMethod(Stream):
     name = "managers"
     primary_key = None
     namespace = "public"
