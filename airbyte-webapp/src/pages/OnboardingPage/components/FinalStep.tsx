@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { H1 } from "components";
 
 import { useConfig } from "config";
+import Status from "core/statuses";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 
+import { FirstSuccessfulSync } from "./FirstSuccessfulSync";
 import HighlightedText from "./HighlightedText";
 import ProgressBlock from "./ProgressBlock";
 import UseCaseBlock from "./UseCaseBlock";
@@ -36,6 +38,13 @@ const FinalStep: React.FC = () => {
   const connection = useGetConnection(connections[0].connectionId, {
     refetchInterval: 2500,
   });
+  const [isFirstSyncSuccessful, setIsFirstSyncSuccessful] = useState(false);
+
+  useEffect(() => {
+    if (connection.latestSyncJobStatus === Status.SUCCEEDED) {
+      setIsFirstSyncSuccessful(true);
+    }
+  }, [connection.latestSyncJobStatus]);
 
   const onSync = () => syncConnection(connections[0]);
 
@@ -56,7 +65,7 @@ const FinalStep: React.FC = () => {
         />
       </Videos>
       <ProgressBlock connection={connection} onSync={onSync} />
-
+      {isFirstSyncSuccessful && <FirstSuccessfulSync />}
       <Title bold>
         <FormattedMessage
           id="onboarding.useCases"
