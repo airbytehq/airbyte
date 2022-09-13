@@ -142,11 +142,11 @@ public class ActivityBeanFactory {
   @Named("shortActivityOptions")
   public ActivityOptions shortActivityOptions(@Property(name = "airbyte.activity.max-timeout",
                                                         defaultValue = "120") final Long maxTimeout,
-                                              final TemporalUtils temporalUtils) {
+                                              @Named("shortRetryOptions") final RetryOptions shortRetryOptions) {
     return ActivityOptions.newBuilder()
         .setStartToCloseTimeout(Duration.ofSeconds(maxTimeout))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
-        .setRetryOptions(temporalUtils.getRetryOptions())
+        .setRetryOptions(shortRetryOptions)
         .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
         .build();
   }
@@ -178,6 +178,21 @@ public class ActivityBeanFactory {
   @Named("longRunActivityRetryOptions")
   public RetryOptions noRetryOptions() {
     return TemporalUtils.NO_RETRY;
+  }
+
+  @Singleton
+  @Named("shortRetryOptions")
+  public RetryOptions shortRetryOptions(@Property(name = "airbyte.activity.max-attempts",
+                                                  defaultValue = "5") final Integer activityNumberOfAttempts,
+                                        @Property(name = "airbyte.activity.initial-delay",
+                                                  defaultValue = "30") final Integer initialDelayBetweenActivityAttemptsSeconds,
+                                        @Property(name = "airbyte.activity.max-delay",
+                                                  defaultValue = "600") final Integer maxDelayBetweenActivityAttemptsSeconds) {
+    return RetryOptions.newBuilder()
+        .setMaximumAttempts(activityNumberOfAttempts)
+        .setInitialInterval(Duration.ofSeconds(initialDelayBetweenActivityAttemptsSeconds))
+        .setMaximumInterval(Duration.ofSeconds(maxDelayBetweenActivityAttemptsSeconds))
+        .build();
   }
 
 }

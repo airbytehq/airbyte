@@ -355,9 +355,6 @@ public class KubePodProcessIntegrationTest {
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
-    // kill the heartbeat server
-    // server.stop();
-
     // waiting for process
     process.waitFor();
 

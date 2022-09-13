@@ -26,4 +26,5 @@ public @interface TemporalActivityStub {
    *         activity stub.
    */
   String activityOptionsBeanName();
+
 }

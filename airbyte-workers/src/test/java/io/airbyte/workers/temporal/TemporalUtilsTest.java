@@ -56,7 +56,7 @@ class TemporalUtilsTest {
 
   @Test
   void testAsyncExecute() throws Exception {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     final VoidCallable callable = mock(VoidCallable.class);
@@ -99,7 +99,7 @@ class TemporalUtilsTest {
 
   @Test
   void testWaitForTemporalServerAndLogThrowsException() {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -120,7 +120,7 @@ class TemporalUtilsTest {
 
   @Test
   void testWaitThatTimesOut() {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -184,7 +184,7 @@ class TemporalUtilsTest {
 
   @Test
   void testHeartbeatWithContext() throws InterruptedException {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
 
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
@@ -225,7 +225,7 @@ class TemporalUtilsTest {
 
   @Test
   void testHeartbeatWithContextAndCallbackRef() throws InterruptedException {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
 
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
@@ -379,7 +379,7 @@ class TemporalUtilsTest {
 
       private final AtomicInteger timesReachedEnd;
 
-      private final TemporalUtils temporalUtils = new TemporalUtils();
+      private final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
 
       public Activity1Impl(final AtomicInteger timesReachedEnd) {
         this.timesReachedEnd = timesReachedEnd;

@@ -314,7 +314,7 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private WorkflowClient getWorkflowClient() {
-    final TemporalUtils temporalUtils = new TemporalUtils();
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService(
         TemporalWorkflowUtils.getAirbyteTemporalOptions("localhost:7233"),
         TemporalUtils.DEFAULT_NAMESPACE);
