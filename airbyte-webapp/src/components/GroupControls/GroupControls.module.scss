@@ -1,19 +1,27 @@
 @use "../../scss/colors";
 
+$titleHeight: 34px;
+$groupSpacing: 20px;
+
 .groupControlSection {
   margin-bottom: 27px;
-  min-height: 36px;
+  min-height: $titleHeight;
+  position: relative;
+  padding-top: calc($titleHeight / 2);
 }
 
 .groupTitle {
-  margin-right: 20px;
+  padding-right: $groupSpacing;
   display: flex;
-  flex-flow: row nowrap;
   align-items: center;
-  width: auto;
-  height: 34px;
+  height: $titleHeight;
 
-  & label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+
+  label {
     padding-bottom: 0;
   }
 }
@@ -22,15 +30,18 @@
   border-color: colors.$grey-100;
   border-style: solid;
   border-width: 0 2px 2px;
+  border-radius: 8px;
 
   // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
   box-shadow: 0px 2px colors.$grey-100 inset;
-  box-sizing: border-box;
-  border-radius: 8px;
-  padding: 0 20px;
-  margin-top: -17px;
+  padding: 0 $groupSpacing;
 
-  & > :first-child {
-    padding-top: 30px;
+  // only apply padding when there are children, so that empty group sections border is just a single line
+  > :first-child {
+    padding-top: calc($groupSpacing + $titleHeight/2);
+  }
+
+  > div {
+    margin-bottom: $groupSpacing;
   }
 }
