@@ -234,7 +234,13 @@ class ActiveUsers(IncrementalAmplitudeStream):
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
             for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+                try:    
+                    yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+                except IndexError as e:
+                    # To handle index out of range exception being thrown
+                    self.logger.exception(e)
+                except KeyError as e:
+                    self.logger.exception(e)
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
@@ -248,13 +254,16 @@ class AverageSessionLength(IncrementalAmplitudeStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json().get(self.data_field, [])
-        if response_data:
+        if response_data and response_data["series"]:
             # From the Amplitude documentation it follows that "series" is an array with one element which is itself
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
             series = response_data["series"][0]
             for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "length": series[i]}
+                try:
+                    yield {"date": date, "length": series[i]}
+                except IndexError as e:
+                    self.logger.exception(e)
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"
