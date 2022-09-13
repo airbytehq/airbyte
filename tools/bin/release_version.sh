@@ -41,7 +41,7 @@ echo "Completed building and publishing PLATFORM..."
 echo "Packaging and publishing HELM CHARTS version $NEW_VERSION for git revision $GIT_REVISION..."
 declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
 for val in ${StringArray[@]}; do
-  cd ./charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
+  cd ./charts/${val} && helm dep update && cd -
   helm package ./charts/${val} -d ./.github/helm-charts/ --version $NEW_VERSION
 done
 helm repo index ./.github/helm-charts/
