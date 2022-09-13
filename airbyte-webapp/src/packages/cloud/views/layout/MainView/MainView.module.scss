@@ -1,7 +1,6 @@
 $banner-height: 30px;
 
 .mainContainer {
-  overflow: hidden;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -9,7 +8,6 @@ $banner-height: 30px;
   min-height: 680px;
 
   .content {
-    overflow-y: auto;
     width: 100%;
     height: 100%;
 

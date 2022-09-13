@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 export const Card = styled.div<{ full?: boolean; $withPadding?: boolean }>`
   width: ${({ full }) => (full ? "100%" : "auto")};
+  min-width: fit-content;
   background: ${({ theme }) => theme.whiteColor};
   border-radius: 10px;
   box-shadow: 0 2px 4px ${({ theme }) => theme.cardShadowColor};
