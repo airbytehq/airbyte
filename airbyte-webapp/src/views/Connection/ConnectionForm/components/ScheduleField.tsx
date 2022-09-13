@@ -2,7 +2,7 @@ import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
 import { ChangeEvent, useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import { ControlLabels, DropDown, DropDownRow, Input } from "components";
+import { ControlLabels, DropDown, DropDownRow, Input, Link } from "components";
 
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 
@@ -22,6 +22,8 @@ const CRON_DEFAULT_VALUE = {
   // Fire at 12:00 PM (noon) every day
   cronExpression: "0 0 12 * * ?",
 };
+
+const CRON_REFERENCE_LINK = "https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm";
 
 const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDropDownSelect }) => {
   const { formatMessage } = useIntl();
@@ -137,9 +139,18 @@ const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDro
                   label={formatMessage({
                     id: "form.cronExpression",
                   })}
-                  message={formatMessage({
-                    id: "form.cronExpression.message",
-                  })}
+                  message={formatMessage(
+                    {
+                      id: "form.cronExpression.message",
+                    },
+                    {
+                      lnk: (lnk: React.ReactNode) => (
+                        <Link target="_blank" href={CRON_REFERENCE_LINK} as="a">
+                          {lnk}
+                        </Link>
+                      ),
+                    }
+                  )}
                 />
               </div>
 
