@@ -56,6 +56,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      
+      - uses: actions/checkout@v3
+        with:
+          repository: "airbytehq/helm-charts"
+          token: ${{ secrets.OCTAVIA_PAT }}
+          path: "./.github/helm-charts"
+
       - uses: actions/setup-java@v1
         with:
           java-version: "17"
@@ -77,6 +84,27 @@ jobs:
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
           ./tools/bin/release_version.sh
+      
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Bump subchart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
+          add: '.'
+          cwd: './github/helm-charts'
+
+      - name: Release main helm chart
+        shell: bash
+        run: |
+          cd ./charts/airbyte && helm dep update && cd -
+          helm package ./charts/airbyte -d ./.github/helm-charts --version ${{ steps.release_airbyte.outputs.NEW_VERSION }}
+          helm repo index ./.github/helm-charts/
+      
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Bump main chart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
+          add: '.'
+          cwd: './github/helm-charts'
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
