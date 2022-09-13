@@ -7,27 +7,8 @@ package io.airbyte.config.init;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 
 public class JsonDefinitionsHelper {
-
-  public static StandardSourceDefinition patchSourceDefinition(final StandardSourceDefinition sourceDefinition) {
-    final JsonNode jsonNode = Jsons.jsonNode(sourceDefinition);
-    addMissingTombstoneField(jsonNode);
-    addMissingPublicField(jsonNode);
-    addMissingCustomField(jsonNode);
-    return Jsons.object(jsonNode, StandardSourceDefinition.class);
-  }
-
-  public static StandardDestinationDefinition patchDestinationDefinition(final StandardDestinationDefinition destinationDefinition) {
-    final JsonNode jsonNode = Jsons.jsonNode(destinationDefinition);
-    addMissingTombstoneField(jsonNode);
-    addMissingPublicField(jsonNode);
-    addMissingCustomField(jsonNode);
-    return Jsons.object(jsonNode, StandardDestinationDefinition.class);
-  }
 
   public static JsonNode addMissingTombstoneField(final JsonNode definitionJson) {
     final JsonNode currTombstone = definitionJson.get("tombstone");
