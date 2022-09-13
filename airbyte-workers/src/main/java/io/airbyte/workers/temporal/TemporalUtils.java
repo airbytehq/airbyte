@@ -59,46 +59,21 @@ public class TemporalUtils {
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
   private static final double REPORT_INTERVAL_SECONDS = 120.0;
 
-  @Property(name = "airbyte.activity.max-attempts",
-            defaultValue = "5")
-  private Integer activityNumberOfAttempts;
-  @Property(name = "airbyte.activity.initial-delay",
-            defaultValue = "30")
-  private Integer initialDelayBetweenActivityAttemptsSeconds;
-  @Property(name = "airbyte.activity.max-delay",
-            defaultValue = "600")
-  private Integer maxDelayBetweenActivityAttemptsSeconds;
-  @Property(name = "temporal.cloud.client.cert")
-  private String temporalCloudClientCert;
-  @Property(name = "temporal.cloud.client.key")
-  private String temporalCloudClientKey;
-  @Property(name = "temporal.cloud.enabled",
-            defaultValue = "false")
-  private Boolean temporalCloudEnabled;
-  @Value("${temporal.cloud.host}")
-  private String temporalCloudHost;
-  @Value("${temporal.cloud.namespace}")
-  private String temporalCloudNamespace;
-  @Value("${temporal.host}")
-  private String temporalHost;
-  @Value("${temporal.retention}")
-  private Integer temporalRetentionInDays;
+  private final String temporalCloudClientCert;
+  private final String temporalCloudClientKey;
+  private final Boolean temporalCloudEnabled;
+  private final String temporalCloudHost;
+  private final String temporalCloudNamespace;
+  private final String temporalHost;
+  private final Integer temporalRetentionInDays;
 
-  public TemporalUtils() {}
-
-  public TemporalUtils(final Integer activityNumberOfAttempts,
-                       final Integer initialDelayBetweenActivityAttemptsSeconds,
-                       final Integer maxDelayBetweenActivityAttemptsSeconds,
-                       final String temporalCloudClientCert,
-                       final String temporalCloudClientKey,
-                       final Boolean temporalCloudEnabled,
-                       final String temporalCloudHost,
-                       final String temporalCloudNamespace,
-                       final String temporalHost,
-                       final Integer temporalRetentionInDays) {
-    this.activityNumberOfAttempts = activityNumberOfAttempts;
-    this.initialDelayBetweenActivityAttemptsSeconds = initialDelayBetweenActivityAttemptsSeconds;
-    this.maxDelayBetweenActivityAttemptsSeconds = maxDelayBetweenActivityAttemptsSeconds;
+  public TemporalUtils(@Property(name = "temporal.cloud.client.cert") final String temporalCloudClientCert,
+                       @Property(name = "temporal.cloud.client.key") final String temporalCloudClientKey,
+                       @Property(name = "temporal.cloud.enabled", defaultValue = "false") final Boolean temporalCloudEnabled,
+                       @Value("${temporal.cloud.host}") final String temporalCloudHost,
+                       @Value("${temporal.cloud.namespace}") final String temporalCloudNamespace,
+                       @Value("${temporal.host}") final String temporalHost,
+                       @Value("${temporal.retention}") final Integer temporalRetentionInDays) {
     this.temporalCloudClientCert = temporalCloudClientCert;
     this.temporalCloudClientKey = temporalCloudClientKey;
     this.temporalCloudEnabled = temporalCloudEnabled;
@@ -334,14 +309,6 @@ public class TemporalUtils {
       log.info("Stopping temporal heartbeating...");
       scheduledExecutor.shutdown();
     }
-  }
-
-  public RetryOptions getRetryOptions() {
-    return RetryOptions.newBuilder()
-        .setMaximumAttempts(activityNumberOfAttempts)
-        .setInitialInterval(Duration.ofSeconds(initialDelayBetweenActivityAttemptsSeconds))
-        .setMaximumInterval(Duration.ofSeconds(maxDelayBetweenActivityAttemptsSeconds))
-        .build();
   }
 
 }

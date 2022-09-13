@@ -228,9 +228,6 @@ public class ServerApp implements ServerRunnable {
             jobErrorReportingClient);
 
     final TemporalUtils temporalUtils = new TemporalUtils(
-        configs.getActivityNumberOfAttempt(),
-        configs.getInitialDelayBetweenActivityAttemptsSeconds(),
-        configs.getMaxDelayBetweenActivityAttemptsSeconds(),
         configs.getTemporalCloudClientCert(),
         configs.getTemporalCloudClientKey(),
         configs.temporalCloudEnabled(),

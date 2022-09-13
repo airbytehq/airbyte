@@ -46,7 +46,6 @@ import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -270,17 +269,17 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerSync(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Set<String> taskQueues = getSyncTaskQueue();
 
-    // There should be a default value provided by the application framework.  If not, do this
+    // There should be a default value provided by the application framework. If not, do this
     // as a safety check to ensure we don't attempt to register against no task queue.
-    if(taskQueues.isEmpty()) {
+    if (taskQueues.isEmpty()) {
       throw new IllegalStateException("Sync workflow task queue must be provided.");
     }
 
-    for(final String taskQueue : taskQueues) {
+    for (final String taskQueue : taskQueues) {
       log.info("Registering sync workflow for task queue '{}'...", taskQueue);
       final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
-      syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[]{}));
+      syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
     }
     log.info("Sync Workflow registered.");
   }
@@ -354,4 +353,5 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     }
     return Arrays.stream(syncTaskQueue.split(",")).collect(Collectors.toSet());
   }
+
 }
