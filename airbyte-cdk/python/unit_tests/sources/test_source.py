@@ -5,6 +5,7 @@
 import json
 import logging
 import tempfile
+from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
@@ -224,9 +225,9 @@ def abstract_source(mocker):
             does_not_raise(),
             id="test_incoming_legacy_state",
         ),
-        pytest.param([], [], does_not_raise(), id="test_empty_incoming_stream_state"),
-        pytest.param(None, [], does_not_raise(), id="test_none_incoming_state"),
-        pytest.param({}, [], does_not_raise(), id="test_empty_incoming_legacy_state"),
+        pytest.param([], defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_stream_state"),
+        pytest.param(None, defaultdict(dict, {}), does_not_raise(), id="test_none_incoming_state"),
+        pytest.param({}, defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_legacy_state"),
         pytest.param(
             [
                 {
@@ -301,8 +302,15 @@ def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
         assert actual == expected_state
 
 
-def test_read_state_nonexistent(source):
-    assert [] == source.read_state("")
+@pytest.mark.parametrize(
+    "source, expected_state",
+    [
+        pytest.param(MockSource(), {}, id="test_source_implementing_read_returns_legacy_format"),
+        pytest.param(MockAbstractSource(), [], id="test_source_not_implementing_read_returns_per_stream_format"),
+    ],
+)
+def test_read_state_nonexistent(source, expected_state):
+    assert source.read_state("") == expected_state
 
 
 def test_read_catalog(source):

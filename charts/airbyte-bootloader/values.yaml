@@ -1,4 +1,3 @@
-
 ##  global.serviceAccountName Name of service account to be associated with service
 ##  deploymentMode Determines deployment mode of airbyte
 ##  secretName Overrides the secrate name with with credentials to S3 Bucket and logging
@@ -13,6 +12,8 @@ global:
   database:
     secretName: ""
     secretValue: ""
+    host: "example.com"
+    port: "5432"
   secrets: {}
   env_vars: {}
   extraContainers: []
@@ -29,6 +30,14 @@ image:
 ##  podAnnotations [object] Add extra annotations to the bootloader pod
 ##
 podAnnotations: {}
+
+##  containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
 
 ##  nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -50,15 +59,14 @@ tolerations: []
 ##  bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
 resources:
   ## Example:
-  ## requests:
-  ##    memory: 256Mi
-  ##    cpu: 250m
-  requests: {}
-  ## Example:
   ## limits:
   ##    cpu: 200m
   ##    memory: 1Gi
   limits: {}
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
 
 ##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
@@ -100,13 +108,13 @@ affinity: {}
 ##         key: DATABASE_USER
 ##
 extraEnv: []
+
 ##  secrets [object] Supply additional secrets to container
 ## Example:
 ## secrets:
 ##   DATABASE_PASSWORD: strong-password
 ##   DATABASE_USER: my-db-user
 secrets: {}
-
 
 ##  extraContainer [array] Additional container for server pod(s)
 ## Example:
@@ -161,6 +169,4 @@ extraVolumes: []
 #   DATABASE_URL: jdbc:postgresql://airbyte-db-svc:5432/airbyte
 #   DATABASE_PASSWORD: 12345
 #   DATABASE_USER: airbyte
-
-
 env_vars: {}
