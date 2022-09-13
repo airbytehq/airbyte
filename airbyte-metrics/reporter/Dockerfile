@@ -2,7 +2,7 @@ ARG JDK_VERSION=19-slim-bullseye
 ARG JDK_IMAGE=openjdk:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS metrics-reporter
 
-ARG VERSION=0.40.4
+ARG VERSION=0.40.5
 
 ENV APPLICATION airbyte-metrics-reporter
 ENV VERSION ${VERSION}

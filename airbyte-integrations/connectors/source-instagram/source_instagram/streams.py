@@ -320,6 +320,7 @@ class MediaInsights(Media):
 
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
+    REELS_METRICS = ["comments", "likes", "reach", "saved", "shares", "total_interactions", "plays"]
 
     def read_records(
         self,
@@ -330,7 +331,7 @@ class MediaInsights(Media):
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
-        media = ig_account.get_media(params=self.request_params(), fields=["media_type"])
+        media = ig_account.get_media(params=self.request_params(), fields=["media_type", "media_product_type"])
         for ig_media in media:
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
@@ -344,10 +345,13 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
-        if item.get("media_type") == "VIDEO":
+        if item.get("media_product_type") == "REELS":
+            metrics = self.REELS_METRICS
+        elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
             metrics = self.CAROUSEL_ALBUM_METRICS
+
         else:
             metrics = self.MEDIA_METRICS
 
