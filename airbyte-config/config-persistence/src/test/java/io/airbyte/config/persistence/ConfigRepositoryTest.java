@@ -31,6 +31,7 @@ import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -223,6 +224,42 @@ class ConfigRepositoryTest {
 
     final List<StandardSourceDefinition> returnedSourceDefinitionsWithTombstone = configRepository.listStandardSourceDefinitions(true);
     assertEquals(allSourceDefinitions, returnedSourceDefinitionsWithTombstone);
+  }
+
+  @Test
+  void testListDestinationDefinitionsWithVersion() throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> allSourceDefinitions = List.of(
+        new StandardDestinationDefinition(),
+        new StandardDestinationDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.3.0")),
+        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
+        new StandardDestinationDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
+        new StandardDestinationDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification())
+    );
+
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(allSourceDefinitions);
+
+    final List<StandardDestinationDefinition> destinationDefinitions = configRepository.listStandardDestinationDefinitions(false);
+    final List<String> protocolVersions = destinationDefinitions.stream().map(StandardDestinationDefinition::getProtocolVersion).toList();
+    assertEquals(List.of("0.2.0", "0.3.0", "0.3.1", "0.2.0"), protocolVersions);
+  }
+
+  @Test
+  void testListSourceDefinitionsWithVersion() throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> allSourceDefinitions = List.of(
+        new StandardSourceDefinition(),
+        new StandardSourceDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.3.0")),
+        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
+        new StandardSourceDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
+        new StandardSourceDefinition().withProtocolVersion("0.3.0").withSpec(new ConnectorSpecification())
+    );
+
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(allSourceDefinitions);
+
+    final List<StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSourceDefinitions(false);
+    final List<String> protocolVersions = sourceDefinitions.stream().map(StandardSourceDefinition::getProtocolVersion).toList();
+    assertEquals(List.of("0.2.0", "0.3.0", "0.3.1", "0.2.0"), protocolVersions);
   }
 
   @Test
