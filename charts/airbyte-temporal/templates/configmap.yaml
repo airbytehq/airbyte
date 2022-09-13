@@ -3,6 +3,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "common.names.fullname" . }}-dynamicconfig
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
 data:
   "development.yaml": |
     # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml

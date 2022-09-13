@@ -5,6 +5,8 @@
 package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -23,6 +25,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -61,9 +64,11 @@ import org.jooq.InsertValuesStepN;
 import org.jooq.JSONB;
 import org.jooq.Named;
 import org.jooq.Record;
+import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.Sequence;
 import org.jooq.Table;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,14 +310,37 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
+  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output, final SyncStats syncStats) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    jobDatabase.transaction(
-        ctx -> ctx.update(ATTEMPTS)
-            .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
-            .set(ATTEMPTS.UPDATED_AT, now)
-            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
-            .execute());
+    jobDatabase.transaction(ctx -> {
+      ctx.update(ATTEMPTS)
+          .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
+          .set(ATTEMPTS.UPDATED_AT, now)
+          .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+          .execute();
+      final Optional<Record> record =
+          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+              attemptNumber).stream().findFirst();
+      final Long attemptId = record.get().get("id", Long.class);
+
+      ctx.insertInto(SYNC_STATS)
+          .set(SYNC_STATS.ID, UUID.randomUUID())
+          .set(SYNC_STATS.UPDATED_AT, now)
+          .set(SYNC_STATS.CREATED_AT, now)
+          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+          .execute();
+      return null;
+    });
+
   }
 
   @Override
@@ -325,6 +353,26 @@ public class DefaultJobPersistence implements JobPersistence {
             .set(ATTEMPTS.UPDATED_AT, now)
             .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
             .execute());
+  }
+
+  @Override
+  public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
+    return jobDatabase
+        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+            .fetch(getSyncStatsRecordMapper())
+            .stream()
+            .toList());
+  }
+
+  private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
+    return record -> new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
+        .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
+        .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
+        .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
+        .withMeanSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
+        .withMaxSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
+        .withMeanSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))
+        .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED));
   }
 
   @Override
@@ -341,16 +389,57 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Long getJobCount(final Set<ConfigType> configTypes, final String connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
+        .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .fetchOne().into(Long.class));
+  }
+
+  @Override
   public List<Job> listJobs(final ConfigType configType, final String configId, final int pagesize, final int offset) throws IOException {
     return listJobs(Set.of(configType), configId, pagesize, offset);
   }
 
   @Override
   public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
-    final String jobsSubquery = "(SELECT * FROM jobs WHERE CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes)
-        + " AND jobs.scope = '" + configId + "' ORDER BY jobs.created_at DESC, jobs.id DESC LIMIT " + pagesize + " OFFSET " + offset + ") AS jobs";
-    return jobDatabase.query(ctx -> getJobsFromResult(ctx.fetch(
-        jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME)));
+    return jobDatabase.query(ctx -> {
+      final String jobsSubquery = "(" + ctx.select(DSL.asterisk()).from(JOBS)
+          .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
+          .and(JOBS.SCOPE.eq(configId))
+          .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
+          .limit(pagesize)
+          .offset(offset)
+          .getSQL(ParamType.INLINED) + ") AS jobs";
+
+      return getJobsFromResult(ctx.fetch(jobSelectAndJoin(jobsSubquery) + ORDER_BY_JOB_TIME_ATTEMPT_TIME));
+    });
+  }
+
+  @Override
+  public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long includingJobId, final int pagesize)
+      throws IOException {
+    final Optional<OffsetDateTime> includingJobCreatedAt = jobDatabase.query(ctx -> ctx.select(JOBS.CREATED_AT).from(JOBS)
+        .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .and(JOBS.ID.eq(includingJobId))
+        .stream()
+        .findFirst()
+        .map(record -> record.get(JOBS.CREATED_AT, OffsetDateTime.class)));
+
+    if (includingJobCreatedAt.isEmpty()) {
+      return List.of();
+    }
+
+    final int countIncludingJob = jobDatabase.query(ctx -> ctx.selectCount().from(JOBS)
+        .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
+        .and(JOBS.SCOPE.eq(connectionId))
+        .and(JOBS.CREATED_AT.greaterOrEqual(includingJobCreatedAt.get()))
+        .fetchOne().into(int.class));
+
+    // calculate the multiple of `pagesize` that includes the target job
+    int pageSizeThatIncludesJob = (countIncludingJob / pagesize + 1) * pagesize;
+    return listJobs(configTypes, connectionId, pageSizeThatIncludesJob, 0);
   }
 
   @Override
