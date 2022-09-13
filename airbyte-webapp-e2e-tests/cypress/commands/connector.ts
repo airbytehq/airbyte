@@ -11,7 +11,7 @@ export const fillPostgresForm = (name: string, host: string, port: string, datab
   enterHost(host);
   enterPort(port);
   enterDatabase(database);
-  if (schema != "") {
+  if (schema !== "") {
     enterSchema(schema);
   }
   enterUsername(username);
