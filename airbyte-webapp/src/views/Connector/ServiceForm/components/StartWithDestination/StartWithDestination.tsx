@@ -2,7 +2,7 @@ import { useField } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { ContentCard, ConnectorCard } from "components";
+import { Card, ConnectorCard } from "components";
 
 import { DestinationConnectorCard } from "../../types";
 import styles from "./StartWithDestination.module.scss";
@@ -30,7 +30,7 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
   return (
     <div className={styles.wrapper}>
       <button className={styles.container} onClick={connectorCardClickHandler}>
-        <ContentCard>
+        <Card>
           <div className={styles.connectorCardWrapper}>
             <ConnectorCard
               icon={icon}
@@ -40,7 +40,7 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
               fullWidth
             />
           </div>
-        </ContentCard>
+        </Card>
       </button>
     </div>
   );
