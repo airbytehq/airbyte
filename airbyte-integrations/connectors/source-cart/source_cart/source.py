@@ -40,7 +40,7 @@ class CustomHeaderAuthenticator(HttpAuthenticator):
     def url_base(self) -> str:
         return f"https://{self._store_name}/api/v1/"
 
-    def extra_params(self, params):
+    def extra_params(self, stream, params):
         return {}
 
 
