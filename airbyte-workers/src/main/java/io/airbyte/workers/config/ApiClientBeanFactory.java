@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *
+ * Micronaut bean factory for API client singletons.
  */
 @Factory
 @Slf4j
@@ -34,8 +34,7 @@ public class ApiClientBeanFactory {
                                            @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
                                            @Named("internalApiAuthToken") final String internalApiAuthToken,
-                                           @Named("internalApiScheme") final String internalApiScheme,
-                                           final WorkerPlane workerPlane) {
+                                           @Named("internalApiScheme") final String internalApiScheme) {
     return new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
             .setScheme(internalApiScheme)
@@ -55,8 +54,7 @@ public class ApiClientBeanFactory {
   public String internalApiScheme(final WorkerPlane workerPlane) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
-    // return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
-    return "http";
+    return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
   }
 
   /**
