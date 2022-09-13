@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
