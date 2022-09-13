@@ -78,7 +78,6 @@ class RemoteDefinitionsProviderTest {
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
     assertEquals(false, s3Destination.getTombstone());
-
   }
 
   @Test

@@ -191,7 +191,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .findFirst()
           .orElseThrow();
 
-      if (!isValidCursorType(cursorType)) {
+      if (!isCursorType(cursorType)) {
         tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
       }
     }
@@ -200,8 +200,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       throw new InvalidCursorException(tablesWithInvalidCursor);
     }
   }
-
-  protected abstract boolean isValidCursorType(final DataType cursorType);
 
   protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
