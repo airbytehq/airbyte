@@ -23,7 +23,7 @@ const Title = styled(H5)<{ light?: boolean; roundedBottom?: boolean }>`
 const ContentCard: React.FC<IProps> = (props) => (
   <Card className={props.className} onClick={props.onClick} full={props.full}>
     {props.title ? (
-      <Title light={props.light || !props.children} roundedBottom={!!props.children}>
+      <Title light={props.light} roundedBottom={!!props.children}>
         {props.title}
       </Title>
     ) : null}
