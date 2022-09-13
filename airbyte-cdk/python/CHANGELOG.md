@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.86
+- Improve TypeTransformer to convert simple types to array of simple types
+
 ## 0.1.85
 - Make TypeTransformer more robust to incorrect incoming records
 
