@@ -37,8 +37,7 @@ properties:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   tombstone:
-    description:
-      if false, the configuration is active. if true, then this
+    description: if false, the configuration is active. if true, then this
       configuration is permanently off.
     type: boolean
     default: false
