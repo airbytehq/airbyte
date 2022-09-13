@@ -89,6 +89,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
           {
             [styles.disabled]: props.disabled,
             [styles.password]: isPassword,
+            "fs-exclude": isPassword,
           },
           props.className
         )}

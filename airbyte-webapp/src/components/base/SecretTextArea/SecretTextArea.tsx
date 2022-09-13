@@ -41,7 +41,7 @@ export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
         <textarea
           spellCheck={false}
           {...textAreaProps}
-          className={classNames(styles.textarea, textAreaProps.className)}
+          className={classNames(styles.textarea, "fs-exclude", textAreaProps.className)}
           name={name}
           disabled={disabled}
           ref={textAreaRef}
