@@ -15,18 +15,20 @@ tests:
       status: "exception"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.83"
   basic_read:
     - config_path: "secrets/config.json"
       timeout_seconds: 600
       configured_catalog_path: "sample_files/basic_read_catalog.json"
-      empty_streams: ["form_submissions", "ticket_pipelines", "engagements_meetings", "engagements_emails", "engagements", "feedback_submissions", "engagements_calls", "quotes"]
+      empty_streams: ["form_submissions", "ticket_pipelines", "engagements_meetings", "engagements_emails", "engagements", "engagements_calls", "quotes"]
       # This test commented out, since it produces errors during active testing
       # expect_records:
       #   path: "integration_tests/expected_records.txt"
     - config_path: "secrets/config_oauth.json"
       timeout_seconds: 600
       configured_catalog_path: "sample_files/basic_read_oauth_catalog.json"
-      empty_streams: ["form_submissions", "ticket_pipelines", "engagements_meetings", "engagements_emails", "engagements", "feedback_submissions", "engagements_calls", "quotes"]
+      empty_streams: ["form_submissions", "ticket_pipelines", "engagements_meetings", "engagements_emails", "engagements", "engagements_calls", "quotes"]
       # This test commented out, since it produces errors during active testing
       # expect_records:
       #   path: "integration_tests/expected_records.txt"

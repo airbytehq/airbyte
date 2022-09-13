@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -1871,12 +1872,20 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                final AirbyteConfig configType,
                                                final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+      final StandardSourceDefinition sourceDef = Jsons.object(definition, StandardSourceDefinition.class);
+      sourceDef.withProtocolVersion(getProtocolVersion(sourceDef.getSpec()));
+      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDef), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class);
+      destDef.withProtocolVersion(getProtocolVersion(destDef.getSpec()));
+      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(destDef), ctx);
     } else {
       throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
     }
+  }
+
+  private static String getProtocolVersion(final ConnectorSpecification spec) {
+    return AirbyteProtocolVersion.getWithDefault(spec != null ? spec.getProtocolVersion() : null).serialize();
   }
 
   @VisibleForTesting
