@@ -56,7 +56,6 @@ interface NamespaceOptions {
 }
 
 function getDestinationNamespace(opt: NamespaceOptions) {
-  console.log(opt);
   switch (opt.namespaceDefinition) {
     case NamespaceDefinitionType.source:
       return "<source schema>";
