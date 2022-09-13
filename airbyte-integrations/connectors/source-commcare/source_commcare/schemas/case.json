@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": ["null", "integer"]
+        },
+        "next": {
+          "type": ["null", "string"]
+        },
+        "offset": {
+          "type": ["null", "integer"]
+        },
+
+        "previous": {
+          "type": ["null", "integer"]
+        },
+
+        "total_count": {
+          "type": ["null", "integer"]
+        }
+      }
+    }
+  }
+}
