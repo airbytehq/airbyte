@@ -122,6 +122,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
           connector_destination_definition_id: connection.destination.destinationDefinitionId,
           available_streams: connection.syncCatalog.streams.length,
           enabled_streams: enabledStreams,
+          type: mode,
         });
       }
     },
@@ -132,6 +133,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       connection.source.sourceDefinitionId,
       connection.source.sourceName,
       connection.syncCatalog.streams,
+      mode,
     ]
   );
 
@@ -204,11 +206,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       error={!!meta.error && meta.touched}
                       options={frequencies}
                       onChange={(item) => {
-                        // This was only passed in for the create view
-                        // Do we want it for all?
-                        if (mode === "create") {
-                          onFrequencySelect(item);
-                        }
+                        onFrequencySelect(item);
                         setFieldValue(field.name, item.value);
                       }}
                     />
