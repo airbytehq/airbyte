@@ -307,7 +307,7 @@ class TestIncrementalRead:
             ]
         new_state_from_connector = {"cursor": "new_value"}
 
-        s1 = MockStreamWithState(
+        stream_1 = MockStreamWithState(
             [
                 (
                     {"sync_mode": SyncMode.incremental, "stream_state": old_state},
@@ -316,7 +316,7 @@ class TestIncrementalRead:
             ],
             name="s1",
         )
-        s2 = MockStreamWithState(
+        stream_2 = MockStreamWithState(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s2",
         )
@@ -328,11 +328,11 @@ class TestIncrementalRead:
             return_value=new_state_from_connector,
         )
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
@@ -364,11 +364,11 @@ class TestIncrementalRead:
             input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
-        s1 = MockStream(
+        stream_1 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s1",
         )
-        s2 = MockStream(
+        stream_2 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s2",
         )
@@ -384,11 +384,11 @@ class TestIncrementalRead:
             return_value=1,
         )
 
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
@@ -419,11 +419,11 @@ class TestIncrementalRead:
             input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
-        s1 = MockStream(
+        stream_1 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s1",
         )
-        s2 = MockStream(
+        stream_2 = MockStream(
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s2",
         )
@@ -432,11 +432,11 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
@@ -461,7 +461,7 @@ class TestIncrementalRead:
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
 
-        s1 = MockStream(
+        stream_1 = MockStream(
             [
                 (
                     {
@@ -475,7 +475,7 @@ class TestIncrementalRead:
             ],
             name="s1",
         )
-        s2 = MockStream(
+        stream_2 = MockStream(
             [
                 (
                     {
@@ -495,11 +495,11 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", return_value=slices)
 
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
@@ -535,7 +535,7 @@ class TestIncrementalRead:
         slices = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         state = {"cursor": "value"}
-        s1 = MockStreamWithState(
+        stream_1 = MockStreamWithState(
             [
                 (
                     {
@@ -550,7 +550,7 @@ class TestIncrementalRead:
             name="s1",
             state=state,
         )
-        s2 = MockStreamWithState(
+        stream_2 = MockStreamWithState(
             [
                 (
                     {
@@ -576,11 +576,11 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
@@ -607,7 +607,7 @@ class TestIncrementalRead:
             input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
-        s1 = MockStream(
+        stream_1 = MockStream(
             [
                 (
                     {
@@ -621,7 +621,7 @@ class TestIncrementalRead:
             ],
             name="s1",
         )
-        s2 = MockStream(
+        stream_2 = MockStream(
             [
                 (
                     {
@@ -647,11 +647,11 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[s1, s2])
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                _configured_stream(s1, SyncMode.incremental),
-                _configured_stream(s2, SyncMode.incremental),
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
             ]
         )
 
