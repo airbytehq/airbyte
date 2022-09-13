@@ -1,6 +1,6 @@
 # temporal
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
+![version: 0.40.5](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
 
 Helm chart to deploy airbyte-temporal
 
