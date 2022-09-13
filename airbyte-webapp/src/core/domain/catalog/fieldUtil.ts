@@ -48,22 +48,20 @@ const traverseJsonSchemaProperties = (
 };
 
 interface NamespaceOptions {
-  namespaceDefinition: typeof NamespaceDefinitionType.source | typeof NamespaceDefinitionType.destination;
-  sourceNamespace?: string;
-}
-interface NamespaceOptionsCustomFormat {
-  namespaceDefinition: typeof NamespaceDefinitionType.customformat;
-  namespaceFormat: string;
-  sourceNamespace?: string;
+  namespaceDefinition:
+    | typeof NamespaceDefinitionType.source
+    | typeof NamespaceDefinitionType.destination
+    | typeof NamespaceDefinitionType.customformat;
+  namespaceFormat?: string;
 }
 
-function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomFormat) {
-  const destinationSetting = "<destination schema>";
+function getDestinationNamespace(opt: NamespaceOptions) {
+  console.log(opt);
   switch (opt.namespaceDefinition) {
     case NamespaceDefinitionType.source:
-      return opt.sourceNamespace ?? destinationSetting;
+      return "<source schema>";
     case NamespaceDefinitionType.destination:
-      return destinationSetting;
+      return "<destination schema>";
     case NamespaceDefinitionType.customformat:
       return opt.namespaceFormat;
   }
