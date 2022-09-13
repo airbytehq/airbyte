@@ -789,6 +789,8 @@ worker:
   ##
   extraVolumes: []
 
+  extraContainers: []
+
   hpa:
     enabled: false
   ## Container Orchestrator
