@@ -50,10 +50,10 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
     final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
     this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
         StandardSourceDefinition::getSourceDefinitionId,
-        source -> source.withTombstone(source.getTombstone() != null && source.getTombstone())));
+        JsonDefinitionsHelper::patchSourceDefinition));
     this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
         StandardDestinationDefinition::getDestinationDefinitionId,
-        destination -> destination.withTombstone(destination.getTombstone() != null && destination.getTombstone())));
+        JsonDefinitionsHelper::patchDestinationDefinition));
   }
 
   @Override
