@@ -102,8 +102,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   );
 
   const formId = useUniqueFormId();
-  const changedForms = useChangedFormsById();
-  const formDirty = useMemo(() => !!changedForms?.[0]?.[formId], [changedForms, formId]);
+
+  const [changedFormsById] = useChangedFormsById();
+  const formDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
 
   useUnmount(() => {
     closeModal();
