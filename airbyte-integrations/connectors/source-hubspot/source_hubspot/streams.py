@@ -1528,11 +1528,12 @@ class EngagementsTasks(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-class FeedbackSubmissions(CRMObjectIncrementalStream):
-    entity = "feedback_submissions"
-    associations = ["contacts"]
-    primary_key = "id"
-    scopes = {"crm.objects.feedback_submissions.read"}
+# this stream uses a beta endpoint thus is unstable and disabled
+# class FeedbackSubmissions(CRMObjectIncrementalStream):
+    # entity = "feedback_submissions"
+    # associations = ["contacts"]
+    # primary_key = "id"
+    # scopes = {"crm.objects.feedback_submissions.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):
