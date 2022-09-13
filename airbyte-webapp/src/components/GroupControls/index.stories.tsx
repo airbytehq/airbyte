@@ -14,7 +14,7 @@ export default {
 } as ComponentMeta<typeof GroupControls>;
 
 const Template: ComponentStory<typeof GroupControls> = (args) => (
-  <Card style={{ padding: "20px" }}>
+  <Card withPadding>
     <GroupControls {...args} />
   </Card>
 );
