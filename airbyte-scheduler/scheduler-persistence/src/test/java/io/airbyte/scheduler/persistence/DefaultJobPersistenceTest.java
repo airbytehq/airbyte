@@ -291,6 +291,9 @@ class DefaultJobPersistenceTest {
     assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
     assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
 
+    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(attemptId).stream().findFirst().get();
+    assertEquals(10L, storedNormalizationSummary.getStartTime());
+    assertEquals(500L, storedNormalizationSummary.getEndTime());
   }
 
   @Test
