@@ -12,16 +12,16 @@ tests:
       timeout_seconds: 180
   discovery:
     - config_path: "secrets/config_central_api_router.json"
-  basic_read:
-    - config_path: "secrets/config_central_api_router.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1800
-  incremental:
-    - config_path: "secrets/config_central_api_router.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 1800
-  full_refresh:
-    - config_path: "secrets/config_central_api_router.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1800
+  # basic_read:
+  #   - config_path: "secrets/config_central_api_router.json"
+  #     configured_catalog_path: "integration_tests/configured_catalog.json"
+  #     timeout_seconds: 1800
+  # incremental:
+  #   - config_path: "secrets/config_central_api_router.json"
+  #     configured_catalog_path: "integration_tests/configured_catalog.json"
+  #     future_state_path: "integration_tests/abnormal_state.json"
+  #     timeout_seconds: 1800
+  # full_refresh:
+  #   - config_path: "secrets/config_central_api_router.json"
+  #     configured_catalog_path: "integration_tests/configured_catalog.json"
+  #     timeout_seconds: 1800

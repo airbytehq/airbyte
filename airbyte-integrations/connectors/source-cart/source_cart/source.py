@@ -106,12 +106,26 @@ class SourceCart(AbstractSource):
 
         return decorator
 
+    def get_auth(self, config):
+        credentials = config.get("credentials", {})
+        auth_method = credentials.get("auth_type")
+
+        if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
+            authenticator = CentralAPIHeaderAuthenticator(
+                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
+            )
+        elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
+            authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
+        else:
+            raise NotImplementedError(f"Authentication method: {auth_method} not implemented.")
+
+        return authenticator
+
     @validate_config_values
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
-
-            stream = Products(authenticator=authenticator, start_date=config["start_date"], store_name=config["store_name"])
+            authenticator = self.get_auth(config)
+            stream = Products(authenticator=authenticator, start_date=config["start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -125,18 +139,7 @@ class SourceCart(AbstractSource):
 
     @validate_config_values
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        credentials = config.get("credentials", {})
-        auth_method = credentials.get("auth_type")
-
-        if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
-            authenticator = CentralAPIHeaderAuthenticator(
-                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
-            )
-        elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
-            authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
-        else:
-            raise NotImplementedError(f"Authentication method: {auth_method} not implemented.")
-
+        authenticator = self.get_auth(config)
         args = {
             "authenticator": authenticator,
             "start_date": config["start_date"],

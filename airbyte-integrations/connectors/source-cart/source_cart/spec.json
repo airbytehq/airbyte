@@ -16,32 +16,33 @@
             "title": "Central API Router",
             "type": "object",
             "order": 0,
-            "required": ["user_name", "user_secret", "site_id"],
+            "required": ["auth_type", "user_name", "user_secret", "site_id"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "CENTRAL_API_ROUTER",
-                "enum": ["CENTRAL_API_ROUTER"],
-                "default": "CENTRAL_API_ROUTER",
                 "order": 0
               },
               "user_name": {
                 "type": "string",
                 "title": "User Name",
                 "description": "Enter your application's User Name",
-                "airbyte_secret": true
+                "airbyte_secret": true,
+                "order": 1
               },
               "user_secret": {
                 "type": "string",
                 "title": "User Secret",
                 "description": "Enter your application's User Secret",
-                "airbyte_secret": true
+                "airbyte_secret": true,
+                "order": 2
               },
               "site_id": {
                 "type": "string",
                 "title": "Site ID",
                 "description": "You can determine a site provisioning site Id by hitting https://site.com/store/sitemonitor.aspx and reading the response param PSID",
-                "airbyte_secret": true
+                "airbyte_secret": true,
+                "order": 3
               }
             }
           },
@@ -49,24 +50,24 @@
             "title": "Single Store Access Token",
             "type": "object",
             "order": 1,
-            "required": ["access_token", "store_name"],
+            "required": ["auth_type", "access_token", "store_name"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "SINGLE_STORE_ACCESS_TOKEN",
-                "enum": ["SINGLE_STORE_ACCESS_TOKEN"],
-                "default": "SINGLE_STORE_ACCESS_TOKEN",
                 "order": 0
               },
               "access_token": {
                 "type": "string",
                 "title": "Access Token",
                 "airbyte_secret": true,
+                "order": 1,
                 "description": "Access Token for making authenticated requests."
               },
               "store_name": {
                 "type": "string",
                 "title": "Store Name",
+                "order": 2,
                 "description": "The name of Cart.com Online Store. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
               }
             }

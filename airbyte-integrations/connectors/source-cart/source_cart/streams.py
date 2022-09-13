@@ -112,7 +112,10 @@ class IncrementalCartStream(CartStream, ABC):
             query += f" AND lt:{self._end_date}"
 
         params[self.cursor_field] = query
-        return params
+
+        ord_params = ["count", "page", "sort", self.cursor_field]
+        ordered_params = {k: params[k] for k in ord_params if k in params}
+        return ordered_params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
