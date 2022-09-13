@@ -1,11 +1,10 @@
-import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingButton } from "components";
-import { Text } from "components/base/Text";
 
 import styles from "./EditControls.module.scss";
+import { ResponseMessage } from "./ResponseMessage";
 
 interface EditControlProps {
   isSubmitting: boolean;
@@ -28,34 +27,11 @@ const EditControls: React.FC<EditControlProps> = ({
   enableControls,
   withLine,
 }) => {
-  const showStatusMessage = () => {
-    const messageStyle = classnames(styles.message, {
-      [styles.success]: successMessage,
-      [styles.error]: errorMessage,
-    });
-    if (errorMessage) {
-      return (
-        <Text as="div" size="lg" className={messageStyle}>
-          {errorMessage}
-        </Text>
-      );
-    }
-
-    if (successMessage && !dirty) {
-      return (
-        <Text as="div" size="lg" className={messageStyle} data-id="success-result">
-          {successMessage}
-        </Text>
-      );
-    }
-    return null;
-  };
-
   return (
     <>
       {withLine && <div className={styles.line} />}
       <div className={styles.content}>
-        {showStatusMessage()}
+        <ResponseMessage dirty={dirty} successMessage={successMessage} errorMessage={errorMessage} />
         <div>
           <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />

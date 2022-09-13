@@ -185,6 +185,9 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 
   const errorMessage = submitError ? generateMessageFromError(submitError) : null;
+  const displayedErrorMessage = (isValid: boolean) => {
+    return errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null;
+  };
 
   return (
     <Formik
@@ -317,9 +320,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onCancel?.();
               }}
               successMessage={successMessage}
-              errorMessage={
-                errorMessage ? errorMessage : !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-              }
+              errorMessage={displayedErrorMessage(isValid)}
               enableControls={canSubmitUntouchedForm}
             />
           )}
@@ -338,13 +339,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <CreateControls
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
-                errorMessage={
-                  errorMessage
-                    ? errorMessage
-                    : !isValid
-                    ? formatMessage({ id: "connectionForm.validation.error" })
-                    : null
-                }
+                errorMessage={displayedErrorMessage(isValid)}
               />
             </>
           )}
