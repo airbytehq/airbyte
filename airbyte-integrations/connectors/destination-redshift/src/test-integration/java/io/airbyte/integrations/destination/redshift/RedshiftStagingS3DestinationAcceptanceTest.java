@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,11 +21,13 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +44,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
+  private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
   protected TestDestinationEnv testDestinationEnv;
 
@@ -63,6 +69,46 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("password", "fake");
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("username", "");
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("host", "localhost2");
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: HY000; Error code: 500150;"));
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("database", "wrongdatabase");
+    final RedshiftDestination destination = new RedshiftDestination();
+    final AirbyteConnectionStatus status = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
   }
 
   @Override
@@ -139,6 +185,9 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
+    final String createUser = String.format("create user %s with password '%s';",
+        USER_WITHOUT_CREDS, baseConfig.get("password").asText());
+    getDatabase().query(ctx -> ctx.execute(createUser));
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
@@ -148,7 +197,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
-    getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
+    getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
   }
 
   protected Database getDatabase() {
