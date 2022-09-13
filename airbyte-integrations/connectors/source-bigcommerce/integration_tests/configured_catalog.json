@@ -1576,6 +1576,9 @@
               "id": {
                   "type": ["null", "string"]
               },
+              "account_uuid": {
+                  "type": ["null", "string"]
+              },
               "domain": {
                   "type": ["null", "string"]
               },
@@ -1583,6 +1586,9 @@
                   "type": ["null", "string"]
               },
               "control_panel_base_url": {
+                  "type": ["null", "string"]
+              },
+              "status": {
                   "type": ["null", "string"]
               },
               "name": {
@@ -1609,35 +1615,32 @@
               "order_email": {
                   "type": ["null", "string"]
               },
+              "favicon_url": {
+                  "type": ["null", "string"]
+              },
               "timezone": {
-                  "type": ["null", "array"],
-                  "items": {
-                      "type": ["null", "object"],
-                      "properties": {
-                          "name": {
-                              "type": ["null", "string"]
-                          },
-                          "raw_offset": {
-                              "type": ["null", "integer"]
-                          },
-                          "dst_offset": {
-                              "type": ["null", "integer"]
-                          },
-                          "date_format": {
-                              "type": ["null", "array"],
-                              "items": {
-                                  "type": ["null", "object"],
-                                  "properties": {
-                                      "display": {
-                                          "type": ["null", "string"]
-                                      },
-                                      "export": {
-                                          "type": ["null", "integer"]
-                                      },
-                                      "extended_display": {
-                                          "type": ["null", "integer"]
-                                      }
-                                  }
+                  "type": ["null", "object"],
+                  "properties": {
+                      "name": {
+                          "type": ["null", "string"]
+                      },
+                      "raw_offset": {
+                          "type": ["null", "integer"]
+                      },
+                      "dst_offset": {
+                          "type": ["null", "integer"]
+                      },
+                      "date_format": {
+                          "type": ["null", "object"],
+                          "properties": {
+                              "display": {
+                                  "type": ["null", "string"]
+                              },
+                              "export": {
+                                  "type": ["null", "integer"]
+                              },
+                              "extended_display": {
+                                  "type": ["null", "integer"]
                               }
                           }
                       }
@@ -1702,31 +1705,50 @@
               "is_price_entered_with_tax": {
                   "type": ["null", "boolean"]
               },
+              "store_id": {
+                  "type": ["null", "integer"]
+              },
+              "default_site_id": {
+                  "type": ["null", "integer"]
+              },
+              "default_channel_id": {
+                  "type": ["null", "integer"]
+              },
               "active_comparison_modules": {
                   "type": ["null", "array"]
               },
               "features": {
-                  "type": ["null", "array"],
-                  "items": {
-                      "type": ["null", "object"],
-                      "properties": {
-                          "stencil_enabled": {
-                              "type": ["null", "boolean"]
-                          },
-                          "sitewidehttps_enabled": {
-                              "type": ["null", "boolean"]
-                          },
-                          "facebook_catalog_id": {
-                              "type": ["null", "boolean"]
-                          },
-                          "checkout_type": {
-                              "type": ["null", "boolean"]
-                          }
+                  "type": ["null", "object"],
+                  "properties": {
+                      "stencil_enabled": {
+                          "type": ["null", "boolean"]
+                      },
+                      "sitewidehttps_enabled": {
+                          "type": ["null", "boolean"]
+                      },
+                      "facebook_catalog_id": {
+                          "type": ["null", "string"]
+                      },
+                      "checkout_type": {
+                          "type": ["null", "string"]
+                      },
+                      "wishlists_enabled": {
+                          "type": ["null", "boolean"]
+                      },
+                      "graphql_storefront_api_enabled": {
+                          "type": ["null", "boolean"]
+                      },
+                      "shopper_consent_tracking_enabled": {
+                          "type": ["null", "boolean"]
+                      },
+                      "multi_storefront_enabled": {
+                          "type": ["null", "boolean"]
                       }
                   }
               }
-          } 
-        },
+          }
+      }
+      ,
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_modified"]
