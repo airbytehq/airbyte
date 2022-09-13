@@ -5,7 +5,8 @@
 import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, StreamDescriptor
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Extra
 
@@ -68,6 +69,24 @@ class ConnectorStateManager:
         """
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
         self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
+
+    def create_state_message(self, stream_name: str, namespace: str) -> AirbyteMessage:
+        """
+        Generates an AirbyteMessage using the current per-stream state of a specified stream
+        :param stream_name: The name of the stream for the message that is being created
+        :param namespace: The namespace of the stream for the message that is being created
+        :return: The Airbyte state message to be emitted by the connector during a sync
+        """
+        state_message = AirbyteMessage(
+            type=MessageType.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, data=dict(self.get_legacy_state()))
+        )
+        stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
+        stream_state = self.per_stream_states.get(stream_descriptor, {})
+        state_message.state.stream = AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name=stream_descriptor.name, namespace=stream_descriptor.namespace),
+            stream_state=stream_state,
+        )
+        return state_message
 
     @classmethod
     def _extract_from_state_message(

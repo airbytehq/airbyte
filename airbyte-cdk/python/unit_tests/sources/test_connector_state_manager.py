@@ -6,7 +6,8 @@ from contextlib import nullcontext as does_not_raise
 from typing import Any, Iterable, List, Mapping
 
 import pytest
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor
 from airbyte_cdk.sources.streams import Stream
 
@@ -416,3 +417,95 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
         HashableStreamDescriptor(name=update_name, namespace=update_namespace)
     ] == AirbyteStateBlob.parse_obj(update_value)
     assert state_manager.get_legacy_state() == expected_legacy_state
+
+
+@pytest.mark.parametrize(
+    "start_state, update_name, update_namespace, expected_state_message",
+    [
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2022_05_22"}),
+                    ),
+                ),
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="seasons", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"id": 1}),
+                    ),
+                ),
+            ],
+            "episodes",
+            "public",
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2022_05_22"}),
+                    ),
+                    data={"episodes": {"created_at": "2022_05_22"}, "seasons": {"id": 1}},
+                ),
+            ),
+            id="test_emit_state_message_with_stream_and_legacy",
+        ),
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"id": 507}),
+                    ),
+                )
+            ],
+            "missing",
+            "public",
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="missing", namespace="public"), stream_state=AirbyteStateBlob()
+                    ),
+                    data={"episodes": {"id": 507}},
+                ),
+            ),
+            id="test_emit_state_nonexistent_stream_name",
+        ),
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=AirbyteStateBlob.parse_obj({"id": 507}),
+                    ),
+                )
+            ],
+            "episodes",
+            "nonexistent",
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="nonexistent"), stream_state=AirbyteStateBlob()
+                    ),
+                    data={"episodes": {"id": 507}},
+                ),
+            ),
+            id="test_emit_state_wrong_namespace",
+        ),
+    ],
+)
+def test_create_state_message(start_state, update_name, update_namespace, expected_state_message):
+    state_manager = ConnectorStateManager({}, start_state)
+
+    actual_state_message = state_manager.create_state_message(stream_name=update_name, namespace=update_namespace)
+    assert actual_state_message == expected_state_message

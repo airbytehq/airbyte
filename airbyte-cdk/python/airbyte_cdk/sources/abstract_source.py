@@ -288,13 +288,15 @@ class AbstractSource(Source, ABC):
                 if self._limit_reached(internal_config, total_records_counter):
                     return
 
-    @staticmethod
-    def _checkpoint_state(stream: Stream, stream_state, state_manager):
+    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
         try:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state_manager.get_legacy_state()))
+        if self.per_stream_state_enabled:
+            return state_manager.create_state_message(stream.name, stream.namespace)
+        else:
+            return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=dict(state_manager.get_legacy_state())))
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
