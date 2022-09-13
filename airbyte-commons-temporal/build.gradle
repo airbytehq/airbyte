@@ -1,0 +1,21 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation 'io.temporal:temporal-serviceclient:1.8.1'
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    testImplementation 'io.temporal:temporal-testing:1.8.1'
+
+    implementation project(':airbyte-config:config-models')
+}

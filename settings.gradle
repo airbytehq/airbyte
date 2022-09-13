@@ -86,9 +86,11 @@ include ':airbyte-scheduler:scheduler-persistence' // used by airbyte-workers.
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-cli'
+    include ':airbyte-commons-temporal'
     include ':airbyte-config:init'
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
+    include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
@@ -96,7 +98,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-webapp-e2e-tests'
-    include ':airbyte-cron'
 }
 
 // connectors base
@@ -149,3 +150,4 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
+
