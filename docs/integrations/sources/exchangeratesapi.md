@@ -46,6 +46,7 @@ If you have `free` subscription plan \(you may check it [here](https://manage.ex
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 1.2.6   | 2022-08-23 | [15884](https://github.com/airbytehq/airbyte/pull/15884) | Migrated to new API Layer endpoint |
 | 0.2.6   | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230) | Update connector to use a `spec.yaml` |
 | 0.2.5   | 2021-11-12 | [7936](https://github.com/airbytehq/airbyte/pull/7936) | Add ignore_weekends boolean option |
 | 0.2.4   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
