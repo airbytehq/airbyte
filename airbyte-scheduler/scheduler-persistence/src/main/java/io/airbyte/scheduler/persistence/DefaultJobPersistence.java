@@ -391,8 +391,8 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("normalization_summaries")).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
-            .fetch(getNormalizationSummaryRecordMapper())
+        .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
+            .fetch(getNormalizationSummaryRecordMapper(attemptId))
             .stream()
             .toList());
   }
@@ -408,7 +408,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED));
   }
 
-  private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper() {
+  private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper(final Long attemptId) {
     final ObjectMapper mapper = new ObjectMapper();
     return record -> {
       try {
@@ -417,6 +417,9 @@ public class DefaultJobPersistence implements JobPersistence {
             .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null
                 : Lists.newArrayList(mapper.readValue(String.valueOf(record.get(NORMALIZATION_SUMMARIES.FAILURES)), FailureReason[].class)));
       } catch (final JsonProcessingException e) {
+        // There was an error deserializing the FailureReasons into a list of FailureReason Objects,
+        // so we are returning null Failures
+        LOGGER.error("There was an error deserializing NormalizationSummary Failures for attempt id " + attemptId);
         return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
             .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
             .withFailures(null);
