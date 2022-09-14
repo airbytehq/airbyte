@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { components } from "react-select";
-import { MenuListComponentProps } from "react-select/src/components/Menu";
+import { components, MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { Popout } from "components";
@@ -67,7 +66,7 @@ const List = styled.div`
   }
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false> & {
+type MenuWithRequestButtonProps = MenuListProps<IDataItem, boolean> & {
   selectedWorkspace: string;
 };
 

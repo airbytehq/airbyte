@@ -27,6 +27,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.relationaldb.InvalidCursorException.InvalidCursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
@@ -54,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -146,6 +148,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
                 .identity()));
 
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
+
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
@@ -161,6 +165,40 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
+  }
+
+  private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable, final ConfiguredAirbyteCatalog catalog) {
+    final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      final AirbyteStream stream = airbyteStream.getStream();
+      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+          stream.getName());
+      final boolean hasSourceDefinedCursor =
+          !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor()) && airbyteStream.getStream().getSourceDefinedCursor();
+      if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
+        continue;
+      }
+
+      final TableInfo<CommonField<DataType>> table = tableNameToTable
+          .get(fullyQualifiedTableName);
+      final Optional<String> cursorField = IncrementalUtils.getCursorFieldOptional(airbyteStream);
+      if (cursorField.isEmpty()) {
+        continue;
+      }
+      final DataType cursorType = table.getFields().stream()
+          .filter(info -> info.getName().equals(cursorField.get()))
+          .map(CommonField::getType)
+          .findFirst()
+          .orElseThrow();
+
+      if (!isCursorType(cursorType)) {
+        tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
+      }
+    }
+
+    if (!tablesWithInvalidCursor.isEmpty()) {
+      throw new InvalidCursorException(tablesWithInvalidCursor);
+    }
   }
 
   protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {

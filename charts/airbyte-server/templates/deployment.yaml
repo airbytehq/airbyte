@@ -203,7 +203,7 @@ spec:
         {{- if .Values.extraEnv }}
         {{- toYaml .Values.extraEnv | nindent 8 }}
         {{- end }}
-        
+
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
