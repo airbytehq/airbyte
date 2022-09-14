@@ -4,7 +4,7 @@ import { fillPostgresForm, fillPokeAPIForm } from "./connector";
 
 export const createPostgresSource = (
   name: string,
-  host: string = "host.docker.internal",
+  host: string = "localhost",
   port: string = "{selectAll}{del}5433",
   database: string = "airbyte_ci",
   username: string = "postgres",
