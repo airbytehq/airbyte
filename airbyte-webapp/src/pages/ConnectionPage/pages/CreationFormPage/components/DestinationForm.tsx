@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 // TODO: create separate component for source and destinations forms
 import { useLocation, useNavigate } from "react-router-dom";
 
