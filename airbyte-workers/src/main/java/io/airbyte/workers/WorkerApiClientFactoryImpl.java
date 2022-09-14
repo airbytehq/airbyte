@@ -35,7 +35,7 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
     // isn't needed
     final var scheme = configs.getWorkerPlane().equals(WorkerPlane.CONTROL_PLANE) ? "http" : "https";
 
-    log.info("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
+    log.debug("Creating Airbyte Config Api Client with Scheme: {}, Host: {}, Port: {}, Auth-Header: {}",
         scheme, configs.getAirbyteApiHost(), configs.getAirbyteApiPort(), authHeader);
 
     this.airbyteApiClient = new AirbyteApiClient(
@@ -73,8 +73,6 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
       return configs.getAirbyteApiAuthHeaderValue();
     } else if (configs.getWorkerPlane().equals(WorkerPlane.DATA_PLANE)) {
       try {
-        log.warn("Signing request, time: " + new DateTime());
-
         final Date now = new Date();
         final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));
         final String saEmail = configs.getDataPlaneServiceAccountEmail();
@@ -93,8 +91,6 @@ public class WorkerApiClientFactoryImpl implements WorkerApiClientFactory {
         final ServiceAccountCredentials cred = ServiceAccountCredentials.fromStream(stream);
         final RSAPrivateKey key = (RSAPrivateKey) cred.getPrivateKey();
         final Algorithm algorithm = Algorithm.RSA256(null, key);
-
-        log.warn("Done request, time: " + new DateTime());
         return "Bearer " + token.sign(algorithm);
       } catch (final Exception e) {
         log.warn("An issue occurred while generating a data plane auth token. Defaulting to empty string.", e);
