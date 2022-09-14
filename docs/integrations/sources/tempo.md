@@ -41,5 +41,6 @@ Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API i
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.6   | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs |
 | 0.2.4   | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649) | Migrate to the CDK |
 

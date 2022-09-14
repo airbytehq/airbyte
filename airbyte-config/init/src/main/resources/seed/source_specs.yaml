@@ -492,7 +492,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.19"
+- dockerImage: "airbyte/source-amazon-ads:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -539,10 +539,10 @@
           order: 4
         report_wait_timeout:
           title: "Report Wait Timeout *"
-          description: "Timeout duration in minutes for Reports. Default is 30 minutes."
-          default: 30
+          description: "Timeout duration in minutes for Reports. Default is 60 minutes."
+          default: 60
           examples:
-          - 30
+          - 60
           - 120
           order: 5
           type: "integer"
@@ -2659,7 +2659,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.5"
+- dockerImage: "airbyte/source-faker:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -2668,7 +2668,7 @@
       type: "object"
       required:
       - "count"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         count:
           title: "Count"
@@ -4315,7 +4315,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.83"
+- dockerImage: "airbyte/source-hubspot:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4565,7 +4565,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.25"
+- dockerImage: "airbyte/source-intercom:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -4759,7 +4759,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.1.7"
+- dockerImage: "airbyte/source-kafka:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
     connectionSpecification:
@@ -4772,6 +4772,42 @@
       - "protocol"
       additionalProperties: false
       properties:
+        MessageFormat:
+          title: "MessageFormat"
+          type: "object"
+          description: "The serialization used based on this "
+          oneOf:
+          - title: "JSON"
+            properties:
+              deserialization_type:
+                type: "string"
+                enum:
+                - "JSON"
+                default: "JSON"
+          - title: "AVRO"
+            properties:
+              deserialization_type:
+                type: "string"
+                enum:
+                - "AVRO"
+                default: "AVRO"
+              deserialization_strategy:
+                type: "string"
+                enum:
+                - "TopicNameStrategy"
+                - "RecordNameStrategy"
+                - "TopicRecordNameStrategy"
+                default: "TopicNameStrategy"
+              schema_registry_url:
+                type: "string"
+                examples:
+                - "http://localhost:8081"
+              schema_registry_username:
+                type: "string"
+                default: ""
+              schema_registry_password:
+                type: "string"
+                default: ""
         bootstrap_servers:
           title: "Bootstrap Servers"
           description: "A list of host/port pairs to use for establishing the initial\
@@ -5004,6 +5040,11 @@
             \ received."
           type: "integer"
           default: 3
+        max_records_process:
+          title: "Maximum Records"
+          description: "The Maximum to be processed per execution"
+          type: "integer"
+          default: 100000
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -6119,7 +6160,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.20"
+- dockerImage: "airbyte/source-mixpanel:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -6167,22 +6208,21 @@
           order: 4
           title: "Start Date"
           type: "string"
-          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
-            \ data before this date will not be replicated. If this option is not\
-            \ set, the connector will replicate data from up to one year ago by default."
+          description: "The date in the format YYYY-MM-DD. Any data before this date\
+            \ will not be replicated. If this option is not set, the connector will\
+            \ replicate data from up to one year ago by default."
           examples:
           - "2021-11-16"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+          pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
         end_date:
           order: 5
           title: "End Date"
           type: "string"
-          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
-            \ data after this date will not be replicated. Left empty to always sync\
-            \ to most recent date"
+          description: "The date in the format YYYY-MM-DD. Any data after this date\
+            \ will not be replicated. Left empty to always sync to most recent date"
           examples:
           - "2021-11-16"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+          pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
         region:
           order: 6
           title: "Region"
@@ -6316,7 +6356,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mongodb-v2:0.1.16"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
@@ -6480,7 +6520,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.6.10"
+- dockerImage: "airbyte/source-mysql:0.6.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -6803,7 +6843,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.7"
+- dockerImage: "airbyte/source-notion:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -6815,8 +6855,8 @@
       properties:
         start_date:
           title: "Start Date"
-          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
-            \ data before this date will not be replicated."
+          description: "UTC date and time in the format 2017-01-25T00:00:00.000Z.\
+            \ Any data before this date will not be replicated."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
           examples:
           - "2020-11-16T00:00:00.000Z"
@@ -8011,7 +8051,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.7"
+- dockerImage: "airbyte/source-postgres:1.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9365,7 +9405,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.13"
+- dockerImage: "airbyte/source-sendgrid:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -9384,11 +9424,16 @@
           order: 0
         start_time:
           title: "Start time"
-          type: "integer"
-          description: "Start time in timestamp integer format. Any data before this\
-            \ timestamp will not be replicated."
+          type:
+          - "integer"
+          - "string"
+          description: "Start time in ISO8601 format. Any data before this time point\
+            \ will not be replicated."
           examples:
-          - 1558359837
+          - "2021-12-12"
+          - "2021-02-01 13:30:00"
+          - "2020-07-18T13:30:00.000Z"
+          - "2020-07-18 13:30:00+02:00"
           order: 1
     supportsNormalization: false
     supportsDBT: false
@@ -10382,7 +10427,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.2.5"
+- dockerImage: "airbyte/source-tempo:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
     connectionSpecification:
@@ -10391,7 +10436,6 @@
       type: "object"
       required:
       - "api_token"
-      additionalProperties: false
       properties:
         api_token:
           type: "string"

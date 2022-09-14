@@ -84,25 +84,15 @@ run {
     environment "TEMPORAL_HOST", "localhost:7233"
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-server-*.tar'
-    }
-    into 'build/docker/bin'
-}
-
-Task dockerBuildTask = getDockerBuildTask("server", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)
-
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
