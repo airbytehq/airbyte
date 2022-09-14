@@ -345,7 +345,7 @@ class CdcAcceptanceTests {
     final UUID sourceId = createCdcSource().getSourceId();
     final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
-    final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, operationRead);
+    final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, refreshedCatalog, operationRead);
     webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
@@ -383,16 +383,17 @@ class CdcAcceptanceTests {
     LOGGER.info("Removing color palette stream from configured catalog");
     final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final UUID sourceId = connectionRead.getSourceId();
-    AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final List<AirbyteStreamAndConfiguration> streams = catalog.getStreams();
+    final AirbyteCatalog initialCatalog = testHarness.discoverSourceSchema(sourceId);
+    LOGGER.info("initial catalog: {}", initialCatalog);
+    final List<AirbyteStreamAndConfiguration> streams = initialCatalog.getStreams();
     // filter out color_palette stream
     final List<AirbyteStreamAndConfiguration> updatedStreams = streams
         .stream()
         .filter(stream -> !COLOR_PALETTE_TABLE.equals(stream.getStream().getName()))
         .toList();
-    catalog.setStreams(updatedStreams);
-    LOGGER.info("Updated catalog: {}", catalog);
-    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
+    final AirbyteCatalog catalogWithoutColorPallete = new AirbyteCatalog().streams(updatedStreams);
+    LOGGER.info("catalogWithoutColorPallete: {}", catalogWithoutColorPallete);
+    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, initialCatalog, catalogWithoutColorPallete, operationRead);
     webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
@@ -405,9 +406,9 @@ class CdcAcceptanceTests {
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor));
 
     LOGGER.info("Adding color palette stream back to configured catalog");
-    catalog = testHarness.discoverSourceSchema(sourceId);
-    LOGGER.info("Updated catalog: {}", catalog);
-    update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
+    final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
+    LOGGER.info("refreshed catalog: {}", refreshedCatalog);
+    update = testHarness.getUpdateInput(connectionRead, catalogWithoutColorPallete, refreshedCatalog, operationRead);
     webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
