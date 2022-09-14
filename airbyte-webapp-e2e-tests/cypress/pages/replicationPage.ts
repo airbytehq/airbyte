@@ -1,4 +1,4 @@
-const scheduleDropdown = "div[data-testid='scheduleData.basicSchedule']";
+const scheduleDropdown = "div[data-testid='scheduleData']";
 const scheduleValue = (value: string) => `div[data-testid='${value}']`;
 const destinationPrefix = "input[data-testid='prefixInput']";
 const replicationTab = "div[data-id='replication-step']";
