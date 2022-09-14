@@ -13,6 +13,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
@@ -193,7 +194,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
+        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
@@ -252,7 +254,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
+        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
       }
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
