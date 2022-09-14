@@ -14,7 +14,7 @@ interface Context {
 
 export const OnboardingServiceContext = React.createContext<Context | null>(null);
 
-export const OnboardingServiceProvider: React.FC = ({ children }) => {
+export const OnboardingServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const workspace = useCurrentWorkspace();
   const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(`${workspace.workspaceId}/passFeedback`, false);
   const [skippedUseCases, setSkippedUseCases] = useLocalStorage<string[]>(
