@@ -236,12 +236,9 @@ class ActiveUsers(IncrementalAmplitudeStream):
             for i, date in enumerate(response_data["xValues"]):
                 try:    
                     yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
-                except IndexError as e:
-                    # To handle index out of range exception being thrown
+                except (IndexError,KeyError) as e:
                     self.logger.exception(e)
-                except KeyError as e:
-                    self.logger.exception(e)
-
+                
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
 
