@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.process;
+package io.airbyte.container_orchestrator;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
