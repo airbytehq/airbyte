@@ -44,7 +44,7 @@ const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void)
   );
 };
 
-export const WorkspaceServiceProvider: React.FC = ({ children }) => {
+export const WorkspaceServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const selectWorkspace = useSelectWorkspace();
 
   const ctx = useMemo<Context>(

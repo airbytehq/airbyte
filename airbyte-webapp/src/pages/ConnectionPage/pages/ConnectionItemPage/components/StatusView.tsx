@@ -2,12 +2,14 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { Link, useLocation } from "react-router-dom";
 
 import { Button, LoadingButton } from "components";
 import { Card } from "components/base/Card";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
+import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -52,15 +54,23 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
   const analyticsService = useAnalyticsService();
-  const { jobs, isPreviousData: isJobPageLoading } = useListJobs({
+  const { jobId: linkedJobId } = useAttemptLink();
+  const { pathname } = useLocation();
+  const {
+    jobs,
+    totalJobCount,
+    isPreviousData: isJobPageLoading,
+  } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+    includingJobId: linkedJobId ? Number(linkedJobId) : undefined,
     pagination: {
       pageSize: jobPageSize,
     },
   });
 
-  const moreJobPagesAvailable = jobs.length === jobPageSize;
+  const linkedJobNotFound = linkedJobId && jobs.length === 0;
+  const moreJobPagesAvailable = !linkedJobNotFound && jobPageSize < totalJobCount;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -74,6 +84,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           // We need to disable button when job is canceled but the job list still has a running job
         } as ActiveJob)
     );
+
+    // necessary because request to listJobs may return a result larger than the current page size if a linkedJobId is passed in
+    setJobPageSize((prevJobPageSize) => Math.max(prevJobPageSize, jobs.length));
   }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -171,7 +184,20 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </div>
         }
       >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+        {jobs.length ? (
+          <JobsList jobs={jobs} />
+        ) : linkedJobNotFound ? (
+          <EmptyResource
+            text={<FormattedMessage id="connection.linkedJobNotFound" />}
+            description={
+              <Link to={pathname}>
+                <FormattedMessage id="connection.returnToSyncHistory" />
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+        )}
       </Card>
 
       {(moreJobPagesAvailable || isJobPageLoading) && (

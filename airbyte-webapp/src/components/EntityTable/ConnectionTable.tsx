@@ -7,6 +7,7 @@ import styled from "styled-components";
 
 import Table from "components/Table";
 
+import { ConnectionScheduleType } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
@@ -145,9 +146,9 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
 
       {
         Header: <FormattedMessage id="tables.frequency" />,
-        accessor: "schedule",
+        accessor: "scheduleData",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <FrequencyCell value={cell.value} enabled={row.original.enabled} />
+          <FrequencyCell value={cell.value} enabled={row.original.enabled} scheduleType={row.original.scheduleType} />
         ),
       },
       {
@@ -175,7 +176,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
             enabled={cell.value}
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
-            isManual={!row.original.schedule}
+            isManual={row.original.scheduleType === ConnectionScheduleType.manual}
             onChangeStatus={onChangeStatus}
             onSync={onSync}
             allowSync={allowSync}

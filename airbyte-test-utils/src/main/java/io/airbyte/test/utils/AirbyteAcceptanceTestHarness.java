@@ -63,6 +63,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -315,8 +316,9 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private WorkflowClient getWorkflowClient() {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(
-        TemporalUtils.getAirbyteTemporalOptions("localhost:7233"),
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService(
+        TemporalWorkflowUtils.getAirbyteTemporalOptions("localhost:7233"),
         TemporalUtils.DEFAULT_NAMESPACE);
     return WorkflowClient.newInstance(temporalService);
   }
