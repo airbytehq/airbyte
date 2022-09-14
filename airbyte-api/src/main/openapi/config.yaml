@@ -2113,6 +2113,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_light:
+    post:
+      tags:
+        - jobs
+      summary: Get information about a job excluding attempt info and logs
+      operationId: getJobInfoLight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoLightRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/cancel:
     post:
       tags:
@@ -4017,6 +4040,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+    JobInfoLightRead:
+      type: object
+      required:
+        - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
