@@ -66,20 +66,20 @@ For more information about the grading system, see [Product Release Stages](http
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
 | [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
-| [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Alpha                | No                  |
+| [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Generally Available  | No                  |
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](sources/google-search-console.md)                                   | Beta                 | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
-| [Greenhouse](sources/greenhouse.md)                                                         | Alpha                | Yes                 |
+| [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
 | [Harvest](sources/harvest.md)                                                               | Beta                 | No                  |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Generally Available  | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
 | [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
-| [Iterable](sources/iterable.md)                                                             | Alpha                | Yes                 |
+| [Iterable](sources/iterable.md)                                                             | Beta                 | Yes                 |
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
@@ -121,7 +121,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Beta                 | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
 | [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
-| [Pinterest](sources/pinterest.md)                                                           | Alpha                | No                  |
+| [Pinterest](sources/pinterest.md)                                                           | Beta                 | No                  |
 | [Pipedrive](sources/pipedrive.md)                                                           | Alpha                | No                  |
 | [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
 | [Plaid](sources/plaid.md)                                                                   | Alpha                | No                  |
@@ -140,8 +140,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
 | [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
-| [Sendgrid](sources/sendgrid.md)                                                             | Alpha                | Yes                 |
-| [Sentry](sources/sentry.md)                                                                 | Alpha                | Yes                 |
+| [Sendgrid](sources/sendgrid.md)                                                             | Beta                 | Yes                 |
+| [Sentry](sources/sentry.md)                                                                 | Beta                 | Yes                 |
 | [SFTP](sources/sftp.md)                                                                     | Alpha                | Yes                 |
 | [Shopify](sources/shopify.md)                                                               | Alpha                | No                  |
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
@@ -171,7 +171,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zendesk Chat](sources/zendesk-chat.md)                                                     | Beta                 | Yes                 |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
 | [Zendesk Support](sources/zendesk-support.md)                                               | Generally Available  | Yes                 |
-| [Zendesk Talk](sources/zendesk-talk.md)                                                     | Alpha                | Yes                 |
+| [Zendesk Talk](sources/zendesk-talk.md)                                                     | Beta                 | Yes                 |
 | [Zenloop](sources/zenloop.md)                                                               | Alpha                | Yes                 |
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
