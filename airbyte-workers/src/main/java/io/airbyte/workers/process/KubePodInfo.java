@@ -4,4 +4,4 @@
 
 package io.airbyte.workers.process;
 
-public record KubePodInfo(String namespace, String name) {}
+public record KubePodInfo(String namespace, String name, KubeContainerInfo mainContainerInfo) {}

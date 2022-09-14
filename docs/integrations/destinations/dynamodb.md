@@ -4,6 +4,9 @@ This destination writes data to AWS DynamoDB.
 
 The Airbyte DynamoDB destination allows you to sync data to AWS DynamoDB. Each stream is written to its own table under the DynamoDB.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your DynamoDB connector to version `0.1.5` or newer
+
 ## Sync overview
 
 ### Output schema

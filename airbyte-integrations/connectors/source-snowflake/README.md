@@ -13,7 +13,7 @@
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
-  "credentails" {
+  "credentials": {
     "auth_type": "username/password",
     "username": "AIRBYTE_USER",
     "password": "SOMEPASSWORD"
@@ -28,7 +28,7 @@
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
-  "credentails" {
+  "credentials": {
     "auth_type": "OAuth",
     "client_id": "client_id",
     "client_secret": "client_secret",

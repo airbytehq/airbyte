@@ -44,7 +44,7 @@ Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/09-contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
+See our [Contributing guide](docs/contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
@@ -60,11 +60,17 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 * [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
 
+## Reporting Vulnerabilities
+⚠️ Please do not file GitHub issues or post on our public forum for security vulnerabilities as they are public! ⚠️
+
+Airbyte takes security issues very seriously. If you have any concern around Airbyte or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@airbyte.io. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+
+Note that this security address should be used only for undisclosed vulnerabilities. Dealing with fixed issues or general questions on how to use the security features should be handled regularly via the user and the dev lists. Please report any security problems to us before disclosing it publicly.
+
 ## Roadmap
 
 Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
 
 ## License
 
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic. 
-
+See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic.

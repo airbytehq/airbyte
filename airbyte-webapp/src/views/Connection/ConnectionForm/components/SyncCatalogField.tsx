@@ -5,6 +5,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { CheckBox, H5 } from "components";
+import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
+import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
@@ -16,7 +18,6 @@ import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import { ConnectionFormMode } from "../ConnectionForm";
-import InformationToolTip from "./InformationToolTip";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
@@ -55,21 +56,10 @@ const NextLineText = styled.div`
   margin-top: 10px;
 `;
 
-const LearnMoreLink = styled.a`
-  opacity: 0.6;
-  display: block;
-  margin-top: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-  text-decoration: none;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  isSubmitting: boolean;
   mode?: ConnectionFormMode;
 }
 
@@ -98,40 +88,38 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       </Cell>
       <Cell lighter>
         <FormattedMessage id="sources.source" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.source.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell />
       <Cell lighter flex={1.5}>
         <FormattedMessage id="form.syncMode" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
-            <FormattedMessage id="form.entrypoint.docs" />
-          </LearnMoreLink>
-        </InformationToolTip>
+          <TooltipLearnMoreLink url={config.links.syncModeLink} />
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="form.cursorField" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="form.primaryKey" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.primaryKey.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="connector.destination" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.destinationName.info" />
           <NextLineText>
             <FormattedMessage id="connectionForm.destinationStream.info" />
           </NextLineText>
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell />
     </Header>
@@ -172,6 +160,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   additionalControl,
   field,
   form,
+  isSubmitting,
   mode,
 }) => {
   const { value: streams, name: fieldName } = field;
@@ -209,7 +198,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <div>
+      <LoadingBackdrop loading={isSubmitting}>
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>
@@ -236,7 +225,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
             mode={mode}
           />
         </TreeViewContainer>
-      </div>
+      </LoadingBackdrop>
     </BatchEditProvider>
   );
 };

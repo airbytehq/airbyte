@@ -1,4 +1,4 @@
-import { render } from "utils/testutils";
+import { render } from "test-utils/testutils";
 
 import { EditorHeader } from "./EditorHeader";
 

@@ -1,7 +1,9 @@
-import React, { Suspense, useMemo, useState } from "react";
-import styled from "styled-components";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { Suspense, useMemo } from "react";
+import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
+import { Button, Card } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
@@ -10,25 +12,14 @@ import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import { ConnectionForm, ConnectionFormProps } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-const SkipButton = styled.div`
-  margin-top: 6px;
-
-  & > button {
-    min-width: 239px;
-    margin-left: 9px;
-  }
-`;
+import styles from "./CreateConnectionContent.module.scss";
 
 interface CreateConnectionContentProps {
-  additionBottomControls?: React.ReactNode;
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
@@ -38,28 +29,23 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,
-  additionBottomControls,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
-  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
-
-  const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
+    source.sourceId,
+    true
+  );
 
   const connection = useMemo<ConnectionFormProps["connection"]>(
     () => ({
-      name: connectionFormValues?.name ?? "",
-      namespaceDefinition: connectionFormValues?.namespaceDefinition,
-      namespaceFormat: connectionFormValues?.namespaceFormat,
-      prefix: connectionFormValues?.prefix,
-      schedule: connectionFormValues?.schedule ?? undefined,
       syncCatalog: schema,
       destination,
       source,
       catalogId,
     }),
-    [connectionFormValues, schema, destination, source, catalogId]
+    [schema, destination, source, catalogId]
   );
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
@@ -104,13 +90,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard>
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
+      <Card>
+        <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
-      </ContentCard>
+      </Card>
     );
   }
 
@@ -121,10 +104,14 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       <ConnectionForm
         mode="create"
         connection={connection}
-        additionBottomControls={additionBottomControls}
         onDropDownSelect={onSelectFrequency}
         onSubmit={onSubmitConnectionStep}
-        onChangeValues={setConnectionFormValues}
+        additionalSchemaControl={
+          <Button onClick={onDiscoverSchema} type="button">
+            <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+            <FormattedMessage id="connection.refreshSchema" />
+          </Button>
+        }
       />
     </Suspense>
   );

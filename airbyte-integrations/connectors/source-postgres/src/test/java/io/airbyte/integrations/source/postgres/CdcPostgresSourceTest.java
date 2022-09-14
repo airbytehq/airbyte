@@ -66,7 +66,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -110,7 +109,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
     config = getConfig(dbName);
-    fullReplicationSlot =  SLOT_NAME_BASE + "_" + dbName;
+    fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     dslContext = getDslContext(config);
     database = getDatabase(dslContext);
     super.setup();
@@ -553,7 +552,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
-    // Triggering sync with the first sync's state only which would mimic a scenario that the second sync failed on destination end and we didn't save state
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end and we didn't save state
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
 

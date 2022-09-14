@@ -81,7 +81,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 ## Encryption Options
 
-Airbite has the ability to connect to the Oracle source with 3 network connectivity options:
+Airbyte has the ability to connect to the Oracle source with 3 network connectivity options:
 
 1. `Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form.
 2. `Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports. In this case, the *SQLNET.ENCRYPTION_CLIENT*

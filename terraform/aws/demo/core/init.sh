@@ -21,7 +21,7 @@ install_docker_compose() {
 install_airbyte() {
   mkdir airbyte && cd airbyte
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-  API_URL=/api/v1/ AIRBYTE_ROLE=demo IS_DEMO=true docker-compose up -d
+  API_URL=/api/v1/ AIRBYTE_ROLE=demo docker-compose up -d
 }
 
 install_demo_pg() {

@@ -79,20 +79,20 @@
     },
     "failed_delivery_checks": {
       "type": ["null", "array"],
-       "items": {
-          "type": ["null", "object"],
-          "properties": {
-            "summary": {
-              "type": ["null", "string"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "check_name": {
-              "type": ["null", "string"]
-            }
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "summary": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "check_name": {
+            "type": ["null", "string"]
           }
         }
+      }
     },
     "fb_entity": {
       "type": ["null", "number"]

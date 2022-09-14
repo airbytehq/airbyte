@@ -41,8 +41,17 @@ def create(func, /, *args, **keywords):
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+
+        # options is required as part of creation of all declarative components
+        dynamic_args = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
+        if "options" not in dynamic_args:
+            dynamic_args["options"] = {}
+        else:
+            # Handles the case where kwarg options and keyword $options both exist. We should merge both sets of options
+            # before creating the component
+            dynamic_args["options"] = {**all_keywords_to_pass_down["options"], **kwargs_to_pass_down["options"]}
         try:
-            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+            ret = func(*args, *fargs, **dynamic_args)
         except TypeError as e:
             raise Exception(f"failed to create object of type {func} because {e}")
         return ret
@@ -54,12 +63,14 @@ def create(func, /, *args, **keywords):
     return newfunc
 
 
-def _get_kwargs_to_pass_to_func(func, kwargs):
+def _get_kwargs_to_pass_to_func(func, options):
     argspec = inspect.getfullargspec(func)
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
-    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
+    kwargs_to_pass_down = {k: v for k, v in options.items() if k in all_args}
+    if "options" in all_args:
+        kwargs_to_pass_down["options"] = options
     return kwargs_to_pass_down
 
 

@@ -69,7 +69,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();

@@ -28,7 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-
 To compile and build just the platform \(not all the connectors\):
 
 ```bash
@@ -81,6 +80,36 @@ The build will take a few minutes. Once it completes, Airbyte compiled at curren
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
+## Add a connector under development to Airbyte
+
+These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
+
+- First, build the platform images and run Airbyte:
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+VERSION=dev docker-compose up
+```
+
+- Then, build the connector image:
+```
+docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
+```
+
+:::info
+
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
+
+:::
+
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Go to `Settings` (gear icon in lower left corner) 
+- Go to `Sources` or `Destinations` (depending on which connector you are testing)
+- Update the version number to use your docker image tag (default is `dev`)
+- Click `Change` to save the changes
+
+Now when you run a sync with that connector, it will use your local docker image
+
 ## Run acceptance tests
 
 To run acceptance \(end-to-end\) tests:
@@ -108,11 +137,14 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-To format an individual connector in python, run: 
+To format an individual connector in python, run:
+
 ```
  ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
 ```
+
 For instance:
+
 ```
 ./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
 ```
@@ -220,3 +252,7 @@ For example:
 ```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
+
+### Inspecting the messages passed between connectors
+
+You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker-compose up`

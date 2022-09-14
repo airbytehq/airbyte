@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 // todo (cgardens) - this class is in an unintuitive module. it is weird that you need to import
 // scheduler:persistence in order to get workspace ids for configs (e.g. source). Our options are to
 // split this helper by database or put it in a new module.
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class WorkspaceHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceHelper.class);

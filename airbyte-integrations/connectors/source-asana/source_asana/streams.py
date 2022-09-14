@@ -141,6 +141,8 @@ class CustomFields(WorkspaceRelatedStream):
 
 
 class Projects(WorkspaceRequestParamsRelatedStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "projects"
 
@@ -218,5 +220,7 @@ class Users(WorkspaceRequestParamsRelatedStream):
 
 
 class Workspaces(AsanaStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "workspaces"

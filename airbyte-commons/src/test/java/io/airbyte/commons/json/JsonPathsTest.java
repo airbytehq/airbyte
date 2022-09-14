@@ -33,6 +33,7 @@ class JsonPathsTest {
   private static final String EMPTY_RETURN_QUERY = "$.three";
   private static final String REPLACEMENT_STRING = "replaced";
   private static final JsonNode REPLACEMENT_JSON = Jsons.deserialize("{ \"replacement\": \"replaced\" }");
+  private static final String ONE = "one";
 
   @Test
   void testGetValues() {
@@ -74,7 +75,7 @@ class JsonPathsTest {
   void testReplaceAtStringLoud() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(1, REPLACEMENT_STRING);
+      ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_STRING);
 
       final JsonNode actual = JsonPaths.replaceAtStringLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
       assertEquals(expected, actual);
@@ -93,7 +94,7 @@ class JsonPathsTest {
   void testReplaceAtString() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(1, REPLACEMENT_STRING);
+      ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_STRING);
 
       final JsonNode actual = JsonPaths.replaceAtString(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_STRING);
       assertEquals(expected, actual);
@@ -114,7 +115,7 @@ class JsonPathsTest {
   void testReplaceAtJsonNodeLoud() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(1, REPLACEMENT_JSON);
+      ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
 
       final JsonNode actual = JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
@@ -133,9 +134,9 @@ class JsonPathsTest {
   void testReplaceAtJsonNodeLoudMultipleReplace() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(0, REPLACEMENT_JSON);
-      ((ArrayNode) expected.get("one")).set(1, REPLACEMENT_JSON);
-      ((ArrayNode) expected.get("one")).set(2, REPLACEMENT_JSON);
+      ((ArrayNode) expected.get(ONE)).set(0, REPLACEMENT_JSON);
+      ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
+      ((ArrayNode) expected.get(ONE)).set(2, REPLACEMENT_JSON);
 
       final JsonNode actual = JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, LIST_ALL_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
@@ -149,7 +150,7 @@ class JsonPathsTest {
   @Test
   void testReplaceAtJsonNodeLoudMultipleReplaceSplatInEmptyArrayThrows() {
     final JsonNode expected = Jsons.clone(JSON_NODE);
-    ((ArrayNode) expected.get("one")).removeAll();
+    ((ArrayNode) expected.get(ONE)).removeAll();
 
     assertOriginalObjectNotModified(expected, () -> {
       assertThrows(PathNotFoundException.class, () -> JsonPaths.replaceAtJsonNodeLoud(expected, "$.one[*]", REPLACEMENT_JSON));
@@ -160,7 +161,7 @@ class JsonPathsTest {
   void testReplaceAtJsonNode() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(1, REPLACEMENT_JSON);
+      ((ArrayNode) expected.get(ONE)).set(1, REPLACEMENT_JSON);
 
       final JsonNode actual = JsonPaths.replaceAtJsonNode(JSON_NODE, LIST_ONE_QUERY, REPLACEMENT_JSON);
       assertEquals(expected, actual);
@@ -181,7 +182,7 @@ class JsonPathsTest {
   void testReplaceAt() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(1, "1-$['one'][1]");
+      ((ArrayNode) expected.get(ONE)).set(1, "1-$['one'][1]");
 
       final JsonNode actual = JsonPaths.replaceAt(JSON_NODE, LIST_ONE_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
       assertEquals(expected, actual);
@@ -192,9 +193,9 @@ class JsonPathsTest {
   void testReplaceAtMultiple() {
     assertOriginalObjectNotModified(JSON_NODE, () -> {
       final JsonNode expected = Jsons.clone(JSON_NODE);
-      ((ArrayNode) expected.get("one")).set(0, "0-$['one'][0]");
-      ((ArrayNode) expected.get("one")).set(1, "1-$['one'][1]");
-      ((ArrayNode) expected.get("one")).set(2, "2-$['one'][2]");
+      ((ArrayNode) expected.get(ONE)).set(0, "0-$['one'][0]");
+      ((ArrayNode) expected.get(ONE)).set(1, "1-$['one'][1]");
+      ((ArrayNode) expected.get(ONE)).set(2, "2-$['one'][2]");
 
       final JsonNode actual = JsonPaths.replaceAt(JSON_NODE, LIST_ALL_QUERY, (node, path) -> Jsons.jsonNode(node + "-" + path));
       assertEquals(expected, actual);

@@ -5,13 +5,16 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
@@ -41,8 +44,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     snConfig = Jsons
         .deserialize(IOs.readFile(Path.of("secrets/config.json")));
     // due to case sensitiveness in SnowflakeDB
-    SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
-    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
+    SCHEMA_NAME = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
+    SCHEMA_NAME2 = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toUpperCase();
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
@@ -59,6 +62,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
   @BeforeEach
@@ -94,36 +99,61 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config.get("credentials")).put("password", "fake");
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+  }
+
+  @Test
+  public void testCheckEmptyUsernameFailure() throws Exception {
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200028;"));
   }
 
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.NUMBER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_WITHOUT_PK,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.NUMBER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_COMPOSITE_PK,
-                defaultNamespace,
-                Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));

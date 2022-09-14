@@ -5,7 +5,7 @@
     "title": "Twilio Spec",
     "type": "object",
     "required": ["account_sid", "auth_token", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "account_sid": {
         "title": "Account ID",

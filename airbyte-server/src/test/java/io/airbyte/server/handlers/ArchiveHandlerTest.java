@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.api.model.generated.ImportRead;
 import io.airbyte.api.model.generated.ImportRead.StatusEnum;
 import io.airbyte.api.model.generated.ImportRequestBody;
@@ -135,7 +136,7 @@ class ArchiveHandlerTest {
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
-        .build();;
+        .build();
     configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
@@ -417,7 +418,7 @@ class ArchiveHandlerTest {
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
         assertTrue(
-            actualRecords.contains(expectedRecord),
+            backwardCompatibleContains(actualRecords, expectedRecord),
             String.format(
                 "\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
@@ -429,6 +430,22 @@ class ArchiveHandlerTest {
               Strings.join(expectedRecords, "\n"),
               Strings.join(actualRecords, "\n")));
     }
+  }
+
+  /*
+   * The protocol version is currently optional and defaults to 0.2.0 To reflect that today we need to
+   * support connectors without protocol version in the spec, we add a secondary check with the
+   * default protocol version
+   */
+  private boolean backwardCompatibleContains(final Set<JsonNode> actualRecords, final JsonNode expectedRecord) {
+    return actualRecords.contains(expectedRecord) ||
+        (!expectedRecord.has("protocolVersion") && actualRecords.contains(cloneWithDefaultVersion(expectedRecord)));
+  }
+
+  private JsonNode cloneWithDefaultVersion(final JsonNode json) {
+    final ObjectNode clonedJson = json.deepCopy();
+    clonedJson.put("protocolVersion", "0.2.0");
+    return clonedJson;
   }
 
 }

@@ -45,10 +45,10 @@ airbyte\_cdk.sources.declarative.declarative\_stream module
    :undoc-members:
    :show-inheritance:
 
-airbyte\_cdk.sources.declarative.read\_exception module
--------------------------------------------------------
+airbyte\_cdk.sources.declarative.exceptions module
+--------------------------------------------------
 
-.. automodule:: airbyte_cdk.sources.declarative.read_exception
+.. automodule:: airbyte_cdk.sources.declarative.exceptions
    :members:
    :undoc-members:
    :show-inheritance:

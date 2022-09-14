@@ -42,7 +42,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
   private static final Path CREDENTIALS_PATH = Path.of("secrets/google_analytics.json");
 
   private ConfigRepository configRepository;
-  private GoogleAnalyticsOAuthFlow googleAnalyticsOAuthFlow;
+  private GoogleAnalyticsViewIdOAuthFlow googleAnalyticsViewIdOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
   private HttpClient httpClient;
@@ -55,7 +55,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
     }
     configRepository = mock(ConfigRepository.class);
     httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository, httpClient);
+    googleAnalyticsViewIdOAuthFlow = new GoogleAnalyticsViewIdOAuthFlow(configRepository, httpClient);
 
     server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor
@@ -84,7 +84,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build())))));
-    final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+    final String url = googleAnalyticsViewIdOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -93,7 +93,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = googleAnalyticsViewIdOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));

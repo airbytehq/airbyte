@@ -58,6 +58,7 @@ class DefaultSynchronousSchedulerClientTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
+  private static final String UNCHECKED = "unchecked";
   private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
       .put("username", "airbyte")
       .put("password", "abc")
@@ -70,6 +71,7 @@ class DefaultSynchronousSchedulerClientTest {
       .withDestinationId(UUID1)
       .withDestinationDefinitionId(UUID2)
       .withConfiguration(CONFIGURATION);
+  private static final String SOURCE_DOCKER_IMAGE = "source-airbyte:1.2.3";
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
@@ -99,7 +101,7 @@ class DefaultSynchronousSchedulerClientTest {
   @DisplayName("Test execute method.")
   class ExecuteSynchronousJob {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteJobSuccess() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -107,7 +109,7 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
-      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
       final SynchronousResponse<String> response = schedulerClient
           .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
@@ -124,7 +126,7 @@ class DefaultSynchronousSchedulerClientTest {
       verifyNoInteractions(jobErrorReporter);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteMappedOutput() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -132,7 +134,7 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<Integer, String> mapperFunction = Object::toString;
       when(function.get()).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
 
-      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
       final SynchronousResponse<String> response = schedulerClient
           .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
@@ -145,7 +147,7 @@ class DefaultSynchronousSchedulerClientTest {
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -153,7 +155,7 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
-      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
       final SynchronousResponse<String> response = schedulerClient
           .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
@@ -170,7 +172,7 @@ class DefaultSynchronousSchedulerClientTest {
       verifyNoInteractions(jobErrorReporter);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteRuntimeException() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -178,7 +180,7 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenThrow(new RuntimeException());
 
-      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
       assertThrows(
           RuntimeException.class,
           () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function,

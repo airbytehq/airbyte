@@ -2,10 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ConnectionSchedule } from "core/request/AirbyteClient";
+import { ConnectionScheduleDataBasicSchedule } from "core/request/AirbyteClient";
 
 interface FrequencyCellProps {
-  value: ConnectionSchedule;
+  value: ConnectionScheduleDataBasicSchedule;
   enabled?: boolean;
 }
 

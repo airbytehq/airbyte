@@ -44,7 +44,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   public JsonSchemaType getJsonType(JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, REAL, FLOAT, DOUBLE, INTEGER, BIGINT, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
       case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
@@ -58,4 +59,5 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       default -> JsonSchemaType.STRING;
     };
   }
+
 }

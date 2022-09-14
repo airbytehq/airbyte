@@ -20,7 +20,7 @@ public class InstagramOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected String getExpectedConsentUrl() {
-    return "https://www.facebook.com/v12.0/dialog/oauth?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=ads_management%2Cinstagram_basic%2Cinstagram_manage_insights";
+    return "https://www.facebook.com/v12.0/dialog/oauth?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=ads_management%2Cinstagram_basic%2Cinstagram_manage_insights%2Cpages_show_list%2Cpages_read_engagement";
   }
 
   @Override

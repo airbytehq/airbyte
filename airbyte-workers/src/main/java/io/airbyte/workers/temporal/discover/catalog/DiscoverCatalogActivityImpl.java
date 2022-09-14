@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.discover.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
@@ -13,7 +14,6 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
@@ -36,7 +36,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final JobPersistence jobPersistence;
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
 
   public DiscoverCatalogActivityImpl(final WorkerConfigs workerConfigs,
@@ -45,7 +45,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-                                     final JobPersistence jobPersistence,
+                                     final AirbyteApiClient airbyteApiClient,
                                      final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -53,7 +53,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -77,7 +77,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
             getWorkerFactory(launcherConfig),
             () -> input,
             new CancellationHandler.TemporalCancellationHandler(context),
-            jobPersistence,
+            airbyteApiClient,
             airbyteVersion,
             () -> context);
 

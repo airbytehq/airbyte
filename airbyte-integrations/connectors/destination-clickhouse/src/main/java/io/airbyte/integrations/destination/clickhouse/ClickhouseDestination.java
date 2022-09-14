@@ -32,16 +32,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
 
-  private static final String PASSWORD = "password";
-
   static final List<String> SSL_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000",
-      "sslmode=none");
+      "sslmode=NONE");
   static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000");
 
@@ -75,6 +71,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

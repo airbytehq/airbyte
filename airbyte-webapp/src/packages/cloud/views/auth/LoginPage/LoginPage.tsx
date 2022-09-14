@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -13,6 +14,8 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
+import { OAuthLogin } from "../OAuthLogin";
+import { Disclaimer } from "../SignupPage/components/SignupForm";
 import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
@@ -24,6 +27,7 @@ const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const { query, replace } = useRouter();
+  useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
     <div>
@@ -104,6 +108,8 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <OAuthLogin />
+      <Disclaimer />
     </div>
   );
 };

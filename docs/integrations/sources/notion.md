@@ -5,7 +5,7 @@ Notion is a productivity and project management software. It was designed to hel
 ## Prerequisites
 * Created Notion account with integration on [my integrations](https://www.notion.so/my-integrations) page. 
 
-## Airbyte OSS
+## Airbyte Open Source
 * Start Date
 * Token (received when integration was created). 
 
@@ -40,10 +40,10 @@ Notion is a productivity and project management software. It was designed to hel
 8. Log in and Authorize to the Notion account
 10. Click `Set up source`.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Bing Ads** from the Source type dropdown. 
+3. On the Set up the source page, enter the name for the connector and select **Notion** from the Source type dropdown. 
 4. Add required Start date
 5. Copy and paste values from setup Notion step (8):
       1) **client_id**
@@ -75,6 +75,7 @@ The Notion connector should not run into Notion API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example |
 | 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
 | 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec |
 | 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                             |

@@ -60,6 +60,7 @@ import org.junit.jupiter.api.Test;
 class SourceDefinitionsHandlerTest {
 
   private static final String TODAY_DATE_STRING = LocalDate.now().toString();
+  private static final String DEFAULT_PROTOCOL_VERSION = "0.2.0";
 
   private ConfigRepository configRepository;
   private StandardSourceDefinition sourceDefinition;
@@ -123,7 +124,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
@@ -136,7 +138,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
 
@@ -164,7 +167,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
@@ -177,7 +181,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList =
         sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
@@ -208,7 +213,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
@@ -221,7 +227,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final PrivateSourceDefinitionRead expectedSourceDefinitionOptInRead1 =
         new PrivateSourceDefinitionRead().sourceDefinition(expectedSourceDefinitionRead1).granted(false);
@@ -254,7 +261,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
@@ -296,7 +304,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId = new SourceDefinitionIdWithWorkspaceId()
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
@@ -327,7 +336,8 @@ class SourceDefinitionsHandlerTest {
         .icon(sourceDefinition.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
         .name(sourceDefinition.getName())
@@ -336,17 +346,23 @@ class SourceDefinitionsHandlerTest {
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .protocolVersion(DEFAULT_PROTOCOL_VERSION)
         .releaseStage(ReleaseStage.CUSTOM)
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createPrivateSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository)
-        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+        .writeStandardSourceDefinition(
+            sourceDefinition
+                .withReleaseDate(null)
+                .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+                .withProtocolVersion(DEFAULT_PROTOCOL_VERSION));
   }
 
   @Test
@@ -368,7 +384,8 @@ class SourceDefinitionsHandlerTest {
         .icon(sourceDefinition.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final CustomSourceDefinitionCreate customCreate = new CustomSourceDefinitionCreate()
         .sourceDefinition(create)
@@ -381,10 +398,12 @@ class SourceDefinitionsHandlerTest {
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .protocolVersion(DEFAULT_PROTOCOL_VERSION)
         .releaseStage(ReleaseStage.CUSTOM)
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(customCreate);
 
@@ -394,6 +413,7 @@ class SourceDefinitionsHandlerTest {
         sourceDefinition
             .withReleaseDate(null)
             .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+            .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
             .withCustom(true),
         workspaceId);
   }
@@ -403,19 +423,22 @@ class SourceDefinitionsHandlerTest {
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
     when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId())).thenReturn(sourceDefinition);
     final String newDockerImageTag = "averydifferenttag";
+    final String newProtocolVersion = "0.2.1";
     final SourceDefinitionRead sourceDefinition = sourceDefinitionsHandler
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()));
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
     final String newImageName = DockerUtils.getTaggedImageName(this.sourceDefinition.getDockerRepository(), newDockerImageTag);
-    final ConnectorSpecification newSpec = new ConnectorSpecification().withConnectionSpecification(
-        Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")));
+    final ConnectorSpecification newSpec = new ConnectorSpecification()
+        .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
+        .withProtocolVersion(newProtocolVersion);
     when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
-    final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
+    final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition)
+        .withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
     final SourceDefinitionRead sourceDefinitionRead = sourceDefinitionsHandler
         .updateSourceDefinition(
@@ -464,7 +487,8 @@ class SourceDefinitionsHandlerTest {
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
+            .jobSpecific(Collections.emptyList()));
 
     final PrivateSourceDefinitionRead expectedPrivateSourceDefinitionRead =
         new PrivateSourceDefinitionRead().sourceDefinition(expectedSourceDefinitionRead).granted(true);

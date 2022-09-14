@@ -1,0 +1,1297 @@
+{
+  "type": "object",
+  "required": ["version", "checker", "streams"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "checker": {
+      "$ref": "#/definitions/CheckStream"
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DeclarativeStream"
+      }
+    }
+  },
+  "description": "ConcreteDeclarativeSource(version: str, checker: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream, streams: List[airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream])",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "CheckStream": {
+      "type": "object",
+      "required": ["stream_names"],
+      "properties": {
+        "stream_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "\n    Checks the connections by trying to read records from one or many of the streams selected by the developer\n\n    Attributes:\n        stream_name (List[str]): name of streams to read records from\n    "
+    },
+    "DeclarativeStream": {
+      "type": "object",
+      "required": ["schema_loader", "retriever", "config"],
+      "properties": {
+        "schema_loader": {
+          "$ref": "#/definitions/JsonSchema"
+        },
+        "retriever": {
+          "$ref": "#/definitions/SimpleRetriever"
+        },
+        "config": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string",
+          "default": "<property object at 0x1079b3c20>"
+        },
+        "_name": {
+          "type": "string",
+          "default": ""
+        },
+        "primary_key": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "<property object at 0x1078f1590>"
+        },
+        "_primary_key": {
+          "type": "string",
+          "default": ""
+        },
+        "stream_cursor_field": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "string" }
+          ]
+        },
+        "transformations": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "$ref": "#/definitions/AddFields" },
+              { "$ref": "#/definitions/RemoveFields" }
+            ]
+          }
+        },
+        "checkpoint_interval": {
+          "type": "integer"
+        }
+      },
+      "description": "\n    DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever\n\n    Attributes:\n        name (str): stream name\n        primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream\n        schema_loader (SchemaLoader): The schema loader\n        retriever (Retriever): The retriever\n        config (Config): The user-provided configuration as specified by the source's spec\n        stream_cursor_field (Optional[List[str]]): The cursor field\n        transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the\n        stream. Transformations are applied in the order in which they are defined.\n        checkpoint_interval (Optional[int]): How often the stream will checkpoint state (i.e: emit a STATE message)\n    "
+    },
+    "JsonSchema": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/SchemaLoader"
+        },
+        {
+          "type": "object",
+          "required": ["file_path", "config"],
+          "properties": {
+            "file_path": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      ],
+      "description": "\n    Loads the schema from a json file\n\n    Attributes:\n        file_path (Union[InterpolatedString, str]): The path to the json file describing the schema\n        name (str): The stream's name\n        config (Config): The user-provided configuration as specified by the source's spec\n        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed\n    "
+    },
+    "InterpolatedString": {
+      "type": "object",
+      "required": ["string"],
+      "properties": {
+        "string": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        }
+      },
+      "description": "\n    Wrapper around a raw string to be interpolated with the Jinja2 templating engine\n\n    Attributes:\n        string (str): The string to evalute\n        default (Optional[str]): The default value to return if the evaluation returns an empty string\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "SchemaLoader": {
+      "type": "object",
+      "properties": {},
+      "description": "Describes a stream's schema"
+    },
+    "SimpleRetriever": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Retriever"
+        },
+        {
+          "type": "object",
+          "required": ["requester", "record_selector"],
+          "properties": {
+            "requester": {
+              "$ref": "#/definitions/HttpRequester"
+            },
+            "record_selector": {
+              "$ref": "#/definitions/RecordSelector"
+            },
+            "name": {
+              "type": "string",
+              "default": "<property object at 0x1078f1630>"
+            },
+            "_name": {
+              "type": "string",
+              "default": ""
+            },
+            "primary_key": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": "<property object at 0x10799fbd0>"
+            },
+            "_primary_key": {
+              "type": "string",
+              "default": ""
+            },
+            "paginator": {
+              "anyOf": [
+                { "$ref": "#/definitions/LimitPaginator" },
+                { "$ref": "#/definitions/NoPagination" }
+              ]
+            },
+            "stream_slicer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/CartesianProductStreamSlicer"
+                },
+                {
+                  "$ref": "#/definitions/DatetimeStreamSlicer"
+                },
+                {
+                  "$ref": "#/definitions/ListStreamSlicer"
+                },
+                {
+                  "$ref": "#/definitions/SingleSlice"
+                },
+                {
+                  "$ref": "#/definitions/SubstreamSlicer"
+                }
+              ],
+              "default": {}
+            }
+          }
+        }
+      ],
+      "description": "\n    Retrieves records by synchronously sending requests to fetch records.\n\n    The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.\n\n    For each stream slice, submit requests until there are no more pages of records to fetch.\n\n    This retriever currently inherits from HttpStream to reuse the request submission and pagination machinery.\n    As a result, some of the parameters passed to some methods are unused.\n    The two will be decoupled in a future release.\n\n    Attributes:\n        stream_name (str): The stream's name\n        stream_primary_key (Optional[Union[str, List[str], List[List[str]]]]): The stream's primary key\n        requester (Requester): The HTTP requester\n        record_selector (HttpSelector): The record selector\n        paginator (Optional[Paginator]): The paginator\n        stream_slicer (Optional[StreamSlicer]): The stream slicer\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "HttpRequester": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Requester"
+        },
+        {
+          "type": "object",
+          "required": ["name", "url_base", "path", "config"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "url_base": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "path": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "http_method": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "enum": ["GET", "POST"]
+                }
+              ],
+              "default": "HttpMethod.GET"
+            },
+            "request_options_provider": {
+              "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+            },
+            "authenticator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NoAuth"
+                },
+                {
+                  "$ref": "#/definitions/DeclarativeOauth2Authenticator"
+                },
+                {
+                  "$ref": "#/definitions/ApiKeyAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/BearerAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/BasicHttpAuthenticator"
+                }
+              ]
+            },
+            "error_handler": {
+              "anyOf": [
+                { "$ref": "#/definitions/CompositeErrorHandler" },
+                { "$ref": "#/definitions/DefaultErrorHandler" }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "\n    Default implementation of a Requester\n\n    Attributes:\n        name (str): Name of the stream. Only used for request/response caching\n        url_base (Union[InterpolatedString, str]): Base url to send requests to\n        path (Union[InterpolatedString, str]): Path to send requests to\n        http_method (Union[str, HttpMethod]): HTTP method to use when sending requests\n        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests\n        authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source\n        error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors\n        config (Config): The user-provided configuration as specified by the source's spec\n    "
+    },
+    "InterpolatedRequestOptionsProvider": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RequestOptionsProvider"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "config": {
+              "type": "object",
+              "default": {}
+            },
+            "request_parameters": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" }
+                },
+                { "type": "string" }
+              ]
+            },
+            "request_headers": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" }
+                },
+                { "type": "string" }
+              ]
+            },
+            "request_body_data": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" }
+                },
+                { "type": "string" }
+              ]
+            },
+            "request_body_json": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" }
+                },
+                { "type": "string" }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "\n    Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s\n\n    Attributes:\n        config (Config): The user-provided configuration as specified by the source's spec\n        request_parameters (Union[str, Mapping[str, str]]): The request parameters to set on an outgoing HTTP request\n        request_headers (Union[str, Mapping[str, str]]): The request headers to set on an outgoing HTTP request\n        request_body_data (Union[str, Mapping[str, str]]): The body data to set on an outgoing HTTP request\n        request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request\n    "
+    },
+    "RequestOptionsProvider": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Defines the request options to set on an outgoing HTTP request\n\n    Options can be passed by\n    - request parameter\n    - request headers\n    - body data\n    - json content\n    "
+    },
+    "NoAuth": {
+      "allOf": [
+        { "$ref": "#/definitions/DeclarativeAuthenticator" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "NoAuth()"
+    },
+    "DeclarativeAuthenticator": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Interface used to associate which authenticators can be used as part of the declarative framework\n    "
+    },
+    "DeclarativeOauth2Authenticator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "required": [
+            "token_refresh_endpoint",
+            "client_id",
+            "client_secret",
+            "refresh_token",
+            "config"
+          ],
+          "properties": {
+            "token_refresh_endpoint": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "client_id": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "client_secret": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "refresh_token": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "token_expiry_date": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "_token_expiry_date": {},
+            "access_token_name": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ],
+              "default": "access_token"
+            },
+            "expires_in_name": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ],
+              "default": "expires_in"
+            },
+            "refresh_request_body": {
+              "type": "object"
+            }
+          }
+        }
+      ],
+      "description": "\n    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on\n    a declarative connector configuration file. Credentials can be defined explicitly or via interpolation\n    at runtime. The generated access token is attached to each request via the Authorization header.\n\n    Attributes:\n        token_refresh_endpoint (Union[InterpolatedString, str]): The endpoint to refresh the access token\n        client_id (Union[InterpolatedString, str]): The client id\n        client_secret (Union[InterpolatedString, str]): Client secret\n        refresh_token (Union[InterpolatedString, str]): The token used to refresh the access token\n        access_token_name (Union[InterpolatedString, str]): THe field to extract access token from in the response\n        expires_in_name (Union[InterpolatedString, str]): The field to extract expires_in from in the response\n        config (Mapping[str, Any]): The user-provided configuration as specified by the source's spec\n        scopes (Optional[List[str]]): The scopes to request\n        token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date\n        refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request\n    "
+    },
+    "ApiKeyAuthenticator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "required": ["header", "api_token", "config"],
+          "properties": {
+            "header": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "api_token": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      ],
+      "description": "\n    ApiKeyAuth sets a request header on the HTTP requests sent.\n\n    The header is of the form:\n    `\"<header>\": \"<token>\"`\n\n    For example,\n    `ApiKeyAuthenticator(\"Authorization\", \"Bearer hello\")`\n    will result in the following header set on the HTTP request\n    `\"Authorization\": \"Bearer hello\"`\n\n    Attributes:\n        header (Union[InterpolatedString, str]): Header key to set on the HTTP requests\n        api_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests\n        config (Config): The user-provided configuration as specified by the source's spec\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "BearerAuthenticator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "required": ["api_token", "config"],
+          "properties": {
+            "api_token": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      ],
+      "description": "\n    Authenticator that sets the Authorization header on the HTTP requests sent.\n\n    The header is of the form:\n    `\"Authorization\": \"Bearer <token>\"`\n\n    Attributes:\n        api_token (Union[InterpolatedString, str]): The bearer token\n        config (Config): The user-provided configuration as specified by the source's spec\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "BasicHttpAuthenticator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "required": ["username", "config"],
+          "properties": {
+            "username": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "password": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ],
+              "default": ""
+            }
+          }
+        }
+      ],
+      "description": "\n    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64\n    https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme\n\n    The header is of the form\n    `\"Authorization\": \"Basic <encoded_credentials>\"`\n\n    Attributes:\n        username (Union[InterpolatedString, str]): The username\n        config (Config): The user-provided configuration as specified by the source's spec\n        password (Union[InterpolatedString, str]): The password\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "CompositeErrorHandler": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ErrorHandler"
+        },
+        {
+          "type": "object",
+          "required": ["error_handlers"],
+          "properties": {
+            "error_handlers": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  { "$ref": "#/definitions/CompositeErrorHandler" },
+                  { "$ref": "#/definitions/DefaultErrorHandler" }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [403]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
+    },
+    "DefaultErrorHandler": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ErrorHandler"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "response_filters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HttpResponseFilter"
+              }
+            },
+            "max_retries": {
+              "type": "integer",
+              "default": "<property object at 0x107957540>"
+            },
+            "_max_retries": {
+              "type": "integer",
+              "default": 5
+            },
+            "backoff_strategies": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/ConstantBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/ExponentialBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoffStrategy\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [404]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [404]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [429]\n          action: IGNORE\n        - http_codes: [404]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
+    },
+    "HttpResponseFilter": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["SUCCESS", "FAIL", "IGNORE", "RETRY"]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "http_codes": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "uniqueItems": true
+        },
+        "error_message_contains": {
+          "type": "string"
+        },
+        "predicate": {
+          "anyOf": [
+            { "$ref": "#/definitions/InterpolatedBoolean" },
+            { "type": "string" }
+          ],
+          "default": ""
+        }
+      },
+      "description": "\n    Filter to select HttpResponses\n\n    Attributes:\n        action (Union[ResponseAction, str]): action to execute if a request matches\n        http_codes (Set[int]): http code of matching requests\n        error_message_contains (str): error substring of matching requests\n        predicate (str): predicate to apply to determine if a request is matching\n    "
+    },
+    "InterpolatedBoolean": {
+      "type": "object",
+      "required": ["condition"],
+      "properties": {
+        "condition": {
+          "type": "string"
+        }
+      },
+      "description": "InterpolatedBoolean(condition: str, options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
+    },
+    "ConstantBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["backoff_time_in_seconds"],
+          "properties": {
+            "backoff_time_in_seconds": {
+              "type": "number"
+            }
+          }
+        }
+      ],
+      "description": "\n    Backoff strategy with a constant backoff interval\n\n    Attributes:\n        backoff_time_in_seconds (float): time to backoff before retrying a retryable request.\n    "
+    },
+    "BackoffStrategy": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Backoff strategy defining how long to wait before retrying a request that resulted in an error.\n    "
+    },
+    "ExponentialBackoffStrategy": {
+      "allOf": [
+        { "$ref": "#/definitions/BackoffStrategy" },
+        {
+          "type": "object",
+          "properties": { "factor": { "type": "number", "default": 5 } }
+        }
+      ],
+      "description": "\n    Backoff strategy with an exponential backoff interval\n\n    Attributes:\n        factor (float): multiplicative factor\n    "
+    },
+    "WaitTimeFromHeaderBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["header"],
+          "properties": {
+            "header": {
+              "type": "string"
+            },
+            "regex": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "description": "\n    Extract wait time from http header\n\n    Attributes:\n        header (str): header to read wait time from\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
+    },
+    "WaitUntilTimeFromHeaderBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["header"],
+          "properties": {
+            "header": {
+              "type": "string"
+            },
+            "min_wait": {
+              "type": "number"
+            },
+            "regex": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "description": "\n    Extract time at which we can retry the request from response header\n    and wait for the difference between now and that time\n\n    Attributes:\n        header (str): header to read wait time from\n        min_wait (Optional[float]): minimum time to wait for safety\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
+    },
+    "ErrorHandler": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Defines whether a request was successful and how to handle a failure.\n    "
+    },
+    "Requester": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestOptionsProvider" },
+        { "type": "object", "properties": {} }
+      ]
+    },
+    "RecordSelector": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/HttpSelector"
+        },
+        {
+          "type": "object",
+          "required": ["extractor"],
+          "properties": {
+            "extractor": {
+              "$ref": "#/definitions/DpathExtractor"
+            },
+            "record_filter": {
+              "$ref": "#/definitions/RecordFilter"
+            }
+          }
+        }
+      ],
+      "description": "\n    Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering\n    records based on a heuristic.\n\n    Attributes:\n        extractor (RecordExtractor): The record extractor responsible for extracting records from a response\n        record_filter (RecordFilter): The record filter responsible for filtering extracted records\n    "
+    },
+    "DpathExtractor": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RecordExtractor"
+        },
+        {
+          "type": "object",
+          "required": ["field_pointer", "config"],
+          "properties": {
+            "field_pointer": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  { "$ref": "#/definitions/InterpolatedString" },
+                  { "type": "string" }
+                ]
+              }
+            },
+            "config": {
+              "type": "object"
+            },
+            "decoder": {
+              "$ref": "#/definitions/JsonDecoder",
+              "default": {}
+            }
+          }
+        }
+      ],
+      "description": "\n    Record extractor that searches a decoded response over a path defined as an array of fields.\n\n    If the field pointer points to an array, that array is returned.\n    If the field pointer points to an object, that object is returned wrapped as an array.\n    If the field pointer points to an empty object, an empty array is returned.\n    If the field pointer points to a non-existing path, an empty array is returned.\n\n    Examples of instantiating this transform:\n    ```\n      extractor:\n        type: DpathExtractor\n        field_pointer:\n          - \"root\"\n          - \"data\"\n    ```\n\n    ```\n      extractor:\n        type: DpathExtractor\n        field_pointer:\n          - \"root\"\n          - \"{{ options['field'] }}\"\n    ```\n\n    ```\n      extractor:\n        type: DpathExtractor\n        field_pointer: []\n    ```\n\n    Attributes:\n        transform (Union[InterpolatedString, str]): Pointer to the field that should be extracted\n        config (Config): The user-provided configuration as specified by the source's spec\n        decoder (Decoder): The decoder responsible to transfom the response in a Mapping\n    "
+    },
+    "JsonDecoder": {
+      "allOf": [
+        { "$ref": "#/definitions/Decoder" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "\n    Decoder strategy that returns the json-encoded content of a response, if any.\n    "
+    },
+    "Decoder": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Decoder strategy to transform a requests.Response into a Mapping[str, Any]\n    "
+    },
+    "RecordExtractor": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Responsible for translating an HTTP response into a list of records by extracting records from the response.\n    "
+    },
+    "RecordFilter": {
+      "type": "object",
+      "required": ["config"],
+      "properties": {
+        "config": {
+          "type": "object"
+        },
+        "condition": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      "description": "\n    Filter applied on a list of Records\n\n    config (Config): The user-provided configuration as specified by the source's spec\n    condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False\n    "
+    },
+    "HttpSelector": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering\n    records based on a heuristic.\n    "
+    },
+    "LimitPaginator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Paginator"
+        },
+        {
+          "type": "object",
+          "required": [
+            "page_size",
+            "limit_option",
+            "page_token_option",
+            "pagination_strategy",
+            "config",
+            "url_base"
+          ],
+          "properties": {
+            "page_size": {
+              "type": "integer"
+            },
+            "limit_option": {
+              "$ref": "#/definitions/RequestOption"
+            },
+            "page_token_option": {
+              "$ref": "#/definitions/RequestOption"
+            },
+            "pagination_strategy": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/CursorPaginationStrategy"
+                },
+                {
+                  "$ref": "#/definitions/OffsetIncrement"
+                },
+                {
+                  "$ref": "#/definitions/PageIncrement"
+                }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "url_base": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "decoder": {
+              "$ref": "#/definitions/JsonDecoder",
+              "default": {}
+            },
+            "_token": {}
+          }
+        }
+      ],
+      "description": "\n    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token\n\n    Examples:\n        1.\n        * fetches up to 10 records at a time by setting the \"limit\" request param to 10\n        * updates the request path with  \"{{ response._metadata.next }}\"\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 10\n            limit_option:\n              inject_into: request_parameter\n              field_name: page_size\n            page_token_option:\n              option_type: path\n            pagination_strategy:\n              type: \"CursorPagination\"\n              cursor_value: \"{{ response._metadata.next }}\"\n        `\n\n        2.\n        * fetches up to 5 records at a time by setting the \"page_size\" header to 5\n        * increments a record counter and set the request parameter \"offset\" to the value of the counter\n        `\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 5\n            limit_option:\n              inject_into: header\n              field_name: page_size\n            pagination_strategy:\n              type: \"OffsetIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"offset\"\n        `\n\n        3.\n        * fetches up to 5 records at a time by setting the \"page_size\" request param to 5\n        * increments a page counter and set the request parameter \"page\" to the value of the counter\n        `\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 5\n            limit_option:\n              inject_into: request_parameter\n              field_name: page_size\n            pagination_strategy:\n              type: \"PageIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"page\"\n\n    Attributes:\n        page_size (int): the number of records to request\n        limit_option (RequestOption): the request option to set the limit. Cannot be injected in the path.\n        page_token_option (RequestOption): the request option to set the page token\n        pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token\n        config (Config): connection config\n        url_base (Union[InterpolatedString, str]): endpoint's base url\n        decoder (Decoder): decoder to decode the response\n    "
+    },
+    "RequestOption": {
+      "type": "object",
+      "required": ["inject_into"],
+      "properties": {
+        "inject_into": {
+          "type": "string",
+          "enum": [
+            "request_parameter",
+            "header",
+            "path",
+            "body_data",
+            "body_json"
+          ]
+        },
+        "field_name": {
+          "type": "string"
+        }
+      },
+      "description": "\n    Describes an option to set on a request\n\n    Attributes:\n        inject_into (RequestOptionType): Describes where in the HTTP request to inject the parameter\n        field_name (Optional[str]): Describes the name of the parameter to inject. None if option_type == path. Required otherwise.\n    "
+    },
+    "CursorPaginationStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PaginationStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["cursor_value", "config"],
+          "properties": {
+            "cursor_value": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "stop_condition": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedBoolean" },
+                { "type": "string" }
+              ]
+            },
+            "decoder": {
+              "$ref": "#/definitions/JsonDecoder",
+              "default": {}
+            }
+          }
+        }
+      ],
+      "description": "\n    Pagination strategy that evaluates an interpolated string to define the next page token\n\n    Attributes:\n        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value\n        config (Config): connection config\n        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating\n        decoder (Decoder): decoder to decode the response\n    "
+    },
+    "PaginationStrategy": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Defines how to get the next page token\n    "
+    },
+    "OffsetIncrement": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PaginationStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["page_size"],
+          "properties": {
+            "page_size": {
+              "type": "integer"
+            }
+          }
+        }
+      ],
+      "description": "\n    Pagination strategy that returns the number of records reads so far and returns it as the next page token\n\n    Attributes:\n        page_size (int): the number of records to request\n    "
+    },
+    "PageIncrement": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PaginationStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["page_size"],
+          "properties": {
+            "page_size": {
+              "type": "integer"
+            }
+          }
+        }
+      ],
+      "description": "\n    Pagination strategy that returns the number of pages reads so far and returns it as the next page token\n\n    Attributes:\n        page_size (int): the number of records to request\n    "
+    },
+    "Paginator": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestOptionsProvider" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "\n    Defines the token to use to fetch the next page of records from the API.\n\n    If needed, the Paginator will set request options to be set on the HTTP request to fetch the next page of records.\n    If the next_page_token is the path to the next page of records, then it should be accessed through the `path` method\n    "
+    },
+    "NoPagination": {
+      "allOf": [
+        { "$ref": "#/definitions/Paginator" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "\n    Pagination implementation that never returns a next page.\n    "
+    },
+    "CartesianProductStreamSlicer": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StreamSlicer"
+        },
+        {
+          "type": "object",
+          "required": ["stream_slicers"],
+          "properties": {
+            "stream_slicers": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/CartesianProductStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/DatetimeStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/ListStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/SingleSlice"
+                  },
+                  {
+                    "$ref": "#/definitions/SubstreamSlicer"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "description": "\n    Stream slicers that iterates over the cartesian product of input stream slicers\n    Given 2 stream slicers with the following slices:\n    A: [{\"i\": 0}, {\"i\": 1}, {\"i\": 2}]\n    B: [{\"s\": \"hello\"}, {\"s\": \"world\"}]\n    the resulting stream slices are\n    [\n        {\"i\": 0, \"s\": \"hello\"},\n        {\"i\": 0, \"s\": \"world\"},\n        {\"i\": 1, \"s\": \"hello\"},\n        {\"i\": 1, \"s\": \"world\"},\n        {\"i\": 2, \"s\": \"hello\"},\n        {\"i\": 2, \"s\": \"world\"},\n    ]\n\n    Attributes:\n        stream_slicers (List[StreamSlicer]): Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.\n    "
+    },
+    "DatetimeStreamSlicer": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StreamSlicer"
+        },
+        {
+          "type": "object",
+          "required": [
+            "start_datetime",
+            "end_datetime",
+            "step",
+            "cursor_field",
+            "datetime_format",
+            "config"
+          ],
+          "properties": {
+            "start_datetime": {
+              "anyOf": [
+                { "$ref": "#/definitions/MinMaxDatetime" },
+                { "type": "string" }
+              ]
+            },
+            "end_datetime": {
+              "anyOf": [
+                { "$ref": "#/definitions/MinMaxDatetime" },
+                { "type": "string" }
+              ]
+            },
+            "step": {
+              "type": "string"
+            },
+            "cursor_field": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "datetime_format": {
+              "type": "string"
+            },
+            "config": {
+              "type": "object"
+            },
+            "_cursor": {
+              "type": "object"
+            },
+            "_cursor_end": {
+              "type": "object"
+            },
+            "start_time_option": {
+              "$ref": "#/definitions/RequestOption"
+            },
+            "end_time_option": {
+              "$ref": "#/definitions/RequestOption"
+            },
+            "stream_state_field_start": {
+              "type": "string"
+            },
+            "stream_state_field_end": {
+              "type": "string"
+            },
+            "lookback_window": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "\n    Slices the stream over a datetime range.\n\n    Given a start time, end time, a step function, and an optional lookback window,\n    the stream slicer will partition the date range from start time - lookback window to end time.\n\n    The step function is defined as a string of the form:\n    `\"<number><unit>\"`\n\n    where unit can be one of\n    - weeks, w\n    - days, d\n\n    For example, \"1d\" will produce windows of 1 day, and 2weeks windows of 2 weeks.\n\n    The timestamp format accepts the same format codes as datetime.strfptime, which are\n    all the format codes required by the 1989 C standard.\n    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html\n\n    Attributes:\n        start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced\n        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced\n        step (str): size of the timewindow\n        cursor_field (Union[InterpolatedString, str]): record's cursor field\n        datetime_format (str): format of the datetime\n        config (Config): connection config\n        start_time_option (Optional[RequestOption]): request option for start time\n        end_time_option (Optional[RequestOption]): request option for end time\n        stream_state_field_start (Optional[str]): stream slice start time field\n        stream_state_field_end (Optional[str]): stream slice end time field\n        lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for\n    "
+    },
+    "MinMaxDatetime": {
+      "type": "object",
+      "required": ["datetime"],
+      "properties": {
+        "datetime": {
+          "anyOf": [
+            { "$ref": "#/definitions/InterpolatedString" },
+            { "type": "string" }
+          ]
+        },
+        "datetime_format": {
+          "type": "string",
+          "default": "<property object at 0x10798fea0>"
+        },
+        "_datetime_format": {
+          "type": "string",
+          "default": ""
+        },
+        "min_datetime": {
+          "anyOf": [
+            { "$ref": "#/definitions/InterpolatedString" },
+            { "type": "string" }
+          ],
+          "default": ""
+        },
+        "max_datetime": {
+          "anyOf": [
+            { "$ref": "#/definitions/InterpolatedString" },
+            { "type": "string" }
+          ],
+          "default": ""
+        }
+      },
+      "description": "\n    Compares the provided date against optional minimum or maximum times. If date is earlier than\n    min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.\n    If neither, the input date is returned.\n\n    The timestamp format accepts the same format codes as datetime.strfptime, which are\n    all the format codes required by the 1989 C standard.\n    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html\n\n    Attributes:\n        datetime (Union[InterpolatedString, str]): InterpolatedString or string representing the datetime in the format specified by `datetime_format`\n        datetime_format (str): Format of the datetime passed as argument\n        min_datetime (Union[InterpolatedString, str]): Represents the minimum allowed datetime value.\n        max_datetime (Union[InterpolatedString, str]): Represents the maximum allowed datetime value.\n    "
+    },
+    "StreamSlicer": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestOptionsProvider" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "\n    Slices the stream into a subset of records.\n    Slices enable state checkpointing and data retrieval parallelization.\n\n    The stream slicer keeps track of the cursor state as a dict of cursor_field -> cursor_value\n\n    See the stream slicing section of the docs for more information.\n    "
+    },
+    "ListStreamSlicer": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StreamSlicer"
+        },
+        {
+          "type": "object",
+          "required": ["slice_values", "cursor_field", "config"],
+          "properties": {
+            "slice_values": {
+              "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "string" }
+              ]
+            },
+            "cursor_field": {
+              "anyOf": [
+                { "$ref": "#/definitions/InterpolatedString" },
+                { "type": "string" }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "request_option": {
+              "$ref": "#/definitions/RequestOption"
+            }
+          }
+        }
+      ],
+      "description": "\n    Stream slicer that iterates over the values of a list\n    If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list\n\n    Attributes:\n        slice_values (Union[str, List[str]]): The values to iterate over\n        cursor_field (Union[InterpolatedString, str]): The name of the cursor field\n        config (Config): The user-provided configuration as specified by the source's spec\n        request_option (Optional[RequestOption]): The request option to configure the HTTP request\n    "
+    },
+    "SingleSlice": {
+      "allOf": [
+        { "$ref": "#/definitions/StreamSlicer" },
+        { "type": "object", "properties": {} }
+      ],
+      "description": "Stream slicer returning only a single stream slice"
+    },
+    "SubstreamSlicer": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StreamSlicer"
+        },
+        {
+          "type": "object",
+          "required": ["parent_stream_configs"],
+          "properties": {
+            "parent_stream_configs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ParentStreamConfig"
+              }
+            }
+          }
+        }
+      ],
+      "description": "\n    Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping\n    Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components\n\n    Attributes:\n        parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config\n    "
+    },
+    "ParentStreamConfig": {
+      "type": "object",
+      "required": ["stream", "parent_key", "stream_slice_field"],
+      "properties": {
+        "stream": {},
+        "parent_key": {
+          "type": "string"
+        },
+        "stream_slice_field": {
+          "type": "string"
+        },
+        "request_option": {
+          "$ref": "#/definitions/RequestOption"
+        }
+      },
+      "description": "\n    Describes how to create a stream slice from a parent stream\n\n    stream: The stream to read records from\n    parent_key: The key of the parent stream's records that will be the stream slice key\n    stream_slice_field: The stream slice key\n    request_option: How to inject the slice value on an outgoing HTTP request\n    "
+    },
+    "Retriever": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Responsible for fetching a stream's records from an HTTP API source.\n    "
+    },
+    "AddFields": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RecordTransformation"
+        },
+        {
+          "type": "object",
+          "required": ["fields"],
+          "properties": {
+            "fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AddedFieldDefinition"
+              }
+            },
+            "_parsed_fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ParsedAddFieldDefinition"
+              },
+              "default": []
+            }
+          }
+        }
+      ],
+      "description": "\n    Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all\n    necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate\n    indices with null values). So if you add a field at index 5 to the array [\"value\"], it will become [\"value\", null, null, null, null,\n    \"new_value\"].\n\n\n    This transformation has access to the following contextual values:\n        record: the record about to be output by the connector\n        config: the input configuration provided to a connector\n        stream_state: the current state of the stream\n        stream_slice: the current stream slice being read\n\n\n\n    Examples of instantiating this transformation via YAML:\n    - type: AddFields\n      fields:\n        # hardcoded constant\n        - path: [\"path\"]\n          value: \"static_value\"\n\n        # nested path\n        - path: [\"path\", \"to\", \"field\"]\n          value: \"static\"\n\n        # from config\n        - path: [\"shop_id\"]\n          value: \"{{ config.shop_id }}\"\n\n        # from state\n        - path: [\"current_state\"]\n          value: \"{{ stream_state.cursor_field }}\" # Or {{ stream_state['cursor_field'] }}\n\n        # from record\n        - path: [\"unnested_value\"]\n          value: {{ record.nested.field }}\n\n        # from stream_slice\n        - path: [\"start_date\"]\n          value: {{ stream_slice.start_date }}\n\n        # by supplying any valid Jinja template directive or expression https://jinja.palletsprojects.com/en/3.1.x/templates/#\n        - path: [\"two_times_two\"]\n          value: {{ 2 * 2 }}\n\n    Attributes:\n        fields (List[AddedFieldDefinition]): A list of transformations (path and corresponding value) that will be added to the record\n    "
+    },
+    "AddedFieldDefinition": {
+      "type": "object",
+      "required": ["path", "value"],
+      "properties": {
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value": {
+          "anyOf": [
+            { "$ref": "#/definitions/InterpolatedString" },
+            { "type": "string" }
+          ]
+        }
+      },
+      "description": "Defines the field to add on a record"
+    },
+    "ParsedAddFieldDefinition": {
+      "type": "object",
+      "required": ["path", "value"],
+      "properties": {
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value": {
+          "$ref": "#/definitions/InterpolatedString"
+        }
+      },
+      "description": "Defines the field to add on a record"
+    },
+    "RecordTransformation": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Implementations of this class define transformations that can be applied to records of a stream.\n    "
+    },
+    "RemoveFields": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RecordTransformation"
+        },
+        {
+          "type": "object",
+          "required": ["field_pointers"],
+          "properties": {
+            "field_pointers": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "description": "\n    A transformation which removes fields from a record. The fields removed are designated using FieldPointers.\n    During transformation, if a field or any of its parents does not exist in the record, no error is thrown.\n\n    If an input field pointer references an item in a list (e.g: [\"k\", 0] in the object {\"k\": [\"a\", \"b\", \"c\"]}) then\n    the object at that index is set to None rather than being not entirely removed from the list. TODO change this behavior.\n\n    It's possible to remove objects nested in lists e.g: removing [\".\", 0, \"k\"] from {\".\": [{\"k\": \"V\"}]} results in {\".\": [{}]}\n\n    Usage syntax:\n\n    ```yaml\n        my_stream:\n            <other parameters..>\n            transformations:\n                - type: RemoveFields\n                  field_pointers:\n                    - [\"path\", \"to\", \"field1\"]\n                    - [\"path2\"]\n    ```\n\n    Attributes:\n        field_pointers (List[FieldPointer]): pointers to the fields that should be removed\n    "
+    }
+  }
+}

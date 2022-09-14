@@ -28,69 +28,73 @@ import org.junit.jupiter.api.Test;
 
 class YamlsTest {
 
+  private static final String LINE_BREAK = "---\n";
+  private static final String STR_ABC = "str: \"abc\"\n";
+  private static final String ABC = "abc";
+
   @Test
   void testSerialize() {
     assertEquals(
-        "---\n"
-            + "str: \"abc\"\n"
+        LINE_BREAK
+            + STR_ABC
             + "num: 999\n"
             + "numLong: 888\n",
-        Yamls.serialize(new ToClass("abc", 999, 888L)));
+        Yamls.serialize(new ToClass(ABC, 999, 888L)));
 
     assertEquals(
-        "---\n"
+        LINE_BREAK
             + "test: \"abc\"\n"
             + "test2: \"def\"\n",
         Yamls.serialize(
             ImmutableMap.of(
-                "test", "abc",
+                "test", ABC,
                 "test2", "def")));
   }
 
   @Test
   void testSerializeWithoutQuotes() {
     assertEquals(
-        "---\n"
+        LINE_BREAK
             + "str: abc\n"
             + "num: 999\n"
             + "numLong: 888\n",
-        Yamls.serializeWithoutQuotes(new ToClass("abc", 999, 888L)));
+        Yamls.serializeWithoutQuotes(new ToClass(ABC, 999, 888L)));
 
     assertEquals(
-        "---\n"
+        LINE_BREAK
             + "test: abc\n"
             + "test2: def\n",
         Yamls.serializeWithoutQuotes(
             ImmutableMap.of(
-                "test", "abc",
+                "test", ABC,
                 "test2", "def")));
   }
 
   @Test
   void testSerializeJsonNode() {
     assertEquals(
-        "---\n"
-            + "str: \"abc\"\n"
+        LINE_BREAK
+            + STR_ABC
             + "num: 999\n"
             + "numLong: 888\n",
-        Yamls.serialize(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
+        Yamls.serialize(Jsons.jsonNode(new ToClass(ABC, 999, 888L))));
 
     assertEquals(
-        "---\n"
+        LINE_BREAK
             + "test: \"abc\"\n"
             + "test2: \"def\"\n",
         Yamls.serialize(Jsons.jsonNode(ImmutableMap.of(
-            "test", "abc",
+            "test", ABC,
             "test2", "def"))));
   }
 
   @Test
   void testDeserialize() {
     assertEquals(
-        new ToClass("abc", 999, 888L),
+        new ToClass(ABC, 999, 888L),
         Yamls.deserialize(
-            "---\n"
-                + "str: \"abc\"\n"
+            LINE_BREAK
+                + STR_ABC
                 + "num: \"999\"\n"
                 + "numLong: \"888\"\n",
             ToClass.class));
@@ -101,14 +105,14 @@ class YamlsTest {
     assertEquals(
         "{\"str\":\"abc\"}",
         Yamls.deserialize(
-            "---\n"
-                + "str: \"abc\"\n")
+            LINE_BREAK
+                + STR_ABC)
             .toString());
 
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
         Yamls.deserialize(
-            "---\n"
+            LINE_BREAK
                 + "- str: \"abc\"\n"
                 + "- str: \"abc\"\n")
             .toString());

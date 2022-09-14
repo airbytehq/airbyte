@@ -23,6 +23,9 @@ public final class DebeziumConverterUtils {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * TODO : Replace usage of this method with {@link io.airbyte.db.jdbc.DateTimeConverter}
+   */
   public static String convertDate(final Object input) {
     /**
      * While building this custom converter we were not sure what type debezium could return cause there
@@ -57,7 +60,7 @@ public final class DebeziumConverterUtils {
     return input.toString();
   }
 
-  public static Object convertDefaultValue(RelationalColumn field) {
+  public static Object convertDefaultValue(final RelationalColumn field) {
     if (field.isOptional()) {
       return null;
     } else if (field.hasDefaultValue()) {

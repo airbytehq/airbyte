@@ -66,10 +66,7 @@ const EditControls: React.FC<IProps> = ({
       {renderStatusMessage()}
       <Controls>
         <div>
-          <Button
-            type="submit"
-            disabled={isSubmitting || !isValid || !dirty || Object.keys(unfinishedFlows).length > 0}
-          >
+          <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
           <ButtonContainer>

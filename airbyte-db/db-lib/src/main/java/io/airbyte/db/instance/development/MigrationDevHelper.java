@@ -140,11 +140,12 @@ public class MigrationDevHelper {
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
     try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env", StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
+      String line = reader.readLine();
+      while (line != null) {
         if (line.startsWith("VERSION")) {
           return new AirbyteVersion(line.split("=")[1]);
         }
+        line = reader.readLine();
       }
     } catch (final FileNotFoundException e) {
       throw new IllegalStateException("Cannot find the .env file", e);

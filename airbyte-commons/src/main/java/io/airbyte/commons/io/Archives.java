@@ -49,8 +49,8 @@ public class Archives {
   public static void extractArchive(final Path archiveFile, final Path destinationFolder) throws IOException {
     final TarArchiveInputStream archive =
         new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(Files.newInputStream(archiveFile))));
-    ArchiveEntry entry;
-    while ((entry = archive.getNextEntry()) != null) {
+    ArchiveEntry entry = archive.getNextEntry();
+    while (entry != null) {
       final Path newPath = zipSlipProtect(entry, destinationFolder);
       if (entry.isDirectory()) {
         Files.createDirectories(newPath);
@@ -63,6 +63,7 @@ public class Archives {
         }
         Files.copy(archive, newPath, StandardCopyOption.REPLACE_EXISTING);
       }
+      entry = archive.getNextEntry();
     }
   }
 

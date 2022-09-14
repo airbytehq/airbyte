@@ -68,8 +68,9 @@ public class SyncCheckConnectionFailure {
                 .withTotalStats(new SyncStats()
                     .withRecordsEmitted(0L)
                     .withBytesEmitted(0L)
-                    .withStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L)));;
+                    .withSourceStateMessagesEmitted(0L)
+                    .withDestinationStateMessagesEmitted(0L)
+                    .withRecordsCommitted(0L)));
 
     if (failureOutput.getFailureReason() != null) {
       syncOutput.setFailures(List.of(failureOutput.getFailureReason().withFailureOrigin(origin)));

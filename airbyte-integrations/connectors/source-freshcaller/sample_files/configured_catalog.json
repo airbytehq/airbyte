@@ -1,0 +1,407 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["integer", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "phone": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["integer", "null"]
+            },
+            "preference": {
+              "type": ["integer", "null"]
+            },
+            "mobile_app_preference": {
+              "type": ["integer", "null"]
+            },
+            "last_call_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "last_seen_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "confirmed": {
+              "type": ["boolean", "null"]
+            },
+            "language": {
+              "type": ["string", "null"]
+            },
+            "time_zone": {
+              "type": ["string", "null"]
+            },
+            "deleted": {
+              "type": ["boolean", "null"]
+            },
+            "role": {
+              "type": ["string", "null"]
+            },
+            "teams": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": ["array", "null"]
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "full_refresh"
+    },
+    {
+      "stream": {
+        "name": "teams",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["integer", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "users": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": ["array", "null"]
+            },
+            "omni_channel": {
+              "type": ["boolean", "null"]
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "full_refresh"
+    },
+    {
+      "stream": {
+        "name": "calls",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["integer", "null"]
+            },
+            "direction": {
+              "type": ["string", "null"]
+            },
+            "parent_call_id": {
+              "type": ["integer", "null"]
+            },
+            "root_call_id": {
+              "type": ["integer", "null"]
+            },
+            "phone_number_id": {
+              "type": ["integer", "null"]
+            },
+            "phone_number": {
+              "type": ["string", "null"]
+            },
+            "assigned_agent_id": {
+              "type": ["integer", "null"]
+            },
+            "assigned_agent_name": {
+              "type": ["string", "null"]
+            },
+            "assigned_team_id": {
+              "type": ["integer", "null"]
+            },
+            "assigned_team_name": {
+              "type": ["string", "null"]
+            },
+            "assigned_call_queue_id": {
+              "type": ["integer", "null"]
+            },
+            "assigned_call_queue_name": {
+              "type": ["string", "null"]
+            },
+            "assigned_ivr_id": {
+              "type": ["integer", "null"]
+            },
+            "assigned_ivr_name": {
+              "type": ["string", "null"]
+            },
+            "bill_duration": {
+              "type": ["number", "null"]
+            },
+            "bill_duration_unit": {
+              "type": ["string", "null"]
+            },
+            "created_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "updated_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "call_notes": {
+              "type": ["string", "null"]
+            },
+            "integrated_resources": {
+              "items": {
+                "properties": {
+                  "integration_name": {
+                    "type": ["string", "null"]
+                  },
+                  "type": {
+                    "type": ["string", "null"]
+                  },
+                  "id": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": ["array", "null"]
+            },
+            "recording": {
+              "properties": {
+                "id": {
+                  "type": ["integer", "null"]
+                },
+                "url": {
+                  "type": ["string", "null"]
+                },
+                "transcription_url": {
+                  "type": ["string", "null"]
+                },
+                "duration": {
+                  "type": ["number", "null"]
+                },
+                "duration_unit": {
+                  "type": ["string", "null"]
+                }
+              },
+              "type": ["object", "null"]
+            },
+
+            "participants": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"]
+                  },
+                  "call_id": {
+                    "type": ["integer", "null"]
+                  },
+                  "caller_id": {
+                    "type": ["integer", "null"]
+                  },
+                  "caller_number": {
+                    "type": ["string", "null"]
+                  },
+                  "caller_name": {
+                    "type": ["string", "null"]
+                  },
+                  "participant_id": {
+                    "type": ["integer", "null"]
+                  },
+                  "participant_type": {
+                    "type": ["string", "null"]
+                  },
+                  "connection_type": {
+                    "type": ["number", "null"]
+                  },
+                  "call_status": {
+                    "type": ["integer", "null"]
+                  },
+                  "duration": {
+                    "type": ["integer", "null"]
+                  },
+                  "duration_unit": {
+                    "type": ["string", "null"]
+                  },
+                  "cost": {
+                    "type": ["number", "null"]
+                  },
+                  "cost_unit": {
+                    "type": ["string", "null"]
+                  },
+                  "enqueued_time": {
+                    "type": ["string", "null"]
+                  },
+                  "created_time": {
+                    "format": "date-time",
+                    "type": ["string", "null"]
+                  },
+                  "updated_time": {
+                    "format": "date-time",
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": ["array", "null"]
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated_time"],
+      "source_defined_primary_key": [["id"]],
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "name": "call_metrics",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["integer", "null"]
+            },
+            "call_id": {
+              "type": ["integer", "null"]
+            },
+            "ivr_time": {
+              "type": ["integer", "null"]
+            },
+            "ivr_time_unit": {
+              "type": ["string", "null"]
+            },
+            "hold_duration": {
+              "type": ["number", "null"]
+            },
+            "hold_duration_unit": {
+              "type": ["string", "null"]
+            },
+            "call_work_time": {
+              "type": ["number", "null"]
+            },
+            "call_work_time_unit": {
+              "type": ["string", "null"]
+            },
+            "total_ringing_time": {
+              "type": ["number", "null"]
+            },
+            "total_ringing_time_unit": {
+              "type": ["string", "null"]
+            },
+            "talk_time": {
+              "type": ["number", "null"]
+            },
+            "talk_time_unit": {
+              "type": ["string", "null"]
+            },
+            "answering_speed": {
+              "type": ["number", "null"]
+            },
+            "answering_speed_unit": {
+              "type": ["string", "null"]
+            },
+            "recording_duration": {
+              "type": ["number", "null"]
+            },
+            "recording_duration_unit": {
+              "type": ["string", "null"]
+            },
+            "bill_duration": {
+              "type": ["number", "null"]
+            },
+            "bill_duration_unit": {
+              "type": ["string", "null"]
+            },
+            "cost": {
+              "type": ["number", "null"]
+            },
+            "cost_unit": {
+              "type": ["string", "null"]
+            },
+            "csat": {
+              "properties": {
+                "transfer_made": {
+                  "type": ["boolean", "null"]
+                },
+                "outcome": {
+                  "type": ["string", "null"]
+                },
+                "time": {
+                  "type": ["number", "null"]
+                },
+                "time_unit": {
+                  "type": ["string", "null"]
+                }
+              },
+              "type": ["object", "null"]
+            },
+            "created_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "updated_time": {
+              "format": "date-time",
+              "type": ["string", "null"]
+            },
+            "tags": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"]
+                  },
+                  "name": {
+                    "type": ["string", "null"]
+                  },
+                  "default": {
+                    "type": ["boolean", "null"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": ["array", "null"]
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated_time"],
+      "source_defined_primary_key": [["id"]],
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "incremental"
+    }
+  ]
+}
