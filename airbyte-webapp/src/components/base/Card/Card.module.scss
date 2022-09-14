@@ -1,4 +1,5 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables" as vars;
 
 .container {
   width: auto;
@@ -18,7 +19,7 @@
 .title {
   padding: 25px 25px 22px;
   color: colors.$dark-blue;
-  border-bottom: colors.$grey-100 1px solid;
+  border-bottom: colors.$grey-100 vars.$border-thin solid;
   font-weight: 600;
   letter-spacing: 0.008em;
   border-top-left-radius: 10px;
