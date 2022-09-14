@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import { Button, ContentCard, LoadingButton } from "components";
+import { Button, LoadingButton } from "components";
+import { Card } from "components/base/Card";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -152,7 +153,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
   return (
     <div className={styles.statusView}>
-      <ContentCard
+      <Card
         className={styles.contentCard}
         title={
           <div className={styles.title}>
@@ -197,7 +198,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
         ) : (
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
-      </ContentCard>
+      </Card>
 
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
