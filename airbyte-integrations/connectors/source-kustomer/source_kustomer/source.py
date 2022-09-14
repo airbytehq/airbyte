@@ -112,7 +112,7 @@ class Notes(KustomerStream):
     ) -> str:
 
         return "/v1/notes"
-"""
+
 class Shortcuts(KustomerStream):
 
     primary_key = None
@@ -121,10 +121,8 @@ class Shortcuts(KustomerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
 
-        # Should be https://api.kustomerapp.com/v1/shortcuts/{id}
-        # https://developer.kustomer.com/kustomer-api-docs/reference/getashortcut
-        return ""
-"""
+        return "/v1/shortcuts"
+
 class Tags(KustomerStream):
 # Need to create tags in Kustomer to test this properly
 
@@ -186,4 +184,4 @@ class SourceKustomer(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token=config["api_token"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Conversations(authenticator=auth), Customers(authenticator=auth), Messages(authenticator=auth), Notes(authenticator=auth), Tags(authenticator=auth), Teams(authenticator=auth), Tags(authenticator=auth), Users(authenticator=auth)]
+        return [Conversations(authenticator=auth), Customers(authenticator=auth), Messages(authenticator=auth), Notes(authenticator=auth), Shortcuts(authenticator=auth), Tags(authenticator=auth), Teams(authenticator=auth), Tags(authenticator=auth), Users(authenticator=auth)]
