@@ -31,3 +31,14 @@ connectionSpecification:
       type: string
       description: Access token secret
       airbyte_secret: true
+    object_types:
+      type: array
+      items:
+        type: string
+      description: The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite.
+      examples: ["customer", "currency"]
+      default: []
+    window_in_days:
+      type: integer
+      description: The amount of days used to query the data with date chunks. Set smaller value, if you have lots of data.
+      default: 30

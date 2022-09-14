@@ -1,7 +1,10 @@
 {
-  "realm": "1234567_SB1",
-  "consumer_key": "0...",
-  "consumer_secret": "8...",
-  "token_key": "8...",
-  "token_secret": "a..."
+  "realm": "71....",
+  "consumer_key": "01c5....",
+  "consumer_secret": "88b....",
+  "token_key": "84e3....",
+  "token_secret": "a3c....",
+  "start_datetime": "2022-06-01T00:00:01Z",
+  "object_types": ["customer"],
+  "window_in_days": 30
 }

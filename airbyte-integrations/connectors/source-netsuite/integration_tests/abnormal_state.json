@@ -1,5 +1,44 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "customer": {
+      "lastModifiedDate": "2030-08-19T14:01:00Z"
+  }, 
+  "customersubsidiaryrelationship": {
+      "lastModifiedDate": "2030-08-19T14:01:00Z"
+  }, 
+  "vendorsubsidiaryrelationship": {
+      "lastModifiedDate": "2030-08-22T09:21:00Z"
+  }, 
+  "charge": {
+    "lastModifiedDate": "2030-08-22T09:21:00Z"
+  },
+  "vendorbill": {
+      "lastModifiedDate": "2030-08-22T09:21:00Z"
+  }, 
+  "contact": {
+      "lastModifiedDate": "2030-08-19T14:13:00Z"
+  }, 
+  "message": {
+    "lastModifiedDate": "2030-08-22T09:21:00Z"
+  }, 
+  "subsidiary": {
+      "lastModifiedDate": "2030-08-22T08:21:00Z"
+  }, 
+  "task": {
+      "lastModifiedDate": "2030-08-18T08:11:00Z"
+  }, 
+  "salesorder": {
+    "lastModifiedDate": "2030-08-22T09:21:00Z"
+  }, 
+  "employee": {
+      "lastModifiedDate": "2030-08-18T12:05:00Z"
+  }, 
+  "billingaccount": {
+    "lastModifiedDate": "2030-08-22T09:21:00Z"
+  }, 
+  "journalentry": {
+      "lastModifiedDate": "2030-08-22T10:57:00Z"
+  }, 
+  "vendor": {
+      "lastModifiedDate": "2030-08-22T08:21:00Z"
   }
 }
