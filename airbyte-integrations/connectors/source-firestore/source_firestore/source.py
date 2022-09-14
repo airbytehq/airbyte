@@ -5,7 +5,7 @@
 
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -106,7 +106,7 @@ class FirestoreStream(HttpStream, ABC):
                 result = {
                     "name": entry["document"]["name"],
                     "json_data": json.dumps(entry["document"]["fields"]),
-                    self.cursor_field: entry["document"]["fields"][self.cursor_field]["timestampValue"] if self.cursor_field else None
+                    self.cursor_key: entry["document"]["fields"][self.cursor_key]["timestampValue"] if self.cursor_key else None
                 }
                 results.append(result)
         return iter(results)
@@ -119,24 +119,27 @@ class FirestoreStream(HttpStream, ABC):
             "required": ["name"],
             "properties": {
                 "name": { "type": ["string"] },
-                self.cursor_field: { "type": ["null", "string"] },
+                self.cursor_key: { "type": ["null", "string"] } if self.cursor_key else None,
                 "json_data": { "type": ["string"] }
             },
         }
 
 
 class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
-
     _cursor_value: Optional[datetime]
-    cursor_key = 'updated_at'
+    cursor_field: Union[str, List[str]] = []
     start_date: Optional[datetime]
+
+    @property
+    def cursor_key(self):
+        if isinstance(self.cursor_field, list):
+            if (len(self.cursor_field) > 0):
+                return self.cursor_field[0]
+            return None
+        return self.cursor_field
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
         super().__init__(authenticator=authenticator, collection_name=collection_name)
-
-    @property
-    def cursor_field(self):
-        return self.cursor_key
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -160,6 +163,7 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        self.cursor_field = cursor_field
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
