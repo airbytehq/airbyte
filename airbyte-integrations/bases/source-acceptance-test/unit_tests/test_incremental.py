@@ -81,7 +81,7 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     assert compare_cursor_with_threshold(record_value, state_value, threshold_days) == expected_result
 
 
-@pytest.mark.parametrize("cursor_type", ["date", "string"])
+@pytest.mark.parametrize("cursor_type", ["date"])
 @pytest.mark.parametrize(
     "records1, records2, latest_state, threshold_days, expected_error",
     [
@@ -134,7 +134,7 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     "run_per_stream_test",
     [
         pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
-        pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
+        pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
 def test_incremental_two_sequential_reads(
@@ -157,28 +157,26 @@ def test_incremental_two_sequential_reads(
         ]
     )
 
-    t = _TestIncremental()
     if run_per_stream_test:
         call_read_output_messages = [
             *build_messages_from_record_data("test_stream", records1),
             build_per_stream_state_message(descriptor=StreamDescriptor(name="test_stream"), stream_state={"date": latest_state}),
         ]
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
-        test_sequential_reads_function = t.test_per_stream_two_sequential_reads
     else:
         call_read_output_messages = [
             *build_messages_from_record_data("test_stream", records1),
             build_state_message({"date": latest_state}),
         ]
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
-        test_sequential_reads_function = t.test_two_sequential_reads
 
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = call_read_output_messages
     docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
 
+    t = _TestIncremental()
     with expected_error:
-        test_sequential_reads_function(
+        t.test_two_sequential_reads(
             inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
@@ -535,7 +533,6 @@ def test_per_stream_read_with_multiple_states(records, state_records, threshold_
         ]
     )
 
-    t = _TestIncremental()
     if run_per_stream_test:
         call_read_output_messages = [
             build_per_stream_state_message(
@@ -556,7 +553,6 @@ def test_per_stream_read_with_multiple_states(records, state_records, threshold_
             ]
             for state_records_group in list(state_records)
         ]
-        test_read_with_multiple_states_function = t.test_per_stream_read_sequential_slices
     else:
         call_read_output_messages = [
             build_state_message(state=record.get("data") or {record["name"]: record["stream_state"]})
@@ -574,14 +570,13 @@ def test_per_stream_read_with_multiple_states(records, state_records, threshold_
             for state_records_group in list(state_records)
         ]
 
-        test_read_with_multiple_states_function = t.test_read_sequential_slices
-
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = call_read_output_messages
     docker_runner_mock.call_read_with_state.side_effect = call_read_with_state_output_messages
 
+    t = _TestIncremental()
     with expected_error:
-        test_read_with_multiple_states_function(
+        t.test_read_sequential_slices(
             inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
@@ -618,50 +613,3 @@ def test_config_skip_test():
 
     # This is guaranteed to fail when the test gets executed
     docker_runner_mock.call_read.assert_not_called()
-
-
-def test_skip_per_stream_tests_for_non_migrated_connectors():
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(
-                    name="test_stream",
-                    json_schema={"type": "object", "properties": {"date": {"type": "string"}}},
-                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-                ),
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-                cursor_field=["date"],
-            )
-        ]
-    )
-
-    docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = [
-        *build_messages_from_record_data("test_stream", [{"date": "2020-01-01"}, {"date": "2020-01-02"}]),
-        build_state_message({"date": "2020-01-02"}),
-    ]
-
-    t = _TestIncremental()
-
-    # If test_per_stream_two_sequential_reads() is not properly skipped, this subsequent mock will get invoked when it shouldn't be
-    with patch.object(pytest, "skip", return_value=None):
-        t.test_per_stream_two_sequential_reads(
-            inputs=IncrementalConfig(),
-            connector_config=MagicMock(),
-            configured_catalog_for_incremental=catalog,
-            cursor_paths={},
-            docker_runner=docker_runner_mock,
-        )
-    docker_runner_mock.call_read_with_state.assert_not_called()
-
-    # If test_per_stream_read_sequential_slices() is not properly skipped, this subsequent mock will get invoked when it shouldn't be
-    with patch.object(pytest, "skip", return_value=None):
-        t.test_per_stream_read_sequential_slices(
-            inputs=IncrementalConfig(),
-            connector_config=MagicMock(),
-            configured_catalog_for_incremental=catalog,
-            cursor_paths={},
-            docker_runner=docker_runner_mock,
-        )
-    docker_runner_mock.call_read_with_state.assert_not_called()
