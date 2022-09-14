@@ -27,7 +27,7 @@ const AccountSettingsView: React.FC = () => {
       <EmailSection />
       {authService.hasPasswordLogin() && <PasswordSection />}
       <SettingsCard
-        light={false}
+        lightPadding={false}
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
