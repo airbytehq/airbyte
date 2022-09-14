@@ -35,7 +35,16 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
       onChangeStatus(id);
     };
 
-    return <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} />;
+    return (
+      // this is so we can stop event propagation so the row doesn't receive the click and redirect
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+      <div
+        onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
+        onKeyPress={(event: React.SyntheticEvent) => event.stopPropagation()}
+      >
+        <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} />
+      </div>
+    );
   }
 
   if (isSyncing) {

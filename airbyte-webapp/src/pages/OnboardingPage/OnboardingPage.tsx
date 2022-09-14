@@ -37,7 +37,6 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   align-items: center;
   min-height: 100%;
   position: relative;
-  z-index: 2;
 `;
 
 const Footer = styled.div`
