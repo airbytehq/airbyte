@@ -40,7 +40,7 @@ describe("#useFrequencyDropdownData", () => {
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
 
-    // +2 for cron and manual frequencies
+    // +1 for additionalFrequency, +2 for cron and manual frequencies
     expect(result.current.length).toEqual(frequencyConfig.length + 1 + 2);
     expect(result.current).toContainEqual({ label: "Every 7 minutes", value: { units: 7, timeUnit: "minutes" } });
   });
