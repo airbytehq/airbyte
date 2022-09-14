@@ -1,28 +1,16 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import styled from "styled-components";
 
-import { H5, ContentCard } from "components";
+import { H5 } from "components";
 
-const Item = styled(ContentCard)`
-  padding: 20px 28px 20px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  cursor: pointer;
-`;
-
-const Arrow = styled(FontAwesomeIcon)`
-  color: ${({ theme }) => theme.primaryColor};
-`;
+import styles from "./WorkspaceItem.module.scss";
 
 const WorkspaceItem: React.FC<{ onClick: (id: string) => void; id: string }> = (props) => (
-  <Item onClick={() => props.onClick(props.id)}>
+  <button className={styles.button} onClick={() => props.onClick(props.id)}>
     <H5 bold>{props.children}</H5>
-    <Arrow icon={faChevronRight} />
-  </Item>
+    <FontAwesomeIcon className={styles.iconColor} icon={faChevronRight} />
+  </button>
 );
 
 export default WorkspaceItem;
