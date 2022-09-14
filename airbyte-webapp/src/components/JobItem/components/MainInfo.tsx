@@ -59,9 +59,11 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         return null;
     }
   };
+  const showAttemptDetails = !streamsToReset || (streamsToReset && isFailed);
+  const showResetStreamsDetails = streamsToReset && !isFailed;
 
   const label = () => {
-    if (streamsToReset) {
+    if (showResetStreamsDetails) {
       return <FormattedMessage values={{ count: streamsToReset.length }} id="sources.streamsReset" />;
     }
     if (isPartialSuccess) {
@@ -86,10 +88,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
                   <FormattedMessage id="sources.lastAttempt" />
                 </div>
               )}
-              {!streamsToReset && (
+              {showAttemptDetails && (
                 <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
               )}
-              {streamsToReset && (
+              {showResetStreamsDetails && (
                 <ResetStreamsDetails isOpen={isOpen} names={streamsToReset.map((stream) => stream.name)} />
               )}
             </>
