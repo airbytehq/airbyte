@@ -20,7 +20,7 @@ export interface ControlLabelsProps {
   optional?: boolean;
 }
 
-const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
+const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (props) => (
   <div className={className(styles.controlContainer, props.className)}>
     <Label
       error={props.error}

@@ -14,7 +14,7 @@ interface PropertyLabelProps {
   className?: string;
 }
 
-const PropertyLabel: React.FC<PropertyLabelProps> = ({
+const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
   property,
   label,
   description,

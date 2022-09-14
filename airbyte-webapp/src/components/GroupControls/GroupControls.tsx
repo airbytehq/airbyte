@@ -7,7 +7,7 @@ interface GroupControlsProps {
   name?: string;
 }
 
-const GroupControls: React.FC<GroupControlsProps> = ({ title, children, name }) => {
+const GroupControls: React.FC<React.PropsWithChildren<GroupControlsProps>> = ({ title, children, name }) => {
   return (
     <div className={styles.groupControlSection}>
       <div className={styles.groupTitle}>{title}</div>

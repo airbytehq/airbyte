@@ -6,7 +6,7 @@ import styles from "./InfoTooltip.module.scss";
 import { Tooltip } from "./Tooltip";
 import { InfoTooltipProps } from "./types";
 
-export const InfoTooltip: React.FC<InfoTooltipProps> = ({ children, ...props }) => {
+export const InfoTooltip: React.FC<React.PropsWithChildren<InfoTooltipProps>> = ({ children, ...props }) => {
   return (
     <Tooltip
       {...props}
