@@ -22,7 +22,7 @@ const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
           transition: { type: "tween" },
         },
         closed: {
-          height: "1px",
+          height: "0",
           opacity: 0,
           transition: { type: "tween" },
         },

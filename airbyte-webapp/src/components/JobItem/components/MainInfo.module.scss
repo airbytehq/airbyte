@@ -3,7 +3,8 @@
 
 .mainView {
   cursor: pointer;
-  min-height: 75px;
+  height: auto !important;
+  padding: variables.$spacing-lg 0;
 
   .titleCell {
     width: 80%;
@@ -43,9 +44,6 @@
     .arrow {
       transform: rotate(-0deg);
     }
-
-    height: unset;
-    padding: variables.$spacing-lg 0;
   }
 
   &.failed {

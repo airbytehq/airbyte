@@ -44,18 +44,17 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
 
   const statusIcon = () => {
     switch (true) {
+      case jobStatus === JobStatus.cancelled:
+      case !isPartialSuccess && isFailed:
+        return <StatusIcon status="error" />;
       case Boolean(streamsToReset):
         return <ResetIcon />;
-      case jobStatus === JobStatus.cancelled:
-        return <StatusIcon status="error" />;
       case jobStatus === JobStatus.running:
         return <StatusIcon status="loading" />;
       case jobStatus === JobStatus.succeeded:
         return <StatusIcon status="success" />;
       case isPartialSuccess:
         return <StatusIcon status="warning" />;
-      case !isPartialSuccess && isFailed:
-        return <StatusIcon status="error" />;
       default:
         return null;
     }
