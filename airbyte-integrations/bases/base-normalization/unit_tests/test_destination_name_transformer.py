@@ -116,6 +116,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Identifier Name", "Redshift", "{{ adapter.quote('identifier name') }}", "adapter.quote('identifier name')"),
         ("Identifier Name", "MySQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "MSSQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
+        ("Identifier Name", "TiDB", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "Firebolt", "Identifier_Name", "'Identifier_Name'"),
         # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", "groups", "'groups'"),
@@ -175,6 +176,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("Identifier Name4", "Redshift", "identifier_name4", "{{ adapter.quote('identifier name4') }}"),
         ("Identifier Name5", "MySQL", "identifier_name5", "{{ adapter.quote('Identifier Name5') }}"),
         ("Identifier Name6", "MSSQL", "identifier_name6", "{{ adapter.quote('Identifier Name6') }}"),
+        ("Identifier Name7", "TiDB", "identifier_name7", "{{ adapter.quote('Identifier Name7') }}"),
         ("Identifier Name7", "Firebolt", "Identifier_Name7", "Identifier_Name7"),
         # Unicode
         ("a-Unicode_name_文1", "Postgres", "a_unicode_name__1", "{{ adapter.quote('a-Unicode_name_文1') }}"),
@@ -183,6 +185,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("a-Unicode_name_文4", "Redshift", "a_unicode_name__4", "{{ adapter.quote('a-unicode_name_文4') }}"),
         ("a-Unicode_name_文5", "MySQL", "a_unicode_name__5", "{{ adapter.quote('a-Unicode_name_文5') }}"),
         ("a-Unicode_name_文6", "MSSQL", "a_unicode_name__6", "{{ adapter.quote('a-Unicode_name_文6') }}"),
+        ("a-Unicode_name_文7", "TiDB", "a_unicode_name__7", "{{ adapter.quote('a-Unicode_name_文7') }}"),
         ("a-Unicode_name_文7", "Firebolt", "a_Unicode_name__7", "a_Unicode_name__7"),
         # Doesnt start with alpha or underscore
         ("100x2001", "Postgres", "100x2001", "{{ adapter.quote('100x2001') }}"),
@@ -192,6 +195,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("100x2004", "Redshift", "100x2004", "{{ adapter.quote('100x2004') }}"),
         ("100x2005", "MySQL", "100x2005", "{{ adapter.quote('100x2005') }}"),
         ("100x2006", "MSSQL", "_100x2006", "{{ adapter.quote('100x2006') }}"),
+        ("100x2007", "TiDB", "100x2007", "{{ adapter.quote('100x2007') }}"),
         ("100x2007", "Firebolt", "_100x2007", "{{ adapter.quote('100x2007') }}"),
         # Reserved Keywords in BQ and MySQL
         ("Groups", "Postgres", "groups", "groups"),
@@ -218,6 +222,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("'QuoTed4 IdenTifiER'", "Redshift", "_quoted4_identifier_", "{{ adapter.quote('\\'quoted4 identifier\\'') }}"),
         ("'QuoTed5 IdenTifiER'", "MySQL", "_quoted5_identifier_", "{{ adapter.quote('\\'QuoTed5 IdenTifiER\\'') }}"),
         ("'QuoTed6 IdenTifiER'", "MSSQL", "_quoted6_identifier_", "{{ adapter.quote('\\'QuoTed6 IdenTifiER\\'') }}"),
+        ("'QuoTed7 IdenTifiER'", "TiDB", "_quoted7_identifier_", "{{ adapter.quote('\\'QuoTed7 IdenTifiER\\'') }}"),
         ("'QuoTedFB1 IdenTifiER'", "Firebolt", "_QuoTedFB1_IdenTifiER_", "_QuoTedFB1_IdenTifiER_"),
         # Double Quoted identifiers
         ('"QuoTed7 IdenTifiER"', "Postgres", "_quoted7_identifier_", '{{ adapter.quote(\'""QuoTed7 IdenTifiER""\') }}'),
@@ -226,6 +231,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ('"QuoTed10 IdenTifiER"', "Redshift", "_quoted10_identifier_", '{{ adapter.quote(\'""quoted10 identifier""\') }}'),
         ('"QuoTed11 IdenTifiER"', "MySQL", "_quoted11_identifier_", "{{ adapter.quote('\"QuoTed11 IdenTifiER\"') }}"),
         ('"QuoTed12 IdenTifiER"', "MSSQL", "_quoted12_identifier_", '{{ adapter.quote(\'""QuoTed12 IdenTifiER""\') }}'),
+        ('"QuoTed13 IdenTifiER"', "TiDB", "_quoted13_identifier_", "{{ adapter.quote('\"QuoTed13 IdenTifiER\"') }}"),
         ('"QuoTedFB2 IdenTifiER"', "Firebolt", "_QuoTedFB2_IdenTifiER_", "_QuoTedFB2_IdenTifiER_"),
         # Back Quoted identifiers
         ("`QuoTed13 IdenTifiER`", "Postgres", "_quoted13_identifier_", "{{ adapter.quote('`QuoTed13 IdenTifiER`') }}"),
@@ -234,6 +240,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("`QuoTed16 IdenTifiER`", "Redshift", "_quoted16_identifier_", "{{ adapter.quote('`quoted16 identifier`') }}"),
         ("`QuoTed17 IdenTifiER`", "MySQL", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
         ("`QuoTed18 IdenTifiER`", "MSSQL", "_quoted18_identifier_", "{{ adapter.quote('`QuoTed18 IdenTifiER`') }}"),
+        ("`QuoTed17 IdenTifiER`", "TiDB", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
         ("`QuoTedFB3 IdenTifiER`", "Firebolt", "_QuoTedFB3_IdenTifiER_", "_QuoTedFB3_IdenTifiER_"),
     ],
 )

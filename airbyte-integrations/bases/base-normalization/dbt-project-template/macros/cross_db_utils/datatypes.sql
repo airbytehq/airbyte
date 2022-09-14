@@ -264,7 +264,6 @@ so this macro needs to be called very_large_integer.
     string
 {% endmacro %}
 
-
 {# timestamp without time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_without_timezone() -%}
