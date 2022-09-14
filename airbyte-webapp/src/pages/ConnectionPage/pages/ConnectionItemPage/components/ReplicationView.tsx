@@ -94,8 +94,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
-  const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
-
+  const { connection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
   const [{ loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
 
   const formId = useUniqueFormId();
@@ -108,12 +107,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     closeConfirmationModal();
   });
 
-  const connection = initialConnection;
-
   const saveConnection = async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
-    if (!connection) {
-      // onSubmit should only be called while the catalog isn't currently refreshing at the moment,
-      // which is the only case when `connection` would be `undefined`.
+    if (isRefreshingCatalog) {
       return;
     }
     const initialSyncSchema = connection.syncCatalog;
@@ -123,10 +118,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       ...connectionAsUpdate,
       ...values,
       connectionId,
-      // Use the name and status from the initial connection because
-      // The status can be toggled and the name can be changed in-between refreshing the schema
-      name: initialConnection.name,
-      status: initialConnection.status || "",
       skipReset,
     });
 
@@ -148,7 +139,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       values.syncCatalog.streams
         .filter((s) => s.config?.selected)
         .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
-      initialConnection.syncCatalog.streams
+      connection.syncCatalog.streams
         .filter((s) => s.config?.selected)
         .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
     );
