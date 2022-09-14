@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
+    compileOnly 'javax.servlet:servlet-api:2.5'
 
 
     testImplementation project(':airbyte-test-utils')
