@@ -362,6 +362,8 @@
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
   "connection.canceling": "Canceling...",
+  "connection.linkedJobNotFound": "Job not found",
+  "connection.returnToSyncHistory": "Return to Sync History",
 
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
