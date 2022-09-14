@@ -7,7 +7,7 @@ const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customf
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-const cursorFieldDropdown = 'div[class^="PathPopoutButton_button"]';
+const cursorFieldDropdown = 'button[class^="PathPopoutButton_button"]';
 const primaryKeyText = 'div[class^="PathPopout_text"]';
 const successResult = "span[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
