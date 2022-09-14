@@ -1,10 +1,11 @@
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
+import React from "react";
 import { FormattedMessage, IntlConfig, useIntl } from "react-intl";
 
 import { I18nProvider, useI18nContext } from "./I18nProvider";
 
-const provider = (messages: IntlConfig["messages"], locale = "en"): React.FC => {
+const provider = (messages: IntlConfig["messages"], locale = "en"): React.FC<React.PropsWithChildren<unknown>> => {
   return ({ children }) => (
     <I18nProvider locale={locale} messages={messages}>
       {children}

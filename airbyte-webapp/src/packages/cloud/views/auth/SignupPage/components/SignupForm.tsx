@@ -169,7 +169,7 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   </LoadingButton>
 );
 
-export const SignupFormStatusMessage: React.FC = ({ children }) => (
+export const SignupFormStatusMessage: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
