@@ -411,8 +411,8 @@ public class DefaultJobPersistence implements JobPersistence {
     final RecordMapper<Record, NormalizationSummary> recordMapper = record -> {
       try {
         return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
-              .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
-              .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null : deserializeFailureReasons(record));
+            .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
+            .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null : deserializeFailureReasons(record));
       } catch (final JsonProcessingException e) {
         throw new RuntimeException(e);
       }
