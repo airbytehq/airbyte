@@ -64,7 +64,7 @@ public interface ProcessFactory {
   static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
     // some repositories may declare a port in the URL, e.g. my-registry:5001/my-project/image-name:0.1.0.
     // Here we use lastIndexOf to ensure we only cut out the portion of the string after the last delimiter
-    final var noVersion = fullImagePath.substring(0, test.lastIndexOf(VERSION_DELIMITER));
+    final var noVersion = fullImagePath.substring(0, fullImagePath.lastIndexOf(VERSION_DELIMITER));
 
     final var nameParts = noVersion.split(DOCKER_DELIMITER);
     var imageName = nameParts[nameParts.length - 1];
