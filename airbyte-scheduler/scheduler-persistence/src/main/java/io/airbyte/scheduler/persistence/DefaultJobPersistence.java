@@ -408,16 +408,16 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper() {
-    return record -> {
+    final RecordMapper<Record, NormalizationSummary> recordMapper = record -> {
       try {
-        new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
-            .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
-            .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null : deserializeFailureReasons(record));
+        return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
+              .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
+              .withFailures(record.get(NORMALIZATION_SUMMARIES.FAILURES, String.class) == null ? null : deserializeFailureReasons(record));
       } catch (final JsonProcessingException e) {
         throw new RuntimeException(e);
       }
-      return null;
     };
+    return recordMapper;
   }
 
   private static List<FailureReason> deserializeFailureReasons(final Record record) throws JsonProcessingException {
