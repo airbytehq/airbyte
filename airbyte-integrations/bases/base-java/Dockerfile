@@ -1,5 +1,7 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim
+ARG JDK_VERSION=17.0.4
+ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
+FROM ${JDK_IMAGE}
+RUN yum install -y tar && yum clean all
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte
