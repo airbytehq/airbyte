@@ -16,20 +16,28 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 
 import { useFormChangeTrackerService } from "../FormChangeTracker";
-import { ModalCancel } from "../Modal";
 import { ValuesProps } from "../useConnectionHook";
 
 export type ConnectionOrPartialConnection =
   | WebBackendConnectionRead
   | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 
+export interface SubmitCancel {
+  submitCancel: boolean;
+}
+export type SubmitResult = WebBackendConnectionRead | SubmitCancel;
+
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
   formId: string;
-  onSubmit: (values: ValuesProps) => Promise<void>;
-  onAfterSubmit?: () => void;
+  onSubmit: (values: ValuesProps) => Promise<SubmitResult>;
+  onAfterSubmit?: (submitResult: SubmitResult) => void;
   onCancel?: () => void;
+}
+
+export function isSubmitCancel(submitResult: SubmitResult): submitResult is { submitCancel: boolean } {
+  return submitResult.hasOwnProperty("submitCancel");
 }
 
 const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, onCancel }: ConnectionServiceProps) => {
@@ -58,17 +66,15 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
       setSubmitError(null);
       try {
         // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
-        await onSubmit(formValues);
-
-        formikHelpers.resetForm({ values });
-        // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
-        clearFormChange(formId);
-
-        onAfterSubmit?.();
-      } catch (e) {
-        if (!(e instanceof ModalCancel)) {
-          setSubmitError(e);
+        const submitResult = await onSubmit(formValues);
+        if ((isSubmitCancel(submitResult) && !submitResult.submitCancel) || !isSubmitCancel(submitResult)) {
+          formikHelpers.resetForm({ values });
+          // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
+          clearFormChange(formId);
+          onAfterSubmit?.(submitResult);
         }
+      } catch (e) {
+        setSubmitError(e);
       }
     },
     [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]

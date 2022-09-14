@@ -8,13 +8,17 @@ import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import {
+  ConnectionFormServiceProvider,
+  isSubmitCancel,
+  SubmitResult,
+} from "hooks/services/Connection/ConnectionFormService";
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
-import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnectionContent.module.scss";
@@ -22,7 +26,7 @@ import styles from "./CreateConnectionContent.module.scss";
 interface CreateConnectionContentProps {
   source: SourceRead;
   destination: DestinationRead;
-  afterSubmitConnection?: () => void;
+  afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
 }
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
@@ -34,7 +38,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   const { push } = useRouter();
 
   const formId = useUniqueFormId();
-  const { clearFormChange } = useFormChangeTrackerService();
+  // const { clearFormChange } = useFormChangeTrackerService();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
@@ -50,7 +54,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 
   const onSubmitConnectionStep = useCallback(
     async (values: ValuesProps) => {
-      const createdConnection = await createConnection({
+      return await createConnection({
         values,
         source,
         destination,
@@ -64,15 +68,24 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         sourceCatalogId: catalogId,
       });
 
-      // We only want to go to the new connection if we _do not_ have an after submit action.
-      if (!afterSubmitConnection) {
-        // We have to clear the form change to prevent the dirty-form tracking modal from appearing.
-        clearFormChange(formId);
-        // This is the "default behavior", go to the created connection.
-        push(`../../connections/${createdConnection.connectionId}`);
+      // // We only want to go to the new connection if we _do not_ have an after submit action.
+      // if (!afterSubmitConnection) {
+      //   // We have to clear the form change to prevent the dirty-form tracking modal from appearing.
+      //   clearFormChange(formId);
+      //   // This is the "default behavior", go to the created connection.
+      //   push(`../../connections/${createdConnection.connectionId}`);
+      // }
+    },
+    [catalogId, createConnection, destination, source]
+  );
+
+  const afterSubmit = useCallback(
+    (submitResult: SubmitResult) => {
+      if (!isSubmitCancel(submitResult)) {
+        afterSubmitConnection?.(submitResult) ?? push(`../../connections/${submitResult.connectionId}`);
       }
     },
-    [afterSubmitConnection, catalogId, clearFormChange, createConnection, destination, formId, push, source]
+    [afterSubmitConnection, push]
   );
 
   if (schemaErrorStatus) {
@@ -94,7 +107,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         mode="create"
         formId={formId}
         onSubmit={onSubmitConnectionStep}
-        onAfterSubmit={afterSubmitConnection}
+        onAfterSubmit={afterSubmit}
       >
         <ConnectionForm
           additionalSchemaControl={

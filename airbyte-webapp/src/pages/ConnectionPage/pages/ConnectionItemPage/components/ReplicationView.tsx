@@ -12,9 +12,9 @@ import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider, SubmitCancel } from "hooks/services/Connection/ConnectionFormService";
 import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { ModalCancel, useModalService } from "hooks/services/Modal";
+import { useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
   useConnectionService,
@@ -131,7 +131,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     }
   };
 
-  const onSubmitForm = async (values: ValuesProps): Promise<void> => {
+  const onSubmitForm = async (values: ValuesProps): Promise<SubmitCancel> => {
     // Detect whether the catalog has any differences in its enabled streams compared to the original one.
     // This could be due to user changes (e.g. in the sync mode) or due to new/removed
     // streams due to a "refreshed source schema".
@@ -154,7 +154,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
       });
       if (result.type === "canceled") {
-        throw new ModalCancel();
+        return {
+          submitCancel: true,
+        };
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
       await saveConnection(values, { skipReset: !result.reason });
@@ -162,6 +164,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
       await saveConnection(values, { skipReset: true });
     }
+    return {
+      submitCancel: false,
+    };
   };
 
   // TODO: Move this into the service next
