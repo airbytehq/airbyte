@@ -20,6 +20,10 @@ global:
     secretValue: ""
     host: "example.com"
     port: "5432"
+  state:
+    ## state.storage.type Determines which state storage will be utilized.  One of "MINIO", "S3" or "GCS"
+    storage:
+      type: "MINIO"
   logs:
     ##  logs.accessKey.password Logs Access Key
     ##  logs.accessKey.existingSecret
@@ -35,6 +39,11 @@ global:
       password: ""
       existingSecret: ""
       existingSecretKey: ""
+
+    ## logs.storage.type Determines which log storage  will be utilized.  One of "MINIO", "S3" or "GCS"
+    ##                   Used in conjunction with logs.minio.*, logs.s3.* or logs.gcs.*
+    storage:
+      type: "MINIO"
 
     ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
     minio:
