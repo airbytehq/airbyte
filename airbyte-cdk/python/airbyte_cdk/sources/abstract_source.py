@@ -217,11 +217,7 @@ class AbstractSource(Source, ABC):
         :return:
         """
         stream_name = configured_stream.stream.name
-
-        if self.per_stream_state_enabled:
-            stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
-        else:
-            stream_state = state_manager.get_legacy_state().get(stream_name, {})
+        stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
         if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state
@@ -289,6 +285,9 @@ class AbstractSource(Source, ABC):
                     return
 
     def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:

@@ -146,6 +146,11 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         sourceOperations.getQueryParameter(cursorFieldType, cursorValue));
   }
 
+  @Override
+  public boolean isCursorType(final StandardSQLTypeName standardSQLTypeName) {
+    return true;
+  }
+
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
                                                                final String sqlQuery,
                                                                final QueryParameterValue... params) {

@@ -96,26 +96,28 @@ class ConnectorStateManager:
         Takes an incoming list of state messages or the legacy state format and extracts state attributes according to type
         which can then be assigned to the new state manager being instantiated
         :param state: The incoming state input
-        :return: A tuple of shared state, per stream state, and legacy state assembled from the incoming state list
+        :return: A tuple of shared state and per stream state assembled from the incoming state list
         """
         if state is None:
             return None, {}
 
-        # Incoming pure legacy object format
-        if isinstance(state, dict):
-            streams = cls._create_stream_from_state_object(state, stream_instance_map)
-            return None, streams
+        is_legacy = isinstance(state, dict)
+        is_migrated_legacy = cls._is_migrated_legacy_state(state)
+        is_global = cls._is_global_state(state)
+        is_per_stream = isinstance(state, List)
 
-        if not isinstance(state, List):
-            raise ValueError("Input state should come in the form of list of Airbyte state messages or a mapping of states")
+        # Incoming pure legacy object format
+        if is_legacy:
+            streams = cls._create_descriptor_to_stream_state_mapping(state, stream_instance_map)
+            return None, streams
 
         # When processing incoming state in source.read_state(), legacy state gets deserialized into List[AirbyteStateMessage]
         # which can be translated into independent per-stream state values
-        if cls._is_migrated_legacy_state(state):
-            streams = cls._create_stream_from_state_object(state[0].data, stream_instance_map)
+        if is_migrated_legacy:
+            streams = cls._create_descriptor_to_stream_state_mapping(state[0].data, stream_instance_map)
             return None, streams
 
-        if cls._is_global_state(state):
+        if is_global:
             global_state = state[0].global_
             shared_state = copy.deepcopy(global_state.shared_state, {})
             streams = {
@@ -126,18 +128,20 @@ class ConnectorStateManager:
             }
             return shared_state, streams
 
-        # Assuming all prior conditions were not met this is a per-stream list of states
-        streams = {
-            HashableStreamDescriptor(
-                name=per_state.stream.stream_descriptor.name, namespace=per_state.stream.stream_descriptor.namespace
-            ): per_state.stream.stream_state
-            for per_state in state
-            if per_state.type == AirbyteStateType.STREAM and hasattr(per_state, "stream")
-        }
-        return None, streams
+        if is_per_stream:
+            streams = {
+                HashableStreamDescriptor(
+                    name=per_state.stream.stream_descriptor.name, namespace=per_state.stream.stream_descriptor.namespace
+                ): per_state.stream.stream_state
+                for per_state in state
+                if per_state.type == AirbyteStateType.STREAM and hasattr(per_state, "stream")
+            }
+            return None, streams
+        else:
+            raise ValueError("Input state should come in the form of list of Airbyte state messages or a mapping of states")
 
     @staticmethod
-    def _create_stream_from_state_object(
+    def _create_descriptor_to_stream_state_mapping(
         state: MutableMapping[str, Any], stream_to_instance_map: Mapping[str, Stream]
     ) -> MutableMapping[HashableStreamDescriptor, Optional[AirbyteStateBlob]]:
         """
@@ -154,9 +158,19 @@ class ConnectorStateManager:
         return streams
 
     @staticmethod
-    def _is_migrated_legacy_state(state: List[AirbyteStateMessage]) -> bool:
-        return len(state) == 1 and isinstance(state[0], AirbyteStateMessage) and state[0].type == AirbyteStateType.LEGACY
+    def _is_migrated_legacy_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:
+        return (
+            isinstance(state, List)
+            and len(state) == 1
+            and isinstance(state[0], AirbyteStateMessage)
+            and state[0].type == AirbyteStateType.LEGACY
+        )
 
     @staticmethod
-    def _is_global_state(state: List[AirbyteStateMessage]) -> bool:
-        return len(state) == 1 and isinstance(state[0], AirbyteStateMessage) and state[0].type == AirbyteStateType.GLOBAL
+    def _is_global_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:
+        return (
+            isinstance(state, List)
+            and len(state) == 1
+            and isinstance(state[0], AirbyteStateMessage)
+            and state[0].type == AirbyteStateType.GLOBAL
+        )
