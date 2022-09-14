@@ -22,6 +22,7 @@ import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
@@ -208,6 +209,12 @@ class JobConverterTest {
   @Test
   void testGetJobInfoRead() {
     assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
+  }
+
+  @Test
+  void testGetJobInfoLightRead() {
+    final JobInfoLightRead expected = new JobInfoLightRead().job(JOB_INFO.getJob());
+    assertEquals(expected, jobConverter.getJobInfoLightRead(job));
   }
 
   @Test

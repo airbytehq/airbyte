@@ -2,49 +2,41 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.kafka;
+package io.airbyte.integrations.source.kafka.format;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import java.util.Arrays;
+import io.airbyte.integrations.source.kafka.KafkaProtocol;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.connect.json.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KafkaSourceConfig {
+public abstract class AbstractFormat implements KafkaFormat {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(KafkaSourceConfig.class);
-  private static KafkaSourceConfig instance;
-  private final JsonNode config;
-  private KafkaConsumer<String, JsonNode> consumer;
-  private Set<String> topicsToSubscribe;
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFormat.class);
 
-  private KafkaSourceConfig(final JsonNode config) {
+  protected Set<String> topicsToSubscribe;
+  protected JsonNode config;
+
+  public AbstractFormat(JsonNode config) {
     this.config = config;
+
   }
 
-  public static KafkaSourceConfig getKafkaSourceConfig(final JsonNode config) {
-    if (instance == null) {
-      instance = new KafkaSourceConfig(config);
-    }
-    return instance;
-  }
+  protected abstract KafkaConsumer<String, ?> getConsumer();
 
-  private KafkaConsumer<String, JsonNode> buildKafkaConsumer(final JsonNode config) {
+  protected abstract Set<String> getTopicsToSubscribe();
+
+  protected Map<String, Object> getKafkaConfig() {
+
     final Map<String, Object> props = new HashMap<>();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText());
     props.put(ConsumerConfig.GROUP_ID_CONFIG,
@@ -66,14 +58,13 @@ public class KafkaSourceConfig {
         config.has("receive_buffer_bytes") ? config.get("receive_buffer_bytes").intValue() : null);
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
         config.has("auto_offset_reset") ? config.get("auto_offset_reset").asText() : null);
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
 
     final Map<String, Object> filteredProps = props.entrySet().stream()
         .filter(entry -> entry.getValue() != null && !entry.getValue().toString().isBlank())
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    return new KafkaConsumer<>(filteredProps);
+    return filteredProps;
+
   }
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
@@ -93,49 +84,6 @@ public class KafkaSourceConfig {
     }
 
     return builder.build();
-  }
-
-  public KafkaConsumer<String, JsonNode> getConsumer() {
-    if (consumer != null) {
-      return consumer;
-    }
-    consumer = buildKafkaConsumer(config);
-
-    final JsonNode subscription = config.get("subscription");
-    LOGGER.info("Kafka subscribe method: {}", subscription.toString());
-    switch (subscription.get("subscription_type").asText()) {
-      case "subscribe" -> {
-        final String topicPattern = subscription.get("topic_pattern").asText();
-        consumer.subscribe(Pattern.compile(topicPattern));
-        topicsToSubscribe = consumer.listTopics().keySet().stream()
-            .filter(topic -> topic.matches(topicPattern))
-            .collect(Collectors.toSet());
-      }
-      case "assign" -> {
-        topicsToSubscribe = new HashSet<>();
-        final String topicPartitions = subscription.get("topic_partitions").asText();
-        final String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
-        final List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr).map(topicPartition -> {
-          final String[] pair = topicPartition.split(":");
-          topicsToSubscribe.add(pair[0]);
-          return new TopicPartition(pair[0], Integer.parseInt(pair[1]));
-        }).collect(Collectors.toList());
-        LOGGER.info("Topic-partition list: {}", topicPartitionList);
-        consumer.assign(topicPartitionList);
-      }
-    }
-    return consumer;
-  }
-
-  public Set<String> getTopicsToSubscribe() {
-    if (topicsToSubscribe == null) {
-      getConsumer();
-    }
-    return topicsToSubscribe;
-  }
-
-  public KafkaConsumer<String, JsonNode> getCheckConsumer() {
-    return buildKafkaConsumer(config);
   }
 
 }
