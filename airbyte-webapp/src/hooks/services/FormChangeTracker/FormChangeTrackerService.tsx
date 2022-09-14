@@ -7,7 +7,7 @@ import { useBlocker } from "hooks/router/useBlocker";
 import { useConfirmationModalService } from "../ConfirmationModal";
 import { useChangedFormsById } from "./hooks";
 
-export const FormChangeTrackerService: React.FC = ({ children }) => {
+export const FormChangeTrackerService: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const [changedFormsById, setChangedFormsById] = useChangedFormsById();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
