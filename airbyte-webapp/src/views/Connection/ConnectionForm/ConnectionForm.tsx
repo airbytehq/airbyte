@@ -79,7 +79,7 @@ const LabelHeading = styled(H5)`
   display: inline;
 `;
 
-const Section: React.FC<SectionProps> = ({ title, children }) => (
+const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children }) => (
   <Card>
     <StyledSection>
       {title && <H5 bold>{title}</H5>}

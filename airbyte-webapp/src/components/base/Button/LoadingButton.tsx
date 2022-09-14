@@ -40,7 +40,7 @@ const Invisible = styled.div`
  * the only one <Button/> component and set loading state via props
  * issue: https://github.com/airbytehq/airbyte/issues/12705
  * */
-const LoadingButton: React.FC<ButtonProps> = (props) => {
+const LoadingButton: React.FC<React.PropsWithChildren<ButtonProps>> = (props) => {
   if (props.isLoading) {
     return (
       <ButtonView {...props}>
