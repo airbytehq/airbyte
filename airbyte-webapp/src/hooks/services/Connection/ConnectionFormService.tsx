@@ -15,7 +15,7 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { useFormChangeTrackerService } from "../FormChangeTracker";
+import { useFormChangeTrackerService, useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
 
 export type ConnectionOrPartialConnection =
@@ -30,7 +30,7 @@ export type SubmitResult = WebBackendConnectionRead | SubmitCancel;
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  formId: string;
+  formId?: string;
   onSubmit: (values: ValuesProps) => Promise<SubmitResult>;
   onAfterSubmit?: (submitResult: SubmitResult) => void;
   onCancel?: () => void;
@@ -44,6 +44,7 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
+  formId = useUniqueFormId(formId);
 
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
