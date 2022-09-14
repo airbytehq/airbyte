@@ -9,7 +9,7 @@ interface IProps {
   onToggled?: () => void;
 }
 
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
+const ContentWrapper: React.FC<React.PropsWithChildren<IProps>> = ({ children, isOpen, onToggled }) => {
   return (
     <motion.div
       className={styles.container}

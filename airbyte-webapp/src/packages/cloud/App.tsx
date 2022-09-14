@@ -26,14 +26,14 @@ import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvide
 
 const messages = { ...en, ...cloudLocales };
 
-const StyleProvider: React.FC = ({ children }) => (
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
   </ThemeProvider>
 );
 
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
