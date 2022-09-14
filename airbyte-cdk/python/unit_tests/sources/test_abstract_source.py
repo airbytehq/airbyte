@@ -47,7 +47,7 @@ class MockSource(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
             return self.check_lambda()
-        return (False, "Missing callable.")
+        return False, "Missing callable."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not self._streams:
@@ -725,7 +725,7 @@ class TestIncrementalRead:
 
 def test_checkpoint_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
-    managers_stream = MockStreamNoStateMethod()
+    managers_stream = StreamNoStateMethod()
     src = MockSource(streams=[teams_stream, managers_stream])
     state_manager = ConnectorStateManager({"teams": teams_stream, "managers": managers_stream}, [])
 
