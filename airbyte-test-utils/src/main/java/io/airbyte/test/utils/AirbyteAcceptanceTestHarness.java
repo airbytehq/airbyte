@@ -16,7 +16,6 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AirbyteCatalog;
-import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
@@ -855,54 +854,8 @@ public class AirbyteAcceptanceTestHarness {
     });
   }
 
-  public StreamDescriptor extractStreamDescriptor(final AirbyteStreamAndConfiguration streamAndConfig) {
-    return new StreamDescriptor()
-        .name(streamAndConfig.getStream().getName())
-        .namespace(streamAndConfig.getStream().getNamespace());
-  }
-
-  private Map<StreamDescriptor, AirbyteStreamAndConfiguration> streamDescriptorToMap(final AirbyteCatalog catalog) {
-    return catalog.getStreams().stream().collect(Collectors.toMap(this::extractStreamDescriptor, s -> s));
-  }
-
-  public AirbyteCatalog getCatalogForUpdate(final AirbyteCatalog initialCatalog, final AirbyteCatalog newCatalog) {
-    final AirbyteCatalog catalogForUpdate = new AirbyteCatalog();
-
-    final Map<StreamDescriptor, AirbyteStreamAndConfiguration> descriptorToStreamAndConfigInitial =
-        streamDescriptorToMap(initialCatalog);
-    final Map<StreamDescriptor, AirbyteStreamAndConfiguration> descriptorToStreamAndConfigNew =
-        streamDescriptorToMap(newCatalog);
-
-    final Set<StreamDescriptor> descriptorsBeingRemoved =
-        Sets.difference(descriptorToStreamAndConfigInitial.keySet(), descriptorToStreamAndConfigNew.keySet());
-
-    final Set<StreamDescriptor> descriptorsBeingAdded =
-        Sets.difference(descriptorToStreamAndConfigNew.keySet(), descriptorToStreamAndConfigInitial.keySet());
-
-    descriptorsBeingRemoved.forEach(descriptor -> {
-      final AirbyteStreamAndConfiguration removed = descriptorToStreamAndConfigInitial.get(descriptor);
-      removed.getConfig().setSelected(false);
-      catalogForUpdate.addStreamsItem(removed);
-    });
-
-    descriptorsBeingAdded.forEach(descriptor -> {
-      final AirbyteStreamAndConfiguration added = descriptorToStreamAndConfigNew.get(descriptor);
-      added.getConfig().setSelected(true);
-      catalogForUpdate.addStreamsItem(added);
-    });
-
-    return catalogForUpdate;
-  }
-
-  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection,
-                                                   final AirbyteCatalog initialCatalog,
-                                                   final AirbyteCatalog newCatalog,
-                                                   final OperationRead operation) {
-    // compares initial catalog and new catalog to determine which streams need to be set to
-    // selected:true and selected:false in the update
-    final AirbyteCatalog catalogForUpdate = getCatalogForUpdate(initialCatalog, newCatalog);
-
-    setIncrementalAppendSyncMode(catalogForUpdate, List.of(COLUMN_ID));
+  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
+    setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
 
     return new WebBackendConnectionUpdate()
         .connectionId(connection.getConnectionId())
@@ -914,7 +867,7 @@ public class AirbyteAcceptanceTestHarness {
             .operatorConfiguration(operation.getOperatorConfiguration())))
         .namespaceDefinition(connection.getNamespaceDefinition())
         .namespaceFormat(connection.getNamespaceFormat())
-        .syncCatalog(catalogForUpdate)
+        .syncCatalog(catalog)
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
