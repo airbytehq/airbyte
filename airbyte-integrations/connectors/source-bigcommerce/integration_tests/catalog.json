@@ -1588,10 +1588,10 @@
                                 "type": ["null", "string"]
                             },
                             "export": {
-                                "type": ["null", "integer"]
+                                "type": ["null", "string"]
                             },
                             "extended_display": {
-                                "type": ["null", "integer"]
+                                "type": ["null", "string"]
                             }
                         }
                     }
