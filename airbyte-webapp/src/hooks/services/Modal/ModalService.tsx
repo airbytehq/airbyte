@@ -7,7 +7,7 @@ import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
 
 const modalServiceContext = React.createContext<ModalServiceContext | undefined>(undefined);
 
-export const ModalServiceProvider: React.FC = ({ children }) => {
+export const ModalServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   // The any here is due to the fact, that every call to open a modal might come in with
   // a different type, thus we can't type this with unknown or a generic.
   // The consuming code of this service though is properly typed, so that this `any` stays

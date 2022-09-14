@@ -40,7 +40,6 @@ const Template: ComponentStory<typeof Popout> = (args) => (
 
 export const Example = Template.bind({});
 Example.args = {
-  children: "Text",
   title: "Title",
   isSearchable: false,
 };
