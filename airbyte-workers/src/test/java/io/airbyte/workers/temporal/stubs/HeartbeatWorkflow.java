@@ -2,8 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.workers.temporal.stubs;
 
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -48,7 +49,7 @@ public interface HeartbeatWorkflow {
 
     private final Runnable runnable;
 
-    public HeartbeatActivityImpl(Runnable runnable) {
+    public HeartbeatActivityImpl(final Runnable runnable) {
       this.runnable = runnable;
     }
 
