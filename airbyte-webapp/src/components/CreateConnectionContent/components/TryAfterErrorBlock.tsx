@@ -23,7 +23,7 @@ const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClic
   <Block>
     <StatusIcon big />
     <Title center>{message || <FormattedMessage id="form.schemaFailed" />}</Title>
-    <Button customStyles={styles.againButton} onClick={onClick} variant="danger">
+    <Button className={styles.againButton} onClick={onClick} variant="danger">
       <FormattedMessage id="form.tryAgain" />
     </Button>
   </Block>

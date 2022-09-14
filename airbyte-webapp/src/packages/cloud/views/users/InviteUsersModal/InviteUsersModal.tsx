@@ -130,7 +130,7 @@ export const InviteUsersModal: React.FC<{
                             </Cell>
                           )}
                           <Button
-                            customStyles={styles.deleteButton}
+                            className={styles.deleteButton}
                             type="button"
                             disabled={values.users.length < 2}
                             onClick={() => {
@@ -166,7 +166,7 @@ export const InviteUsersModal: React.FC<{
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
                   <Button
-                    customStyles={styles.sendInvitationButton}
+                    className={styles.sendInvitationButton}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}

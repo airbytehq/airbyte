@@ -50,7 +50,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <FormattedMessage id={text} />
         <ButtonContent>
           <Button
-            customStyles={styles.buttonWithMargin}
+            className={styles.buttonWithMargin}
             onClick={onClose}
             type="button"
             variant="secondary"

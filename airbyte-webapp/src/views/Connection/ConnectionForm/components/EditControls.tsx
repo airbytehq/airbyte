@@ -67,7 +67,7 @@ const EditControls: React.FC<EditControlProps> = ({
       {withLine && <Line />}
       <Buttons>
         <div>{showStatusMessage()}</div>
-        <div>
+        <div className={styles.buttonsContainer}>
           <Button
             type="button"
             variant="secondary"
@@ -77,7 +77,7 @@ const EditControls: React.FC<EditControlProps> = ({
             <FormattedMessage id="form.cancel" />
           </Button>
           <Button
-            customStyles={styles.controlButton}
+            className={styles.controlButton}
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}

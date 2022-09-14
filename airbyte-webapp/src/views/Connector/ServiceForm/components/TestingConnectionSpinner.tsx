@@ -27,7 +27,7 @@ const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> = (props
       <ProgressBar runTime={PROGRESS_BAR_TIME} />
       {props.isCancellable && (
         <Button
-          customStyles={styles.styledButton}
+          className={styles.styledButton}
           variant="secondary"
           type="button"
           onClick={() => props.onCancelTesting?.()}

@@ -16,7 +16,7 @@ interface IProps {
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (
     <Button
-      customStyles={classNames(styles.sortButtonView, {
+      className={classNames(styles.sortButtonView, {
         [styles.wasActive]: wasActive,
       })}
       size="xs"

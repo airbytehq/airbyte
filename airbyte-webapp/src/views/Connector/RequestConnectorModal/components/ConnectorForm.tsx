@@ -136,7 +136,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
             <Button type="button" variant="secondary" onClick={onCancel} disabled={hasFeedback}>
               <FormattedMessage id="form.cancel" />
             </Button>
-            <Button customStyles={styles.requestButton} type="submit" wasActive={hasFeedback}>
+            <Button className={styles.requestButton} type="submit" wasActive={hasFeedback}>
               {hasFeedback ? (
                 <FormattedMessage id="connector.requested" />
               ) : (

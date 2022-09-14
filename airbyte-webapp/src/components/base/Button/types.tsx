@@ -5,7 +5,6 @@ type ButtonVariant = "primary" | "secondary" | "danger" | "light";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   clickable?: boolean;
-  customStyles?: string;
   full?: boolean;
   icon?: React.ReactElement;
   iconPosition?: "left" | "right";

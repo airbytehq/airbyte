@@ -7,29 +7,43 @@ import styles from "./Button.module.scss";
 import { ButtonProps } from "./types";
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  const {
+    children,
+    className,
+    clickable,
+    full,
+    icon,
+    iconPosition,
+    isLoading,
+    size,
+    variant,
+    wasActive,
+    width,
+    ...buttonProps
+  } = props;
   const buttonStyles = {
-    [styles.full]: props.full,
-    [styles.isLoading]: props.isLoading,
-    [styles.sizeL]: props.size === "lg",
-    [styles.sizeS]: props.size === "sm",
-    [styles.sizeXS]: props.size === "xs",
-    [styles.typeDanger]: props.variant === "danger",
-    [styles.typeLight]: props.variant === "light",
-    [styles.typePrimary]: props.variant === "primary",
-    [styles.typeSecondary]: props.variant === "secondary",
+    [styles.full]: full,
+    [styles.isLoading]: isLoading,
+    [styles.sizeL]: size === "lg",
+    [styles.sizeS]: size === "sm",
+    [styles.sizeXS]: size === "xs",
+    [styles.typeDanger]: variant === "danger",
+    [styles.typeLight]: variant === "light",
+    [styles.typePrimary]: variant === "primary",
+    [styles.typeSecondary]: variant === "secondary",
   };
   const widthStyle: { width?: string } = {};
-  if (props.width) {
-    widthStyle.width = `${props.width}px`;
+  if (width) {
+    widthStyle.width = `${width}px`;
   }
   return (
     <button
       ref={ref}
       style={widthStyle}
-      className={classNames(styles.button, props.customStyles, buttonStyles)}
-      {...props}
+      className={classNames(styles.button, className, buttonStyles)}
+      {...buttonProps}
     >
-      {props.isLoading && (
+      {isLoading && (
         <FontAwesomeIcon
           className={classNames(styles.buttonIcon, {
             [styles.isSpinnerIcon]: true,
@@ -37,23 +51,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
           icon={faCircleNotch}
         />
       )}
-      {props.icon &&
-        props.iconPosition === "left" &&
-        React.cloneElement(props.icon, {
+      {icon &&
+        iconPosition === "left" &&
+        React.cloneElement(icon, {
           className: classNames(styles.buttonIcon, {
             [styles.positionLeft]: true,
             [styles.isRegularIcon]: true,
-            [styles.withLabel]: Boolean(props.children),
+            [styles.withLabel]: Boolean(children),
           }),
         })}
-      {props.children}
-      {props.icon &&
-        props.iconPosition === "right" &&
-        React.cloneElement(props.icon, {
+      {children}
+      {icon &&
+        iconPosition === "right" &&
+        React.cloneElement(icon, {
           className: classNames(styles.buttonIcon, {
             [styles.positionRight]: true,
             [styles.isRegularIcon]: true,
-            [styles.withLabel]: Boolean(props.children),
+            [styles.withLabel]: Boolean(children),
           }),
         })}
     </button>
