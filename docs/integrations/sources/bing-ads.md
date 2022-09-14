@@ -24,13 +24,13 @@ The refresh token expires in 90 days. Repeat the authorization process to get a 
 
 :::info
 
-The tenant is used in the authentication URL, for example: https://login.microsoftonline.com/\<tenant\>/oauth2/v2.0/authorize
+The tenant is used in the authentication URL, for example: `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize`
 
 :::
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
-### For Airbyte Cloud
+#### For Airbyte Cloud
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 
@@ -42,7 +42,7 @@ The tenant is used in the authentication URL, for example: https://login.microso
 
 5. For **Tenant ID**, enter the custom tenant or use the common tenant. 
 
-6. Add the developer token from [Step 1](step-1-set-up-bing-ads). 
+6. Add the developer token from [Step 1](#step-1-set-up-bing-ads). 
 
 7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 
@@ -50,9 +50,9 @@ The tenant is used in the authentication URL, for example: https://login.microso
 
 9. Log in and authorize the Bing Ads account.
 
-10. Click **Set up source**.
+10. Click **Set up source**.  
 
-### For Airbyte Open Source
+#### For Airbyte Open Source
 
 1. Log in to your Airbyte Open Source account.
 
@@ -64,7 +64,7 @@ The tenant is used in the authentication URL, for example: https://login.microso
 
 5. For **Tenant ID**, enter the custom tenant or use the common tenant. 
 
-6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](step-1-set-up-bing-ads).
+6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 
 7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 
