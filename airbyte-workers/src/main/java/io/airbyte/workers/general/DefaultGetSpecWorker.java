@@ -73,7 +73,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       final Optional<ConnectorSpecification> spec = messagesByType
           .getOrDefault(Type.SPEC, new ArrayList<>()).stream()
           .map(AirbyteMessage::getSpec)
-          .findFirst();;
+          .findFirst();
 
       final int exitCode = process.exitValue();
       if (exitCode == 0) {

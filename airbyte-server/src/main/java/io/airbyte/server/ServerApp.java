@@ -100,6 +100,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   @Override
+  @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
     final Server server = new Server(PORT);
 
@@ -138,7 +139,7 @@ public class ServerApp implements ServerRunnable {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
         server.stop();
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         // silently fail at this stage because server is terminating.
         LOGGER.warn("exception: " + ex);
       }

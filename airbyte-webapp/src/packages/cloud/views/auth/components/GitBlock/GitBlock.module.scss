@@ -1,4 +1,5 @@
 @use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
 
 .container {
   display: flex;
@@ -7,12 +8,12 @@
 
   .link {
     text-decoration: none;
+    margin-top: variables.$spacing-2xl;
 
     .content {
       display: flex;
       flex-direction: row;
       align-items: center;
-      margin-top: 17px;
 
       .icon {
         margin-right: 10px;

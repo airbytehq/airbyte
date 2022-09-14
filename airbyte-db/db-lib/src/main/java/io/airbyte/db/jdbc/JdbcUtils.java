@@ -87,6 +87,7 @@ public class JdbcUtils {
     return parseJdbcParameters(jdbcPropertiesString, "&");
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {

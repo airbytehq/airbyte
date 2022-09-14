@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.85
+- Make TypeTransformer more robust to incorrect incoming records
+
+## 0.1.84
+- Emit legacy format when state is unspecified for read override connectors
+
+## 0.1.83
+- Fix per-stream to send legacy format for connectors that override read
+
+## 0.1.82
+- Freeze dataclasses-jsonschema to 2.15.1
+
 ## 0.1.81
 - Fix regression in `_checkpoint_state` arg
 

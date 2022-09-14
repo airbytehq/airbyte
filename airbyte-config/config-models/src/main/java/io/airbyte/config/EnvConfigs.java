@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
+@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -327,9 +327,13 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public URI getRemoteConnectorCatalogUrl() {
-    // Default to reuse the job database
-    return URI.create(getEnsureEnv(REMOTE_CONNECTOR_CATALOG_URL));
+  public Optional<URI> getRemoteConnectorCatalogUrl() {
+    final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
+    if (remoteConnectorCatalogUrl != null) {
+      return Optional.of(URI.create(remoteConnectorCatalogUrl));
+    } else {
+      return Optional.empty();
+    }
   }
 
   // Docker Only
