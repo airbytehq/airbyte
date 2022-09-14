@@ -53,10 +53,10 @@ import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
-import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
@@ -895,7 +895,10 @@ public class AirbyteAcceptanceTestHarness {
     return catalogForUpdate;
   }
 
-  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog initialCatalog, final AirbyteCatalog newCatalog, final OperationRead operation) {
+  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection,
+                                                   final AirbyteCatalog initialCatalog,
+                                                   final AirbyteCatalog newCatalog,
+                                                   final OperationRead operation) {
     // compares initial catalog and new catalog to determine which streams need to be set to
     // selected:true and selected:false in the update
     final AirbyteCatalog catalogForUpdate = getCatalogForUpdate(initialCatalog, newCatalog);
