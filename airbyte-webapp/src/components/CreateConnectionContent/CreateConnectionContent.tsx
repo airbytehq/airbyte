@@ -13,7 +13,6 @@ import {
   isSubmitCancel,
   SubmitResult,
 } from "hooks/services/Connection/ConnectionFormService";
-import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
@@ -36,9 +35,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const { push } = useRouter();
-
-  const formId = useUniqueFormId();
-  // const { clearFormChange } = useFormChangeTrackerService();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
@@ -67,14 +63,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         },
         sourceCatalogId: catalogId,
       });
-
-      // // We only want to go to the new connection if we _do not_ have an after submit action.
-      // if (!afterSubmitConnection) {
-      //   // We have to clear the form change to prevent the dirty-form tracking modal from appearing.
-      //   clearFormChange(formId);
-      //   // This is the "default behavior", go to the created connection.
-      //   push(`../../connections/${createdConnection.connectionId}`);
-      // }
     },
     [catalogId, createConnection, destination, source]
   );
@@ -105,7 +93,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       <ConnectionFormServiceProvider
         connection={connection}
         mode="create"
-        formId={formId}
         onSubmit={onSubmitConnectionStep}
         onAfterSubmit={afterSubmit}
       >
