@@ -11,10 +11,20 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
 
+# paths for NetSuite REST API 
 REST_PATH: str = "/services/rest/"
 RECORD_PATH: str = REST_PATH + "record/v1/"
 META_PATH: str = RECORD_PATH + "metadata-catalog/"
+# predefine header
 SCHEMA_HEADERS: dict = {"Accept": "application/schema+json"}
+# known error codes by their HTTP codes
+NETSUITE_ERRORS_MAPPING: dict = {
+    400 : {
+        "USER_ERROR": "reading an Admin record allowed for Admin only.",
+        "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object.",
+        "INVALID_PARAMETER": "cannot read or find the object. Skipping.",
+    },
+}
 
 class NetsuiteStream(HttpStream, ABC):
     
@@ -182,20 +192,20 @@ class NetsuiteStream(HttpStream, ABC):
         return ranges
                 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 400:
+        if response.status_code in NETSUITE_ERRORS_MAPPING.keys():
             message = response.json().get("o:errorDetails")
+            error_code = message[0].get("o:errorCode")
             if isinstance(message, list):
-                if f"Record '{self.name}' was not found." in message[0].get("detail"):
-                    # when stream declared but not available for fetch
+                known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
+                if error_code in known_error.keys():
                     setattr(self, "raise_on_http_errors", False)
-                    self.logger.warn(f"Stream `{self.name}` is not available. Skipping...")
-                elif message[0].get("o:errorCode") == "USER_ERROR":
-                    # when user restricted using non-admin credentials
-                    setattr(self, "raise_on_http_errors", False)
-                    self.logger.warn(f"Stream `{self.name}`: reading an Admin record allowed for Admin Only.")
+                    self.logger.warn(
+                        f"Stream `{self.name}`: {known_error.get(error_code)}, full error message: {message}",
+                    )
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)   
+
 
 class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     

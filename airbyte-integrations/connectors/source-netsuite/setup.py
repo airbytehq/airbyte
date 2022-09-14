@@ -5,12 +5,16 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.56", "zeep==4.1.0", "netsuitesdk~=2.14.0", "requests-oauthlib~=1.3"]
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.1.56",
+    "requests-oauthlib~=1.3",
+]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
+    "requests-mock",
 ]
 
 setup(
