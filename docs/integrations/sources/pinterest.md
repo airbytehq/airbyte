@@ -14,10 +14,10 @@ Please read [How to get your credentials](https://developers.pinterest.com/docs/
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Pinterest connector and select **Pinterest** from the Source type dropdown. 
-4. Enter your `client_id`
-5. Enter your `client_secret`
-6. Enter your `refresh_token`
-7. Enter the `start_date` you want your sync to start from
+4. Enter the `start_date` you want your sync to start from
+5. Choose `OAuth2.0` in `Authorization Method` list
+6. Click on `Authenticate your Pinterest account` button
+7. Proceed with OAuth authentication of your account in the pop-up window that appears after previous step
 8. Click **Set up source**
 
 ### For Airbyte OSS:
@@ -71,6 +71,8 @@ Boards streams - 10 calls per sec / per user / per app
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.4   | 2022-09-06 | [16161](https://github.com/airbytehq/airbyte/pull/16161) | Added ability to handle `429 - Too Many Requests` error with respect to `Max Rate Limit Exceeded Error`
+| 0.1.3   | 2022-09-02 | [16271](https://github.com/airbytehq/airbyte/pull/16271) | Added support of `OAuth2.0` authentication method
 | 0.1.2   | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields  |
 | 0.1.1   | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043)   | Update connector fields title/description         |
 | 0.1.0   | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493)   | Release Pinterest CDK Connector                   |

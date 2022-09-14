@@ -2,6 +2,8 @@
 
 This page contains the setup guide and reference information for the Google Analytics (Universal Analytics) source connector.
 
+This connector supports Universal Analytics properties through the [Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4).
+
 ## Set up Google Sheets as a source in Airbyte 
 
 ### For Airbyte Cloud

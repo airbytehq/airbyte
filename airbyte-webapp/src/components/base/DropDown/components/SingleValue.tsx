@@ -1,13 +1,13 @@
 import React from "react";
-import { components, SingleValueProps, OptionTypeBase } from "react-select";
+import { components, SingleValueProps } from "react-select";
 import styled from "styled-components";
 
 import { IDataItem } from "./Option";
 import Text from "./Text";
 
-export type IProps = {
+export type IProps<T> = {
   data?: IDataItem;
-} & SingleValueProps<OptionTypeBase>;
+} & SingleValueProps<T>;
 
 export const ItemView = styled.div`
   display: flex;
@@ -21,7 +21,7 @@ export const Icon = styled.div`
   display: inline-block;
 `;
 
-const SingleValue: React.FC<IProps> = (props) => {
+const SingleValue = <T extends { data: { img: string } }>(props: React.PropsWithChildren<IProps<T>>) => {
   return (
     <ItemView>
       {props.data.img ? <Icon>{props.data.img}</Icon> : null}

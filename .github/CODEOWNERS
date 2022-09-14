@@ -20,6 +20,7 @@
 # JDBC-based connectors
 /airbyte-integrations/bases/base-java/ @airbytehq/jdbc-connectors
 /airbyte-integrations/connectors/source-jdbc/ @airbytehq/jdbc-connectors
+/airbyte-integrations/connectors/source-alloydb/ @airbytehq/jdbc-connectors
 /airbyte-integrations/connectors/source-bigquery/ @airbytehq/jdbc-connectors
 /airbyte-integrations/connectors/source-clickhouse/ @airbytehq/jdbc-connectors
 /airbyte-integrations/connectors/source-cockroachdb/ @airbytehq/jdbc-connectors

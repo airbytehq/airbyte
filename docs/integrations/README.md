@@ -18,6 +18,7 @@ For more information about the grading system, see [Product Release Stages](http
 |:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
+| [AlloyDb](sources/alloydb.md)                                                               | Alpha                | Yes                 |
 | [Amazon Ads](sources/amazon-ads.md)                                                         | Beta                 | Yes                 |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md)                                   | Alpha                | Yes                 |
 | [Amazon SQS](sources/amazon-sqs.md)                                                         | Alpha                | Yes                 |

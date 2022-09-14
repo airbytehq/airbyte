@@ -35,7 +35,7 @@ Using either authenticator is as simple as passing the created authenticator int
 
 ## Pagination
 
-Most APIs, when facing a large call, tend to return the results in pages. The CDK accommodates paging via the `next_page_token` function. This function is meant to extract the next page "token" from the latest response. The contents of a "token" are completely up to the developer: it can be an ID, a page number, a partial URL etc.. The CDK will continue making requests as long as the `next_page_token` function. The CDK will continue making requests as long as the `next_page_token` continues returning non-`None` results. This can then be used in the `request_params` and other methods in `HttpStream` to page through API responses. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L41) from the Stripe API.
+Most APIs, when facing a large call, tend to return the results in pages. The CDK accommodates paging via the `next_page_token` function. This function is meant to extract the next page "token" from the latest response. The contents of a "token" are completely up to the developer: it can be an ID, a page number, a partial URL etc.. The CDK will continue making requests as long as the `next_page_token` function. The CDK will continue making requests as long as the `next_page_token` continues returning non-`None` results. This can then be used in the `request_params` and other methods in `HttpStream` to page through API responses. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L34) from the Stripe API.
 
 ## Rate Limiting
 

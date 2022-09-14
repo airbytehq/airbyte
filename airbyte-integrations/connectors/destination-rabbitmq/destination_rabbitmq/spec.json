@@ -34,7 +34,9 @@
       },
       "password": {
         "type": "string",
-        "description": "The password to connect."
+        "title": "Password",
+        "description": "The password to connect.",
+        "airbyte_secret": true
       },
       "exchange": {
         "type": "string",
