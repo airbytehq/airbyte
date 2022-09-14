@@ -34,8 +34,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
 };
 
 const Auth: React.FC = () => {
-  const location = useLocation();
-  const { pathname } = location;
+  const { pathname } = useLocation();
   const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
   const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
@@ -54,7 +53,7 @@ const Auth: React.FC = () => {
               <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${location.pathname}`}`} />}
+                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${pathname}`}`} />}
               />
             </Routes>
           </Suspense>

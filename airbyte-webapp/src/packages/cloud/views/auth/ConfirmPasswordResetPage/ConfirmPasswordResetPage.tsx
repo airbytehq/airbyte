@@ -23,7 +23,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
   const navigate = useNavigate();
-  const query = useQuery() as { oobCode?: string };
+  const query = useQuery<{ oobCode?: string }>();
   const { formatMessage } = useIntl();
 
   return (

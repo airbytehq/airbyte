@@ -33,7 +33,7 @@ interface IProps {
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
   const navigate = useNavigate();
-  const query = useQuery() as { sortBy?: string; order?: SortOrderEnum };
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";

@@ -21,7 +21,7 @@ export enum FirebaseActionMode {
 }
 
 export const VerifyEmailAction: React.FC = () => {
-  const query = useQuery() as { mode?: FirebaseActionMode; oobCode?: string };
+  const query = useQuery<{ mode?: FirebaseActionMode; oobCode?: string }>();
   const { verifyEmail } = useAuthService();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();

@@ -110,7 +110,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const query = useQuery() as { from: string };
+  const query = useQuery<{ from: string }>();
 
   return (
     <Routes>

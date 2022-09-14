@@ -24,7 +24,7 @@ interface IProps {
 }
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
-  const query = useQuery();
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const navigate = useNavigate();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;

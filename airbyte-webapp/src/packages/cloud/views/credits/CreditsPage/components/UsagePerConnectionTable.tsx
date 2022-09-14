@@ -40,7 +40,7 @@ type FullTableProps = CreditConsumptionByConnector & {
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
-  const query = useQuery();
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const navigate = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();

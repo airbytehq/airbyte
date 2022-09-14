@@ -27,7 +27,7 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const query = useQuery() as { from?: string };
+  const query = useQuery<{ from?: string }>();
   const navigate = useNavigate();
   const replace = (path: To, state?: NavigateOptions) => navigate(path, { ...state, replace: true });
   useTrackPage(PageTrackingCodes.LOGIN);

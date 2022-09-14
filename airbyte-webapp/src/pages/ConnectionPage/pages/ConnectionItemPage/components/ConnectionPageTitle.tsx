@@ -64,7 +64,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
         navigate(id);
       }
     },
-    [push]
+    [navigate]
   );
 
   return (
