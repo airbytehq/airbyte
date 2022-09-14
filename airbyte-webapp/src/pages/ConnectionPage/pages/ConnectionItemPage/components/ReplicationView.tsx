@@ -153,7 +153,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
       initialConnection.syncCatalog.streams
         .filter((s) => s.config?.selected)
-
         .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
     );
     // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
