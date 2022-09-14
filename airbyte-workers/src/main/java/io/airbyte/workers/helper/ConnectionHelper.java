@@ -21,9 +21,9 @@ import io.micronaut.context.annotation.Requires;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
 
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
