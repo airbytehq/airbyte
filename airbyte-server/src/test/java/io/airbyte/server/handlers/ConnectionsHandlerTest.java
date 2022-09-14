@@ -464,7 +464,8 @@ class ConnectionsHandlerTest {
       @Test
       void testUpdateConnectionPatchAddingNewStream() throws Exception {
         // the connection initially has a catalog with one stream. this test generates another catalog with
-        // one stream, changes that stream's name to something new, and sends both streams in the patch request.
+        // one stream, changes that stream's name to something new, and sends both streams in the patch
+        // request.
         // the test expects the final result to include both streams.
         final AirbyteCatalog catalogWithNewStream = ConnectionHelpers.generateBasicApiCatalog();
         catalogWithNewStream.getStreams().get(0).getStream().setName(AZKABAN_USERS);
@@ -626,6 +627,7 @@ class ConnectionsHandlerTest {
 
         assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
       }
+
     }
 
     @Test
