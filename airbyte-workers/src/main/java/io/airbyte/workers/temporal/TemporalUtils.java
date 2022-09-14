@@ -69,7 +69,8 @@ public class TemporalUtils {
 
   public TemporalUtils(@Property(name = "temporal.cloud.client.cert") final String temporalCloudClientCert,
                        @Property(name = "temporal.cloud.client.key") final String temporalCloudClientKey,
-                       @Property(name = "temporal.cloud.enabled", defaultValue = "false") final Boolean temporalCloudEnabled,
+                       @Property(name = "temporal.cloud.enabled",
+                                 defaultValue = "false") final Boolean temporalCloudEnabled,
                        @Value("${temporal.cloud.host}") final String temporalCloudHost,
                        @Value("${temporal.cloud.namespace}") final String temporalCloudNamespace,
                        @Value("${temporal.host}") final String temporalHost,
