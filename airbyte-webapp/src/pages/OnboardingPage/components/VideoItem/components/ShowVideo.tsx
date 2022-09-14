@@ -14,7 +14,7 @@ interface ShowVideoProps {
 
 const ShowVideo: React.FC<ShowVideoProps> = ({ videoId, onClose }) => {
   return (
-    <Modal onClose={onClose} clear closeOnBackground>
+    <Modal onClose={onClose} cardless>
       <Button customStyles={styles.closeButton} onClick={onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
       <iframe
         width="940"

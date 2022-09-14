@@ -277,7 +277,7 @@ class BigQueryDenormalizedDestinationTest {
         retrieveRecordsAsJson(USERS_STREAM_NAME).stream().flatMap(x -> extractJsonValues(x, "users").stream()).collect(Collectors.toSet());
 
     final Set<String> expected = Sets.set(
-        "{\"name\":\"John\",\"surname\":\"Adams\"}",
+        "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\"",
         null // we expect one record to have not had the users field set
     );
 

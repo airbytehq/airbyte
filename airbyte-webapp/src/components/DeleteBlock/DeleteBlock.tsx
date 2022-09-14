@@ -3,17 +3,18 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, H5 } from "components";
-import ContentCard from "components/ContentCard";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
+
+import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
 }
 
-const DeleteBlockComponent = styled(ContentCard)`
+const DeleteBlockComponent = styled(Card)`
   margin-top: 12px;
   padding: 19px 20px 20px;
   display: flex;
