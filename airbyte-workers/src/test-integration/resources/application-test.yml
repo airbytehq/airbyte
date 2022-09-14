@@ -1,0 +1,11 @@
+datasources:
+  config:
+    url: jdbc:h2:mem:default
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+  jobs:
+    url: jdbc:h2:mem:default
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""

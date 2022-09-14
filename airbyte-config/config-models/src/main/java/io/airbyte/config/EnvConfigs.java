@@ -227,7 +227,7 @@ public class EnvConfigs implements Configs {
   public EnvConfigs(final Map<String, String> envMap) {
     this.getEnv = envMap::get;
     this.getAllEnvKeys = envMap::keySet;
-    this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
+    this.logConfigs = new LogConfigs(getLogConfiguration());
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
 
     validateSyncWorkflowConfigs();
