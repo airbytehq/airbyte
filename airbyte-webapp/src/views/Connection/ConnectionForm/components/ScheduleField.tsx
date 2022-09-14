@@ -23,7 +23,7 @@ const CRON_DEFAULT_VALUE = {
   cronExpression: "0 0 12 * * ?",
 };
 
-const CRON_REFERENCE_LINK = "https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm";
+const CRON_REFERENCE_LINK = "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html";
 
 const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDropDownSelect }) => {
   const { formatMessage } = useIntl();
