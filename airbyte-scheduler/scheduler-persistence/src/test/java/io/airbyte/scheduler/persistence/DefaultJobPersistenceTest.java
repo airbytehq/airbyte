@@ -26,11 +26,13 @@ import io.airbyte.commons.text.Sqls;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
@@ -258,13 +260,21 @@ class DefaultJobPersistenceTest {
         new SyncStats().withBytesEmitted(100L).withRecordsEmitted(9L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
             .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
             .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
+    final FailureReason failureReason1 = new FailureReason().withFailureOrigin(FailureOrigin.DESTINATION).withFailureType(FailureType.SYSTEM_ERROR)
+        .withExternalMessage("There was a normalization error");
+    final FailureReason failureReason2 = new FailureReason().withFailureOrigin(FailureOrigin.SOURCE).withFailureType(FailureType.CONFIG_ERROR)
+        .withExternalMessage("There was another normalization error");
+
+    final NormalizationSummary normalizationSummary =
+        new NormalizationSummary().withStartTime(10L).withEndTime(500L).withFailures(List.of(failureReason1, failureReason2));
     final StandardSyncOutput standardSyncOutput =
-        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats));
+        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats))
+            .withNormalizationSummary(normalizationSummary);
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
     jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
-        jobOutput.getSync().getStandardSyncSummary().getTotalStats());
+        jobOutput.getSync().getStandardSyncSummary().getTotalStats(), jobOutput.getSync().getNormalizationSummary());
 
     final Job updated = jobPersistence.getJob(jobId);
 
@@ -288,6 +298,10 @@ class DefaultJobPersistenceTest {
     assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
     assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
 
+    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(attemptId).stream().findFirst().get();
+    assertEquals(10L, storedNormalizationSummary.getStartTime());
+    assertEquals(500L, storedNormalizationSummary.getEndTime());
+    assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
   }
 
   @Test
@@ -1036,7 +1050,7 @@ class DefaultJobPersistenceTest {
     @Test
     @DisplayName("Should return the total job count for the connection")
     void testGetJobCount() throws IOException {
-      int numJobsToCreate = 10;
+      final int numJobsToCreate = 10;
       for (int i = 0; i < numJobsToCreate; i++) {
         jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
       }
