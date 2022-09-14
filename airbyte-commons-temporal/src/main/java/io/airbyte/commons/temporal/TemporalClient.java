@@ -1,6 +1,12 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.temporal;
 
-import com.google.inject.Inject;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.ByteString;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
@@ -10,11 +16,15 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import org.apache.commons.lang3.StringUtils;
 
 public class TemporalClient {
+
   @Inject
   private WorkflowClient client;
   @Inject
@@ -101,4 +111,14 @@ public class TemporalClient {
 
     } while (token != null && token.size() > 0);
   }
+
+  Optional<UUID> extractConnectionIdFromWorkflowId(final String workflowId) {
+    if (!workflowId.startsWith("connection_manager_")) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
+        .map(
+            stringUUID -> UUID.fromString(stringUUID));
+  }
+
 }
