@@ -27,6 +27,7 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
+  "form.cron.invalid": "Invalid cron expression",
   "form.empty.error": "Required",
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
@@ -363,6 +364,9 @@
   "connection.canceling": "Canceling...",
 
   "form.frequency": "Replication frequency*",
+  "form.cronExpression": "Cron expression*",
+  "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.message": "Enter a <lnk>cron expression</lnk> for when syncs should run (ex. \"0 0 12 * * ?\" => Will sync at 12:00 PM every day)",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
 
@@ -514,6 +518,7 @@
   "errorView.unknownError": "Unknown error occurred",
 
   "frequency.manual": "Manual",
+  "frequency.cron": "Cron",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
