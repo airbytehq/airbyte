@@ -1,4 +1,4 @@
-FROM debian:10.5-slim
+FROM ubuntu:22.04
 
 WORKDIR /airbyte
 

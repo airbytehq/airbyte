@@ -1,5 +1,5 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim
+ARG JDK_VERSION=17
+ARG JDK_IMAGE=eclipse-temurin:${JDK_VERSION}-jdk-jammy
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte

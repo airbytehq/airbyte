@@ -1,5 +1,6 @@
-ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim
+ARG JDK_VERSION=17
+ARG JDK_IMAGE=eclipse-temurin:${JDK_VERSION}-jdk-jammy
+FROM ${JDK_IMAGE}
 
 ARG DOCKER_BUILD_ARCH=amd64
 
@@ -11,9 +12,9 @@ RUN apt-get update && apt-get install -y \
                           curl \
                           gnupg-agent \
                           software-properties-common
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 RUN add-apt-repository \
-       "deb [arch=${DOCKER_BUILD_ARCH}] https://download.docker.com/linux/debian \
+       "deb [arch=${DOCKER_BUILD_ARCH}] https://download.docker.com/linux/ubuntu \
        $(lsb_release -cs) \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq

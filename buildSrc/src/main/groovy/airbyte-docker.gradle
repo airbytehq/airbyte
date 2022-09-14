@@ -117,8 +117,8 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         return "$stdout".toString().trim()
     }
 
-    // Some image tags rely on environment variables (e.g. "FROM openjdk:${JDK_VERSION}-slim").
-    // dump those into a "sh -c 'echo ...'" command to resolve them (e.g. "openjdk:17-slim")
+    // Some image tags rely on environment variables (e.g. "FROM eclipse-temurin:${JDK_VERSION}-jdk-jammy").
+    // dump those into a "sh -c 'echo ...'" command to resolve them (e.g. "eclipse-temurin:17-jdk-jammy")
     static String resolveEnvironmentVariables(Project project, String str) {
         def stdout = new ByteArrayOutputStream()
 

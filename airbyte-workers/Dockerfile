@@ -1,12 +1,12 @@
-ARG JDK_VERSION=19-slim-bullseye
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+ARG JDK_VERSION=17
+ARG JDK_IMAGE=eclipse-temurin:${JDK_VERSION}-jdk-jammy
 FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
 
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
 # See https://gitter.im/docker-java/docker-java?at=5f3eb87ba8c1780176603f4e for more information on why we are not currently using Docker-java
-# See https://docs.docker.com/engine/install/debian/ to understand what the following commands are
+# See https://docs.docker.com/engine/install/ubuntu/ to understand what the following commands are
 # doing.
 RUN apt-get update && apt-get install -y \
                           ca-certificates \
@@ -14,9 +14,9 @@ RUN apt-get update && apt-get install -y \
                           gnupg \
                           lsb-release
 RUN mkdir -p /etc/apt/keyrings && \
-        wget -O - https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+        wget -O - https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
         echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
           $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 

@@ -1,5 +1,5 @@
-ARG JDK_VERSION=19-slim-bullseye
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+ARG JDK_VERSION=17
+ARG JDK_IMAGE=eclipse-temurin:${JDK_VERSION}-jdk-jammy
 FROM ${JDK_IMAGE} AS cron
 
 ARG VERSION=0.40.5
