@@ -128,7 +128,6 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.3.25  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
 | 0.3.24  | 2022-09-08 | [16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding  |
 | 0.3.23  | 2022-07-18 | [16260](https://github.com/airbytehq/airbyte/pull/16260) | Prevent traffic going on an unsecured channel in strict-encryption version of destination postgres  |
 | 0.3.22  | 2022-07-18 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates                         |
