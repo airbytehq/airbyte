@@ -311,31 +311,14 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
                 "type": ["null", "object"],
                 "additionalProperties": True,
                 "properties": {
-                    "clicks": {
-                        "type": ["null", "integer"]
-                    },
-                    "ctr": {
-                        "type": ["null", "number"],
-                        "multipleOf": 1e-25
-                    },
-                    "date": {
-                        "type": ["null", "string"],
-                        "format": "date"
-                    },
-                    "impressions": {
-                        "type": ["null", "integer"]
-                    },
-                    "position": {
-                        "type": ["null", "number"],
-                        "multipleOf": 1e-25
-                    },
-                    "search_type": {
-                        "type": ["null", "string"]
-                    },
-                    "site_url": {
-                        "type": ["null", "string"]
-                    },
-                }
+                    "clicks": {"type": ["null", "integer"]},
+                    "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
+                    "date": {"type": ["null", "string"], "format": "date"},
+                    "impressions": {"type": ["null", "integer"]},
+                    "position": {"type": ["null", "number"], "multipleOf": 1e-25},
+                    "search_type": {"type": ["null", "string"]},
+                    "site_url": {"type": ["null", "string"]},
+                },
             }
 
             dimension_properties = self.dimension_to_property_schema()
@@ -345,11 +328,11 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
 
     def dimension_to_property_schema(self) -> dict:
         dimension_to_property_schema_map = {
-            'country': [{"country": {"type": ["null", "string"]}}],
-            'date': [],
-            'device': [{"device": {"type": ["null", "string"]}}],
-            'page': [{"page": {"type": ["null", "string"]}}],
-            'query': [{"query": {"type": ["null", "string"]}}]
+            "country": [{"country": {"type": ["null", "string"]}}],
+            "date": [],
+            "device": [{"device": {"type": ["null", "string"]}}],
+            "page": [{"page": {"type": ["null", "string"]}}],
+            "query": [{"query": {"type": ["null", "string"]}}],
         }
         properties = {}
         for dimension in sorted(self.dimensions):
