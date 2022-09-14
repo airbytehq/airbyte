@@ -43,7 +43,8 @@
 }
 
 .github {
-  background: colors.$githubColor;
+  // stylelint-disable-next-line color-no-hex
+  background: #333;
   color: colors.$white;
   border: none;
 }

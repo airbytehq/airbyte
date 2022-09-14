@@ -15,5 +15,5 @@
     "value-keyword-case": null,
     "color-no-hex": true
   },
-  "ignoreFiles": ["**/build/**", "**/dist/**", "**/**/_colors.scss", "**/**/index.css"]
+  "ignoreFiles": ["**/build/**", "**/dist/**"]
 }

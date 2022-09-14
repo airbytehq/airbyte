@@ -1,3 +1,4 @@
+/* stylelint-disable color-no-hex */
 $blue-50: #eae9ff;
 $blue-100: #cbc8ff;
 $blue-200: #a6a4ff;
@@ -90,9 +91,6 @@ $yellow-700: #f7a000;
 $yellow-800: #f79000;
 $yellow-900: #f77100;
 $yellow: $yellow-500;
-
-// non-standard - for specific cases (e.g 3rd party service button color)
-$githubColor: #333;
 
 // LEGACY - DEPRECATED
 
