@@ -13,6 +13,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
@@ -126,6 +127,8 @@ class SourceFaker(Source):
             raise ValueError("Purchases stream cannot be enabled without Users stream")
 
         for stream in catalog.streams:
+            yield log_stream(stream.stream.name)
+
             if stream.stream.name == "Users":
                 cursor = get_stream_cursor(state, stream.stream.name)
                 total_records = cursor
@@ -186,6 +189,17 @@ def generate_record(stream: any, data: any):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(stream=stream.stream.name, data=dict, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
+    )
+
+
+def log_stream(stream_name: str):
+    return AirbyteMessage(
+        type=Type.LOG,
+        log=AirbyteLogMessage(
+            message="Sending data for stream: " + stream_name,
+            level="INFO",
+            emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
+        ),
     )
 
 

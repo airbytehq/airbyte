@@ -4,16 +4,17 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, H5 } from "components";
-import ContentCard from "components/ContentCard";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+
+import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
 }
 
-const DeleteBlockComponent = styled(ContentCard)`
+const DeleteBlockComponent = styled(Card)`
   margin-top: 12px;
   padding: 19px 20px 20px;
   display: flex;
