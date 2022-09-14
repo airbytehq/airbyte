@@ -9,10 +9,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Builder;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -168,6 +170,17 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   private JsonNode getObjectNode(final FieldList fields, final JsonNode root) {
     final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
+
+    fields.stream()
+        .filter(f -> f.getType().equals(LegacySQLTypeName.STRING))
+        .filter(field -> root.get(field.getName()) != null)
+        .filter(f -> root.get(f.getName()).isObject())
+        .forEach(f -> {
+          final String value = root.get(f.getName()).toString();
+          ((ObjectNode) root).remove(f.getName());
+          ((ObjectNode) root).put(f.getName(), new TextNode(value));
+        });
+
     return Jsons.jsonNode(Jsons.keys(root).stream()
         .filter(key -> {
           final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));

@@ -387,7 +387,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -505,7 +505,7 @@
 - name: Kafka
   sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
   dockerRepository: airbyte/source-kafka
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/kafka
   icon: kafka.svg
   sourceType: database
@@ -639,7 +639,7 @@
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
@@ -655,7 +655,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.11
+  dockerImageTag: 0.6.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -663,7 +663,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -805,7 +805,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1004,7 +1004,7 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api

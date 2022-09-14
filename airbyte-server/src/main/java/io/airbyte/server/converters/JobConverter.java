@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
@@ -65,6 +66,10 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
+  public JobInfoLightRead getJobInfoLightRead(final Job job) {
+    return new JobInfoLightRead().job(getJobRead(job));
+  }
+
   public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
                                                  final SourceDefinitionRead sourceDefinitionRead,
                                                  final DestinationDefinitionRead destinationDefinitionRead,
@@ -80,19 +85,23 @@ public class JobConverter {
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
+    return new JobWithAttemptsRead()
+        .job(getJobRead(job))
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+  }
+
+  private static JobRead getJobRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
-    return new JobWithAttemptsRead()
-        .job(new JobRead()
-            .id(job.getId())
-            .configId(configId)
-            .configType(configType)
-            .resetConfig(extractResetConfigIfReset(job).orElse(null))
-            .createdAt(job.getCreatedAtInSecond())
-            .updatedAt(job.getUpdatedAtInSecond())
-            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+    return new JobRead()
+        .id(job.getId())
+        .configId(configId)
+        .configType(configType)
+        .resetConfig(extractResetConfigIfReset(job).orElse(null))
+        .createdAt(job.getCreatedAtInSecond())
+        .updatedAt(job.getUpdatedAtInSecond())
+        .status(Enums.convertTo(job.getStatus(), JobStatus.class));
   }
 
   /**
