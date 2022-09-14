@@ -1,10 +1,9 @@
-import React, { MutableRefObject } from "react";
+import React from "react";
 
 type ButtonSize = "xs" | "sm" | "lg";
 type ButtonVariant = "primary" | "secondary" | "danger" | "light";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  buttonRef?: MutableRefObject<HTMLButtonElement | null>;
   clickable?: boolean;
   customStyles?: string;
   full?: boolean;

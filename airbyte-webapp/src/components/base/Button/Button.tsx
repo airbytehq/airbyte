@@ -6,7 +6,7 @@ import React from "react";
 import styles from "./Button.module.scss";
 import { ButtonProps } from "./types";
 
-export const Button: React.FC<ButtonProps> = (props) => {
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const buttonStyles = {
     [styles.full]: props.full,
     [styles.isLoading]: props.isLoading,
@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
   }
   return (
     <button
-      ref={props.buttonRef}
+      ref={ref}
       style={widthStyle}
       className={classNames(styles.button, props.customStyles, buttonStyles)}
       {...props}
@@ -58,7 +58,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
         })}
     </button>
   );
-};
+});
 
 Button.defaultProps = {
   full: false,
