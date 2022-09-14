@@ -208,7 +208,7 @@ class TestIncremental(BaseTest):
         checkpoint_messages = [message for index, message in enumerate(checkpoint_messages) if message not in checkpoint_messages[:index]]
 
         # To avoid spamming APIs we only test a fraction of slices
-        num_slices_to_test = 1 if len(checkpoint_messages) <= 5 else len(checkpoint_messages) // 5
+        num_slices_to_test = 1 if len(checkpoint_messages) <= 10 else len(checkpoint_messages) // 10
         for message_batch in checkpoint_messages[::num_slices_to_test]:
             assert len(message_batch) > 0 and message_batch[0].type == Type.STATE
             current_state = message_batch[0]
