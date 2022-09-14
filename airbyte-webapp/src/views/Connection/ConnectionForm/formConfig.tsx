@@ -109,7 +109,7 @@ export const connectionValidationSchema = yup
                   }
 
                   return this.createError({
-                    message: "form.empty.error",
+                    message: "form.cron.invalid",
                     path: `cronExpression`,
                   });
                 },

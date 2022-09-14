@@ -27,6 +27,7 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
+  "form.cron.invalid": "Invalid cron expression",
   "form.empty.error": "Required",
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
