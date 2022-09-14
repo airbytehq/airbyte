@@ -1,6 +1,6 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
@@ -96,10 +96,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
-  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
-    refreshConnectionCatalog,
-    [connectionId]
-  );
+  const [{ loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
 
   const formId = useUniqueFormId();
 
@@ -111,7 +108,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     closeConfirmationModal();
   });
 
-  const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
+  const connection = initialConnection;
 
   const saveConnection = async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
     if (!connection) {
@@ -177,12 +174,16 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   };
 
   // TODO: Move this into the service next
-  const refreshSourceSchema = async () => {
+  const refreshSourceSchema = useCallback(async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
-    const { catalogDiff, syncCatalog } = await refreshCatalog();
+    await refreshCatalog();
+  }, [refreshCatalog]);
+
+  useEffect(() => {
+    const { catalogDiff, syncCatalog } = connection;
     if (catalogDiff?.transforms && catalogDiff.transforms.length > 0) {
-      await openModal<void>({
+      openModal<void>({
         title: formatMessage({ id: "connection.updateSchema.completed" }),
         preventCancel: true,
         content: ({ onClose }) => (
@@ -190,7 +191,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         ),
       });
     }
-  };
+  }, [connection, formatMessage, openModal]);
 
   const onRefreshSourceSchema = async () => {
     if (formDirty) {

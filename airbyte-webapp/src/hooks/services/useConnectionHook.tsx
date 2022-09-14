@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
@@ -77,12 +77,14 @@ export const useConnectionLoad = (
   connectionId: string
 ): {
   connection: WebBackendConnectionRead;
-  refreshConnectionCatalog: () => Promise<WebBackendConnectionRead>;
+  refreshConnectionCatalog: () => Promise<void>;
 } => {
-  const connection = useGetConnection(connectionId);
+  const [connection, setConnection] = useState(useGetConnection(connectionId));
   const connectionService = useWebConnectionService();
 
-  const refreshConnectionCatalog = async () => await connectionService.getConnection(connectionId, true);
+  const refreshConnectionCatalog = async () => {
+    setConnection(await connectionService.getConnection(connectionId, true));
+  };
 
   return {
     connection,
