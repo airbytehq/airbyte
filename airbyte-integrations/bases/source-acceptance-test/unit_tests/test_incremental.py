@@ -81,7 +81,7 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     assert compare_cursor_with_threshold(record_value, state_value, threshold_days) == expected_result
 
 
-@pytest.mark.parametrize("cursor_type", ["date"])
+@pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
     "records1, records2, latest_state, threshold_days, expected_error",
     [
