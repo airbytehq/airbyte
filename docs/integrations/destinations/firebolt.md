@@ -11,7 +11,7 @@ This Firebolt destination connector has two replication strategies:
 2. S3: Replicates data by first uploading data to an S3 bucket, creating an External Table and writing into a final Fact Table. This is the recommended loading [approach](https://docs.firebolt.io/loading-data/loading-data.html). Requires an S3 bucket and credentials in addition to Firebolt credentials.
 
 For SQL strategy:
-* **Host**
+* **Host (optional)**
 * **Username**
 * **Password**
 * **Database**
@@ -66,6 +66,27 @@ Each stream will be output into its own raw [Fact table](https://docs.firebolt.i
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Firebolt is `TIMESTAMP`.
 * `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR` but can be be parsed with JSON functions.
 
+## Normalisation notes
+
+* Quotes (") will be escaped in the resulting table
+
+    `my_table` -- initial table at source
+    | Column1   |
+    |:--------  |
+    | some"data |
+
+    `_airbyte_raw_my_table` -- intermediate table
+
+    |          _airbyte_ab_id              | _airbyte_emitted_at |      _airbyte_data        |
+    |:--------|:-----------| :-----       |
+    | a78689a0-9c9c-4d6a-a010-3e9b42e77e86 | 2022-09-06 15:35:41 | {"Column1": "some\\"data"} |
+
+    `my_table` -- table in Firebolt
+    | Column1    |
+    |:--------  |
+    | some\\"data |
+
+* Array type is curently not supported for normalization due to a limitation on the SQL side.
 
 ## Changelog
 

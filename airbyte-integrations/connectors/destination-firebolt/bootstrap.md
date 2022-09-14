@@ -20,3 +20,5 @@ This connector uses [firebolt-sdk](https://pypi.org/project/firebolt-sdk/), whic
 
 * Integration testing requires the user to have a running engine. Spinning up an engine can take a while so this ensures a faster iteration on the connector.
 * S3 is generally faster writing strategy and should be preferred.
+* For normalization, quotes (") in json will be escaped \" and appear so in the final table. e.g. _airbyte_raw table contains `{"column": "my\"value\""}` final table would contain `my\"value\"` in column "column", therefore potentially diverging from original data.
+* Array type is curently not supported for normalization due to a limitation on the SQL side.
