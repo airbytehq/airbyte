@@ -7,7 +7,7 @@ import styles from "./FirstSuccessfulSync.module.scss";
 
 export const FirstSuccessfulSync: React.FC = () => {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="firstSuccessfulSync">
       <Text as="h3" size="md" centered className={styles.completedSyncText}>
         <FormattedMessage id="onboarding.syncCompleted" />
       </Text>
