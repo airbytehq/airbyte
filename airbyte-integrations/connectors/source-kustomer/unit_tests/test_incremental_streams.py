@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+"""
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kustomer.source import IncrementalKustomerStream
@@ -57,3 +57,4 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
+"""
