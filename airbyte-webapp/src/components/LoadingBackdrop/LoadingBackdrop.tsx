@@ -7,7 +7,11 @@ interface LoadingBackdropProps {
   loading: boolean;
   small?: boolean;
 }
-export const LoadingBackdrop: React.FC<LoadingBackdropProps> = ({ loading, small, children }) => {
+export const LoadingBackdrop: React.FC<React.PropsWithChildren<LoadingBackdropProps>> = ({
+  loading,
+  small,
+  children,
+}) => {
   return (
     <div className={styles.loadingBackdropContainer}>
       {loading && (

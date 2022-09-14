@@ -6,7 +6,7 @@ import { H5 } from "components";
 
 import styles from "./WorkspaceItem.module.scss";
 
-const WorkspaceItem: React.FC<{ onClick: (id: string) => void; id: string }> = (props) => (
+const WorkspaceItem: React.FC<React.PropsWithChildren<{ onClick: (id: string) => void; id: string }>> = (props) => (
   <button className={styles.button} onClick={() => props.onClick(props.id)}>
     <H5 bold>{props.children}</H5>
     <FontAwesomeIcon className={styles.iconColor} icon={faChevronRight} />
