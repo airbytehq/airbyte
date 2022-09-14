@@ -44,5 +44,6 @@ export const createTestConnection = (sourceName: string, destinationName: string
   setupDestinationNamespaceSourceFormat();
   submitButtonClick();
 
+  cy.wait(5000);
   cy.wait("@createConnection");
 };
