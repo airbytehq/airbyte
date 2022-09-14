@@ -1293,16 +1293,16 @@ class BasicAcceptanceTests {
       return null;
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final AirbyteCatalog initialCatalog = testHarness.discoverSourceSchema(sourceId);
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
-    testHarness.setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
+    testHarness.setIncrementalAppendSyncMode(initialCatalog, List.of(COLUMN_ID));
 
     final ConnectionRead connection =
-        testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.MANUAL, null);
+        testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), initialCatalog, ConnectionScheduleType.MANUAL, null);
 
     // Run initial sync
     final JobInfoRead syncRead =
@@ -1323,7 +1323,7 @@ class BasicAcceptanceTests {
 
     // Update with refreshed catalog
     AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
-    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
+    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connection, initialCatalog, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     // Wait until the sync from the UpdateConnection is finished
@@ -1352,7 +1352,7 @@ class BasicAcceptanceTests {
 
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
-    update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
+    update = testHarness.getUpdateInput(connection, initialCatalog, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
@@ -1383,7 +1383,7 @@ class BasicAcceptanceTests {
 
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
-    update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
+    update = testHarness.getUpdateInput(connection, initialCatalog, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
