@@ -268,15 +268,6 @@ public class ConnectionsHandler {
    * patch. Any fields that are null in the patch will be left unchanged.
    */
   private static void applyPatchToStandardSync(final StandardSync sync, final ConnectionUpdate patch) throws JsonValidationException {
-
-    // get patched catalog by merging streams from the patch's catalog into the sync's full catalog.
-    // this way, the front-end only needs to include updated streams in the patch.
-    if (patch.getSyncCatalog() != null) {
-      final AirbyteCatalog existingCatalog = CatalogConverter.toApi(sync.getCatalog());
-      final AirbyteCatalog patchedCatalog = toPatchedAirbyteCatalog(existingCatalog, patch.getSyncCatalog());
-      sync.setCatalog(CatalogConverter.toProtocol(patchedCatalog));
-    }
-
     // update the sync's schedule using the patch's scheduleType and scheduleData. validations occur in
     // the helper to ensure both fields
     // make sense together.
@@ -284,8 +275,12 @@ public class ConnectionsHandler {
       ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(sync, patch.getScheduleType(), patch.getScheduleData());
     }
 
-    // the rest of the fields are straightforward to patch. If present in the patch, set the field.
-    // Otherwise, leave the field unchanged.
+    // the rest of the fields are straightforward to patch. If present in the patch, set the field to the value
+    // in the patch. Otherwise, leave the field unchanged.
+
+    if (patch.getSyncCatalog() != null) {
+      sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+    }
 
     if (patch.getName() != null) {
       sync.setName(patch.getName());
@@ -355,111 +350,6 @@ public class ConnectionsHandler {
         default -> throw new RuntimeException("Unrecognized scheduleType!");
       }
     }
-  }
-
-  /**
-   * Given an existing AirbyteCatalog and a patch AirbyteCatalog, return a new catalog consisting of
-   * all streams from the patch catalog, plus any remaining streams from the existing catalog.
-   * Preserves the order of any streams that were present in the existing catalog, and adds new
-   * streams from the patch in the order they were provided.
-   */
-  private static AirbyteCatalog toPatchedAirbyteCatalog(final AirbyteCatalog existing, final AirbyteCatalog patch) {
-
-    final Map<StreamDescriptor, AirbyteStreamAndConfiguration> existingDescriptorToStreamAndConfig = getDescriptorToStreamAndConfigMap(existing);
-    final Map<StreamDescriptor, AirbyteStreamAndConfiguration> patchDescriptorToStreamAndConfig = getDescriptorToStreamAndConfigMap(patch);
-
-    final Map<StreamDescriptor, AirbyteStreamAndConfiguration> merged =
-        Stream.of(existingDescriptorToStreamAndConfig, patchDescriptorToStreamAndConfig)
-            .flatMap(map -> map.entrySet().stream())
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                // if a stream is present in both the existing map and the patch map, keep the patched value
-                (existingVal, patchedVal) -> patchedVal));
-
-    final List<AirbyteStreamAndConfiguration> sortedMergedStreams = sortStreamsForPatchedCatalog(merged.values().stream().toList(), existing, patch);
-
-    return new AirbyteCatalog().streams(sortedMergedStreams);
-  }
-
-  private static Map<StreamDescriptor, AirbyteStreamAndConfiguration> getDescriptorToStreamAndConfigMap(final AirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
-        .collect(Collectors.toMap(
-            s -> getStreamDescriptorForStream(s.getStream()),
-            s -> s));
-  }
-
-  private static StreamDescriptor getStreamDescriptorForStream(final AirbyteStream stream) {
-    return new StreamDescriptor().name(stream.getName()).namespace(stream.getNamespace());
-  }
-
-  private static Map<StreamDescriptor, Integer> getStreamPositionMap(final AirbyteCatalog catalog) {
-    final Map<StreamDescriptor, Integer> positions = new HashMap<>();
-    for (int i = 0; i < catalog.getStreams().size(); i++) {
-      positions.put(getStreamDescriptorForStream(catalog.getStreams().get(i).getStream()), i);
-    }
-    return positions;
-  }
-
-  /**
-   * Given an unsorted list of streams, the original catalog, and the patch catalog, returns a sorted
-   * list of streams where existing stream positions are preserved, and new streams from the patch are
-   * added in the order they were listed in the patch.
-   *
-   * Preserving the order of the catalog in this way isn't strictly necessary as an application
-   * constraint, but provides for a better user experience when viewing the result of an update.
-   */
-  @VisibleForTesting
-  protected static List<AirbyteStreamAndConfiguration> sortStreamsForPatchedCatalog(final List<AirbyteStreamAndConfiguration> unsortedMergedStreams,
-                                                                                    final AirbyteCatalog existing,
-                                                                                    final AirbyteCatalog patch) {
-
-    final Map<StreamDescriptor, Integer> originalStreamDescriptorPositions = getStreamPositionMap(existing);
-    final Map<StreamDescriptor, Integer> patchStreamDescriptorPositions = getStreamPositionMap(patch);
-
-    return unsortedMergedStreams.stream().sorted((stream1, stream2) -> {
-      final StreamDescriptor stream1Descriptor = getStreamDescriptorForStream(stream1.getStream());
-      final StreamDescriptor stream2Descriptor = getStreamDescriptorForStream(stream2.getStream());
-
-      final Integer stream1OriginalPosition = originalStreamDescriptorPositions.get(stream1Descriptor);
-      final Integer stream2OriginalPosition = originalStreamDescriptorPositions.get(stream2Descriptor);
-
-      final Integer stream1PatchPosition = patchStreamDescriptorPositions.get(stream1Descriptor);
-      final Integer stream2PatchPosition = patchStreamDescriptorPositions.get(stream2Descriptor);
-
-      // if both streams were present in the original, preserve their order regardless of whether they are
-      // present in the patch too
-      if (stream1OriginalPosition != null && stream2OriginalPosition != null) {
-        return stream1OriginalPosition.compareTo(stream2OriginalPosition); // lower position will come first in the result
-      }
-
-      // if stream1 is present in the original but stream2 isn't, stream1 should come first
-      if (stream1OriginalPosition != null) {
-        return -1; // returning -1 selects the left-hand argument to come first, ie stream1
-      }
-
-      // likewise, if stream2 is in the original but stream1 isn't, stream2 should come first
-      if (stream2OriginalPosition != null) {
-        return 1;
-      }
-
-      // at this point, neither stream was in the original, so mirror the above logic for the patch
-      if (stream1PatchPosition != null && stream2PatchPosition != null) {
-        return stream1PatchPosition.compareTo(stream2PatchPosition);
-      }
-
-      if (stream1PatchPosition != null) {
-        return -1;
-      }
-
-      if (stream2PatchPosition != null) {
-        return 1;
-      }
-
-      // should not be possible to reach this case so throw a run-time exception
-      throw new RuntimeException("Reach a state that should be impossible, indicating a bug!");
-    }).collect(Collectors.toList());
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)

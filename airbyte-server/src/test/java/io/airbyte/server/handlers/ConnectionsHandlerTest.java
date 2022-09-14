@@ -464,19 +464,19 @@ class ConnectionsHandlerTest {
       @Test
       void testUpdateConnectionPatchAddingNewStream() throws Exception {
         // the connection initially has a catalog with one stream. this test generates another catalog with
-        // one stream, changes that stream's name to something new, and sends it in the patch request. the
-        // test expects this stream to be added to the catalog, alongside the stream that was already
-        // present in the connection's catalog before the update.
-        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateBasicApiCatalog();
-        catalogForUpdate.getStreams().get(0).getStream().setName(AZKABAN_USERS);
-        catalogForUpdate.getStreams().get(0).getConfig().setAliasName(AZKABAN_USERS);
+        // one stream, changes that stream's name to something new, and sends both streams in the patch request.
+        // the test expects the final result to include both streams.
+        final AirbyteCatalog catalogWithNewStream = ConnectionHelpers.generateBasicApiCatalog();
+        catalogWithNewStream.getStreams().get(0).getStream().setName(AZKABAN_USERS);
+        catalogWithNewStream.getStreams().get(0).getConfig().setAliasName(AZKABAN_USERS);
 
-        final AirbyteCatalog expectedCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
-        expectedCatalog.getStreams().get(1).getStream().setName(AZKABAN_USERS);
-        expectedCatalog.getStreams().get(1).getConfig().setAliasName(AZKABAN_USERS);
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
+        catalogForUpdate.getStreams().get(1).getStream().setName(AZKABAN_USERS);
+        catalogForUpdate.getStreams().get(1).getConfig().setAliasName(AZKABAN_USERS);
 
         // expect two streams in the final persisted catalog -- the original unchanged stream, plus the new
         // AZKABAN_USERS stream
+
         final ConfiguredAirbyteCatalog expectedPersistedCatalog = ConnectionHelpers.generateMultipleStreamsConfiguredAirbyteCatalog(2);
         expectedPersistedCatalog.getStreams().get(1).getStream().setName(AZKABAN_USERS);
 
@@ -490,7 +490,7 @@ class ConnectionsHandlerTest {
             standardSync.getDestinationId(),
             standardSync.getOperationIds(),
             standardSync.getSourceCatalogId())
-            .syncCatalog(expectedCatalog);
+            .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
             .withCatalog(expectedPersistedCatalog);
@@ -511,16 +511,10 @@ class ConnectionsHandlerTest {
         // stream. The result should be a catalog with three streams.
         standardSync.setCatalog(ConnectionHelpers.generateMultipleStreamsConfiguredAirbyteCatalog(2));
 
-        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateMultipleStreamsApiCatalog(3);
         catalogForUpdate.getStreams().get(0).getConfig().setSyncMode(SyncMode.FULL_REFRESH);
-        catalogForUpdate.getStreams().get(1).getStream().setName(AZKABAN_USERS);
-        catalogForUpdate.getStreams().get(1).getConfig().setAliasName(AZKABAN_USERS);
-
-        final AirbyteCatalog expectedCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(3);
-        expectedCatalog.getStreams().get(0).getConfig().setSyncMode(SyncMode.FULL_REFRESH);
-        // index 1 is unchanged
-        expectedCatalog.getStreams().get(2).getStream().setName(AZKABAN_USERS);
-        expectedCatalog.getStreams().get(2).getConfig().setAliasName(AZKABAN_USERS);
+        catalogForUpdate.getStreams().get(2).getStream().setName(AZKABAN_USERS);
+        catalogForUpdate.getStreams().get(2).getConfig().setAliasName(AZKABAN_USERS);
 
         // expect three streams in the final persisted catalog
         final ConfiguredAirbyteCatalog expectedPersistedCatalog = ConnectionHelpers.generateMultipleStreamsConfiguredAirbyteCatalog(3);
@@ -538,7 +532,7 @@ class ConnectionsHandlerTest {
             standardSync.getDestinationId(),
             standardSync.getOperationIds(),
             standardSync.getSourceCatalogId())
-            .syncCatalog(expectedCatalog);
+            .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
             .withCatalog(expectedPersistedCatalog);
@@ -562,10 +556,6 @@ class ConnectionsHandlerTest {
         catalogForUpdate.getStreams().get(0).getConfig().setSelected(false);
         catalogForUpdate.getStreams().get(1).getStream().setName(AZKABAN_USERS);
         catalogForUpdate.getStreams().get(1).getConfig().setAliasName(AZKABAN_USERS);
-
-        final AirbyteCatalog expectedCatalog = ConnectionHelpers.generateBasicApiCatalog();
-        expectedCatalog.getStreams().get(0).getStream().setName(AZKABAN_USERS);
-        expectedCatalog.getStreams().get(0).getConfig().setAliasName(AZKABAN_USERS);
 
         final UUID newSourceCatalogId = UUID.randomUUID();
 
@@ -602,6 +592,10 @@ class ConnectionsHandlerTest {
 
         final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
+        final AirbyteCatalog expectedCatalogInRead = ConnectionHelpers.generateBasicApiCatalog();
+        expectedCatalogInRead.getStreams().get(0).getStream().setName(AZKABAN_USERS);
+        expectedCatalogInRead.getStreams().get(0).getConfig().setAliasName(AZKABAN_USERS);
+
         final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
             standardSync.getConnectionId(),
             standardSync.getSourceId(),
@@ -612,7 +606,7 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null)
             .schedule(null)
-            .syncCatalog(expectedCatalog)
+            .syncCatalog(expectedCatalogInRead)
             .resourceRequirements(resourceRequirements);
 
         assertEquals(expectedConnectionRead, actualConnectionRead);
@@ -632,40 +626,6 @@ class ConnectionsHandlerTest {
 
         assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
       }
-
-      @Test
-      void testSortStreamsForPatchedCatalog() {
-        final AirbyteCatalog originalCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(3);
-        originalCatalog.getStreams().get(0).getStream().setName("first");
-        originalCatalog.getStreams().get(1).getStream().setName("second");
-        originalCatalog.getStreams().get(2).getStream().setName("third");
-
-        final AirbyteCatalog patchCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(3);
-        patchCatalog.getStreams().get(0).getStream().setName("fourth"); // only present in patch, should come last
-        patchCatalog.getStreams().get(1).getStream().setName("second"); // present in original and patch, should use original position
-        patchCatalog.getStreams().get(2).getStream().setName("first"); // present in original and patch, should use original position
-
-        final List<AirbyteStreamAndConfiguration> expected = List.of(
-            patchCatalog.getStreams().get(2), // "first" from patch
-            patchCatalog.getStreams().get(1), // "second" from patch
-            originalCatalog.getStreams().get(2), // "third" from original
-            patchCatalog.getStreams().get(0) // "fourth" from patch
-        );
-
-        // make the order sporadic
-        final List<AirbyteStreamAndConfiguration> unsorted = List.of(
-            patchCatalog.getStreams().get(1), // "second" from patch
-            patchCatalog.getStreams().get(2), // "first" from patch
-            patchCatalog.getStreams().get(0), // "fourth" from patch
-            originalCatalog.getStreams().get(2) // "third" from original
-        );
-
-        final List<AirbyteStreamAndConfiguration> sortedResult =
-            ConnectionsHandler.sortStreamsForPatchedCatalog(unsorted, originalCatalog, patchCatalog);
-
-        assertEquals(expected, sortedResult);
-      }
-
     }
 
     @Test
