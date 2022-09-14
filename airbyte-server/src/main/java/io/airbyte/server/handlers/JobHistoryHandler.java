@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobDebugRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
 import io.airbyte.api.model.generated.JobReadList;
@@ -104,6 +105,11 @@ public class JobHistoryHandler {
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
+  }
+
+  public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
+    return jobConverter.getJobInfoLightRead(job);
   }
 
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)
