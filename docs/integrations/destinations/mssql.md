@@ -115,6 +115,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.21  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
 | 0.1.20  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
 | 0.1.19  | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
 | 0.1.18  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
