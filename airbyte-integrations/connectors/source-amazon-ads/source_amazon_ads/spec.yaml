@@ -1,44 +1,48 @@
 ---
-documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
+documentationUrl: https://go.estuary.dev/rzNWCe
 connectionSpecification:
   title: Amazon Ads Spec
   type: object
   properties:
-    auth_type:
-      title: Auth Type
-      const: oauth2.0
-      order: 0
-      type: string
-    client_id:
-      title: Client ID
-      description:
-        The client ID of your Amazon Ads developer application. See the
-        <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
-        for more information.
-      order: 1
-      type: string
-    client_secret:
-      title: Client Secret
-      description:
-        The client secret of your Amazon Ads developer application. See
-        the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
-        for more information.
-      airbyte_secret: true
-      order: 2
-      type: string
-    refresh_token:
-      title: Refresh Token
-      description:
-        Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a>
-        for more information on how to obtain this token.
-      airbyte_secret: true
-      order: 3
-      type: string
+    credentials:
+      required: 
+        - client_id
+        - client_secret
+        - refresh_token
+      type: object
+      x-oauth-provider: amazon
+      properties:
+        auth_type:
+          title: Auth Type
+          const: oauth2.0
+          order: 0
+          type: string
+        client_id:
+          title: Client ID
+          description:
+            The client ID of your Amazon Ads developer application. See the docs for more information
+            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
+          order: 1
+          type: string
+        client_secret:
+          title: Client Secret
+          description:
+            The client secret of your Amazon Ads developer application. See the docs for more information
+            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
+          airbyte_secret: true
+          order: 2
+          type: string
+        refresh_token:
+          title: Refresh Token
+          description:
+            Amazon Ads refresh token. See the docs for more information about this token https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens
+          airbyte_secret: true
+          order: 3
+          type: string
     region:
       title: Region *
       description:
-        Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a>
-        for more details.
+        Region to pull data from (EU/NA/FE). See the docs for more details https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints
       enum:
         - NA
         - EU
@@ -80,48 +84,22 @@ connectionSpecification:
     profiles:
       title: Profile IDs (Optional)
       description:
-        Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
-        for more details.
+        Profile IDs you want to fetch data for. See the docs for more detials https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles
       order: 8
       type: array
       items:
         type: integer
   required:
-    - client_id
-    - client_secret
-    - refresh_token
+    - credentials
+    - region
+    - report_wait_timeout
+    - report_generation_max_retries
   additionalProperties: true
-advanced_auth:
-  auth_flow_type: oauth2.0
-  predicate_key:
-    - auth_type
-  predicate_value: oauth2.0
-  oauth_config_specification:
-    complete_oauth_output_specification:
-      type: object
-      additionalProperties: true
-      properties:
-        refresh_token:
-          type: string
-          path_in_connector_config:
-            - refresh_token
-    complete_oauth_server_input_specification:
-      type: object
-      additionalProperties: true
-      properties:
-        client_id:
-          type: string
-        client_secret:
-          type: string
-    complete_oauth_server_output_specification:
-      type: object
-      additionalProperties: true
-      properties:
-        client_id:
-          type: string
-          path_in_connector_config:
-            - client_id
-        client_secret:
-          type: string
-          path_in_connector_config:
-            - client_secret
+
+
+authSpecification:
+  provider: "amazon"
+  authUrlTemplate: "https://www.amazon.com/ap/oa?client_id={{ client_id }}&scope=scope=advertising%3A%3Acampaign_management&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
+  accessTokenUrlTemplate: "https://api.amazon.com/auth/o2/token"
+  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret={{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ urlencode code }}"
+  accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
