@@ -16,7 +16,6 @@ python_to_json = {v: k for k, v in json_to_python.items()}
 logger = logging.getLogger("airbyte")
 
 
-
 class TransformConfig(Flag):
     """
     TypeTransformer class config. Configs can be combined using bitwise or operator e.g.
