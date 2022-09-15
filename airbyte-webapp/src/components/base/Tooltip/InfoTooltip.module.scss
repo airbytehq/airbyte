@@ -4,13 +4,14 @@
 
 $line-height: 17px;
 $icon-size: 14px;
+$icon-padding: 5px;
 $icon-top: math.div($line-height - $icon-size, 2);
 
 .container {
   display: inline-block;
-  margin-left: variables.$spacing-sm;
   color: colors.$grey;
-  width: $icon-size;
+  width: calc($icon-size + $icon-padding * 2);
+  padding: 0 $icon-padding;
 }
 
 .icon {
