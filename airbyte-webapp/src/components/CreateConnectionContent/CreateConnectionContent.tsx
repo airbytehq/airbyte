@@ -2,6 +2,7 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { Button, Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
@@ -11,7 +12,6 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
@@ -31,7 +31,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   afterSubmitConnection,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
-  const { push } = useRouter();
+  const navigate = useNavigate();
 
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -69,10 +69,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
         // We have to clear the form change to prevent the dirty-form tracking modal from appearing.
         clearFormChange(formId);
         // This is the "default behavior", go to the created connection.
-        push(`../../connections/${createdConnection.connectionId}`);
+        navigate(`../../connections/${createdConnection.connectionId}`);
       }
     },
-    [afterSubmitConnection, catalogId, clearFormChange, createConnection, destination, formId, push, source]
+    [afterSubmitConnection, catalogId, clearFormChange, createConnection, destination, formId, navigate, source]
   );
 
   if (schemaErrorStatus) {
@@ -89,22 +89,24 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionFormServiceProvider
-        connection={connection}
-        mode="create"
-        formId={formId}
-        onSubmit={onSubmitConnectionStep}
-        onAfterSubmit={afterSubmitConnection}
-      >
-        <ConnectionForm
-          additionalSchemaControl={
-            <Button onClick={onDiscoverSchema} type="button">
-              <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
-              <FormattedMessage id="connection.refreshSchema" />
-            </Button>
-          }
-        />
-      </ConnectionFormServiceProvider>
+      <div className={styles.connectionFormContainer}>
+        <ConnectionFormServiceProvider
+          connection={connection}
+          mode="create"
+          formId={formId}
+          onSubmit={onSubmitConnectionStep}
+          onAfterSubmit={afterSubmitConnection}
+        >
+          <ConnectionForm
+            additionalSchemaControl={
+              <Button onClick={onDiscoverSchema} type="button">
+                <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+                <FormattedMessage id="connection.refreshSchema" />
+              </Button>
+            }
+          />
+        </ConnectionFormServiceProvider>
+      </div>
     </Suspense>
   );
 };

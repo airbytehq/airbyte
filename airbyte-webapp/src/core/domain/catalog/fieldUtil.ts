@@ -1,7 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 
 import { NamespaceDefinitionType } from "../../request/AirbyteClient";
-import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 
 type AirbyteJsonSchema = JSONSchema7Definition & {
@@ -49,28 +48,21 @@ const traverseJsonSchemaProperties = (
 };
 
 interface NamespaceOptions {
-  namespaceDefinition: typeof NamespaceDefinitionType.source | typeof NamespaceDefinitionType.destination;
-  sourceNamespace?: string;
-}
-interface NamespaceOptionsCustomFormat {
-  namespaceDefinition: typeof NamespaceDefinitionType.customformat;
-  namespaceFormat: string;
-  sourceNamespace?: string;
+  namespaceDefinition:
+    | typeof NamespaceDefinitionType.source
+    | typeof NamespaceDefinitionType.destination
+    | typeof NamespaceDefinitionType.customformat;
+  namespaceFormat?: string;
 }
 
-function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomFormat) {
-  const destinationSetting = "<destination schema>";
+function getDestinationNamespace(opt: NamespaceOptions) {
   switch (opt.namespaceDefinition) {
     case NamespaceDefinitionType.source:
-      return opt.sourceNamespace ?? destinationSetting;
+      return "<source schema>";
     case NamespaceDefinitionType.destination:
-      return destinationSetting;
+      return "<destination schema>";
     case NamespaceDefinitionType.customformat:
-    default: // Default is never hit, but typescript prefers it declared
-      if (!opt.sourceNamespace?.trim()) {
-        return destinationSetting;
-      }
-      return opt.namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
+      return opt.namespaceFormat;
   }
 }
 

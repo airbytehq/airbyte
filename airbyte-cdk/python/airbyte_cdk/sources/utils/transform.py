@@ -7,7 +7,11 @@ from distutils.util import strtobool
 from enum import Flag, auto
 from typing import Any, Callable, Dict, Mapping, Optional
 
-from jsonschema import Draft7Validator, validators
+from jsonschema import Draft7Validator, ValidationError, validators
+
+json_to_python_simple = {"string": str, "number": float, "integer": int, "boolean": bool, "null": type(None)}
+json_to_python = json_to_python_simple | {"object": dict, "array": list}
+python_to_json = {v: k for k, v in json_to_python.items()}
 
 logger = logging.getLogger("airbyte")
 
@@ -114,6 +118,10 @@ class TypeTransformer:
                 if isinstance(original_item, str):
                     return strtobool(original_item) == 1
                 return bool(original_item)
+            elif target_type == "array":
+                item_types = set(subschema.get("items", {}).get("type", set()))
+                if item_types.issubset(json_to_python_simple) and type(original_item) in json_to_python_simple.values():
+                    return [original_item]
         except (ValueError, TypeError):
             return original_item
         return original_item
@@ -178,4 +186,11 @@ class TypeTransformer:
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.
             """
-            logger.warning(e.message)
+            logger.warning(self.get_error_message(e))
+
+    def get_error_message(self, e: ValidationError) -> str:
+        instance_json_type = python_to_json[type(e.instance)]
+        key_path = "." + ".".join(e.path)
+        return (
+            f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
+        )
