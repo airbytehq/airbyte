@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
 
-# paths for NetSuite REST API 
+# paths for NetSuite REST API
 REST_PATH: str = "/services/rest/"
 RECORD_PATH: str = REST_PATH + "record/v1/"
 META_PATH: str = RECORD_PATH + "metadata-catalog/"
@@ -19,21 +19,21 @@ META_PATH: str = RECORD_PATH + "metadata-catalog/"
 SCHEMA_HEADERS: dict = {"Accept": "application/schema+json"}
 # known error codes by their HTTP codes
 NETSUITE_ERRORS_MAPPING: dict = {
-    400 : {
-        "USER_ERROR": "reading an Admin record allowed for Admin only.",
-        "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object.",
-        "INVALID_PARAMETER": "cannot read or find the object. Skipping.",
+    400: {
+        "USER_ERROR": "reading an Admin record allowed for Admin only",
+        "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object",
+        "INVALID_PARAMETER": "cannot read or find the object. Skipping",
     },
 }
 
+
 class NetsuiteStream(HttpStream, ABC):
-    
     def __init__(
-        self, 
-        auth: OAuth1, 
-        obj_name: str, 
-        base_url: str, 
-        start_datetime: str, 
+        self,
+        auth: OAuth1,
+        obj_name: str,
+        base_url: str,
+        start_datetime: str,
         window_in_days: int,
     ):
         self.obj_name = obj_name
@@ -95,9 +95,9 @@ class NetsuiteStream(HttpStream, ABC):
     def build_schema(self, record: Any) -> Mapping[str, Any]:
         # these parts of the schema is not used by Airybte
         remove_from_schema: list = [
-            "enum", 
-            "x-ns-filterable", 
-            "x-ns-custom-field", 
+            "enum",
+            "x-ns-filterable",
+            "x-ns-custom-field",
             "nullable",
         ]
         # recursively build a schema with subschemas
@@ -114,7 +114,7 @@ class NetsuiteStream(HttpStream, ABC):
             for element in remove_from_schema:
                 if record.get(element):
                     record.pop(element)
-             
+
             ref = record.get("$ref")
             if ref:
                 ns_link = ref == "/services/rest/record/v1/metadata-catalog/nsLink"
@@ -151,7 +151,11 @@ class NetsuiteStream(HttpStream, ABC):
         args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
         prep_req = self._session.prepare_request(requests.Request(**args))
         response = self._send_request(prep_req, request_kwargs)
-        yield response.json() or {}
+        # sometimes response.status_code == 400,
+        # but contains json elements with error description,
+        # to avoid passing it as TYPE: RECORD, we filter response by status
+        if response.status_code == requests.codes.ok:
+            yield response.json()
 
     def parse_response(
         self,
@@ -161,61 +165,39 @@ class NetsuiteStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
         **kwargs,
     ) -> Iterable[Mapping]:
+
         records = response.json().get("items")
         request_kwargs = self.request_kwargs(stream_slice, next_page_token)
         if records:
             for record in records:
                 # make sub-requests for each record fetched
                 yield from self.fetch_record(record, request_kwargs)
-    
-    def stream_slices(
-        self, stream_state: Mapping[str, Any] = None, **kwargs: Optional[Mapping[str, Any]],
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # Netsuite cannot order records returned by the API, so we need stream slices
-        # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
-        ranges = []
-        start_str = stream_state.get(self.cursor_field) if stream_state else self.start_datetime
-        start = datetime.strptime(start_str, self.output_datetime_format).date()
-        # handle abnormal state values
-        if start > date.today():
-            return [None]
-        else:
-            while start <= date.today():
-                next_day = start + timedelta(days=self.window_in_days)
-                ranges.append(
-                    {
-                        "start": start.strftime(self.input_datetime_format),
-                        "end": next_day.strftime(self.input_datetime_format),
-                    }
-                )
-                start = next_day
-        return ranges
-                
+
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in NETSUITE_ERRORS_MAPPING.keys():
             message = response.json().get("o:errorDetails")
-            error_code = message[0].get("o:errorCode")
             if isinstance(message, list):
+                error_code = message[0].get("o:errorCode")
                 known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
                 if error_code in known_error.keys():
                     setattr(self, "raise_on_http_errors", False)
                     self.logger.warn(
                         f"Stream `{self.name}`: {known_error.get(error_code)}, full error message: {message}",
                     )
+                    pass
                 else:
                     return super().should_retry(response)
-        return super().should_retry(response)   
+        return super().should_retry(response)
 
 
 class IncrementalNetsuiteStream(NetsuiteStream, ABC):
-    
     @property
     def cursor_field(self) -> str:
         return "lastModifiedDate"
-    
+
     def filter_records_newer_than_state(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
+        self,
+        stream_state: Mapping[str, Any] = None,
         records: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Parse the records with respect to `stream_state` for `incremental` sync."""
@@ -236,21 +218,49 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     ) -> Iterable[Mapping]:
         records = super().parse_response(response, stream_state, stream_slice, next_page_token)
         yield from self.filter_records_newer_than_state(stream_state, records)
-    
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field, "")
         current_cursor = current_stream_state.get(self.cursor_field, "")
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
-            params.update(**{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'})
+            params.update(
+                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
+            )
         return params
+
+    def stream_slices(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs: Optional[Mapping[str, Any]],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # Netsuite cannot order records returned by the API, so we need stream slices
+        # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
+        ranges = []
+        start_str = stream_state.get(self.cursor_field) if stream_state else self.start_datetime
+        start = datetime.strptime(start_str, self.output_datetime_format).date()
+        # handle abnormal state values
+        if start > date.today():
+            return ranges
+        else:
+            while start <= date.today():
+                next_day = start + timedelta(days=self.window_in_days)
+                ranges.append(
+                    {
+                        "start": start.strftime(self.input_datetime_format),
+                        "end": next_day.strftime(self.input_datetime_format),
+                    }
+                )
+                start = next_day
+        return ranges
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
-
     @property
     def cursor_field(self) -> str:
         return "lastmodified"

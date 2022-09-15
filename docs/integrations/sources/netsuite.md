@@ -103,29 +103,7 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-- [Accounts]()
-- [Classifications]()
-- [Credit Memos]()
-- [Currencies]()
-- [Custom Lists]()
-- [Customers]()
-- [Departments]()
-- [Employees]()
-- [Expense Categories]()
-- [Expense Reports]()
-- [Files]()
-- [Folders]()
-- [Journal Entries]()
-- [Locations]()
-- [Projects]()
-- [Subsidiaries]()
-- [Tax Groups]()
-- [Tax Items]()
-- [Terms]()
-- [Usages]()
-- [Vendor Bills]()
-- [Vendor Payments]()
-- [Vendors]()
+- Streams are generated based on `ROLE` and `USER` access to them as well as `Account` settings, make sure you're using `Admin` or any other custom `ROLE` granted to the Access Token, having the access to the NetSuite objects for data sync.
 
 
 ## Performance considerations

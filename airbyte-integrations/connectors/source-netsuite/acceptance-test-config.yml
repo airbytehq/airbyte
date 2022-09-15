@@ -10,15 +10,17 @@ tests:
     - config_path: "sample_files/invalid_config.json"
       status: "failed"
   discovery:
+      # Discovery stage is dynamic, so timeout iscreased 
     - config_path: "secrets/config.json"
       timeout_seconds: 1200
   basic_read:
     - config_path: "secrets/config.json"
+      # NetSuite has lots of streams available, we test the portion of them only.
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: [
         "customrecord01", 
-        "invoice", 
-        "billingaccount", 
+        "billingaccount",
+        "charge",
         "message", 
         "salesorder",
       ]

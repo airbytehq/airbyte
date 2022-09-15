@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,12 +11,12 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests_oauthlib import OAuth1
 from source_netsuite.streams import (
-    NetsuiteStream, 
-    IncrementalNetsuiteStream, 
-    CustomIncrementalNetsuiteStream,
-    RECORD_PATH,
     META_PATH,
+    RECORD_PATH,
     SCHEMA_HEADERS,
+    CustomIncrementalNetsuiteStream,
+    IncrementalNetsuiteStream,
+    NetsuiteStream,
 )
 
 
@@ -56,11 +56,11 @@ class SourceNetsuite(AbstractSource):
             url = base_url + RECORD_PATH
             for object in object_types:
                 try:
-                    response = session.get(url=url+object, params={"limit": 1})
+                    response = session.get(url=url + object, params={"limit": 1})
                     response.raise_for_status()
                     return True, None
                 except requests.exceptions.HTTPError as e:
-                    return False, e 
+                    return False, e
         else:
             # if `object_types` are not provided, use `Contact` stream
             # there should be at least 1 contact available in every NetSuite account by default.
@@ -80,7 +80,7 @@ class SourceNetsuite(AbstractSource):
         session = self.get_session(auth)
         metadata_url = base_url + META_PATH
         object_names = config.get("object_types", [])
-        
+
         if not object_names:
             # retrieve all record types
             metadata = session.get(metadata_url).json().get("items")
@@ -98,16 +98,12 @@ class SourceNetsuite(AbstractSource):
         standard_object_names = [n for n in object_names if n not in incremental_object_names]
 
         incremental_streams = [
-            IncrementalNetsuiteStream(auth, name, base_url, start_datetime, window_in_days)
-            for name in incremental_object_names
+            IncrementalNetsuiteStream(auth, name, base_url, start_datetime, window_in_days) for name in incremental_object_names
         ]
         custom_incremental_streams = [
             CustomIncrementalNetsuiteStream(auth, name, base_url, start_datetime, window_in_days)
             for name in custom_incremental_object_names
         ]
-        streams = [
-            NetsuiteStream(auth, name, base_url, start_datetime, window_in_days)
-            for name in standard_object_names
-        ]
+        streams = [NetsuiteStream(auth, name, base_url, start_datetime, window_in_days) for name in standard_object_names]
 
         return streams + incremental_streams + custom_incremental_streams
