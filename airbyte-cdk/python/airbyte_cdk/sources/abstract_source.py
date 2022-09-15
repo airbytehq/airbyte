@@ -292,10 +292,7 @@ class AbstractSource(Source, ABC):
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
-        if self.per_stream_state_enabled:
-            return state_manager.create_state_message(stream.name, stream.namespace)
-        else:
-            return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=dict(state_manager.get_legacy_state())))
+        return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:

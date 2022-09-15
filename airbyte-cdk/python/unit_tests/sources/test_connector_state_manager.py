@@ -324,7 +324,7 @@ def test_get_stream_state(input_state, stream_name, namespace, expected_state):
 def test_get_legacy_state(input_state, expected_legacy_state, expected_error):
     with expected_error:
         state_manager = ConnectorStateManager({}, input_state)
-        actual_legacy_state = state_manager.get_legacy_state()
+        actual_legacy_state = state_manager._get_legacy_state()
         assert actual_legacy_state == expected_legacy_state
 
 
@@ -343,11 +343,7 @@ def test_get_state_returns_deep_copy():
     per_stream_state = state_manager.get_stream_state("episodes", "public")
     per_stream_state["id"].append(309)
 
-    legacy_state = state_manager.get_legacy_state()
-    legacy_state["episodes"]["id"].append(309)
-
     assert state_manager.get_stream_state("episodes", "public") == {"id": [109]}
-    assert state_manager.get_legacy_state() == {"episodes": {"id": [109]}}
 
 
 @pytest.mark.parametrize(
@@ -415,11 +411,11 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
     assert state_manager.per_stream_states[
         HashableStreamDescriptor(name=update_name, namespace=update_namespace)
     ] == AirbyteStateBlob.parse_obj(update_value)
-    assert state_manager.get_legacy_state() == expected_legacy_state
+    assert state_manager._get_legacy_state() == expected_legacy_state
 
 
 @pytest.mark.parametrize(
-    "start_state, update_name, update_namespace, expected_state_message",
+    "start_state, update_name, update_namespace, send_per_stream, expected_state_message",
     [
         pytest.param(
             [
@@ -440,6 +436,7 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "episodes",
             "public",
+            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -465,6 +462,7 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "missing",
             "public",
+            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -489,6 +487,7 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "episodes",
             "nonexistent",
+            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -501,10 +500,40 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ),
             id="test_emit_state_wrong_namespace",
         ),
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace=None),
+                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2022_05_22"}),
+                    ),
+                ),
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="seasons", namespace=None),
+                        stream_state=AirbyteStateBlob.parse_obj({"id": 1}),
+                    ),
+                ),
+            ],
+            "episodes",
+            "",
+            False,
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    data={"episodes": {"created_at": "2022_05_22"}, "seasons": {"id": 1}},
+                ),
+            ),
+            id="test_emit_legacy_state_format",
+        ),
     ],
 )
-def test_create_state_message(start_state, update_name, update_namespace, expected_state_message):
+def test_create_state_message(start_state, update_name, update_namespace, send_per_stream, expected_state_message):
     state_manager = ConnectorStateManager({}, start_state)
 
-    actual_state_message = state_manager.create_state_message(stream_name=update_name, namespace=update_namespace)
+    actual_state_message = state_manager.create_state_message(
+        stream_name=update_name, namespace=update_namespace, send_per_stream_state=send_per_stream
+    )
     assert actual_state_message == expected_state_message

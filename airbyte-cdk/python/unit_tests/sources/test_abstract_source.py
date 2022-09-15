@@ -24,9 +24,8 @@ from airbyte_cdk.models import (
     Status,
     StreamDescriptor,
     SyncMode,
+    Type,
 )
-from airbyte_cdk.models import Type
-from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -72,35 +71,6 @@ class StreamNoStateMethod(Stream):
 class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
     name = "teams"
     primary_key = None
-    cursor_field = "updated_at"
-    _cursor_value = ""
-    start_date = "1984-12-12"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
-
-
-class StreamNoStateMethod(Stream):
-    name = "managers"
-    primary_key = None
-    namespace = "public"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-
-class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
-    name = "teams"
-    primary_key = None
-    namespace = "public"
     cursor_field = "updated_at"
     _cursor_value = ""
     start_date = "1984-12-12"
@@ -249,6 +219,21 @@ def _as_records(stream: str, data: List[Dict[str, Any]]) -> List[AirbyteMessage]
     return [_as_record(stream, datum) for datum in data]
 
 
+def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_state: Dict[str, Any] = None):
+    if per_stream_state:
+        return AirbyteMessage(
+            type=Type.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
+                ),
+                data=state_data,
+            ),
+        )
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
+
+
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
     return ConfiguredAirbyteStream(
         stream=stream.as_airbyte_stream(),
@@ -317,21 +302,6 @@ def test_valid_full_refresh_read_with_slices(mocker):
     assert expected == messages
 
 
-def _state(state_data: Dict[str, Any], stream_name: str = "", per_stream_state: Dict[str, Any] = None):
-    if per_stream_state:
-        return AirbyteMessage(
-            type=Type.STATE,
-            state=AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
-                ),
-                data=state_data,
-            ),
-        )
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
-
-
 class TestIncrementalRead:
     @pytest.mark.parametrize(
         "use_legacy",
@@ -396,14 +366,14 @@ class TestIncrementalRead:
         expected = [
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
-            _state({"s1": new_state_from_connector}, "s1", new_state_from_connector)
+            _as_state({"s1": new_state_from_connector}, "s1", new_state_from_connector)
             if per_stream_enabled
-            else _state({"s1": new_state_from_connector}),
+            else _as_state({"s1": new_state_from_connector}),
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
-            _state({"s1": new_state_from_connector, "s2": new_state_from_connector}, "s2", new_state_from_connector)
+            _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}, "s2", new_state_from_connector)
             if per_stream_enabled
-            else _state({"s1": new_state_from_connector, "s2": new_state_from_connector}),
+            else _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}),
         ]
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -468,15 +438,15 @@ class TestIncrementalRead:
 
         expected = [
             _as_record("s1", stream_output[0]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s1", stream_output[1]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s2", stream_output[0]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_record("s2", stream_output[1]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
@@ -529,9 +499,9 @@ class TestIncrementalRead:
 
         expected = [
             *_as_records("s1", stream_output),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             *_as_records("s2", stream_output),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
@@ -606,16 +576,16 @@ class TestIncrementalRead:
         expected = [
             # stream 1 slice 1
             *_as_records("s1", stream_output),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
             *_as_records("s1", stream_output),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 2 slice 1
             *_as_records("s2", stream_output),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             # stream 2 slice 2
             *_as_records("s2", stream_output),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
@@ -698,8 +668,8 @@ class TestIncrementalRead:
         )
 
         expected = [
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
@@ -785,27 +755,27 @@ class TestIncrementalRead:
             # stream 1 slice 1
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s1", stream_output[2]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
             _as_record("s1", stream_output[0]),
             _as_record("s1", stream_output[1]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             _as_record("s1", stream_output[2]),
-            _state({"s1": state}, "s1", state) if per_stream_enabled else _state({"s1": state}),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 2 slice 1
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_record("s2", stream_output[2]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             # stream 2 slice 2
             _as_record("s2", stream_output[0]),
             _as_record("s2", stream_output[1]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             _as_record("s2", stream_output[2]),
-            _state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _state({"s1": state, "s2": state}),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
@@ -822,10 +792,10 @@ def test_checkpoint_state_from_stream_instance():
     # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
     actual_message = src._checkpoint_state(teams_stream, {"ignored": "state"}, state_manager)
-    assert actual_message == _state({"teams": {"updated_at": "2022-09-11"}}, "teams", {"updated_at": "2022-09-11"})
+    assert actual_message == _as_state({"teams": {"updated_at": "2022-09-11"}}, "teams", {"updated_at": "2022-09-11"})
 
     # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
     actual_message = src._checkpoint_state(managers_stream, {"updated": "expected_here"}, state_manager)
-    assert actual_message == _state(
+    assert actual_message == _as_state(
         {"teams": {"updated_at": "2022-09-11"}, "managers": {"updated": "expected_here"}}, "managers", {"updated": "expected_here"}
     )
