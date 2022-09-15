@@ -188,7 +188,9 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-| 0.6.11  | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202)   | Adds error messaging factory to UI                                                                                                                              |
+| 0.6.13  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)   | Wrap logs in AirbyteLogMessage                                                                                               |
+| 0.6.12  | 2022-09-13 | [16657](https://github.com/airbytehq/airbyte/pull/16657)   | Improve CDC record queueing performance                                                                                      |
+| 0.6.11  | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202)   | Adds error messaging factory to UI                                                                                           |
 | 0.6.10  | 2022-09-08 | [16007](https://github.com/airbytehq/airbyte/pull/16007)   | Implement per stream state support.                                                                                          |
 | 0.6.9   | 2022-09-03 | [16216](https://github.com/airbytehq/airbyte/pull/16216)   | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |
 | 0.6.8   | 2022-09-01 | [16259](https://github.com/airbytehq/airbyte/pull/16259)   | Emit state messages more frequently                                                                                          |

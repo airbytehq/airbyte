@@ -17,7 +17,7 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import styles from "./MainView.module.scss";
 
-const MainView: React.FC = (props) => {
+const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
