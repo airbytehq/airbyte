@@ -6,7 +6,6 @@
     "type": "object",
     "required": [
       "developer_token",
-      "credentials",
       "reports_start_date",
       "tentant_id"
     ],
