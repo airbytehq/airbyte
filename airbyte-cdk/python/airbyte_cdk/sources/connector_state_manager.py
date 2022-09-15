@@ -44,15 +44,14 @@ class ConnectorStateManager:
 
     def get_stream_state(self, stream_name: str, namespace: Optional[str]) -> Mapping[str, Any]:
         """
-        Retrieves the state of a given stream based on its descriptor (name + namespace) including any global shared state.
-        Stream state takes precedence over shared state when there are conflicts
+        Retrieves the state of a given stream based on its descriptor (name + namespace).
         :param stream_name: Name of the stream being fetched
         :param namespace: Namespace of the stream being fetched
         :return: The combined shared state and per-stream state of a stream
         """
-        per_stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
-        if per_stream_state:
-            return per_stream_state.dict()
+        stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        if stream_state:
+            return stream_state.dict()
         return {}
 
     def get_legacy_state(self) -> Mapping[str, Any]:
@@ -60,7 +59,7 @@ class ConnectorStateManager:
         Using the current per-stream state, creates a mapping of all the stream states for the connector being synced
         :return: A deep copy of the mapping of stream name to stream state value
         """
-        return {descriptor.name: per_stream.dict() if per_stream else {} for descriptor, per_stream in self.per_stream_states.items()}
+        return {descriptor.name: state.dict() if state else {} for descriptor, state in self.per_stream_states.items()}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]):
         """
@@ -86,10 +85,10 @@ class ConnectorStateManager:
         if state is None:
             return None, {}
 
-        is_legacy = isinstance(state, dict)
+        is_legacy = cls._is_legacy_dict_state(state)
         is_migrated_legacy = cls._is_migrated_legacy_state(state)
         is_global = cls._is_global_state(state)
-        is_per_stream = isinstance(state, List)
+        is_per_stream = cls._is_per_stream_state(state)
 
         # Incoming pure legacy object format
         if is_legacy:
@@ -143,6 +142,10 @@ class ConnectorStateManager:
         return streams
 
     @staticmethod
+    def _is_legacy_dict_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]):
+        return isinstance(state, dict)
+
+    @staticmethod
     def _is_migrated_legacy_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:
         return (
             isinstance(state, List)
@@ -159,3 +162,7 @@ class ConnectorStateManager:
             and isinstance(state[0], AirbyteStateMessage)
             and state[0].type == AirbyteStateType.GLOBAL
         )
+
+    @staticmethod
+    def _is_per_stream_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:
+        return isinstance(state, List)
