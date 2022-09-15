@@ -7,6 +7,7 @@ package io.airbyte.scheduler.persistence;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -25,11 +26,16 @@ import io.airbyte.commons.text.Sqls;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -198,9 +204,10 @@ class DefaultJobPersistenceTest {
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
-    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).cascade().execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(SYNC_STATS));
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
@@ -245,18 +252,56 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should be able to read what is written")
-  void testWriteOutput() throws IOException {
+  void testWriteOutput() throws IOException, SQLException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
-    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
+    final SyncStats syncStats =
+        new SyncStats().withBytesEmitted(100L).withRecordsEmitted(9L).withRecordsCommitted(10L).withDestinationStateMessagesEmitted(1L)
+            .withSourceStateMessagesEmitted(4L).withMaxSecondsBeforeSourceStateMessageEmitted(5L).withMeanSecondsBeforeSourceStateMessageEmitted(2L)
+            .withMaxSecondsBetweenStateMessageEmittedandCommitted(10L).withMeanSecondsBetweenStateMessageEmittedandCommitted(3L);
+    final FailureReason failureReason1 = new FailureReason().withFailureOrigin(FailureOrigin.DESTINATION).withFailureType(FailureType.SYSTEM_ERROR)
+        .withExternalMessage("There was a normalization error");
+    final FailureReason failureReason2 = new FailureReason().withFailureOrigin(FailureOrigin.SOURCE).withFailureType(FailureType.CONFIG_ERROR)
+        .withExternalMessage("There was another normalization error");
+
+    final NormalizationSummary normalizationSummary =
+        new NormalizationSummary().withStartTime(10L).withEndTime(500L).withFailures(List.of(failureReason1, failureReason2));
+    final StandardSyncOutput standardSyncOutput =
+        new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withTotalStats(syncStats))
+            .withNormalizationSummary(normalizationSummary);
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput);
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
+        jobOutput.getSync().getStandardSyncSummary().getTotalStats(), jobOutput.getSync().getNormalizationSummary());
 
     final Job updated = jobPersistence.getJob(jobId);
+
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+
+    final Optional<Record> record =
+        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst());
+
+    final Long attemptId = record.get().get("id", Long.class);
+
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+    assertEquals(100L, storedSyncStats.getBytesEmitted());
+    assertEquals(9L, storedSyncStats.getRecordsEmitted());
+    assertEquals(10L, storedSyncStats.getRecordsCommitted());
+    assertEquals(4L, storedSyncStats.getSourceStateMessagesEmitted());
+    assertEquals(1L, storedSyncStats.getDestinationStateMessagesEmitted());
+    assertEquals(5L, storedSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(2L, storedSyncStats.getMeanSecondsBeforeSourceStateMessageEmitted());
+    assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
+    assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
+
+    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(attemptId).stream().findFirst().get();
+    assertEquals(10L, storedNormalizationSummary.getStartTime());
+    assertEquals(500L, storedNormalizationSummary.getEndTime());
+    assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
   }
 
   @Test
@@ -999,6 +1044,39 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
+  @DisplayName("When getting the count of jobs")
+  class GetJobCount {
+
+    @Test
+    @DisplayName("Should return the total job count for the connection")
+    void testGetJobCount() throws IOException {
+      final int numJobsToCreate = 10;
+      for (int i = 0; i < numJobsToCreate; i++) {
+        jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
+      }
+
+      final Long actualJobCount = jobPersistence.getJobCount(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString());
+
+      assertEquals(numJobsToCreate, actualJobCount);
+    }
+
+    @Test
+    @DisplayName("Should return 0 if there are no jobs for this connection")
+    void testGetJobCountNoneForConnection() throws IOException {
+      final UUID otherConnectionId1 = UUID.randomUUID();
+      final UUID otherConnectionId2 = UUID.randomUUID();
+
+      jobPersistence.enqueueJob(otherConnectionId1.toString(), SPEC_JOB_CONFIG);
+      jobPersistence.enqueueJob(otherConnectionId2.toString(), SPEC_JOB_CONFIG);
+
+      final Long actualJobCount = jobPersistence.getJobCount(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString());
+
+      assertEquals(0, actualJobCount);
+    }
+
+  }
+
+  @Nested
   @DisplayName("When listing jobs, use paged results")
   class ListJobs {
 
@@ -1060,6 +1138,25 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
+    @DisplayName("Should list all jobs matching multiple config types")
+    void testListJobsMultipleConfigTypes() throws IOException {
+      final long specJobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final long checkJobId = jobPersistence.enqueueJob(SCOPE, CHECK_JOB_CONFIG).orElseThrow();
+      // add a third config type that is not added in the listJobs request, to verify that it is not
+      // included in the results
+      jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+
+      final List<Job> actualList =
+          jobPersistence.listJobs(Set.of(SPEC_JOB_CONFIG.getConfigType(), CHECK_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), 9999, 0);
+
+      final List<Job> expectedList =
+          List.of(createJob(checkJobId, CHECK_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond()),
+              createJob(specJobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond()));
+
+      assertEquals(expectedList, actualList);
+    }
+
+    @Test
     @DisplayName("Should list all jobs with all attempts")
     void testListJobsWithMultipleAttempts() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
@@ -1111,6 +1208,69 @@ class DefaultJobPersistenceTest {
 
       assertEquals(2, actualList.size());
       assertEquals(jobId2, actualList.get(0).getId());
+    }
+
+    @Test
+    @DisplayName("Should list jobs including the specified job")
+    void testListJobsIncludingId() throws IOException {
+      final List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < 100; i++) {
+        // This makes each enqueued job have an increasingly higher createdAt time
+        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
+        // Alternate between spec and check job config types to verify that both config types are fetched
+        // properly
+        final JobConfig jobConfig = i % 2 == 0 ? SPEC_JOB_CONFIG : CHECK_JOB_CONFIG;
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), jobConfig).orElseThrow();
+        ids.add(jobId);
+        // also create an attempt for each job to verify that joining with attempts does not cause failures
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+      }
+
+      final int includingIdIndex = 90;
+      final int pageSize = 25;
+      final List<Job> actualList = jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType(), CHECK_JOB_CONFIG.getConfigType()),
+          CONNECTION_ID.toString(), ids.get(includingIdIndex), pageSize);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - pageSize, ids.size()));
+      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
+    }
+
+    @Test
+    @DisplayName("Should list jobs including the specified job, including multiple pages if necessary")
+    void testListJobsIncludingIdMultiplePages() throws IOException {
+      final List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < 100; i++) {
+        // This makes each enqueued job have an increasingly higher createdAt time
+        when(timeSupplier.get()).thenReturn(Instant.ofEpochSecond(i));
+        // Alternate between spec and check job config types to verify that both config types are fetched
+        // properly
+        final JobConfig jobConfig = i % 2 == 0 ? SPEC_JOB_CONFIG : CHECK_JOB_CONFIG;
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), jobConfig).orElseThrow();
+        ids.add(jobId);
+        // also create an attempt for each job to verify that joining with attempts does not cause failures
+        jobPersistence.createAttempt(jobId, LOG_PATH);
+      }
+
+      // including id is on the second page, so response should contain two pages of jobs
+      final int includingIdIndex = 60;
+      final int pageSize = 25;
+      final List<Job> actualList = jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType(), CHECK_JOB_CONFIG.getConfigType()),
+          CONNECTION_ID.toString(), ids.get(includingIdIndex), pageSize);
+      final List<Long> expectedJobIds = Lists.reverse(ids.subList(ids.size() - (pageSize * 2), ids.size()));
+      assertEquals(expectedJobIds, actualList.stream().map(Job::getId).toList());
+    }
+
+    @Test
+    @DisplayName("Should return an empty list if there is no job with the includingJob ID for this connection")
+    void testListJobsIncludingIdFromWrongConnection() throws IOException {
+      for (int i = 0; i < 10; i++) {
+        jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG);
+      }
+
+      final long otherConnectionJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SPEC_JOB_CONFIG).orElseThrow();
+
+      final List<Job> actualList =
+          jobPersistence.listJobsIncludingId(Set.of(SPEC_JOB_CONFIG.getConfigType()), CONNECTION_ID.toString(), otherConnectionJobId, 25);
+      assertEquals(List.of(), actualList);
     }
 
   }

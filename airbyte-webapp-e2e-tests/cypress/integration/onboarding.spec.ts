@@ -1,4 +1,4 @@
-import { fillEmail, submitButtonClick } from "commands/common";
+import { submitButtonClick, fillEmail } from "commands/common";
 import { initialSetupCompleted } from "commands/workspaces";
 
 describe("Preferences actions", () => {

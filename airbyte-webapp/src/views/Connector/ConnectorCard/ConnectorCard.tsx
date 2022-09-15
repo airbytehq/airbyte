@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
+import { Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
@@ -9,7 +9,7 @@ import { Connector, ConnectorT } from "core/domain/connector";
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
@@ -34,7 +34,7 @@ interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   connector: ConnectorT;
 }
 
-export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
   full,
   jobInfo,
@@ -96,10 +96,10 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
-    <ContentCard title={title} full={full}>
+    <Card title={title} fullWidth={full}>
       <ServiceForm
         {...props}
-        errorMessage={props.errorMessage || (error && createFormErrorMessage(error))}
+        errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
         isTestConnectionInProgress={isTestConnectionInProgress}
         onStopTesting={onStopTesting}
         testConnector={testConnector}
@@ -109,6 +109,6 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
         }
       />
       {job && <JobItem job={job} />}
-    </ContentCard>
+    </Card>
   );
 };

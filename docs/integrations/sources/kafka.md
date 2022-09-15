@@ -22,17 +22,17 @@ You'll need the following information to configure the Kafka source:
 * **Subscription Method** - You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.
 * **List of topic**
 * **Bootstrap Servers** - A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.
+* **Schema Registry** - Host/port to connect schema registry server. Note: It supports for AVRO format only.
 
-### For Airbyte Cloud:
+### For Airbyte Open Source:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.
-4. Follow the [Setup the Kafka source in Airbyte](kafka.md#Setup-the-Kafka-Source-in-Airbyte)
+1. Go to the Airbyte UI and in the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+2. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.
+3. Follow the [Setup the Kafka source in Airbyte](kafka.md#Setup-the-Kafka-Source-in-Airbyte)
 
 ## Supported sync modes
 
-The Kafka source connector supports the following[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kafka source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
@@ -40,10 +40,17 @@ The Kafka source connector supports the following[sync modes](https://docs.airby
 | Incremental - Append Sync | Yes |  |
 | Namespaces | No |  |
 
+## Supported Format
+   JSON - Json value messages. It does not support schema registry now.
+   
+   AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/platform/current/schema-registry/serdes-develop/serdes-avro.html)
+   
+
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                   |
 | :------ | :--------  | :------------------------------------------------------| :---------------------------------------- |
+| 0.2.0 | 2022-08-22 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Added AVRO format support and Support for maximum records to process|
 | 0.1.7 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.6   | 2022-05-29 | [12903](https://github.com/airbytehq/airbyte/pull/12903) | Add Polling Time to Specification (default 100 ms) |
 | 0.1.5   | 2022-04-19 | [12134](https://github.com/airbytehq/airbyte/pull/12134) | Add PLAIN Auth |

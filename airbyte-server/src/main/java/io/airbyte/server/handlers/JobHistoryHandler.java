@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobDebugRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
 import io.airbyte.api.model.generated.JobReadList;
@@ -80,20 +81,35 @@ public class JobHistoryHandler {
         .collect(Collectors.toSet());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
-        configId,
-        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
-            : DEFAULT_PAGE_SIZE,
-        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
+    final int pageSize = (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
+        : DEFAULT_PAGE_SIZE;
+    final List<Job> jobs;
+
+    if (request.getIncludingJobId() != null) {
+      jobs = jobPersistence.listJobsIncludingId(configTypes, configId, request.getIncludingJobId(), pageSize);
+    } else {
+      jobs = jobPersistence.listJobs(configTypes, configId, pageSize,
+          (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
+    }
+
+    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
+
+    final List<JobWithAttemptsRead> jobReads = jobs
         .stream()
-        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
+        .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
-    return new JobReadList().jobs(jobReads);
+
+    return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
+  }
+
+  public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
+    return jobConverter.getJobInfoLightRead(job);
   }
 
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)

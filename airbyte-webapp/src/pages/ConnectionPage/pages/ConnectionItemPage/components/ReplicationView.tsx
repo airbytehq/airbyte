@@ -10,6 +10,7 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useModalService } from "hooks/services/Modal";
 import {
@@ -18,10 +19,9 @@ import {
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
-import { equal } from "utils/objects";
+import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionForm, ConnectionFormSubmitResult } from "views/Connection/ConnectionForm";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -89,6 +89,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const connectionService = useConnectionService();
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
+
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
@@ -140,8 +142,13 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     // This could be due to user changes (e.g. in the sync mode) or due to new/removed
     // streams due to a "refreshed source schema".
     const hasCatalogChanged = !equal(
-      values.syncCatalog.streams.filter((s) => s.config?.selected),
-      initialConnection.syncCatalog.streams.filter((s) => s.config?.selected)
+      values.syncCatalog.streams
+        .filter((s) => s.config?.selected)
+        .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+      initialConnection.syncCatalog.streams
+        .filter((s) => s.config?.selected)
+
+        .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
     );
     // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
     // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update

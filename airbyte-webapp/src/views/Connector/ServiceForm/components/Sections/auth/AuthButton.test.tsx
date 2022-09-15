@@ -1,6 +1,6 @@
 import { screen, render } from "@testing-library/react";
+import { TestWrapper } from "test-utils/testutils";
 
-import { TestWrapper } from "utils/testutils";
 import { useFormikOauthAdapter } from "views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter";
 import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
 

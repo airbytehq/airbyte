@@ -21,6 +21,8 @@ import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
+import io.airbyte.api.client.model.generated.ConnectionScheduleData;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
@@ -61,6 +63,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -313,8 +316,9 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private WorkflowClient getWorkflowClient() {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(
-        TemporalUtils.getAirbyteTemporalOptions("localhost:7233"),
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService(
+        TemporalWorkflowUtils.getAirbyteTemporalOptions("localhost:7233"),
         TemporalUtils.DEFAULT_NAMESPACE);
     return WorkflowClient.newInstance(temporalService);
   }
@@ -455,7 +459,8 @@ public class AirbyteAcceptanceTestHarness {
                                          final UUID destinationId,
                                          final List<UUID> operationIds,
                                          final AirbyteCatalog catalog,
-                                         final ConnectionSchedule schedule)
+                                         final ConnectionScheduleType scheduleType,
+                                         final ConnectionScheduleData scheduleData)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -463,7 +468,8 @@ public class AirbyteAcceptanceTestHarness {
             .sourceId(sourceId)
             .destinationId(destinationId)
             .syncCatalog(catalog)
-            .schedule(schedule)
+            .scheduleType(scheduleType)
+            .scheduleData(scheduleData)
             .operationIds(operationIds)
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)

@@ -43,8 +43,10 @@
 }
 
 .github {
+  /* stylelint-disable-next-line color-no-hex */
   background: #333;
   color: colors.$white;
+  border: none;
 }
 
 .google,
@@ -59,7 +61,6 @@
   padding: vars.$spacing-md;
   gap: vars.$spacing-md;
   border-radius: vars.$border-radius-sm;
-  border: none;
   transition: all vars.$transition;
   cursor: pointer;
 

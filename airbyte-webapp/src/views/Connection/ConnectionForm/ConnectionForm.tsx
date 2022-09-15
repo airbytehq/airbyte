@@ -4,31 +4,26 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
+import { Card, ControlLabels, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import {
-  ConnectionScheduleDataBasicSchedule,
-  ConnectionScheduleType,
-  NamespaceDefinitionType,
-  WebBackendConnectionRead,
-} from "core/request/AirbyteClient";
+import { NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { OperationsSection } from "./components/OperationsSection";
+import ScheduleField from "./components/ScheduleField";
 import SchemaField from "./components/SyncCatalogField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
-  useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
 
@@ -84,7 +79,7 @@ const LabelHeading = styled(H5)`
   display: inline;
 `;
 
-const Section: React.FC<SectionProps> = ({ title, children }) => (
+const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children }) => (
   <Card>
     <StyledSection>
       {title && <H5 bold>{title}</H5>}
@@ -118,10 +113,13 @@ const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChange
   return null;
 };
 
-interface ConnectionFormProps {
+export type ConnectionOrPartialConnection =
+  | WebBackendConnectionRead
+  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+
+export interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
-  additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
@@ -132,19 +130,16 @@ interface ConnectionFormProps {
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
+  connection: ConnectionOrPartialConnection;
 }
 
-const ConnectionForm: React.FC<ConnectionFormProps> = ({
+export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onCancel,
   className,
   onDropDownSelect,
   mode,
   successMessage,
-  additionBottomControls,
   canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
@@ -164,11 +159,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
-        ? ConnectionScheduleType.basic
-        : ConnectionScheduleType.manual;
-
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
       }) as unknown as ConnectionFormValues;
@@ -194,8 +184,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
   );
 
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-  const frequencies = useFrequencyDropdownData(connection.scheduleData);
+  const errorMessage = submitError ? generateMessageFromError(submitError) : null;
+  const determineErrorMessage = (isValid: boolean) => {
+    return errorMessage ?? (!isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null);
+  };
 
   return (
     <Formik
@@ -204,7 +196,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       enableReinitialize
       onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
+      {({ isSubmitting, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
           {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
@@ -244,35 +236,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <Field name="scheduleData.basicSchedule">
-              {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ConnectorLabel
-                      nextLine
-                      error={!!meta.error && meta.touched}
-                      label={formatMessage({
-                        id: "form.frequency",
-                      })}
-                      message={formatMessage({
-                        id: "form.frequency.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-                    <DropDown
-                      {...field}
-                      error={!!meta.error && meta.touched}
-                      options={frequencies}
-                      onChange={(item) => {
-                        onDropDownSelect?.(item);
-                        setFieldValue(field.name, item.value);
-                      }}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
+            <ScheduleField scheduleData={connection?.scheduleData} mode={mode} onDropDownSelect={onDropDownSelect} />
           </Section>
           <Card>
             <StyledSection>
@@ -356,7 +320,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onCancel?.();
               }}
               successMessage={successMessage}
-              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
+              errorMessage={determineErrorMessage(isValid)}
               enableControls={canSubmitUntouchedForm}
             />
           )}
@@ -373,12 +337,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onEndEditTransformation={toggleEditingTransformation}
               />
               <CreateControls
-                additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
-                errorMessage={
-                  errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                }
+                errorMessage={determineErrorMessage(isValid)}
               />
             </>
           )}
@@ -387,6 +348,3 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     </Formik>
   );
 };
-
-export type { ConnectionFormProps };
-export default ConnectionForm;

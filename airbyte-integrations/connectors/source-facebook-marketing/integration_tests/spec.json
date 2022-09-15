@@ -25,7 +25,7 @@
         "title": "End Date",
         "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
         "order": 2,
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
         "type": "string",
         "format": "date-time"
@@ -73,7 +73,7 @@
               "type": "array",
               "items": {
                 "title": "ValidEnums",
-                "description": "An enumeration.",
+                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
                 "enum": [
                   "account_currency",
                   "account_id",
@@ -215,7 +215,7 @@
               "type": "array",
               "items": {
                 "title": "ValidBreakdowns",
-                "description": "An enumeration.",
+                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
                 "enum": [
                   "ad_format_asset",
                   "age",
@@ -251,7 +251,7 @@
               "type": "array",
               "items": {
                 "title": "ValidActionBreakdowns",
-                "description": "An enumeration.",
+                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
                 "enum": [
                   "action_canvas_component_name",
                   "action_carousel_card_id",

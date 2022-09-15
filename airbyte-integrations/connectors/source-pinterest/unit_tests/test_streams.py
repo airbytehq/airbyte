@@ -6,6 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from source_pinterest.source import (
     AdAccountAnalytics,
     AdAccounts,
@@ -77,7 +78,7 @@ def test_http_method(patch_base_class):
     [
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
+        (HTTPStatus.TOO_MANY_REQUESTS, False),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
@@ -93,6 +94,43 @@ def test_backoff_time(patch_base_class):
     stream = PinterestStream(config=MagicMock())
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    "test_response, status_code, expected",
+    [
+        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
+        ({"code": 7, "message": "Some other error message"}, 429, False),
+    ],
+)
+def test_should_retry_on_max_rate_limit_error(requests_mock, test_response, status_code, expected):
+    stream = Boards(config=MagicMock())
+    url = "https://api.pinterest.com/v5/boards"
+    requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
+    response = requests.get(url)
+    result = stream.should_retry(response)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "test_response, test_headers, status_code, expected",
+    [
+        ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
+    ],
+)
+def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, test_headers, expected):
+    stream = Boards(config=MagicMock())
+    url = "https://api.pinterest.com/v5/boards"
+    requests_mock.get(
+        "https://api.pinterest.com/v5/boards",
+        json=test_response,
+        headers=test_headers,
+        status_code=status_code,
+    )
+
+    response = requests.get(url)
+    result = stream.backoff_time(response)
+    assert result == expected
 
 
 @pytest.mark.parametrize(

@@ -6,11 +6,10 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -112,7 +111,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { query } = useRouter();
+  const query = useQuery<{ from: string }>();
 
   return (
     <Routes>
@@ -155,7 +154,6 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
-  useTrackPageAnalytics();
 
   if (!inited) {
     return <LoadingPage />;
