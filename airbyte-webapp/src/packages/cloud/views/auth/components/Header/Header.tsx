@@ -1,9 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "components";
-
-import useRouter from "hooks/useRouter";
 
 import { CloudRoutes } from "../../../../cloudRoutes";
 import styles from "./Header.module.scss";
@@ -13,14 +12,14 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ toLogin }) => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
   return (
     <div className={styles.links}>
       <div className={styles.formLink}>
         <div className={styles.textBlock}>
           <FormattedMessage id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"} />
         </div>
-        <Button variant="secondary" onClick={() => push(toLogin ? CloudRoutes.Login : CloudRoutes.Signup)}>
+        <Button variant="secondary" onClick={() => navigate(toLogin ? CloudRoutes.Login : CloudRoutes.Signup)}>
           <FormattedMessage id={toLogin ? "login.login" : "login.signup"} />
         </Button>
       </div>
