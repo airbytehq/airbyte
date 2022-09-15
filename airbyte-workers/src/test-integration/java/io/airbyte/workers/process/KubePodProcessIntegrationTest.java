@@ -7,8 +7,8 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -69,7 +69,8 @@ import org.slf4j.LoggerFactory;
  * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
  * to using {@code @Test} if possible.
  */
-@Timeout(value = 6, unit = TimeUnit.MINUTES)
+@Timeout(value = 6,
+         unit = TimeUnit.MINUTES)
 @MicronautTest
 public class KubePodProcessIntegrationTest {
 
@@ -110,7 +111,7 @@ public class KubePodProcessIntegrationTest {
     /**
      * Test init KubePortManagerSingleton twice: 1. with same ports shoule succeed 2. with different
      * port should fail
-     * 
+     *
      * Every test has been init firt times in BeforeAll with getOpenPorts(30)
      */
 
@@ -128,7 +129,6 @@ public class KubePodProcessIntegrationTest {
     });
     assertTrue(exception.getMessage().contains("Cannot initialize twice with different ports!"));
   }
-
 
   /**
    * In the past we've had some issues with transient / stuck pods. The idea here is to run a few at
@@ -308,8 +308,7 @@ public class KubePodProcessIntegrationTest {
         fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).inform();
     podInformer.addEventHandler(new ExitCodeWatcher(pod.getMetadata().getName(), pod.getMetadata().getNamespace(), exitCode -> {
       fabricClient.pods().delete(pod);
-    }, () -> {
-    }));
+    }, () -> {}));
 
     process.waitFor();
 
