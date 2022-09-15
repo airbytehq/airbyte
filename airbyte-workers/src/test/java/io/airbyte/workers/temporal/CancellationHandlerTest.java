@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import io.airbyte.workers.temporal.stubs.HeartbeatWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.WorkflowClient;
@@ -27,7 +28,7 @@ class CancellationHandlerTest {
     final WorkflowClient client = testEnv.getWorkflowClient();
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       new CancellationHandler.TemporalCancellationHandler(context).checkAndHandleCancellation(() -> {});
     }));
 

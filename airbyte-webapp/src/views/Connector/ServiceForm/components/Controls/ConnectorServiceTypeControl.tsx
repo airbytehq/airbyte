@@ -99,7 +99,7 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
