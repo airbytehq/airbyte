@@ -230,7 +230,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
-      trackCompletion(job, JobStatus.FAILED);
 
       final UUID connectionId = UUID.fromString(job.getScope());
       final JobSyncConfig jobSyncConfig = job.getConfig().getSync();
@@ -238,6 +237,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           new SyncJobReportingContext(jobId, jobSyncConfig.getSourceDockerImage(), jobSyncConfig.getDestinationDockerImage());
       job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
           .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, jobContext));
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptNumber(), JobStatus.FAILED, e);
       throw new RetryableException(e);
@@ -292,9 +292,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobPersistence.cancelJob(jobId);
 
       final Job job = jobPersistence.getJob(jobId);
-      trackCompletion(job, JobStatus.FAILED);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptId(), JobStatus.FAILED, e);
       throw new RetryableException(e);
