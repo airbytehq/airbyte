@@ -134,7 +134,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def per_stream_state_enabled(self) -> bool:
-        return False  # While CDK per-stream is in active development we should keep this off
+        return True
 
     def _read_stream(
         self,
