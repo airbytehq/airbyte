@@ -1,16 +1,13 @@
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useCallback } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { Card, ControlLabels, H5, Input } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { Action, Namespace } from "core/analytics";
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
@@ -106,36 +103,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
 }) => {
   const { initialValues, formId, mode, onFormSubmit, errorMessage, onCancel, connection } = useConnectionFormService();
-  const analyticsService = useAnalyticsService();
-
-  const onFrequencySelect = useCallback(
-    (item: IDataItem | null) => {
-      const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
-
-      if (item) {
-        analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
-          actionDescription: "Frequency selected",
-          frequency: item.label,
-          connector_source_definition: connection.source.sourceName,
-          connector_source_definition_id: connection.source.sourceDefinitionId,
-          connector_destination_definition: connection.destination.destinationName,
-          connector_destination_definition_id: connection.destination.destinationDefinitionId,
-          available_streams: connection.syncCatalog.streams.length,
-          enabled_streams: enabledStreams,
-          type: mode,
-        });
-      }
-    },
-    [
-      analyticsService,
-      connection.destination.destinationDefinitionId,
-      connection.destination.destinationName,
-      connection.source.sourceDefinitionId,
-      connection.source.sourceName,
-      connection.syncCatalog.streams,
-      mode,
-    ]
-  );
 
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
@@ -185,7 +152,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <ScheduleField scheduleData={connection?.scheduleData} mode={mode} onDropDownSelect={onFrequencySelect} />
+            <ScheduleField />
           </Section>
           <Card>
             <StyledSection>

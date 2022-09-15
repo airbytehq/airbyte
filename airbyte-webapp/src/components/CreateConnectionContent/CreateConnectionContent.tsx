@@ -1,6 +1,6 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useCallback } from "react";
+import React, { Suspense, useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
@@ -10,7 +10,7 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useChangedFormsById, useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
@@ -35,6 +35,8 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
+  const [changedFormsById] = useChangedFormsById();
+  const formDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
@@ -96,6 +98,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
           formId={formId}
           onSubmit={onSubmitConnectionStep}
           onAfterSubmit={afterSubmitConnection}
+          formDirty={formDirty}
         >
           <ConnectionForm
             additionalSchemaControl={
