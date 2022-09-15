@@ -17,7 +17,7 @@ const Box = styled.div`
   align-items: center;
 `;
 
-export const InfoBox: React.FC<Props> = ({ children, className, icon }) => {
+export const InfoBox: React.FC<React.PropsWithChildren<Props>> = ({ children, className, icon }) => {
   return (
     <Box className={className}>
       {icon && <FontAwesomeIcon size="lg" icon={icon} />}
