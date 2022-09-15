@@ -41,7 +41,7 @@ class SourceNetsuite(AbstractSource):
         session.auth = auth
         return session
 
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         auth = self.auth(config)
         object_types = config.get("object_types")
         base_url = self.base_url(config)

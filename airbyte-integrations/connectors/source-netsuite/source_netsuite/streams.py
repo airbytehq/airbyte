@@ -219,7 +219,11 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
         records = super().parse_response(response, stream_state, stream_slice, next_page_token)
         yield from self.filter_records_newer_than_state(stream_state, records)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field, "")
         current_cursor = current_stream_state.get(self.cursor_field, "")
         return {self.cursor_field: max(latest_cursor, current_cursor)}
