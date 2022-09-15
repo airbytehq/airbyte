@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["Id"],
   "properties": {
     "AdFormatPreference": {
       "type": ["null", "string"]
@@ -54,7 +55,7 @@
       }
     },
     "Id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "Status": {
       "type": ["null", "string"]

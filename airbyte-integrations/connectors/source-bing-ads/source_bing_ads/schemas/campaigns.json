@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["Id"],
   "properties": {
     "AudienceAdsBidAdjustment": {
       "type": ["null", "number"]
@@ -48,7 +49,7 @@
       }
     },
     "Id": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "Name": {
       "type": ["null", "string"]

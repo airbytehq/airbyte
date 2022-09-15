@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["Id"],
   "properties": {
     "AdRotation": {
       "type": ["null", "object"],
@@ -86,7 +87,7 @@
       }
     },
     "Id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "Language": {
       "type": ["null", "string"]

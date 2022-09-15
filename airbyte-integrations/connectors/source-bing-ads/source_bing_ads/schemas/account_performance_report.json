@@ -1,6 +1,6 @@
 {
   "type": ["object"],
-  "required": ["TimePeriod", "AccountId", "CurrencyCode", "DeviceType", "DeviceOS", "TopVsOther", "BidMatchType"],
+  "required": ["TimePeriod", "AccountId", "CurrencyCode", "DeviceType", "DeviceOS", "TopVsOther", "BidMatchType", "AdDistribution", "Network", "DeliveredMatchType"],
   "properties": {
     "AccountId": {
       "type": ["integer"]
@@ -18,10 +18,10 @@
       "type": ["string"]
     },
     "Network": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeliveredMatchType": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeviceOS": {
       "type": ["string"]
