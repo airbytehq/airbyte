@@ -20,7 +20,7 @@ const cardStyleBySize = {
   xl: styles.xl,
 };
 
-const Modal: React.FC<ModalProps> = ({ children, title, size, onClose, cardless, testId }) => {
+const Modal: React.FC<React.PropsWithChildren<ModalProps>> = ({ children, title, size, onClose, cardless, testId }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const onModalClose = () => {

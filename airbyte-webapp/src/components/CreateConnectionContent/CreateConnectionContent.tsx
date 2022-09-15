@@ -1,7 +1,8 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useCallback } from "react";
+import React, { Suspense, useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { Button, Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
@@ -13,8 +14,8 @@ import {
   isSubmitCancel,
   SubmitResult,
 } from "hooks/services/Connection/ConnectionFormService";
+import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import useRouter from "hooks/useRouter";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
@@ -34,7 +35,11 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   afterSubmitConnection,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
-  const { push } = useRouter();
+  const navigate = useNavigate();
+
+  const formId = useUniqueFormId();
+  const [changedFormsById] = useChangedFormsById();
+  const formDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
@@ -70,10 +75,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   const afterSubmit = useCallback(
     (submitResult: SubmitResult) => {
       if (!isSubmitCancel(submitResult)) {
-        afterSubmitConnection?.(submitResult) ?? push(`../../connections/${submitResult.connectionId}`);
+        afterSubmitConnection?.(submitResult) ?? navigate(`../../connections/${submitResult.connectionId}`);
       }
     },
-    [afterSubmitConnection, push]
+    [afterSubmitConnection, navigate]
   );
 
   if (schemaErrorStatus) {
@@ -90,21 +95,25 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionFormServiceProvider
-        connection={connection}
-        mode="create"
-        onSubmit={onSubmitConnectionStep}
-        onAfterSubmit={afterSubmit}
-      >
-        <ConnectionForm
-          additionalSchemaControl={
-            <Button onClick={onDiscoverSchema} type="button">
-              <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
-              <FormattedMessage id="connection.refreshSchema" />
-            </Button>
-          }
-        />
-      </ConnectionFormServiceProvider>
+      <div className={styles.connectionFormContainer}>
+        <ConnectionFormServiceProvider
+          connection={connection}
+          mode="create"
+          formId={formId}
+          onSubmit={onSubmitConnectionStep}
+          onAfterSubmit={afterSubmit}
+          formDirty={formDirty}
+        >
+          <ConnectionForm
+            additionalSchemaControl={
+              <Button onClick={onDiscoverSchema} type="button">
+                <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+                <FormattedMessage id="connection.refreshSchema" />
+              </Button>
+            }
+          />
+        </ConnectionFormServiceProvider>
+      </div>
     </Suspense>
   );
 };

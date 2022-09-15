@@ -56,7 +56,7 @@ export async function render<
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return renderResult!;
 }
-export const TestWrapper: React.FC = ({ children }) => (
+export const TestWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
       {children}

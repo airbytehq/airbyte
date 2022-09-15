@@ -109,7 +109,6 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
-    sourceNamespace: stream?.namespace,
   });
 
   const fields = useMemo(() => {
@@ -133,7 +132,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     <div className={styles.catalogSection}>
       <StreamHeader
         stream={streamNode}
-        destNamespace={destNamespace}
+        destNamespace={destNamespace ?? ""}
         destName={prefix + (streamNode.stream?.name ?? "")}
         availableSyncModes={availableSyncModes}
         onSelectStream={onSelectStream}

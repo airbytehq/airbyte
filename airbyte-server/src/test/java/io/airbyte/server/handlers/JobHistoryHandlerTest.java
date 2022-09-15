@@ -257,6 +257,19 @@ class JobHistoryHandlerTest {
   }
 
   @Test
+  @DisplayName("Should return the right job info without attempt information")
+  void testGetJobInfoLight() throws IOException {
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(testJob);
+
+    final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
+    final JobInfoLightRead jobInfoLightActual = jobHistoryHandler.getJobInfoLight(requestBody);
+
+    final JobInfoLightRead exp = new JobInfoLightRead().job(toJobInfo(testJob));
+
+    assertEquals(exp, jobInfoLightActual);
+  }
+
+  @Test
   @DisplayName("Should return the right info to debug this job")
   void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
     standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();

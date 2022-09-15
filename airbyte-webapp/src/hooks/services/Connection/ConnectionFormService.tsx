@@ -1,5 +1,6 @@
 import { FormikHelpers } from "formik";
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useIntl } from "react-intl";
 
 import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -15,7 +16,7 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { useFormChangeTrackerService, useUniqueFormId } from "../FormChangeTracker";
+import { useFormChangeTrackerService } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
 
 export type ConnectionOrPartialConnection =
@@ -34,17 +35,26 @@ export interface ConnectionServiceProps {
   onSubmit: (values: ValuesProps) => Promise<SubmitResult>;
   onAfterSubmit?: (submitResult: SubmitResult) => void;
   onCancel?: () => void;
+  formDirty: boolean;
 }
 
 export function isSubmitCancel(submitResult: SubmitResult): submitResult is { submitCancel: boolean } {
   return submitResult.hasOwnProperty("submitCancel");
 }
 
-const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, onCancel }: ConnectionServiceProps) => {
+const useConnectionForm = ({
+  connection,
+  mode,
+  formId,
+  onSubmit,
+  onAfterSubmit,
+  onCancel,
+  formDirty,
+}: ConnectionServiceProps) => {
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const workspaceId = useCurrentWorkspaceId();
   const { clearFormChange } = useFormChangeTrackerService();
-  formId = useUniqueFormId(formId);
+  const { formatMessage } = useIntl();
 
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
@@ -84,7 +94,15 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
     [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
   );
 
-  const errorMessage = useMemo(() => (submitError ? generateMessageFromError(submitError) : null), [submitError]);
+  const errorMessage = useMemo(
+    () =>
+      submitError
+        ? generateMessageFromError(submitError)
+        : formDirty
+        ? formatMessage({ id: "connectionForm.validation.error" })
+        : null,
+    [formDirty, formatMessage, submitError]
+  );
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return {

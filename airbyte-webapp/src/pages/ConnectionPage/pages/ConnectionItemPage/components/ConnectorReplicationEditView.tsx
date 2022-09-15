@@ -221,6 +221,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
           onSubmit={onSubmitForm}
           onCancel={onCancelConnectionFormEdit}
           formId={formId}
+          formDirty={formDirty}
         >
           <ConnectionForm
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
