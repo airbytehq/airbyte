@@ -26,7 +26,11 @@ public class MetricTags {
   }
 
   public static String getFailureOrigin(final FailureOrigin origin) {
-    return origin.value();
+    if (origin != null) {
+      return origin.value();
+    } else {
+      return null;
+    }
   }
 
   public static String getJobStatus(final JobStatus status) {

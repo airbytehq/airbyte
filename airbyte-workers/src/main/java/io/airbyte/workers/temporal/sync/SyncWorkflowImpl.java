@@ -16,6 +16,8 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.temporal.workflow.Workflow;
+import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 2;
+  private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
+  private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
@@ -37,6 +41,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private DbtTransformationActivity dbtTransformationActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private PersistStateActivity persistActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -58,7 +64,32 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
       for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
+        LOGGER.info("operator type is: " + standardSyncOperation.getOperatorType());
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
+          final int normalizationSummaryCheckVersion =
+              Workflow.getVersion(NORMALIZATION_SUMMARY_CHECK_TAG, Workflow.DEFAULT_VERSION, NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION);
+          LOGGER.info("normalization summary check version: " + normalizationSummaryCheckVersion);
+          LOGGER.info("current version: " + NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION);
+          if (normalizationSummaryCheckVersion >= NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION) {
+            // this is the attempt number, not attempt id
+            LOGGER.info("attempt id on jobRunConfig is: " + jobRunConfig.getAttemptId());
+            Boolean shouldRun;
+            try {
+              LOGGER.info("inside try block");
+              shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
+                  Optional.of(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
+            } catch (final IOException e) {
+              LOGGER.info("inside catch block");
+              shouldRun = true;
+            }
+            LOGGER.info("should run: " + shouldRun);
+            if (!shouldRun) {
+              LOGGER.info("Skipping normalization because there is no new data to normalize.");
+              break;
+            }
+          }
+
+          LOGGER.info("generating normalization input");
           final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput);
           final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
