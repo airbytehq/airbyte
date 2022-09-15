@@ -4,6 +4,11 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      partToBump:
+        required: true
+        description: "Part of version to bump (major|minor|patch)"
+        default: "patch"
 
 jobs:
   # In case of self-hosted EC2 errors, remove this block.
@@ -27,6 +32,7 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
   releaseAirbyte:
+    name: "Release helm charts"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-release-airbyte-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
@@ -54,42 +60,17 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: "3.9"
-      - name: Install bumpversion
-        shell: bash
-        run: pip install bumpversion
       
       - name: Generate new version number
-
-      - name: Release subcharts
         shell: bash
+        id: new_version
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: |
-          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
-          for val in ${StringArray[@]}; do
-            cd ./charts/${val} && helm dep update && cd -
-            helm package ./charts/${val} -d ./.github/helm-charts/ --version $NEW_VERSION
-          done
-          helm repo index ./.github/helm-charts/
+          ./tools/bin/bump_version.sh
 
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
+      - name: Release helm charts
+        uses: ./.github/actions/publish-helm-charts
         with:
-          message: 'Bump subchart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
-          add: '.'
-          cwd: './github/helm-charts'
-
-      - name: Release main helm chart
-        shell: bash
-        run: |
-          echo "Waiting for published charts to be synced in helm-charts repo"
-          sleep 300
-          cd ./charts/airbyte && helm dep update && cd -
-          helm package ./charts/airbyte -d ./.github/helm-charts --version ${{ steps.release_airbyte.outputs.NEW_VERSION }}
-          helm repo index ./.github/helm-charts/
-      
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Bump main chart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
-          add: '.'
-          cwd: './github/helm-charts'
+          new_version_number: ${{ steps.new_version.outputs.NEW_VERSION }}
 

@@ -1,0 +1,60 @@
+name: Publish helm charts
+description: Publishes helm charts
+inputs:
+  chart_directory:
+    required: false
+    description: "Directory where charts are stored"
+    default: "./charts"
+  repo_directory:
+    required: false
+    description: "Directory where remote repo located in"
+    default: "./.github/helm-charts"
+  new_version_number:
+    required: true
+    description: "Specifies what version is going to be released"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install helm-docs
+      shell: bash
+      run: |
+        cd /tmp
+        wget https://github.com/norwoodj/helm-docs/releases/download/v${{env.HELM_DOCS_VERSION}}/helm-docs_${{env.HELM_DOCS_VERSION}}_Linux_x86_64.tar.gz
+        tar -xvf helm-docs_${{env.HELM_DOCS_VERSION}}_Linux_x86_64.tar.gz
+        sudo mv helm-docs /usr/local/sbin
+      env:
+        HELM_DOCS_VERSION: "1.11.0"
+
+    - name: Release subcharts
+      shell: bash
+      run: |
+        declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
+        for val in ${StringArray[@]}; do
+          cd ${{ inputs.chart_directory }}/${val} && helm dep update && helm-docs && cd -
+          helm package ${{ inputs.chart_directory }}/${val} -d ./.github/helm-charts/ --version ${{ inputs.new_version_number }}
+        done
+        helm repo index ./.github/helm-charts/
+
+    - name: Commit and push changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: 'Bump subchart version to ${{ inputs.new_version_number }}'
+        add: '.'
+        cwd: './github/helm-charts'
+
+    - name: Release main helm chart
+      shell: bash
+      run: |
+        echo "Waiting for published charts to be synced in helm-charts repo"
+        sleep 300
+        cd ${{ inputs.chart_directory }}/airbyte && helm dep update && helm-docs && cd -
+        helm package ${{ inputs.chart_directory }}/airbyte -d ./.github/helm-charts --version ${{ inputs.new_version_number }}
+        helm repo index ./.github/helm-charts/
+    
+    - name: Commit and push changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: 'Bump main chart version to ${{ inputs.new_version_number }}'
+        add: '.'
+        cwd: './github/helm-charts'

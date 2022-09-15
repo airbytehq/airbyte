@@ -37,12 +37,3 @@ VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 VERSION=$NEW_VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
-
-echo "Packaging and publishing HELM CHARTS version $NEW_VERSION for git revision $GIT_REVISION..."
-declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
-for val in ${StringArray[@]}; do
-  cd ./charts/${val} && helm dep update && cd -
-  helm package ./charts/${val} -d ./.github/helm-charts/ --version $NEW_VERSION
-done
-helm repo index ./.github/helm-charts/
-echo "Completed packaging and publishing HELM CHARTS..."

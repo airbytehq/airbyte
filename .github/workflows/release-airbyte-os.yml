@@ -85,28 +85,10 @@ jobs:
         run: |
           ./tools/bin/release_version.sh
       
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
+      - name: Release Helm charts
+        uses: ./.github/actions/publish-helm-charts
         with:
-          message: 'Bump subchart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
-          add: '.'
-          cwd: './github/helm-charts'
-
-      - name: Release main helm chart
-        shell: bash
-        run: |
-          echo "Waiting for published charts to be synced in helm-charts repo"
-          sleep 300
-          cd ./charts/airbyte && helm dep update && cd -
-          helm package ./charts/airbyte -d ./.github/helm-charts --version ${{ steps.release_airbyte.outputs.NEW_VERSION }}
-          helm repo index ./.github/helm-charts/
-      
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Bump main chart version to ${{ steps.release_airbyte.outputs.NEW_VERSION }}'
-          add: '.'
-          cwd: './github/helm-charts'
+          new_version_number: "${{ steps.release_airbyte.outputs.NEW_VERSION }}"
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
