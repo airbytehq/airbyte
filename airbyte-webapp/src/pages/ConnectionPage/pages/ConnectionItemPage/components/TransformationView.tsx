@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ContentCard, H4 } from "components";
+import { H4 } from "components";
+import { Card } from "components/base/Card";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -42,7 +43,7 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const NoSupportedTransformationCard = styled(ContentCard)`
+const NoSupportedTransformationCard = styled(Card)`
   max-width: 500px;
   margin: 0 auto;
   min-height: 100px;

@@ -12,7 +12,7 @@ import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,7 +51,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.engineLatch = new CountDownLatch(1);
   }
 
-  public void start(final Queue<ChangeEvent<String, String>> queue) {
+  public void start(final BlockingQueue<ChangeEvent<String, String>> queue) {
     engine = DebeziumEngine.create(Json.class)
         .using(debeziumPropertiesManager.getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
@@ -61,9 +61,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            boolean inserted = false;
-            while (!inserted) {
-              inserted = queue.offer(e);
+            try {
+              queue.put(e);
+            } catch (InterruptedException ex) {
+              Thread.currentThread().interrupt();
+              throw new RuntimeException(ex);
             }
           }
         })
