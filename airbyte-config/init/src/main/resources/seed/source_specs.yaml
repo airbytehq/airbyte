@@ -6171,7 +6171,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.21"
+- dockerImage: "airbyte/source-mixpanel:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
