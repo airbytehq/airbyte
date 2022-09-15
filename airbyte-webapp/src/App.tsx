@@ -29,7 +29,7 @@ import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
 
-const StyleProvider: React.FC = ({ children }) => (
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
@@ -38,7 +38,7 @@ const StyleProvider: React.FC = ({ children }) => (
 
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <WorkspaceServiceProvider>

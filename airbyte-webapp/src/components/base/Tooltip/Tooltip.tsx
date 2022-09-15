@@ -19,7 +19,7 @@ const FLOATING_OPTIONS: UseFloatingProps = {
   whileElementsMounted: autoUpdate,
 };
 
-export const Tooltip: React.FC<TooltipProps> = (props) => {
+export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) => {
   const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
 
   const [isMouseOver, setIsMouseOver] = useState(false);
