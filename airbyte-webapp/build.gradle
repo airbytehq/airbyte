@@ -1,6 +1,7 @@
 plugins {
     id "base"
     id "com.github.node-gradle.node" version "3.3.0"
+    id 'distribution'
 }
 
 def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'

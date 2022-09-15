@@ -2,6 +2,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id 'java-library'
+    id 'distribution'
 }
 
 // Add a configuration for our migrations tasks defined below to encapsulate their dependencies
