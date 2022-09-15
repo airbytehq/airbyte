@@ -12,7 +12,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const StoreProvider: React.FC = ({ children }) => (
+const StoreProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <QueryClientProvider client={queryClient}>
     <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     {children}

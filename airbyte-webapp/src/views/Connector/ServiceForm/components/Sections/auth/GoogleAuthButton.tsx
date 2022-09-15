@@ -41,7 +41,7 @@ const Img = styled.img`
   height: 40px;
 `;
 
-const GoogleAuthButton: React.FC = (props) => (
+const GoogleAuthButton: React.FC<React.PropsWithChildren<unknown>> = (props) => (
   <StyledButton {...props}>
     <Img src="/connectors/google/btn_google_light_normal_ios.svg" alt="Sign in with Google" />
     {props.children}
