@@ -1,5 +1,5 @@
 import React from "react";
-import { GroupBase, Props, SelectComponentsConfig, StylesConfig } from "react-select";
+import { CSSObjectWithLabel, GroupBase, Props, SelectComponentsConfig, StylesConfig } from "react-select";
 import Select from "react-select/dist/declarations/src/Select";
 
 import { equal, naturalComparatorBy } from "utils/objects";
@@ -56,6 +56,11 @@ function DropDownInner<T = unknown>(
 
   const styles: StylesConfig = {
     ...(props.styles ?? {}),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    menuPortal: (base: CSSObjectWithLabel, menuPortalProps: any) => ({
+      ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
+      zIndex: 9999,
+    }),
   };
 
   return (
@@ -63,10 +68,12 @@ function DropDownInner<T = unknown>(
       ref={ref}
       data-testid={props.name}
       $error={props.error}
+      menuPlacement="auto"
+      menuPosition="fixed"
+      menuPortalTarget={document.body}
+      menuShouldBlockScroll
       className="react-select-container"
       classNamePrefix="react-select"
-      menuPlacement="auto"
-      menuPosition="absolute"
       placeholder="..."
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
