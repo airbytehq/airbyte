@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.86
+- TypeTransformer make warning message more informative
+
 ## 0.1.85
 - Make TypeTransformer more robust to incorrect incoming records
 
