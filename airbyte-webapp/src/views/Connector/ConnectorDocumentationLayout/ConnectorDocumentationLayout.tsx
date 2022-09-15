@@ -28,7 +28,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
 
   return (
     <div className={classNames(styles.container)}>
-      {screenWidth > 500 && width < 550 && (
+      {screenWidth > 500 && width < 100 && (
         <div className={styles.darkOverlay}>
           <h3>
             <FormattedMessage id="connectorForm.expandForm" />

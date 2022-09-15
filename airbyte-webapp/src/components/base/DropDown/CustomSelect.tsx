@@ -19,6 +19,7 @@ export const CustomSelect = styled(Select)<
     font-size: 14px;
     line-height: 20px;
     min-height: 36px;
+    flex-wrap: nowrap;
 
     &:hover {
       border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor20)};
@@ -38,6 +39,12 @@ export const CustomSelect = styled(Select)<
     & .react-select__value-container {
       overflow: visible;
       display: flex;
+      flex-wrap: nowrap;
+    }
+
+    & .react-select__single-value {
+      max-width: 210px;
+      text-overflow: ellipsis;
     }
   }
 `;
