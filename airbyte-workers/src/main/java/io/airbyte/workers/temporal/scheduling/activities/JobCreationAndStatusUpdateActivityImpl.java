@@ -207,6 +207,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptId(), JobStatus.SUCCEEDED, e);
       throw new RetryableException(e);
     }
   }
@@ -216,6 +217,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     jobSuccess(new JobSuccessInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getStandardSyncOutput()));
   }
 
@@ -237,6 +239,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
           .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, jobContext));
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptNumber(), JobStatus.FAILED, e);
       throw new RetryableException(e);
     }
   }
@@ -274,6 +277,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     attemptFailure(new AttemptFailureInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getStandardSyncOutput(),
         input.getAttemptFailureSummary()));
   }
@@ -292,6 +296,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptId(), JobStatus.FAILED, e);
       throw new RetryableException(e);
     }
   }
@@ -301,6 +306,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     jobCancelled(new JobCancelledInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getAttemptFailureSummary()));
   }
 
@@ -368,6 +374,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
+  }
+
+  private void trackCompletionForInternalFailure(final Long jobId,
+                                                 final UUID connectionId,
+                                                 final Integer attemptId,
+                                                 final io.airbyte.workers.JobStatus status,
+                                                 final Exception e) {
+    jobTracker.trackSyncForInternalFailure(jobId, connectionId, attemptId, Enums.convertTo(status, JobState.class), e);
   }
 
 }
