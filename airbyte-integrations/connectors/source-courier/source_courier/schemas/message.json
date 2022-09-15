@@ -108,7 +108,9 @@
             "type": "string"
           },
           "reference": {
-            "type": "object"
+            "type": "object",
+            "properties": {},
+            "additionalProperties": true
           },
           "sent": {
             "type": "number"

@@ -4,6 +4,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -11,16 +14,22 @@
           "const": "ENQUEUED"
         },
         "data": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         },
         "event": {
           "type": "string"
         },
         "profile": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         },
         "override": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         },
         "recipient": {
           "type": "string"
@@ -30,6 +39,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -47,6 +59,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -54,19 +69,28 @@
           "const": "PROFILE_LOADED"
         },
         "merged_profile": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         },
         "received_profile": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         },
         "stored_profile": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         }
       }
     },
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -74,13 +98,18 @@
           "const": "RENDERED"
         },
         "output": {
-          "type": "object"
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
         }
       }
     },
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -124,6 +153,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -157,6 +189,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -190,6 +225,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
@@ -217,6 +255,9 @@
     {
       "type": "object",
       "properties": {
+        "message_id": {
+          "type": "string"
+        },
         "ts": {
           "type": "number"
         },
