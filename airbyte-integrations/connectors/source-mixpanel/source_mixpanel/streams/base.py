@@ -95,6 +95,10 @@ class MixpanelStream(HttpStream, ABC):
             # in all other cases wait for X seconds to match API limitations
             time.sleep(3600 / self.reqs_per_hour_limit)
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # additional 10 seconds just in case delay is too low
+        return int(response.headers.get("Retry-After", 0)) + 10
+
     def get_stream_params(self) -> Mapping[str, Any]:
         """
         Fetch required parameters in a given stream. Used to create sub-streams
