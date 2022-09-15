@@ -1,0 +1,29 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Arquivei Spec",
+    "type": "object",
+    "required": ["api_key","api_id","start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "title": "API key",
+        "type": "string",
+        "description": "API key used to retrieve data from the Arquivei API."
+      },
+      "api_id": {
+        "title": "API id",
+        "type": "string",
+        "description": "API id used to retrieve data from the Arquivei API."
+      },
+      "start_date": {
+        "title": "Start Date",
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["YYYY-MM-DD"]
+      }
+    }
+  }
+}

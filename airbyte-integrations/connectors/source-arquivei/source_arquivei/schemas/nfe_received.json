@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "api_key": {
+          "type": "string"
+        },
+        "api_id": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        }
+    }
+  }
