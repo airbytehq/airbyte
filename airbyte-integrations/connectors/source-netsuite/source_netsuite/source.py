@@ -4,7 +4,7 @@
 
 
 from collections import Counter
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -72,38 +72,64 @@ class SourceNetsuite(AbstractSource):
             except requests.exceptions.HTTPError as e:
                 return False, e
 
+    def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
+        # fetch schemas
+        if isinstance(object_names, list):
+            return {object_name: session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names}
+        elif isinstance(object_names, str):
+            return {object_names: session.get(metadata_url + object_names, headers=SCHEMA_HEADERS).json()}
+
+    def generate_stream(
+        self,
+        session: requests.Session,
+        metadata_url: str,
+        schemas: dict,
+        object_name: str,
+        auth: OAuth1,
+        base_url: str,
+        start_datetime: str,
+        window_in_days: int,
+    ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
+        # try to build the stream instance dynamicaly
+        try:
+            schema = schemas[object_name]
+            schema_props = schema["properties"]
+            if schema_props:
+                if "lastModifiedDate" in schema_props.keys():
+                    # if stream has `lastModifiedDate` as cursor - it's incremental
+                    return IncrementalNetsuiteStream(auth, object_name, base_url, start_datetime, window_in_days)
+                elif "lastmodified" in schema_props.keys():
+                    # if stream has `lastmodified` as cursor - it's custom incrermental
+                    return CustomIncrementalNetsuiteStream(auth, object_name, base_url, start_datetime, window_in_days)
+                else:
+                    # all other streams are full_refresh
+                    return NetsuiteStream(auth, object_name, base_url, start_datetime, window_in_days)
+        except KeyError:
+            print(f"Object `{object_name}` schema has missing `properties` key. Retry...")
+            # somethimes object metadata returns data with missing `properties` key,
+            # we should try to fetch metadata again to that object
+            self.get_schemas(object_name, session, metadata_url)
+            self.generate_stream(session, metadata_url, schemas, object_name, auth, base_url, start_datetime, window_in_days)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         base_url = self.base_url(config)
+        metadata_url = base_url + META_PATH
         auth = self.auth(config)
+        session = self.get_session(auth)
+        object_names = config.get("object_types", [])
         start_datetime = config["start_datetime"]
         window_in_days = config["window_in_days"]
-        session = self.get_session(auth)
-        metadata_url = base_url + META_PATH
-        object_names = config.get("object_types", [])
 
+        # retrieve all record types if `object_types` config field is not specified
         if not object_names:
-            # retrieve all record types
             objects_metadata = session.get(metadata_url).json().get("items")
             object_names = [object["name"] for object in objects_metadata]
 
-        # fetch schemas
-        schemas = {n: session.get(metadata_url + n, headers=SCHEMA_HEADERS).json() for n in object_names}
-        # get incremental object names
-        # incremental streams must have a `lastModifiedDate` property
-        incremental_object_names = [n for n in object_names if schemas[n]["properties"].get("lastModifiedDate")]
-        # get custom incremental object names
-        # custom incremental streams must have a `lastmodified` property
-        custom_incremental_object_names = [n for n in object_names if schemas[n]["properties"].get("lastmodified")]
-        # get full-refresh object names
-        standard_object_names = [n for n in object_names if n not in incremental_object_names]
+        schemas = self.get_schemas(object_names, session, metadata_url)
 
-        incremental_streams = [
-            IncrementalNetsuiteStream(auth, name, base_url, start_datetime, window_in_days) for name in incremental_object_names
-        ]
-        custom_incremental_streams = [
-            CustomIncrementalNetsuiteStream(auth, name, base_url, start_datetime, window_in_days)
-            for name in custom_incremental_object_names
-        ]
-        streams = [NetsuiteStream(auth, name, base_url, start_datetime, window_in_days) for name in standard_object_names]
+        # build streams
+        streams: list = []
+        for name in object_names:
+            streams.append(self.generate_stream(session, metadata_url, schemas, name, auth, base_url, start_datetime, window_in_days))
 
-        return streams + incremental_streams + custom_incremental_streams
+        return streams
