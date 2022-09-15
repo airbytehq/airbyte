@@ -71,7 +71,10 @@ const useConnectionForm = ({ connection, mode, formId, onSubmit, onAfterSubmit, 
         if ((isSubmitCancel(submitResult) && !submitResult.submitCancel) || !isSubmitCancel(submitResult)) {
           formikHelpers.resetForm({ values });
           // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
-          clearFormChange(formId);
+          // formId is never undefined
+          if (formId) {
+            clearFormChange(formId);
+          }
           onAfterSubmit?.(submitResult);
         }
       } catch (e) {
