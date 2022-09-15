@@ -139,7 +139,12 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
     if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
         # TODO: upgrade dbt-adapter repositories to work with dbt 0.21.0+ (outside airbyte's control)
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
-    if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value, DestinationType.TIDB.value, DestinationType.FIREBOLT.value]:
+    if destination_type.value in [
+        DestinationType.SNOWFLAKE.value,
+        DestinationType.CLICKHOUSE.value,
+        DestinationType.TIDB.value,
+        DestinationType.FIREBOLT.value,
+    ]:
         pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
     if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value]:
         # TODO: create/fix github issue in corresponding dbt-adapter repository to handle schema changes (outside airbyte's control)
