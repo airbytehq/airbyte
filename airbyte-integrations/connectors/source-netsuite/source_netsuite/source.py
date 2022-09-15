@@ -108,8 +108,10 @@ class SourceNetsuite(AbstractSource):
             print(f"Object `{object_name}` schema has missing `properties` key. Retry...")
             # somethimes object metadata returns data with missing `properties` key,
             # we should try to fetch metadata again to that object
-            self.get_schemas(object_name, session, metadata_url)
-            self.generate_stream(session, metadata_url, schemas, object_name, auth, base_url, start_datetime, window_in_days)
+            schemas = self.get_schemas(object_name, session, metadata_url)
+            return self.generate_stream(
+                session, metadata_url, schemas, object_name, auth, base_url, start_datetime, window_in_days
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         base_url = self.base_url(config)

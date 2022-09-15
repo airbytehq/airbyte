@@ -63,7 +63,7 @@ class NetsuiteStream(HttpStream, ABC):
         return {
             "type": ["null", "object"],
             "properties": {
-                "id": {"title": "Internal identifier", "type": ["null", "string"]},
+                "id": {"title": "Internal identifier", "type": ["string"]},
                 "refName": {"title": "Reference Name", "type": ["null", "string"]},
                 "externalId": {"title": "External identifier", "type": ["null", "string"]},
                 "links": {
