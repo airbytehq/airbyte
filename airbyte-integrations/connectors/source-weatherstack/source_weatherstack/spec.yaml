@@ -11,14 +11,14 @@ connectionSpecification:
     access_key:
       order: 0
       type: string
-      description: API access key used to retrieve data from the Weatherstack API.
+      description: API access key used to retrieve data from the Weatherstack API.(https://weatherstack.com/product)
       airbyte_secret: true
     query:
       order: 1
       type: string
       description: A location to query such as city, IP, latitudeLongitude, or zipcode. 
         Multiple locations with semicolon seperated if using a professional plan or higher.
-        For more info- https://weatherstack.com/documentation#query_parameter 
+        For more info- (https://weatherstack.com/documentation#query_parameter) 
       examples:
         - New York
         - London
