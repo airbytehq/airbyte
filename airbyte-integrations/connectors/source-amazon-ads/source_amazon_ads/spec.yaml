@@ -3,42 +3,13 @@ documentationUrl: https://go.estuary.dev/rzNWCe
 connectionSpecification:
   title: Amazon Ads Spec
   type: object
+  required:
+    - credentials
+    - region
+    - report_wait_timeout
+    - report_generation_max_retries
+  additionalProperties: true
   properties:
-    credentials:
-      required: 
-        - client_id
-        - client_secret
-        - refresh_token
-      type: object
-      x-oauth-provider: amazon
-      properties:
-        auth_type:
-          title: Auth Type
-          const: oauth2.0
-          order: 0
-          type: string
-        client_id:
-          title: Client ID
-          description:
-            The client ID of your Amazon Ads developer application. See the docs for more information
-            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
-          order: 1
-          type: string
-        client_secret:
-          title: Client Secret
-          description:
-            The client secret of your Amazon Ads developer application. See the docs for more information
-            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
-          airbyte_secret: true
-          order: 2
-          type: string
-        refresh_token:
-          title: Refresh Token
-          description:
-            Amazon Ads refresh token. See the docs for more information about this token https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens
-          airbyte_secret: true
-          order: 3
-          type: string
     region:
       title: Region *
       description:
@@ -89,12 +60,42 @@ connectionSpecification:
       type: array
       items:
         type: integer
-  required:
-    - credentials
-    - region
-    - report_wait_timeout
-    - report_generation_max_retries
-  additionalProperties: true
+    credentials:
+      required: 
+        - client_id
+        - client_secret
+        - refresh_token
+      type: object
+      x-oauth-provider: amazon
+      properties:
+        auth_type:
+          title: Auth Type
+          const: oauth2.0
+          order: 0
+          type: string
+        client_id:
+          title: Client ID
+          description:
+            The client ID of your Amazon Ads developer application. See the docs for more information
+            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
+          order: 1
+          type: string
+        client_secret:
+          title: Client Secret
+          description:
+            The client secret of your Amazon Ads developer application. See the docs for more information
+            https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret
+          airbyte_secret: true
+          order: 2
+          type: string
+        refresh_token:
+          title: Refresh Token
+          description:
+            Amazon Ads refresh token. See the docs for more information about this token https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens
+          airbyte_secret: true
+          order: 3
+          type: string
+
 
 
 authSpecification:
