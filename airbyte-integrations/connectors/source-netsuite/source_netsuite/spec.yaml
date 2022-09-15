@@ -36,7 +36,7 @@ connectionSpecification:
       items:
         type: string
       description: The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite.
-      examples: ["customer", "currency"]
+      examples: ["customer", "salesorder", "etc"]
       default: []
     window_in_days:
       type: integer
