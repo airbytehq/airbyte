@@ -1,7 +1,6 @@
-# Python Http Tutorial Source
+# Arquivei Source
 
-This is the repository for the Python Http Tutorial source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/python-http-tutorial).
+This is the repository for the Arquivei source connector, written in Python.
 
 ## Local development
 
@@ -34,17 +33,13 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:build
+./gradlew :airbyte-integrations:connectors:arquivei:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/python-http-tutorial)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_python_http_tutorial/spec.json` file.
+To generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source python-http-tutorial test creds`
-and place them into `secrets/config.json`.
 
 
 ### Locally running the connector
@@ -66,12 +61,12 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-python-http-tutorial:dev
+docker build . -t airbyte/arquivei:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:airbyteDocker
+./gradlew :airbyte-integrations:connectors:arquivei:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -79,14 +74,14 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-python-http-tutorial:dev spec
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev check --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev discover --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm airbyte/arquivei:dev spec
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev check --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev discover --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:integrationTest` to run the standard integration test suite.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:arquivei:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
