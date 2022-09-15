@@ -4,7 +4,7 @@
 
 package io.airbyte.cron.selfhealing;
 
-import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalClient;
 import io.micronaut.scheduling.annotation.Scheduled;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import javax.inject.Named;

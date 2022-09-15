@@ -1,5 +1,8 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
     id "java-library"
+    id 'com.github.eirnym.js2p' version '1.0'
 }
 
 dependencies {
@@ -18,4 +21,18 @@ dependencies {
     testImplementation 'io.temporal:temporal-testing:1.8.1'
 
     implementation project(':airbyte-config:config-models')
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/workers_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.scheduler.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
 }
