@@ -148,7 +148,7 @@ VERY_NESTED_SCHEMA = {
             "Failed to transform value 'string' of type 'string' to 'array', key path: '.value'",
         ),
         (
-            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["object"]}}}},
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["string"]}}}},
             {"value": {"key": "value"}},
             {"value": {"key": "value"}},
             "Failed to transform value {'key': 'value'} of type 'object' to 'array', key path: '.value'"
