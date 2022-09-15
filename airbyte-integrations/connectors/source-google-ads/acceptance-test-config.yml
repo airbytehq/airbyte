@@ -5,7 +5,7 @@ tests:
   spec:
     - spec_path: "source_google_ads/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: 0.1.44
+        disable_for_version: "0.1.45"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
