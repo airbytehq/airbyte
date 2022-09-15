@@ -37,7 +37,7 @@ def test_incremental_sync(config, configured_catalog):
     today = pendulum.now().date()
     start_date = today.subtract(months=3)
     config["start_date"] = start_date.to_date_string()
-
+    config.pop("end_date", "")
     google_ads_client = SourceGoogleAds()
     records = list(google_ads_client.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog)))
     latest_state = None
