@@ -101,18 +101,20 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionForm
-        mode="create"
-        connection={connection}
-        onDropDownSelect={onSelectFrequency}
-        onSubmit={onSubmitConnectionStep}
-        additionalSchemaControl={
-          <Button onClick={onDiscoverSchema} type="button">
-            <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
-            <FormattedMessage id="connection.refreshSchema" />
-          </Button>
-        }
-      />
+      <div className={styles.connectionFormContainer}>
+        <ConnectionForm
+          mode="create"
+          connection={connection}
+          onDropDownSelect={onSelectFrequency}
+          onSubmit={onSubmitConnectionStep}
+          additionalSchemaControl={
+            <Button onClick={onDiscoverSchema} type="button">
+              <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+              <FormattedMessage id="connection.refreshSchema" />
+            </Button>
+          }
+        />
+      </div>
     </Suspense>
   );
 };

@@ -17,7 +17,7 @@ const LabelMessage: React.FC<IProps> = ({ property, error, touched }) => {
       return null;
     }
 
-    const exampleText = Array.isArray(property.examples) ? property.examples?.join(", ") : property.examples;
+    const exampleText = Array.isArray(property.examples) ? property.examples?.join(", ") : String(property.examples);
 
     return <FormattedMessage id="form.examples" values={{ examples: exampleText }} />;
   };

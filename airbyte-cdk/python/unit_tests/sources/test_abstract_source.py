@@ -24,8 +24,9 @@ from airbyte_cdk.models import (
     Status,
     StreamDescriptor,
     SyncMode,
-    Type,
 )
+from airbyte_cdk.models import Type
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -71,6 +72,35 @@ class StreamNoStateMethod(Stream):
 class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
     name = "teams"
     primary_key = None
+    cursor_field = "updated_at"
+    _cursor_value = ""
+    start_date = "1984-12-12"
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        return {}
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._cursor_value = value.get(self.cursor_field, self.start_date)
+
+
+class StreamNoStateMethod(Stream):
+    name = "managers"
+    primary_key = None
+    namespace = "public"
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        return {}
+
+
+class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
+    name = "teams"
+    primary_key = None
+    namespace = "public"
     cursor_field = "updated_at"
     _cursor_value = ""
     start_date = "1984-12-12"

@@ -271,7 +271,6 @@ def test_get_stream_state(input_state, stream_name, namespace, expected_state):
     actual_state = state_manager.get_stream_state(stream_name, namespace)
 
     assert actual_state == expected_state
-    # todo add a test where the state is None and we still return an empty mapping
 
 
 @pytest.mark.parametrize(

@@ -34,7 +34,7 @@ interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   connector: ConnectorT;
 }
 
-export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
   full,
   jobInfo,

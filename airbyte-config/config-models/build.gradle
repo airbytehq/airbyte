@@ -5,6 +5,9 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    implementation libs.bundles.micronaut.annotation
+
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons')

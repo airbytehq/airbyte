@@ -217,7 +217,9 @@ public class ConnectionsHandler {
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
 
     final String frequencyString;
-    if (standardSync.getManual()) {
+    if (standardSync.getScheduleType() != null) {
+      frequencyString = getFrequencyStringFromScheduleType(standardSync.getScheduleType(), standardSync.getScheduleData());
+    } else if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
       final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
@@ -420,6 +422,24 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     return ApiPojoConverters.internalToConnectionRead(standardSync);
+  }
+
+  private static String getFrequencyStringFromScheduleType(final ScheduleType scheduleType, final ScheduleData scheduleData) {
+    switch (scheduleType) {
+      case MANUAL -> {
+        return "manual";
+      }
+      case BASIC_SCHEDULE -> {
+        return TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(scheduleData.getBasicSchedule())) + " min";
+      }
+      case CRON -> {
+        // TODO(https://github.com/airbytehq/airbyte/issues/2170): consider something more detailed.
+        return "cron";
+      }
+      default -> {
+        throw new RuntimeException("Unexpected schedule type");
+      }
+    }
   }
 
 }
