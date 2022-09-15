@@ -83,8 +83,8 @@ class SourceNetsuite(AbstractSource):
 
         if not object_names:
             # retrieve all record types
-            metadata = session.get(metadata_url).json().get("items")
-            object_names = [r["name"] for r in metadata]
+            objects_metadata = session.get(metadata_url).json().get("items")
+            object_names = [object["name"] for object in objects_metadata]
 
         # fetch schemas
         schemas = {n: session.get(metadata_url + n, headers=SCHEMA_HEADERS).json() for n in object_names}
