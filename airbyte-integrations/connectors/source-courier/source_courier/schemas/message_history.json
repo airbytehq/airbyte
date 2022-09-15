@@ -1,219 +1,104 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "DeliveredMessageHistory": {
+  "anyOf": [
+    {
+      "type": "object",
       "properties": {
-        "channel": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "integration": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "reference": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
-        },
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["DELIVERED"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "EnqueuedMessageHistory": {
-      "properties": {
+          "const": "ENQUEUED"
+        },
         "data": {
-          "anyOf": [
-            {
-              "additionalProperties": {
-                "type": "string"
-              },
-              "type": "object"
-            },
-            {
-              "type": "string"
-            }
-          ]
+          "type": "object"
         },
         "event": {
           "type": "string"
         },
-        "override": {
-          "additionalProperties": {},
+        "profile": {
           "type": "object"
         },
-        "profile": {
-          "additionalProperties": {},
+        "override": {
           "type": "object"
         },
         "recipient": {
           "type": "string"
-        },
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["ENQUEUED"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "MappedMessageHistory": {
-      "properties": {
+          "const": "MAPPED"
+        },
         "event_id": {
           "type": "string"
         },
         "notification_id": {
           "type": "string"
-        },
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["MAPPED"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "MessageHistory": {
-      "enum": [
-        "CLICKED",
-        "DELIVERED",
-        "DELIVERING",
-        "OPENED",
-        "RENDERED",
-        "SENT",
-        "UNDELIVERABLE"
-      ],
-      "type": "string"
-    },
-    "ProfileLoadedMessageHistory": {
-      "properties": {
+          "const": "PROFILE_LOADED"
+        },
         "merged_profile": {
-          "additionalProperties": {},
           "type": "object"
         },
         "received_profile": {
-          "additionalProperties": {},
           "type": "object"
         },
         "stored_profile": {
-          "additionalProperties": {},
           "type": "object"
-        },
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["PROFILE_LOADED"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "ProviderErrorMessageHistory": {
-      "properties": {
-        "channel": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "error_message": {
-          "type": "string"
-        },
-        "integration": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "enum": ["UNDELIVERABLE"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "RenderedMessageHistory": {
-      "properties": {
-        "channel": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "integration": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+          "const": "RENDERED"
         },
         "output": {
-          "additionalProperties": {
-            "type": "string"
-          },
           "type": "object"
-        },
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["RENDERED"],
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "RoutedMessageHistory": {
-      "properties": {
+          "type": "string",
+          "enum": [
+            "CLICKED",
+            "DELIVERED",
+            "ENQUEUED",
+            "OPENED",
+            "SENT",
+            "UNDELIVERABLE",
+            "UNMAPPED",
+            "UNROUTABLE"
+          ]
+        },
         "channel": {
+          "type": "object",
           "properties": {
             "id": {
               "type": "string"
@@ -221,10 +106,10 @@
             "label": {
               "type": "string"
             }
-          },
-          "type": "object"
+          }
         },
         "integration": {
+          "type": "object",
           "properties": {
             "id": {
               "type": "string"
@@ -232,21 +117,21 @@
             "provider": {
               "type": "string"
             }
-          },
-          "type": "object"
-        },
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "ts": {
           "type": "number"
         },
         "type": {
-          "$ref": "#/definitions/MessageHistory"
-        }
-      },
-      "type": "object"
-    },
-    "UndeliverableMessageHistory": {
-      "properties": {
+          "const": "DELIVERED"
+        },
         "channel": {
+          "type": "object",
           "properties": {
             "id": {
               "type": "string"
@@ -254,10 +139,10 @@
             "label": {
               "type": "string"
             }
-          },
-          "type": "object"
+          }
         },
         "integration": {
+          "type": "object",
           "properties": {
             "id": {
               "type": "string"
@@ -265,83 +150,92 @@
             "provider": {
               "type": "string"
             }
-          },
-          "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ts": {
+          "type": "number"
+        },
+        "type": {
+          "const": "UNDELIVERABLE"
+        },
+        "channel": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          }
+        },
+        "integration": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "provider": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ts": {
+          "type": "number"
+        },
+        "type": {
+          "const": "UNDELIVERABLE"
         },
         "reason": {
-          "$ref": "#/definitions/MessageStatusReason"
+          "type": "string",
+          "enum": [
+            "FILTERED",
+            "NO_CHANNELS",
+            "NO_PROVIDERS",
+            "PROVIDER_ERROR",
+            "UNPUBLISHED",
+            "UNDELIVERABLE",
+            "UNSUBSCRIBED"
+          ]
         },
         "reasonCode": {
-          "enum": ["HARD", "SOFT"],
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "enum": ["UNDELIVERABLE"],
-          "type": "string"
+          "type": "string",
+          "enum": ["HARD", "SOFT"]
         }
-      },
-      "type": "object"
+      }
     },
-    "UnroutableMessageHistory": {
+    {
+      "type": "object",
       "properties": {
-        "reason": {
-          "$ref": "#/definitions/MessageStatusReason"
-        },
         "ts": {
           "type": "number"
         },
         "type": {
-          "enum": ["UNROUTABLE"],
-          "type": "string"
+          "const": "UNROUTABLE"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "FILTERED",
+            "NO_CHANNELS",
+            "NO_PROVIDERS",
+            "PROVIDER_ERROR",
+            "UNPUBLISHED",
+            "UNDELIVERABLE",
+            "UNSUBSCRIBED"
+          ]
         }
-      },
-      "type": "object"
-    },
-    "MessageStatusReason": {
-      "enum": [
-        "BOUNCED",
-        "FAILED",
-        "FILTERED",
-        "NO_CHANNELS",
-        "NO_PROVIDERS",
-        "OPT_IN_REQUIRED",
-        "PROVIDER_ERROR",
-        "UNPUBLISHED",
-        "UNSUBSCRIBED"
-      ],
-      "type": "string"
-    }
-  },
-  "anyOf": [
-    {
-      "$ref": "#/definitions/EnqueuedMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/MappedMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/ProfileLoadedMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/RenderedMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/UnroutableMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/UndeliverableMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/DeliveredMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/ProviderErrorMessageHistory"
-    },
-    {
-      "$ref": "#/definitions/RoutedMessageHistory"
+      }
     }
   ]
 }

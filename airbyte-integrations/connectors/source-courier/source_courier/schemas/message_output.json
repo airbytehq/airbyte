@@ -10,7 +10,6 @@
     "content": {
       "properties": {
         "blocks": {
-          "items": {},
           "type": "array"
         },
         "body": {

@@ -21,7 +21,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      token: "{{ config['api_key'] }}"
+      api_token: "{{ config['api_key'] }}"
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
@@ -65,6 +65,7 @@ definitions:
   ## MESSAGES API ##
   messages_stream:
     $ref: "*ref(definitions.paginated_stream)"
+    primary_key: id
     $options:
       name: "messages"
       path: "/messages"
@@ -82,6 +83,7 @@ definitions:
   message_stream:
     $ref: "*ref(definitions.paginated_stream)"
     type: DeclarativeStream
+    primary_key: id
     $options:
       name: message
     retriever:
