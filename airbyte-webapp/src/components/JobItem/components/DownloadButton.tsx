@@ -6,6 +6,7 @@ import { useIntl } from "react-intl";
 import { Button } from "components";
 
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
+import { useCurrentWorkspaceId, useGetWorkspace } from "services/workspaces/WorkspacesService";
 import { downloadFile } from "utils/file";
 
 interface DownloadButtonProps {
@@ -15,12 +16,13 @@ interface DownloadButtonProps {
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName }) => {
   const { formatMessage } = useIntl();
+  const { name } = useGetWorkspace(useCurrentWorkspaceId());
 
   const downloadFileWithLogs = () => {
     const file = new Blob([jobDebugInfo.attempts.flatMap((info) => info.logs.logLines).join("\n")], {
       type: "text/plain;charset=utf-8",
     });
-    downloadFile(file, `${fileName}.txt`);
+    downloadFile(file, `${name}-${fileName}.txt`);
   };
 
   return (
