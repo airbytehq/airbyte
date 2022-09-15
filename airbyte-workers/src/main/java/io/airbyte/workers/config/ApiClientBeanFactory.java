@@ -12,6 +12,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.config.Configs.WorkerPlane;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.annotation.Prototype;
 import java.io.FileInputStream;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
@@ -19,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import io.micronaut.context.BeanProvider;
+
 
 /**
  * Micronaut bean factory for API client singletons.
@@ -33,7 +36,7 @@ public class ApiClientBeanFactory {
   public AirbyteApiClient airbyteApiClient(
                                            @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-                                           @Named("internalApiAuthToken") final String internalApiAuthToken,
+                                           @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                                            @Named("internalApiScheme") final String internalApiScheme) {
     return new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
@@ -44,7 +47,7 @@ public class ApiClientBeanFactory {
             .setRequestInterceptor(builder -> {
               builder.setHeader("User-Agent", "WorkerApp");
               if (!airbyteApiAuthHeaderName.isBlank()) {
-                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken);
+                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
               }
             }));
   }
@@ -66,7 +69,7 @@ public class ApiClientBeanFactory {
    * <p>
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */
-  @Singleton
+  @Prototype
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
                                      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
