@@ -15,6 +15,6 @@ $icon-top: math.div($line-height - $icon-size, 2);
 }
 
 .icon {
-  position: absolute;
+  position: relative;
   top: $icon-top;
 }
