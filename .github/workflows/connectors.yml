@@ -63,6 +63,7 @@ jobs:
           - source-linkedin-ads
           - source-bing-ads
           - source-github
+          - source-amazon-ads
 
     steps:
       - uses: actions/checkout@v2
