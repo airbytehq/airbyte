@@ -10,8 +10,8 @@ $icon-top: math.div($line-height - $icon-size, 2);
 .container {
   display: inline-block;
   color: colors.$grey;
-  width: calc($icon-size + $icon-padding * 2);
-  padding: 0 $icon-padding;
+  width: calc($icon-size + $icon-padding);
+  padding-left: $icon-padding;
 }
 
 .icon {
