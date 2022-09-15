@@ -19,9 +19,7 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = WeatherstackStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 

@@ -196,10 +196,14 @@ class LocationLookup(HttpStream):
 
 # Source
 class SourceWeatherstack(AbstractSource):
+
+    def max_retries(self) -> int:
+        return 20
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        accepted_cities = {"New York", "London"}
+        accepted_queries = {"New York", "London", "33128"}
         query = config["query"]
-        if query not in accepted_cities:
+        if query not in accepted_queries:
             return False, f"Input City {query} is invalid. Please check your spelling or input a valid City."
         else:
             return True, None

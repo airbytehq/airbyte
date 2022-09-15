@@ -1,7 +1,7 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
+      "name": "current_weather",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": "column1",
@@ -9,28 +9,74 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
+          "api_key": {
             "type": "string"
           },
-          "column2": {
-            "type": "number"
+          "query": {
+            "type": "string"
           }
         }
       }
     },
     {
-      "name": "table1",
+      "name": "forecast",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
+          "api_key": {
             "type": "string"
           },
-          "column2": {
+          "query": {
+            "type": "string"
+          },
+          "forecast_days": {
             "type": "number"
+          },
+          "hourly": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "historical",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "historical_date": {
+            "type": "string"
+          },
+          "hourly": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "location_lookup",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
           }
         }
       }

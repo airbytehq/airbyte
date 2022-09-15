@@ -6,7 +6,7 @@ This source connector syncs data from the [Weatherstack API](http://api.weathers
 
 ### Output schema
 
-This source currently has four streams: `current`, `historical`, `forecast`, and `autocomplete`. Examples of the data outputted by this stream are available [here](https://weatherstack.com/documentation).
+This source currently has four streams: `current`, `historical`, `forecast`, and `autocomplete`. The Current Weather API is available on all plans. The Historical Weather and Autocmplete API's are available on the standard plan and higher. The Forecast API is available on the Professional plan and higher. Examples of the data outputted by this stream are available [here](https://weatherstack.com/documentation).
 
 ### Features
 
@@ -35,5 +35,5 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-09-08 | [](https://github.com/airbytehq/airbyte/pull/) | Initial release |
+| 0.1.0 | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
 
