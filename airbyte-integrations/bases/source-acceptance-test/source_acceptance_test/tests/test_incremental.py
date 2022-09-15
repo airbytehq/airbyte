@@ -150,7 +150,7 @@ class TestIncremental(BaseTest):
         # the complete final state of streams must be assembled by going through all prior state messages received
         if is_per_stream_state(states_1[-1]):
             latest_state = construct_latest_state_from_messages(states_1)
-            state_input = [latest_per_stream for latest_per_stream in latest_state.values()]
+            state_input = list(latest_state.values())
         else:
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
