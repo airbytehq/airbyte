@@ -1,39 +1,39 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties": {
+  "required": ["AccountId", "CampaignId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType"],
     "AccountId": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "CampaignId": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "CurrencyCode": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "AdDistribution": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeviceType": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "Network": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeliveredMatchType": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeviceOS": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "TopVsOther": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "BidMatchType": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "CampaignStatus": {
       "type": ["null", "string"]
@@ -168,4 +168,4 @@
       "type": ["null", "string"]
     }
   }
-}
+

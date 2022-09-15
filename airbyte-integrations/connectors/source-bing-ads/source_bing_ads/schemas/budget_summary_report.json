@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["Date"],
   "properties": {
     "AccountName": {
       "type": ["null", "string"]
@@ -18,7 +19,7 @@
       "type": ["null", "string"]
     },
     "Date": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "MonthlyBudget": {
       "type": ["null", "number"]
