@@ -129,7 +129,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------|
-| 0.2.22  | 2022-09-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix schema generation for JSON files containing arrays   |
+| 0.2.22  | 2022-09-15 | [16772](https://github.com/airbytehq/airbyte/pull/16772) | Fix schema generation for JSON files containing arrays   |
 | 0.2.21  | 2022-08-26 | [15568](https://github.com/airbytehq/airbyte/pull/15568) | Specify `pyxlsb` library for Excel Binary Workbook files |
 | 0.2.20  | 2022-08-23 | [15870](https://github.com/airbytehq/airbyte/pull/15870) | Fix CSV schema discovery                                 |
 | 0.2.19  | 2022-08-19 | [15768](https://github.com/airbytehq/airbyte/pull/15768) | Convert 'nan' to 'null'                                  |
