@@ -186,4 +186,6 @@ class TypeTransformer:
     def get_error_message(self, e: ValidationError) -> str:
         instance_json_type = python_to_json[type(e.instance)]
         key_path = "." + ".".join(e.path)
-        return f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
+        return (
+            f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
+        )
