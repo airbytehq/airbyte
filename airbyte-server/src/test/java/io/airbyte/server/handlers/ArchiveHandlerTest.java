@@ -98,6 +98,7 @@ class ArchiveHandlerTest {
   private JsonSecretsProcessor jsonSecretsProcessor;
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
+  private WorkspaceHelper workspaceHelper;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
 
@@ -146,6 +147,8 @@ class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION.serialize());
 
+    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
@@ -153,7 +156,7 @@ class ArchiveHandlerTest {
         secretsRepositoryWriter,
         jobPersistence,
         seedPersistence,
-        new WorkspaceHelper(configRepository, jobPersistence),
+        workspaceHelper,
         new NoOpFileTtlManager(),
         true);
   }

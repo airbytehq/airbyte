@@ -122,6 +122,7 @@ To read more please check official [Snowflake documentation](https://docs.snowfl
 
 | Version   | Date | Pull Request | Subject |
 |:----------| :--- | :--- | :--- |
+| 0.1.21    | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
 | 0.1.20  | 2022-09-01 | [16258](https://github.com/airbytehq/airbyte/pull/16258) | Emit state messages more frequently |
 | 0.1.19    | 2022-08-19 | [15797](https://github.com/airbytehq/airbyte/pull/15797) | Allow using role during oauth |
 | 0.1.18    | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |

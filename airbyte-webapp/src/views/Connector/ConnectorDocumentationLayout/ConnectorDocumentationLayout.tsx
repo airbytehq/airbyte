@@ -57,7 +57,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 };
 // NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
+export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
 
