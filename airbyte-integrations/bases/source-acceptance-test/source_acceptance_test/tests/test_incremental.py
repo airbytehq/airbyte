@@ -115,7 +115,7 @@ def is_per_stream_state(message: AirbyteMessage) -> bool:
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
-    stream, this helper method reconstructs the final state of all streams after going through each Airbyte
+    stream, this helper method reconstructs the final state of all streams after going through each AirbyteMessage
     """
     latest_per_stream_by_name = dict()
     for message in messages:
