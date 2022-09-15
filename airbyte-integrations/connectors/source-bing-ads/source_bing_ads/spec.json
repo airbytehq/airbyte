@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads",
+  "documentationUrl": "https://go.estuary.dev/QpEo4F",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
@@ -7,7 +7,8 @@
     "required": [
       "developer_token",
       "credentials",
-      "reports_start_date"
+      "reports_start_date",
+      "tentant_id"
     ],
     "additionalProperties": true,
     "properties": {
@@ -30,7 +31,7 @@
       "developer_token": {
         "type": "string",
         "title": "Developer Token",
-        "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
+        "description": "Developer token associated with user. See more info in the docs: https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token",
         "airbyte_secret": true,
         "order": 4
       },
@@ -80,7 +81,7 @@
   "authSpecification": {
     "provider": "microsoft",
     "authUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?clientid={{ urlencode client_id }}&scope=openid%20profile%20https://ads.microsoft.com/msads.manage%20offline_access&response_type=code&redirect_uri={{ urlencode redirect_uri }}&state={{ urlencode state }}&response_mode=query",
-    "accessTokenUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    "accessTokenUrlTemplate": "https://login.microsoftonline.com/{{ config.tenant_id }}/oauth2/v2.0/token",
     "accessTokenBody": "client_id={{ urlencode client_id }}&scope=https://ads.microsoft.com/msads.manage%20offline_access&code={{ urlencode code }}&grant_type=authorization_code&redirect_uri={{ urlencode redirect_uri }}",
     "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
     "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
