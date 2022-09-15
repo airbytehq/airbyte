@@ -12,7 +12,7 @@
       "type": ["string"]
     },
     "AdDistribution": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "DeviceType": {
       "type": ["string"]

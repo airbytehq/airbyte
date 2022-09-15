@@ -4,7 +4,7 @@
   "required": ["Id"],
   "properties": {
     "Id": {
-      "type": ["number"]
+      "type": ["integer"]
     },
     "AccountFinancialStatus": {
       "type": ["null", "string"]

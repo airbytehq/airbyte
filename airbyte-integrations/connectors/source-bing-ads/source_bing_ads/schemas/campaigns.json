@@ -49,7 +49,7 @@
       }
     },
     "Id": {
-      "type": ["number"]
+      "type": ["integer"]
     },
     "Name": {
       "type": ["null", "string"]
