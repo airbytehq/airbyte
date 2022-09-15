@@ -13,26 +13,32 @@ connectionSpecification:
   properties:
     realm:
       type: string
+      title: Realm (Account Id)
       description: Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1, as for the `sandbox`
       airbyte_secret: true
     consumer_key:
       type: string
+      title: Consumer Key
       description: Consumer key associated with your integration
       airbyte_secret: true
     consumer_secret:
       type: string
+      title: Consumer Secret
       description: Consumer secret associated with your integration
       airbyte_secret: true
     token_key:
       type: string
+      title: Token Key (Token Id)
       description: Access token key
       airbyte_secret: true
     token_secret:
       type: string
+      title: Token Secret
       description: Access token secret
       airbyte_secret: true
     object_types:
       type: array
+      title: Object Types (Optional)
       items:
         type: string
       description: The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite.
@@ -40,5 +46,6 @@ connectionSpecification:
       default: []
     window_in_days:
       type: integer
+      title: Window in Days (Optional)
       description: The amount of days used to query the data with date chunks. Set smaller value, if you have lots of data.
       default: 30
