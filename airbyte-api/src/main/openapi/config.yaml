@@ -1296,9 +1296,9 @@ paths:
       summary: Update a connection
       description: |
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
-        If a catalog is specified on the update request body, only streams present in the update request's catalog
-        will be modified. To remove a stream from the connection's catalog, it should be marked with `selected: false`
-        in the request.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
         content:
@@ -1994,9 +1994,10 @@ paths:
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
         Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
         connection along with the rest of the operationIds in the request body.
-        If a catalog is specified on the update request body, only streams present in the update request's catalog
-        will be modified. To remove a stream from the connection's catalog, it should be marked with `selected: false`
-        in the request.
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
         content:
