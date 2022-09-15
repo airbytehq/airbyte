@@ -35,7 +35,11 @@ class ConnectorStateManager:
         # shared_state is populated. Rather than define how to handle shared_state without a clear use case, we're opting to throw an
         # error instead and if/when we find one, we will then implement processing of the shared_state value.
         if shared_state:
-            raise ValueError("Received a GLOBAL AirbyteStateMessages that contain a shared_state. But this library only ever generated per-STREAM STATE messages was not generated this connector. This must be an orchestrator or platform error. GLOBAL state messages with shared_state will not be processed correctly.")
+            raise ValueError(
+                "Received a GLOBAL AirbyteStateMessages that contain a shared_state. But this library only ever generated per-STREAM "
+                "STATE messages was not generated this connector. This must be an orchestrator or platform error. GLOBAL state messages "
+                "with shared_state will not be processed correctly. "
+            )
         self.per_stream_states = per_stream_states
 
     def get_stream_state(self, stream_name: str, namespace: Optional[str]) -> Mapping[str, Any]:
@@ -103,19 +107,19 @@ class ConnectorStateManager:
             shared_state = copy.deepcopy(global_state.shared_state, {})
             streams = {
                 HashableStreamDescriptor(
-                    name=per_state.stream_descriptor.name, namespace=per_state.stream_descriptor.namespace
-                ): per_state.stream_state
-                for per_state in global_state.stream_states
+                    name=per_stream_state.stream_descriptor.name, namespace=per_stream_state.stream_descriptor.namespace
+                ): per_stream_state.stream_state
+                for per_stream_state in global_state.stream_states
             }
             return shared_state, streams
 
         if is_per_stream:
             streams = {
                 HashableStreamDescriptor(
-                    name=per_state.stream.stream_descriptor.name, namespace=per_state.stream.stream_descriptor.namespace
-                ): per_state.stream.stream_state
-                for per_state in state
-                if per_state.type == AirbyteStateType.STREAM and hasattr(per_state, "stream")
+                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace
+                ): per_stream_state.stream.stream_state
+                for per_stream_state in state
+                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")
             }
             return None, streams
         else:
