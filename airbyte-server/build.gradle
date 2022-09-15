@@ -17,6 +17,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation(project(':airbyte-scheduler:client')) {
         exclude module: 'airbyte-workers'
+        exclude module: 'airbyte-commons-temporal'
     }
     implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')

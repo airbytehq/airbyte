@@ -2,13 +2,12 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.commons.temporal;
 
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
 import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micronaut.context.annotation.Property;

@@ -5,8 +5,8 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;

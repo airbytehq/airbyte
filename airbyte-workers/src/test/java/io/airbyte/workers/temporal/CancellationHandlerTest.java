@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.stubs.HeartbeatWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;

@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:specs')

@@ -21,6 +21,7 @@ dependencies {
     testImplementation 'io.temporal:temporal-testing:1.8.1'
 
     implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-metrics:metrics-lib')
 }
 
 jsonSchema2Pojo {

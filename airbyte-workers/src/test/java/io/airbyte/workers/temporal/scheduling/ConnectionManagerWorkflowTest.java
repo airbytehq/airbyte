@@ -8,6 +8,12 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
+import io.airbyte.commons.temporal.scheduling.state.listener.TestStateListener;
+import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
+import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -42,10 +48,6 @@ import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueAct
 import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity.RouteToSyncTaskQueueOutput;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
-import io.airbyte.workers.temporal.scheduling.state.listener.TestStateListener;
-import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
-import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.DbtFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.EmptySyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.NormalizationFailureSyncWorkflow;

@@ -6,7 +6,8 @@ package io.airbyte.commons.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
@@ -21,8 +22,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Slf4j
+@Singleton
+@Requires(property = "airbyte.worker.plane",
+          notEquals = "DATA_PLANE")
 public class TemporalClient {
 
   @Inject

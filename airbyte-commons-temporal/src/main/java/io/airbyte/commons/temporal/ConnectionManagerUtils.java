@@ -4,12 +4,16 @@
 
 package io.airbyte.commons.temporal;
 
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.temporal.client.WorkflowClient;
 import java.util.UUID;
+import javax.inject.Singleton;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@NoArgsConstructor
+@Singleton
 @Slf4j
 public class ConnectionManagerUtils {
 
