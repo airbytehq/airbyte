@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["AccountId", "CampaignId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType"],
+  "properties": {
     "AccountId": {
       "type": ["integer"]
     },
@@ -168,4 +169,4 @@
       "type": ["null", "string"]
     }
   }
-
+}
