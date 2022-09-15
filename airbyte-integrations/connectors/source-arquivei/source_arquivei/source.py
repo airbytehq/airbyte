@@ -86,7 +86,7 @@ class NfeReceived(HttpStream):
             "data": xml_item["xml"],
             "merchant": merchant.upper(),
             "source": "BR_ARQUIVEI",
-            "type": f"{merchant}_notafiscal",
+            "type": f"{merchant}_invoice",
             "id": "NFe" + xml_item["access_key"],
             "timeline": "historic",
             "invoice_id": "NFe" + xml_item["access_key"],
@@ -107,7 +107,7 @@ class NfeReceived(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ):
         response = response.json()
-        invoices = []
+        items = []
 
         for item in response['data']:
 
@@ -116,128 +116,13 @@ class NfeReceived(HttpStream):
             item["xml"] = xml_to_dict
 
             invoice = self.format_xml(item)
-            invoices.append(invoice)
+            items.append(invoice)
 
-        # print(invoices)
+        # print(items)
         # with open('./converted_received.json', 'w+') as f:
         #     json.dump(response, f)
         #     f.truncate()
-        return invoices
-
-
-class Events(HttpStream):
-
-    url_base = "https://api.arquivei.com.br/v1/"
-    primary_key = "event_id"
-
-
-    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
-        super().__init__()
-        self.api_key = config["api_key"]
-        self.api_id = config["api_id"]
-        self.start_date = start_date
-        self._cursor_value = 0
-        self._count_value = 0
-        self._final_page_checker = False 
-
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response = response.json()
-        count = response["count"]
-        
-        print(f"COUNT: {count}")
-        
-        if count == 0 and self._final_page_checker == True: 
-            # If the last page was already processed (read the coment below), then the pagination has finished.
-            return None
-        elif count == 0: 
-            # If count = 0, then it's the last page, but it will run one more execution using the previous cursor value - 1.
-            self._final_page_checker = True
-            return self._count_value 
-        else: 
-            # If pagination didn't finish yet, then the cursor value will continue incrementing normally.
-            self._count_value = count
-            return self._count_value 
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "events/nfe" 
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {"X-API-ID": self.api_id, "X-API-KEY": self.api_key, "content-type":"application/json"}
-
-
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ):
-        params = {"cursor":self._cursor_value, "limit":50}
-
-        if self._final_page_checker == True and self._count_value == 1:
-            # If the last pages were already processed, the count returned will be 1. So, we process the last page and the execution finishes.
-            new_cursor = params["cursor"] + self._count_value
-        elif self._final_page_checker == True:
-            # Using the previous cursor value, which returned the last page, but summing it with -1, to get the data from the last pages.
-            new_cursor = params["cursor"] - 1
-        else:
-            # Pagination didn't finish yet, then the cursor value will continue incrementing normally.
-            new_cursor = params["cursor"] + self._count_value 
-        
-        self._cursor_value = new_cursor
-        params["cursor"] = new_cursor
-
-        print(f"CURSOR: {new_cursor}")
-        return params
-
-    def format_xml(
-        self,
-        xml_item: Mapping[str, Any]
-    ) -> str:
-        # TODO: Find a way to remove hardcoded merchant
-        merchant = "brmms"
-        # xml_item["xml"]["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"],
-        invoice = {
-            "data": xml_item["xml"],
-            "merchant": merchant.upper(),
-            "source": "BR_ARQUIVEI",
-            "type": f"{merchant}_notafiscal",
-            "id": "NFe" + xml_item["access_key"],
-            "timeline": "historic",
-            "invoice_id": "NFe" + xml_item["access_key"],
-            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
-            "invoice_type": "event",
-            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "sensible": True
-        }
-        return invoice
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        response = response.json()
-        invoices = []
-
-        for item in response['data']:
-
-            item["xml"] = base64.b64decode(item["xml"])            
-            xml_to_dict = xmltodict.parse(item["xml"])
-            item["xml"] = xml_to_dict
-
-            invoice = self.format_xml(item)
-            invoices.append(invoice)
-
-        # print(invoices)
-        # with open('./converted_events.json', 'w+') as f:
-        #     json.dump(response, f)
-        #     f.truncate()
-        return invoices
+        return items
 
 
 class NfeEmitted(HttpStream):
@@ -315,7 +200,7 @@ class NfeEmitted(HttpStream):
             "data": xml_item["xml"],
             "merchant": merchant.upper(),
             "source": "BR_ARQUIVEI",
-            "type": f"{merchant}_notafiscal",
+            "type": f"{merchant}_invoice",
             "id": "NFe" + xml_item["access_key"],
             "timeline": "historic",
             "invoice_id": "NFe" + xml_item["access_key"],
@@ -336,7 +221,7 @@ class NfeEmitted(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ):
         response = response.json()
-        invoices = []
+        items = []
 
         for item in response['data']:
 
@@ -345,13 +230,341 @@ class NfeEmitted(HttpStream):
             item["xml"] = xml_to_dict
 
             invoice = self.format_xml(item)
-            invoices.append(invoice)
+            items.append(invoice)
 
-        # print(invoices)
-        # with open('./converted.json', 'r+') as f:
-        #     json.dump(response, f)
-        #     f.truncate()
-        return invoices
+        return items
+
+
+class NfeEvents(HttpStream):
+
+    url_base = "https://api.arquivei.com.br/v1/"
+    primary_key = "event_id"
+
+
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
+        super().__init__()
+        self.api_key = config["api_key"]
+        self.api_id = config["api_id"]
+        self.start_date = start_date
+        self._cursor_value = 0
+        self._count_value = 0
+        self._final_page_checker = False 
+
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response = response.json()
+        count = response["count"]
+        
+        print(f"COUNT: {count}")
+        
+        if count == 0 and self._final_page_checker == True: 
+            # If the last page was already processed (read the coment below), then the pagination has finished.
+            return None
+        elif count == 0: 
+            # If count = 0, then it's the last page, but it will run one more execution using the previous cursor value - 1.
+            self._final_page_checker = True
+            return self._count_value 
+        else: 
+            # If pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            self._count_value = count
+            return self._count_value 
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "events/nfe" 
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"X-API-ID": self.api_id, "X-API-KEY": self.api_key, "content-type":"application/json"}
+
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ):
+        params = {"cursor":self._cursor_value, "limit":50}
+
+        if self._final_page_checker == True and self._count_value == 1:
+            # If the last pages were already processed, the count returned will be 1. So, we process the last page and the execution finishes.
+            new_cursor = params["cursor"] + self._count_value
+        elif self._final_page_checker == True:
+            # Using the previous cursor value, which returned the last page, but summing it with -1, to get the data from the last pages.
+            new_cursor = params["cursor"] - 1
+        else:
+            # Pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            new_cursor = params["cursor"] + self._count_value 
+        
+        self._cursor_value = new_cursor
+        params["cursor"] = new_cursor
+
+        print(f"CURSOR: {new_cursor}")
+        return params
+
+    def format_xml(
+        self,
+        xml_item: Mapping[str, Any]
+    ) -> str:
+        # TODO: Find a way to remove hardcoded merchant
+        merchant = "brmms"
+        # xml_item["xml"]["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"],
+        invoice = {
+            "data": xml_item["xml"],
+            "merchant": merchant.upper(),
+            "source": "BR_ARQUIVEI",
+            "type": f"{merchant}_event_invoice",
+            "id": "NFe" + xml_item["access_key"],
+            "timeline": "historic",
+            "invoice_id": "NFe" + xml_item["access_key"],
+            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "cnpjs": [],
+            "invoice_type": "nfe_event",
+            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "sensible": True
+        }
+        return invoice
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        response = response.json()
+        items = []
+
+        for item in response['data']:
+
+            item["xml"] = base64.b64decode(item["xml"])            
+            xml_to_dict = xmltodict.parse(item["xml"])
+            item["xml"] = xml_to_dict
+
+            invoice = self.format_xml(item)
+            items.append(invoice)
+
+        return items
+
+
+class Cte(HttpStream):
+
+    url_base = "https://api.arquivei.com.br/v1/"
+    primary_key = "cte_id"
+
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
+        super().__init__()
+        self.api_key = config["api_key"]
+        self.api_id = config["api_id"]
+        self.start_date = start_date
+        self._cursor_value = 0
+        self._count_value = 0
+        self._final_page_checker = False 
+
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response = response.json()
+        count = response["count"]
+
+        print(f"COUNT: {count}")
+        
+        if count == 0 and self._final_page_checker == True: 
+            # If the last page was already processed (read the coment below), then the pagination has finished.
+            return None
+        elif count == 0: 
+            # If count = 0, then it's the last page, but it will run one more execution using the previous cursor value - 1.
+            self._final_page_checker = True
+            return self._count_value 
+        else: 
+            # If pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            self._count_value = count
+            return self._count_value 
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "cte/taker" 
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"X-API-ID": self.api_id, "X-API-KEY": self.api_key, "content-type":"application/json"}
+
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ):
+        params = {"cursor":self._cursor_value, "limit":50}
+
+        if self._final_page_checker == True and self._count_value == 1:
+            # If the last pages were already processed, the count returned will be 1. So, we process the last page and the execution finishes.
+            new_cursor = params["cursor"] + self._count_value
+        elif self._final_page_checker == True:
+            # Using the previous cursor value, which returned the last page, but summing it with -1, to get the data from the last pages.
+            new_cursor = params["cursor"] - 1
+        else:
+            # Pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            new_cursor = params["cursor"] + self._count_value 
+        
+        self._cursor_value = new_cursor
+        params["cursor"] = new_cursor
+
+        print(f"CURSOR: {new_cursor}")
+        return params
+
+    def format_xml(
+        self,
+        xml_item: Mapping[str, Any]
+    ) -> str:
+        # TODO: Find a way to remove hardcoded merchant
+        merchant = "brmms"
+        # xml_item["xml"]["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"],
+        invoice = {
+            "data": xml_item["xml"],
+            "merchant": merchant.upper(),
+            "source": "BR_ARQUIVEI",
+            "type": f"{merchant}_cte",
+            "id": "CTe" + xml_item["access_key"],
+            "timeline": "historic",
+            "invoice_id": "CTe" + xml_item["access_key"],
+            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "cnpjs": [],
+            "invoice_type": "cte",
+            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "sensible": True
+        }
+        return invoice
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        response = response.json()
+        items = []
+
+        for item in response['data']:
+
+            item["xml"] = base64.b64decode(item["xml"])            
+            xml_to_dict = xmltodict.parse(item["xml"])
+            item["xml"] = xml_to_dict
+
+            invoice = self.format_xml(item)
+            items.append(invoice)
+
+        return items
+
+
+class CteEvents(HttpStream):
+
+    url_base = "https://api.arquivei.com.br/v2/"
+    primary_key = "event_id"
+
+
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
+        super().__init__()
+        self.api_key = config["api_key"]
+        self.api_id = config["api_id"]
+        self.start_date = start_date
+        self._cursor_value = 0
+        self._count_value = 0
+        self._final_page_checker = False 
+
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response = response.json()
+        count = response["count"]
+        
+        print(f"COUNT: {count}")
+        
+        if count == 0 and self._final_page_checker == True: 
+            # If the last page was already processed (read the coment below), then the pagination has finished.
+            return None
+        elif count == 0: 
+            # If count = 0, then it's the last page, but it will run one more execution using the previous cursor value - 1.
+            self._final_page_checker = True
+            return self._count_value 
+        else: 
+            # If pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            self._count_value = count
+            return self._count_value 
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "cte/events" 
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"X-API-ID": self.api_id, "X-API-KEY": self.api_key, "content-type":"application/json"}
+
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ):
+        params = {"cursor":self._cursor_value, "limit":50}
+
+        if self._final_page_checker == True and self._count_value == 1:
+            # If the last pages were already processed, the count returned will be 1. So, we process the last page and the execution finishes.
+            new_cursor = params["cursor"] + self._count_value
+        elif self._final_page_checker == True:
+            # Using the previous cursor value, which returned the last page, but summing it with -1, to get the data from the last pages.
+            new_cursor = params["cursor"] - 1
+        else:
+            # Pagination didn't finish yet, then the cursor value will continue incrementing normally.
+            new_cursor = params["cursor"] + self._count_value 
+        
+        self._cursor_value = new_cursor
+        params["cursor"] = new_cursor
+
+        print(f"CURSOR: {new_cursor}")
+        return params
+
+    def format_xml(
+        self,
+        xml_item: Mapping[str, Any]
+    ) -> str:
+        # TODO: Find a way to remove hardcoded merchant
+        merchant = "brmms"
+        # xml_item["xml"]["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"],
+        invoice = {
+            "data": xml_item["xml"],
+            "merchant": merchant.upper(),
+            "source": "BR_ARQUIVEI",
+            "type": f"{merchant}_event_cte",
+            "id": "CTe" + xml_item["access_key"],
+            "timeline": "historic",
+            "invoice_id": "CTe" + xml_item["access_key"],
+            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "cnpjs": [],
+            "invoice_type": "cte_event",
+            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "sensible": True
+        }
+        return invoice
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        response = response.json()
+        items = []
+
+        for item in response['data']:
+
+            item["xml"] = base64.b64decode(item["xml"])            
+            xml_to_dict = xmltodict.parse(item["xml"])
+            item["xml"] = xml_to_dict
+
+            invoice = self.format_xml(item)
+            items.append(invoice)
+
+        return items
 
 
 class SourceArquivei(AbstractSource):
@@ -387,7 +600,9 @@ class SourceArquivei(AbstractSource):
         return [
             NfeReceived(authenticator=auth, config=config, start_date=start_date),
             NfeEmitted(authenticator=auth, config=config, start_date=start_date),
-            Events(authenticator=auth, config=config, start_date=start_date)
+            NfeEvents(authenticator=auth, config=config, start_date=start_date),
+            Cte(authenticator=auth, config=config, start_date=start_date),
+            CteEvents(authenticator=auth, config=config, start_date=start_date)
         ]
 
 
