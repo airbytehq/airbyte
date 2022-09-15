@@ -12,7 +12,7 @@ import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import { ReplicationView } from "./components/ReplicationView";
+import { ReplicationView } from "./components/ConnectorReplicationEditView";
 import SettingsView from "./components/SettingsView";
 import StatusView from "./components/StatusView";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
