@@ -24,16 +24,15 @@ You'll need the following information to configure the Kafka source:
 * **Bootstrap Servers** - A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.
 * **Schema Registry** - Host/port to connect schema registry server. Note: It supports for AVRO format only.
 
-### For Airbyte Cloud:
+### For Airbyte Open Source:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.
-4. Follow the [Setup the Kafka source in Airbyte](kafka.md#Setup-the-Kafka-Source-in-Airbyte)
+1. Go to the Airbyte UI and in the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+2. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.
+3. Follow the [Setup the Kafka source in Airbyte](kafka.md#Setup-the-Kafka-Source-in-Airbyte)
 
 ## Supported sync modes
 
-The Kafka source connector supports the following[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kafka source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
