@@ -1105,6 +1105,14 @@
   icon: woocommerce.svg
   sourceType: api
   releaseStage: alpha
+- name: Wrike
+  sourceDefinitionId: 9c13f986-a13b-4988-b808-4705badf71c2
+  dockerRepository: airbyte/source-wrike
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/wrike
+  icon: wrike.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
