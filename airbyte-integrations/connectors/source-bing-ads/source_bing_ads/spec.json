@@ -22,9 +22,10 @@
       },
       "reports_start_date": {
         "type": "string",
-        "title": "Reports replication start date",
+        "title": "Start date",
         "format": "date",
         "default": "2020-01-01",
+        "airbyte_secret": false,
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
         "order": 1
       },
