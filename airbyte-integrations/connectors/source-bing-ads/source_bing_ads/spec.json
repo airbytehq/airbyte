@@ -44,7 +44,7 @@
           "client_id",
           "client_secret",
           "refresh_token",
-          "auth-method"
+          "auth_method"
         ],
         "properties": {
           "auth_method": {
