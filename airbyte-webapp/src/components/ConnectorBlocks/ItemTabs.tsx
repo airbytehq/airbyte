@@ -9,7 +9,7 @@ export enum StepsTypes {
 }
 
 interface IProps {
-  currentStep: string;
+  currentStep?: string;
   setCurrentStep: (step: string) => void;
 }
 
