@@ -134,6 +134,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.1   | 2022-09-14 | [#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                           |
 | 1.2.0   | 2022-09-09 | [#14023](https://github.com/airbytehq/airbyte/pull/14023) | Cover arrays only if they are nested                                                                                     |
 | 1.1.16  | 2022-09-01 | [#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
 | 1.1.15  | 2022-08-22 | [15787](https://github.com/airbytehq/airbyte/pull/15787)  | Throw exception if job failed                                                                                            |
@@ -181,7 +182,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.2.1   | 2022-09-10 | [16401](https://github.com/airbytehq/airbyte/pull/16401) | Wrapping string objects with TextNode |
+| 1.2.2   | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)  | Wrap logs in AirbyteLogMessage                                                                                           |
+| 1.2.1   | 2022-09-10 | [16401](https://github.com/airbytehq/airbyte/pull/16401)  | Wrapping string objects with TextNode |
 | 1.2.0   | 2022-09-09 | [#14023](https://github.com/airbytehq/airbyte/pull/14023) | Cover arrays only if they are nested                                                                                     |
 | 1.1.16  | 2022-09-01 | [#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
 | 1.1.15  | 2022-08-03 | [14784](https://github.com/airbytehq/airbyte/pull/14784)  | Enabling Application Default Credentials                                                                                 |
