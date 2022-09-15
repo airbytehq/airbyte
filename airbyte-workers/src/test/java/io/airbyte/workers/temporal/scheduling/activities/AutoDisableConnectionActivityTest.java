@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import static io.airbyte.config.EnvConfigs.DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE;
 import static io.airbyte.config.EnvConfigs.DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE;
-import static io.airbyte.scheduler.models.Job.REPLICATION_TYPES;
+import static io.airbyte.persistence.job.models.Job.REPLICATION_TYPES;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import io.airbyte.commons.features.FeatureFlags;
@@ -14,11 +14,11 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
-import io.airbyte.scheduler.persistence.JobNotifier;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobNotifier;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
+import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;

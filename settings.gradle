@@ -60,6 +60,8 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 // shared
 include ':airbyte-commons'
 
+include ':airbyte-persistence:job-persistence'
+
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
