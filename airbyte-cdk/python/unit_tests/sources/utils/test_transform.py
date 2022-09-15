@@ -136,22 +136,22 @@ VERY_NESTED_SCHEMA = {
             None,
         ),
         (
-            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["string"]}}}},
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["string"]}}}},
             {"value": 10},
             {"value": ["10"]},
             None,
         ),
         (
-            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["object"]}}}},
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["object"]}}}},
             {"value": "string"},
             {"value": "string"},
-            "Failed to transform value 'string' of type 'string' to '['array']', key path: '.value'",
+            "Failed to transform value 'string' of type 'string' to 'array', key path: '.value'",
         ),
         (
-            {"type": "object", "properties": {"value": {"type": ["array"], "items": {"type": ["object"]}}}},
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["object"]}}}},
             {"value": {"key": "value"}},
             {"value": {"key": "value"}},
-            "Failed to transform value {'key': 'value'} of type 'object' to '['array']', key path: '.value'"
+            "Failed to transform value {'key': 'value'} of type 'object' to 'array', key path: '.value'"
         ),
         (
             # Schema root object is not an object, no convertion should happen
