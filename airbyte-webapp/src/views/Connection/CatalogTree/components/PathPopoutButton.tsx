@@ -12,7 +12,11 @@ interface PathPopoutButtonProps {
   onClick: React.MouseEventHandler;
 }
 
-export const PathPopoutButton: React.FC<PathPopoutButtonProps> = ({ items = [], onClick, children }) => (
+export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButtonProps>> = ({
+  items = [],
+  onClick,
+  children,
+}) => (
   <Tooltip
     control={
       <button className={styles.button} onClick={onClick}>

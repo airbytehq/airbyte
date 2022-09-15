@@ -8,7 +8,13 @@ interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   light?: boolean;
 }
 
-export const TextArea: React.FC<TextAreaProps> = ({ error, light, children, className, ...textAreaProps }) => (
+export const TextArea: React.FC<React.PropsWithChildren<TextAreaProps>> = ({
+  error,
+  light,
+  children,
+  className,
+  ...textAreaProps
+}) => (
   <textarea
     {...textAreaProps}
     className={classNames(

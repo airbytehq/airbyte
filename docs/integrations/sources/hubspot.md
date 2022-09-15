@@ -18,7 +18,6 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `email_events`              | `content`                                                                        |
 | `engagements`               | `contacts`                                                                       |
 | `engagements_emails`        | `sales-email-read`                                                               |
-| `feedback_submissions`      | `crm.objects.feedback_submissions.read`                                          |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
 | `line_items`                | `e-commerce`                                                                     |
@@ -71,7 +70,6 @@ The HubSpot source connector supports the following streams:
 * [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 * [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 * [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
-* [Feedback Submissions](https://developers.hubspot.com/docs/api/crm/feedback-submissions) \(Incremental\)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
 * [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
@@ -134,6 +132,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |
 | 0.1.83  | 2022-09-01 | [16214](https://github.com/airbytehq/airbyte/pull/16214) | Update Tickets, fix missing properties and change how state is updated.                                                                        |
 | 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    | 
 | 0.1.81  | 2022-08-05 | [15354](https://github.com/airbytehq/airbyte/pull/15354) | Fix `Deals` stream schema                                                                                                                      |
