@@ -1,5 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
@@ -10,7 +11,6 @@ import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
-import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
@@ -64,7 +64,7 @@ const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   useTrackPage(PageTrackingCodes.ONBOARDING);
 
-  const { push } = useRouterHook();
+  const navigate = useNavigate();
 
   useEffectOnce(() => {
     analyticsService.page("Onboarding Page");
@@ -89,7 +89,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleFinishOnboarding = () => {
     finishOnboarding(currentStep);
-    push(RoutePaths.Connections);
+    navigate(RoutePaths.Connections);
   };
 
   return (
