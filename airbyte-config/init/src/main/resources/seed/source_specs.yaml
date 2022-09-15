@@ -3318,7 +3318,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.45"
+- dockerImage: "airbyte/source-google-ads:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3418,6 +3418,9 @@
           order: 3
           items:
             type: "object"
+            required:
+            - "query"
+            - "table_name"
             properties:
               query:
                 type: "string"
