@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "CompletionDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "age": {
+              "type": ["null", "string"]
+            },
+            "KEY": {
+              "type": ["null", "string"]
+            }
+          },
+          "required": [
+            "KEY"
+          ]
+        }
+      ]              
+    }
+  }  
+}

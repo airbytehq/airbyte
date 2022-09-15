@@ -1195,3 +1195,10 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
+- name: Surveycto
+  sourceDefinitionId: f11d4b24-a6e2-44ee-b097-b7671b359036
+  dockerRepository: airbyte/source-surveycto
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.io/integrations/sources/surveycto
+  sourceType: api
+  releaseStage: alpha

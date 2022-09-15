@@ -1,0 +1,39 @@
+{
+    "streams": [
+      {
+        "stream": {
+          "name": "surveycto_stream",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "type": "array",
+            "items": [
+              {
+                "type": "object",
+                "properties": {
+                  "CompletionDate": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "age": {
+                    "type": ["null", "string"]
+                  },
+                  "KEY": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "required": [
+                  "KEY"
+                ]
+              }
+            ]
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"]
+          },
+          "sync_mode": "full_refresh",
+          "destination_sync_mode": "overwrite"
+      }
+    ]
+}
