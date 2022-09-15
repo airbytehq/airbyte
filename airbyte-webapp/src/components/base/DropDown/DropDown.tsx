@@ -1,11 +1,10 @@
 import React from "react";
-import { Props } from "react-select";
-import { SelectComponentsConfig } from "react-select/src/components";
-import { CSSObject } from "styled-components";
+import { CSSObjectWithLabel, GroupBase, Props, SelectComponentsConfig, StylesConfig } from "react-select";
+import Select from "react-select/dist/declarations/src/Select";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 
-import DropdownIndicator from "./components/DropdownIndicator";
+import { DropdownIndicator } from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import Option, { IDataItem } from "./components/Option";
 import SingleValue from "./components/SingleValue";
@@ -15,16 +14,22 @@ import { SelectContainer } from "./SelectContainer";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;
 
-export interface DropdownProps extends Props<OptionType> {
+export interface DropdownProps<T = unknown> extends Props<OptionType> {
   withBorder?: boolean;
+  $withBorder?: boolean;
   fullText?: boolean;
   error?: boolean;
+  selectProps?: T;
 }
 
-export const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
+// eslint-disable-next-line react/function-component-definition
+function DropDownInner<T = unknown>(
+  props: DropdownProps<T>,
+  ref: React.ForwardedRef<Select<unknown, boolean, GroupBase<unknown>>>
+) {
   const propsComponents = props.components;
 
-  const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
+  const components = React.useMemo<SelectComponentsConfig<OptionType, boolean, GroupBase<unknown>>>(
     () =>
       ({
         DropdownIndicator,
@@ -49,10 +54,10 @@ export const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) =
         : props.options?.find((op) => equal(op.value, props.value))
       : null;
 
-  const styles = {
+  const styles: StylesConfig = {
     ...(props.styles ?? {}),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    menuPortal: (base: CSSObject, menuPortalProps: any) => ({
+    menuPortal: (base: CSSObjectWithLabel, menuPortalProps: any) => ({
       ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
       zIndex: 9999,
     }),
@@ -76,8 +81,8 @@ export const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) =
       components={components}
     />
   );
-});
+}
 
 export const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
-export default DropDown;
+export const DropDown = React.forwardRef(DropDownInner);

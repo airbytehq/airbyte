@@ -50,7 +50,7 @@ const isHeadingType = (props: TextProps | HeadingProps): props is HeadingProps =
   return props.as ? /^h[0-6]$/.test(props.as) : false;
 };
 
-export const Text: React.FC<TextProps | HeadingProps> = React.memo((props) => {
+export const Text: React.FC<React.PropsWithChildren<TextProps | HeadingProps>> = React.memo((props) => {
   const isHeading = isHeadingType(props);
   const { as = "p", centered = false, children } = props;
 
