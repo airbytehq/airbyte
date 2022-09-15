@@ -75,10 +75,10 @@ class ConnectorStateManager:
         """
         if send_per_stream_state:
             hashable_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-            stream_state = self.per_stream_states.get(hashable_descriptor, AirbyteStateBlob())
+            stream_state = self.per_stream_states.get(hashable_descriptor) or AirbyteStateBlob()
 
-            # In the Airbyte protocol, the StreamDescriptor namespace field is not required. However, the platform will throw a
-            # validation error if it receives namespace=null. That is why if namespace is None, the field should be omitted instead.
+            # According to the Airbyte protocol, the StreamDescriptor namespace field is not required. However, the platform will throw
+            # a validation error if it receives namespace=null. That is why if namespace is None, the field should be omitted instead.
             stream_descriptor = (
                 StreamDescriptor(name=stream_name) if namespace is None else StreamDescriptor(name=stream_name, namespace=namespace)
             )

@@ -456,6 +456,32 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=None,
+                    ),
+                ),
+            ],
+            "episodes",
+            "public",
+            True,
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
+                        stream_state=AirbyteStateBlob(),
+                    ),
+                    data={"episodes": {}},
+                ),
+            ),
+            id="test_always_emit_message_with_stream_state_blob",
+        ),
+        pytest.param(
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
                         stream_state=AirbyteStateBlob.parse_obj({"id": 507}),
                     ),
                 )
@@ -537,3 +563,30 @@ def test_create_state_message(start_state, update_name, update_namespace, send_p
         stream_name=update_name, namespace=update_namespace, send_per_stream_state=send_per_stream
     )
     assert actual_state_message == expected_state_message
+
+
+def test_do_not_set_stream_descriptor_namespace_when_none():
+    """
+    This is a very specific test to ensure that the None value is not set and emitted back to the platform for namespace.
+    The platform performs validation on the state message sent by the connector and namespace must be a string or not
+    included at all. The None value registers as null by the platform which is not valid input. We can verify that fields
+    on a pydantic model are not defined using exclude_unset parameter.
+    """
+    expected_stream_state_descriptor = {"name": "episodes"}
+
+    state_manager = ConnectorStateManager(
+        {},
+        [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="episodes"),
+                    stream_state=None,
+                ),
+            ),
+        ],
+    )
+
+    actual_state_message = state_manager.create_state_message(stream_name="episodes", namespace=None, send_per_stream_state=True)
+
+    assert actual_state_message.state.stream.stream_descriptor.dict(exclude_unset=True) == expected_stream_state_descriptor
