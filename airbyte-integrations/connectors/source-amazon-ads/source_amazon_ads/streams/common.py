@@ -75,7 +75,7 @@ class BasicAmazonAdsStream(Stream, ABC):
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
         self._profiles = profiles or []
-        self._client_id = config["client_id"]
+        self._client_id = config["credentials"]["client_id"]
         self._url = URL_MAPPING[config["region"]]
 
     @property
