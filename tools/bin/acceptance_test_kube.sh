@@ -15,7 +15,7 @@ assert_root
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 if [ -n "$CI" ]; then
   mkdir -p kind_logs
-  echo "Loading images into KIND..."
+  echo -e "$blue_text""Loading images into KIND...""$default_text"
   kind load docker-image airbyte/server:dev --name chart-testing > kind_logs/server &
   process_ids=$!
   kind load docker-image airbyte/webapp:dev --name chart-testing > kind_logs/webapp &
@@ -31,23 +31,23 @@ if [ -n "$CI" ]; then
   process_ids="$! $process_ids"
   tail -f kind_logs/* &
   tail_id=$!
-  echo "Waiting for the follows process IDs to finish $process_ids"
+  echo -e "$blue_text""Waiting for the follows process IDs to finish $process_ids""$default_text"
   wait $process_ids && kill $tail_id
 fi
 
-echo "Starting app..."
+echo -e "$blue_text""Starting app...""$default_text"
 
-echo "Applying dev-integration-test manifests to kubernetes..."
+echo -e "$blue_text""Applying dev-integration-test manifests to kubernetes...""$default_text"
 kubectl apply -k kube/overlays/dev-integration-test
 
-echo "Waiting for server to be ready..."
+echo -e "$blue_text""Waiting for server to be ready...""$default_text"
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
 
-echo "Listing nodes scheduled for pods..."
+echo -e "$blue_text""Listing nodes scheduled for pods...""$default_text"
 kubectl describe pods | grep "Name\|Node"
 
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
-echo "Sleeping 120 seconds"
+echo -e "$blue_text""Sleeping 120 seconds""$default_text"
 sleep 120s
 
 if [ -n "$CI" ]; then
@@ -75,29 +75,34 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 > /tmp/kubernetes_logs/por
 process_ids=$!
 tail -f kind_logs/* &
 tail_id=$!
-echo "Waiting for the follows process IDs to finish $process_ids"
+echo -e "$blue_text""Waiting for the follows process IDs to finish $process_ids""$default_text"
 wait -$process_ids && kill $tail_id
 
 
-echo "Running worker integration tests..."
+echo -e "$blue_text""Running worker integration tests...""$default_text"
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
 
-echo "Printing system disk usage..."
+echo -e "$blue_text""Printing system disk usage...""$default_text"
 df -h
 
-echo "Printing docker disk usage..."
+echo -e "$blue_text""Printing docker disk usage...""$default_text"
 docker system df
 
 if [ -n "$CI" ]; then
-  echo "Pruning all images..."
+  echo -e "$blue_text""Pruning all images...""$default_text"
   docker image prune --all --force
 
-  echo "Printing system disk usage after pruning..."
+  echo -e "$blue_text""Printing system disk usage after pruning...""$default_text"
   df -h
 
-  echo "Printing docker disk usage after pruning..."
+  echo -e "$blue_text""Printing docker disk usage after pruning...""$default_text"
   docker system df
 fi
 
-echo "Running e2e tests via gradle..."
+echo -e "$blue_text""Running e2e tests via gradle...""$default_text"
 KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+
+echo -e "$blue_text""Listing still running jobs! If you see any they thing won't end""$default_text"
+jobs
+kill $(jobs -p)
+echo -e "$blue_text""If you are reading the the script has completed without error""$default_text"
