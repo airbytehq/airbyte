@@ -106,6 +106,10 @@ class DefaultJobPersistenceTest {
       .withConfigType(ConfigType.SYNC)
       .withSync(new JobSyncConfig());
 
+  private static final JobConfig RESET_JOB_CONFIG = new JobConfig()
+      .withConfigType(ConfigType.RESET_CONNECTION)
+      .withSync(new JobSyncConfig());
+
   private static final int DEFAULT_MINIMUM_AGE_IN_DAYS = 30;
   private static final int DEFAULT_EXCESSIVE_NUMBER_OF_JOBS = 500;
   private static final int DEFAULT_MINIMUM_RECENCY_COUNT = 10;
@@ -853,14 +857,14 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return nothing if no job exists")
-    void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
+    void testGetLastReplicationJobForConnectionIdEmpty() throws IOException {
       final Optional<Job> actual = jobPersistence.getLastReplicationJob(CONNECTION_ID);
 
       assertTrue(actual.isEmpty());
     }
 
     @Test
-    @DisplayName("Should return the last enqueued job")
+    @DisplayName("Should return the last sync job")
     void testGetLastSyncJobForConnectionId() throws IOException {
       final long jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
       jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
@@ -873,6 +877,72 @@ class DefaultJobPersistenceTest {
       final Job expected = createJob(jobId2, SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), afterNow.getEpochSecond());
 
       assertEquals(Optional.of(expected), actual);
+    }
+
+    @Test
+    @DisplayName("Should return the last reset job")
+    void testGetLastResetJobForConnectionId() throws IOException {
+      final long jobId1 = jobPersistence.enqueueJob(SCOPE, RESET_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+      final long jobId2 = jobPersistence.enqueueJob(SCOPE, RESET_JOB_CONFIG).orElseThrow();
+
+      final Optional<Job> actual = jobPersistence.getLastReplicationJob(CONNECTION_ID);
+      final Job expected = createJob(jobId2, RESET_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), afterNow.getEpochSecond());
+
+      assertEquals(Optional.of(expected), actual);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("When getting last sync job")
+  class GetLastSyncJob {
+
+    @Test
+    @DisplayName("Should return nothing if no job exists")
+    void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
+      final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+
+      assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return the last enqueued sync job")
+    void testGetLastSyncJobForConnectionId() throws IOException {
+      final long jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+      final long jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId2, LOG_PATH);
+
+      // Return the latest sync job even if failed
+      jobPersistence.failAttempt(jobId2, attemptNumber);
+      final Attempt attempt = jobPersistence.getJob(jobId2).getAttempts().stream().findFirst().orElseThrow();
+      jobPersistence.failJob(jobId2);
+
+      final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+      final Job expected = createJob(jobId2, SYNC_JOB_CONFIG, JobStatus.FAILED, List.of(attempt), afterNow.getEpochSecond());
+
+      assertEquals(Optional.of(expected), actual);
+    }
+
+    @Test
+    @DisplayName("Should return nothing if only reset job exists")
+    void testGetLastSyncJobForConnectionIdEmptyBecauseOnlyReset() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, RESET_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+
+      final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+
+      assertTrue(actual.isEmpty());
     }
 
   }
