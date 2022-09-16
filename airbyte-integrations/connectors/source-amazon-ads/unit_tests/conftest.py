@@ -16,6 +16,8 @@ def config():
             "refresh_token": "test_refresh",
         },
         "region": "NA",
+        "report_wait_timeout": 60,
+        "report_generation_max_retries": 5
     }
 
 
