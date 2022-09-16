@@ -1,20 +1,20 @@
 @use "../../scss/colors";
 
-$titleHeight: 34px;
-$groupSpacing: 15px;
+$title-height: 34px;
+$group-spacing: 15px;
 
 .container {
   margin-bottom: 27px;
-  min-height: $titleHeight;
+  min-height: $title-height;
   position: relative;
-  padding-top: calc($titleHeight / 2);
+  padding-top: calc($title-height / 2);
 }
 
 .title {
-  padding-right: $groupSpacing;
+  padding-right: $group-spacing;
   display: flex;
   align-items: center;
-  height: $titleHeight;
+  height: $title-height;
   position: absolute;
   left: 0;
   right: 0;
@@ -33,14 +33,14 @@ $groupSpacing: 15px;
 
   // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
   box-shadow: 0 2px colors.$grey-100 inset;
-  padding: 0 $groupSpacing;
+  padding: 0 $group-spacing;
 
   // only apply padding when there are children, so that empty group sections border is just a single line
   > :first-child {
-    padding-top: calc($groupSpacing + $titleHeight/2);
+    padding-top: calc($group-spacing + $title-height/2);
   }
 
   > div {
-    margin-bottom: $groupSpacing;
+    margin-bottom: $group-spacing;
   }
 }
