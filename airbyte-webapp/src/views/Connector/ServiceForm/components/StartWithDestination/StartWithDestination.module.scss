@@ -1,22 +1,25 @@
 @use "../../../../../scss/colors";
-@use "../../../../../scss/variables";
-
-.wrapper {
-  position: relative;
-  width: 100%;
-}
+@use "../../../../../scss/variables" as vars;
 
 .container {
-  cursor: pointer;
-  position: absolute;
-  border: none;
   background-color: colors.$white;
-  width: 100%;
-  margin-top: variables.$spacing-xl;
+  margin-top: -#{vars.$spacing-2xl};
+  border-top: vars.$border-thin solid colors.$grey-100;
+}
+
+.button {
+  cursor: pointer;
+  border: none;
   padding: 0;
-  border-radius: variables.$border-radius-sm;
+  margin: 0;
+  width: 100%;
 }
 
 .connectorCardWrapper {
-  padding: 20px;
+  padding: vars.$spacing-xl 35px;
+}
+
+.connectorCard {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }

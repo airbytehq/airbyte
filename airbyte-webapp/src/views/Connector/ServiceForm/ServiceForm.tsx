@@ -348,6 +348,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           {formType === "destination" &&
             !destinations.length &&
             !isEditMode &&
+            !isLoading &&
             !selectedConnectorDefinitionSpecification && (
               <StartWithDestination onDestinationSelect={onServiceSelect} destination={startWithDestination} />
             )}

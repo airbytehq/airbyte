@@ -28,9 +28,9 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ dest
   };
 
   return (
-    <div className={styles.wrapper}>
-      <button className={styles.container} onClick={connectorCardClickHandler}>
-        <Card>
+    <div className={styles.container}>
+      <button className={styles.button} onClick={connectorCardClickHandler}>
+        <Card className={styles.connectorCard}>
           <div className={styles.connectorCardWrapper}>
             <ConnectorCard
               icon={icon}
