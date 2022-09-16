@@ -74,8 +74,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebBackendConnectionsHandler {
 
-  private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
-
   private final ConnectionsHandler connectionsHandler;
   private final StateHandler stateHandler;
   private final SourceHandler sourceHandler;
@@ -128,20 +126,18 @@ public class WebBackendConnectionsHandler {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
     final OperationReadList operations = getOperationReadList(connectionRead);
-    final JobReadList syncJobReadList = getSyncJobs(connectionRead);
+    final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(connectionRead.getConnectionId());
 
     final WebBackendConnectionRead webBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations)
-        .catalogId(connectionRead.getSourceCatalogId())
-        .isSyncing(syncJobReadList.getJobs()
-            .stream()
-            .map(JobWithAttemptsRead::getJob)
-            .anyMatch(WebBackendConnectionsHandler::isRunningJob));
-    setLatestSyncJobProperties(webBackendConnectionRead, syncJobReadList);
-    return webBackendConnectionRead;
-  }
+        .catalogId(connectionRead.getSourceCatalogId());
 
-  private static boolean isRunningJob(final JobRead job) {
-    return !TERMINAL_STATUSES.contains(job.getStatus());
+    if (latestRunningSyncJob.isPresent()) {
+      webBackendConnectionRead.isSyncing(true);
+      webBackendConnectionRead.setLatestSyncJobCreatedAt(latestRunningSyncJob.get().getCreatedAt());
+      webBackendConnectionRead.setLatestSyncJobStatus(latestRunningSyncJob.get().getStatus());
+    }
+
+    return webBackendConnectionRead;
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -183,21 +179,6 @@ public class WebBackendConnectionsHandler {
         .destination(destination)
         .operations(operations.getOperations())
         .resourceRequirements(connectionRead.getResourceRequirements());
-  }
-
-  private JobReadList getSyncJobs(final ConnectionRead connectionRead) throws IOException {
-    final JobListRequestBody jobListRequestBody = new JobListRequestBody()
-        .configId(connectionRead.getConnectionId().toString())
-        .configTypes(Collections.singletonList(JobConfigType.SYNC));
-    return jobHistoryHandler.listJobsFor(jobListRequestBody);
-  }
-
-  private static void setLatestSyncJobProperties(final WebBackendConnectionRead WebBackendConnectionRead, final JobReadList syncJobReadList) {
-    syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
-        .ifPresent(job -> {
-          WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
-          WebBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
-        });
   }
 
   public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch)
