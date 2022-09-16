@@ -9,9 +9,9 @@ interface GroupControlsProps {
 
 const GroupControls: React.FC<React.PropsWithChildren<GroupControlsProps>> = ({ title, children, name }) => {
   return (
-    <div className={styles.groupControlSection}>
-      <div className={styles.groupTitle}>{title}</div>
-      <div className={styles.formGroup} data-testid={name}>
+    <div className={styles.container}>
+      <div className={styles.title}>{title}</div>
+      <div className={styles.content} data-testid={name}>
         {children}
       </div>
     </div>

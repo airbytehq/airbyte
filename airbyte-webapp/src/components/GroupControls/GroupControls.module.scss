@@ -3,14 +3,14 @@
 $titleHeight: 34px;
 $groupSpacing: 15px;
 
-.groupControlSection {
+.container {
   margin-bottom: 27px;
   min-height: $titleHeight;
   position: relative;
   padding-top: calc($titleHeight / 2);
 }
 
-.groupTitle {
+.title {
   padding-right: $groupSpacing;
   display: flex;
   align-items: center;
@@ -25,7 +25,7 @@ $groupSpacing: 15px;
   }
 }
 
-.formGroup {
+.content {
   border-color: colors.$grey-100;
   border-style: solid;
   border-width: 0 2px 2px;
