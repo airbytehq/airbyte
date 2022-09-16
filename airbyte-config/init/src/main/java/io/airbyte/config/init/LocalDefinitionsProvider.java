@@ -133,10 +133,10 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
         definitionJson.get("dockerRepository").asText(),
         definitionJson.get("dockerImageTag").asText());
     final JsonNode specConfigJson = specConfigs.get(dockerImage);
-    if (specConfigJson == null || specConfigJson.get("spec") == null) {
+    if (specConfigJson == null || specConfigJson.get(SPEC) == null) {
       throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
     }
-    ((ObjectNode) definitionJson).set("spec", specConfigJson.get("spec"));
+    ((ObjectNode) definitionJson).set(SPEC, specConfigJson.get(SPEC));
     return definitionJson;
   }
 
