@@ -1,0 +1,2 @@
+class InvalidSiteURLValidationError(Exception):
+    pass
