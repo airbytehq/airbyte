@@ -80,7 +80,7 @@ wait $process_ids && kill $tail_id
 
 
 echo -e "$blue_text""Running worker integration tests...""$default_text"
-SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
+SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan --warn
 
 echo -e "$blue_text""Printing system disk usage...""$default_text"
 df -h
@@ -100,7 +100,7 @@ if [ -n "$CI" ]; then
 fi
 
 echo -e "$blue_text""Running e2e tests via gradle...""$default_text"
-KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan --warn
 
 echo -e "$blue_text""Listing still running jobs! If you see any they thing won't end""$default_text"
 jobs
