@@ -8,10 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -35,12 +35,12 @@ class TrackingMetadataTest {
     when(standardSync.getCatalog()).thenReturn(mock(ConfiguredAirbyteCatalog.class));
 
     // try to generate metadata
-    final ImmutableMap<String, Object> expected = ImmutableMap.of(
+    final Map<String, Object> expected = Map.of(
         "connection_id", connectionId,
         "frequency", "manual",
         "operation_count", 0,
         "table_prefix", false);
-    final ImmutableMap<String, Object> actual = TrackingMetadata.generateSyncMetadata(standardSync);
+    final Map<String, Object> actual = TrackingMetadata.generateSyncMetadata(standardSync);
     assertEquals(expected, actual);
   }
 

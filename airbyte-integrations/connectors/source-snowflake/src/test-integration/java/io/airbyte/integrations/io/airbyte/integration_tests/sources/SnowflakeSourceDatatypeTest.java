@@ -283,7 +283,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIMESTAMP_LTZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null,  "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
+            .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
