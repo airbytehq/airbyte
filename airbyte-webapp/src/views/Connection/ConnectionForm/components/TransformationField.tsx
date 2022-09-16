@@ -29,6 +29,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
 }) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
   const defaultTransformation = useDefaultTransformation();
+  const clearEditableItem = () => setEditableItem(null);
 
   return (
     <ArrayOfObjectsEditor
@@ -43,6 +44,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
         setEditableItem(idx);
         onStartEdit?.();
       }}
+      onCancel={clearEditableItem}
       mode={mode}
       editModalSize="xl"
       renderItemEditorForm={(editableItem) => (
@@ -50,7 +52,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
           transformation={editableItem ?? defaultTransformation}
           isNewTransformation={!editableItem}
           onCancel={() => {
-            setEditableItem(null);
+            clearEditableItem();
             onEndEdit?.();
           }}
           onDone={(transformation) => {
@@ -58,7 +60,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
               editableItemIdx >= form.values.transformations.length
                 ? push(transformation)
                 : replace(editableItemIdx, transformation);
-              setEditableItem(null);
+              clearEditableItem();
               onEndEdit?.();
             }
           }}
