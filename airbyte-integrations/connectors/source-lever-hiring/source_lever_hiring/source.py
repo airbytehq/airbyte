@@ -13,7 +13,7 @@ from .streams import Applications, Interviews, Notes, Offers, Opportunities, Ref
 
 def _auth_from_config(config):
 
-    if config and config["credemtials"] and 'api_key' in config["credentials"]:
+    if config and config["credentials"] and 'api_key' in config["credentials"]:
         return BasicHttpAuthenticator(username=config["credentials"]["api_key"], auth_method="Basic")
     else:
         return Oauth2Authenticator(
