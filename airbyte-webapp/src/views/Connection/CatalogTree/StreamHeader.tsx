@@ -11,7 +11,7 @@ import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
+import { ConnectionFormMode } from "../ConnectionForm";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
@@ -95,7 +95,6 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [styles.purpleBackground]: isSelected,
     [styles.redBorder]: hasError,
   });
-  //  FIXME: find out why checkboxCell warns as unused
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, { [styles.streamRowCheckboxCell]: true });
 
   return (
