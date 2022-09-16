@@ -50,6 +50,7 @@ public class V0_40_6_001__AddGeographyColumnToConnections extends BaseJavaMigrat
 
   public enum GeographyType implements EnumType {
 
+    AUTO("AUTO"),
     US("US"),
     EU("EU");
 
