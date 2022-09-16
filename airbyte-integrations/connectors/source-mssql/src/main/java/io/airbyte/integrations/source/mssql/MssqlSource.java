@@ -61,6 +61,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   private List<String> schemas;
@@ -453,6 +454,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
     return stream;
   }
