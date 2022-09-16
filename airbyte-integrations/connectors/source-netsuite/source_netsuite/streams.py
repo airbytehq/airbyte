@@ -10,33 +10,27 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
-
-# paths for NetSuite REST API
-REST_PATH: str = "/services/rest/"
-RECORD_PATH: str = REST_PATH + "record/v1/"
-META_PATH: str = RECORD_PATH + "metadata-catalog/"
-# predefine header
-SCHEMA_HEADERS: dict = {"Accept": "application/schema+json"}
-# known error codes by their HTTP codes
-NETSUITE_ERRORS_MAPPING: dict = {
-    400: {
-        "USER_ERROR": "reading an Admin record allowed for Admin only",
-        "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object",
-        "INVALID_PARAMETER": "cannot read or find the object. Skipping",
-    },
-}
+from source_netsuite.constraints import (
+    META_PATH,
+    NETSUITE_ERRORS_MAPPING,
+    RECORD_PATH,
+    REFERAL_SCHEMA,
+    REFERAL_SCHEMA_URL,
+    SCHEMA_HEADERS,
+    USLESS_SCHEMA_ELEMENTS,
+)
 
 
 class NetsuiteStream(HttpStream, ABC):
     def __init__(
         self,
         auth: OAuth1,
-        obj_name: str,
+        object_name: str,
         base_url: str,
         start_datetime: str,
         window_in_days: int,
     ):
-        self.obj_name = obj_name
+        self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
@@ -50,37 +44,26 @@ class NetsuiteStream(HttpStream, ABC):
 
     @property
     def name(self) -> str:
-        return self.obj_name
+        return self.object_name
 
     @property
     def url_base(self) -> str:
         return self.base_url
 
     def path(self, **kwargs) -> str:
-        return RECORD_PATH + self.obj_name
+        return RECORD_PATH + self.object_name
 
+    @property
     def ref_schema(self) -> Mapping[str, str]:
-        return {
-            "type": ["null", "object"],
-            "properties": {
-                "id": {"title": "Internal identifier", "type": ["string"]},
-                "refName": {"title": "Reference Name", "type": ["null", "string"]},
-                "externalId": {"title": "External identifier", "type": ["null", "string"]},
-                "links": {
-                    "title": "Links",
-                    "type": "array",
-                    "readOnly": True,
-                    "items": self.get_schema("/services/rest/record/v1/metadata-catalog/nsLink"),
-                },
-            },
-        }
+        schema = REFERAL_SCHEMA
+        schema["properties"]["links"]["items"] = self.get_schema(REFERAL_SCHEMA_URL)
+        return schema
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
-            url = self.url_base + ref
-            resp = requests.get(url, headers=SCHEMA_HEADERS, auth=self._session.auth)
+            resp = self._session.get(url=self.url_base + ref, headers=SCHEMA_HEADERS)
             # some schemas, like transaction, do not exist because they refer to multiple
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
@@ -93,13 +76,6 @@ class NetsuiteStream(HttpStream, ABC):
         return schema
 
     def build_schema(self, record: Any) -> Mapping[str, Any]:
-        # these parts of the schema is not used by Airybte
-        remove_from_schema: list = [
-            "enum",
-            "x-ns-filterable",
-            "x-ns-custom-field",
-            "nullable",
-        ]
         # recursively build a schema with subschemas
         if isinstance(record, dict):
             # Netsuite schemas do not specify if fields can be null, or not
@@ -111,14 +87,11 @@ class NetsuiteStream(HttpStream, ABC):
             if property_type and not isinstance(property_type, dict) and "null" not in property_type_list:
                 record["type"] = ["null"] + property_type_list
             # removing non-functional elements from schema
-            for element in remove_from_schema:
-                if record.get(element):
-                    record.pop(element)
+            [record.pop(element) for element in USLESS_SCHEMA_ELEMENTS if record.get(element)]
 
             ref = record.get("$ref")
             if ref:
-                ns_link = ref == "/services/rest/record/v1/metadata-catalog/nsLink"
-                return self.get_schema(ref) if ns_link else self.ref_schema()
+                return self.get_schema(ref) if ref == REFERAL_SCHEMA_URL else self.ref_schema
             else:
                 return {k: self.build_schema(v) for k, v in record.items()}
         else:
@@ -153,7 +126,7 @@ class NetsuiteStream(HttpStream, ABC):
         response = self._send_request(prep_req, request_kwargs)
         # sometimes response.status_code == 400,
         # but contains json elements with error description,
-        # to avoid passing it as TYPE: RECORD, we filter response by status
+        # to avoid passing it as {TYPE: RECORD}, we filter response by status
         if response.status_code == requests.codes.ok:
             yield response.json()
 
@@ -178,11 +151,12 @@ class NetsuiteStream(HttpStream, ABC):
             message = response.json().get("o:errorDetails")
             if isinstance(message, list):
                 error_code = message[0].get("o:errorCode")
+                detail_message = message[0].get("detail")
                 known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
                 if error_code in known_error.keys():
                     setattr(self, "raise_on_http_errors", False)
                     self.logger.warn(
-                        f"Stream `{self.name}`: {known_error.get(error_code)}, full error message: {message}",
+                        f"Stream `{self.name}`: {known_error.get(error_code)}, full error message: {detail_message}",
                     )
                     pass
                 else:
@@ -190,7 +164,7 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
 
-class IncrementalNetsuiteStream(NetsuiteStream, ABC):
+class IncrementalNetsuiteStream(NetsuiteStream):
     @property
     def cursor_field(self) -> str:
         return "lastModifiedDate"
@@ -229,10 +203,10 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
-        if stream_slice:
+        if stream_state:
             params.update(
                 **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
             )
@@ -245,23 +219,23 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
-        ranges = []
+        slices = []
         start_str = stream_state.get(self.cursor_field) if stream_state else self.start_datetime
         start = datetime.strptime(start_str, self.output_datetime_format).date()
         # handle abnormal state values
         if start > date.today():
-            return ranges
+            return slices
         else:
             while start <= date.today():
                 next_day = start + timedelta(days=self.window_in_days)
-                ranges.append(
+                slices.append(
                     {
                         "start": start.strftime(self.input_datetime_format),
                         "end": next_day.strftime(self.input_datetime_format),
                     }
                 )
                 start = next_day
-        return ranges
+        return slices
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
