@@ -9,7 +9,7 @@ import { GroupLabel } from "views/Connector/ServiceForm/components/Sections/Grou
 import GroupControls from "./GroupControls";
 
 export default {
-  title: "Composed/GroupControls",
+  title: "UI/GroupControls",
   component: GroupControls,
 } as ComponentMeta<typeof GroupControls>;
 

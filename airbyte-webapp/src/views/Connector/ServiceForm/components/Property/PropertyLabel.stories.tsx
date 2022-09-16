@@ -5,7 +5,7 @@ import { Card, Input } from "components";
 import { PropertyLabel } from "./PropertyLabel";
 
 export default {
-  title: "Composed/PropertyLabel",
+  title: "Connector/PropertyLabel",
   component: PropertyLabel,
 } as ComponentMeta<typeof PropertyLabel>;
 
