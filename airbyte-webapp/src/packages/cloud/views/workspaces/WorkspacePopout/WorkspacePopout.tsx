@@ -70,7 +70,11 @@ type MenuWithRequestButtonProps = MenuListProps<IDataItem, boolean> & {
   selectedWorkspace: string;
 };
 
-const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({ children, selectedWorkspace, ...props }) => {
+const WorkspacesList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({
+  children,
+  selectedWorkspace,
+  ...props
+}) => {
   const { exitWorkspace } = useWorkspaceService();
 
   return (

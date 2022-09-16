@@ -15,7 +15,7 @@ jest.mock("hooks/services/useWorkspace", () => ({
   },
 }));
 
-test("it defaults to false before advanced mode is explicitly set", () => {
+it("defaults to false before advanced mode is explicitly set", () => {
   const { result } = renderHook(() => useAdvancedModeSetting());
   // eslint-disable-next-line prefer-const
   let [isAdvancedMode, setAdvancedMode] = result.current;
@@ -28,7 +28,7 @@ test("it defaults to false before advanced mode is explicitly set", () => {
   expect(isAdvancedMode).toBe(true);
 });
 
-test("it stores workspace-specific advanced mode settings", () => {
+it("stores workspace-specific advanced mode settings", () => {
   changeToWorkspace("workspaceA");
 
   const { result, rerender } = renderHook(() => useAdvancedModeSetting());
