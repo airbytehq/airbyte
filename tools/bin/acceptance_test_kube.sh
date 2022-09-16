@@ -76,7 +76,7 @@ process_ids=$!
 tail -f kind_logs/* &
 tail_id=$!
 echo -e "$blue_text""Waiting for the following process IDs to finish $process_ids""$default_text"
-wait -$process_ids && kill $tail_id
+wait $process_ids && kill $tail_id
 
 
 echo -e "$blue_text""Running worker integration tests...""$default_text"
