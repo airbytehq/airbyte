@@ -286,11 +286,12 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
-        if self.logger.isEnabledFor(logging.DEBUG):
-            self.logger.debug(
-                "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-            )
+        self.logger.debug(
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+        )
         response: requests.Response = self._session.send(request, **request_kwargs)
+
+        # Evaluate response.text only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
