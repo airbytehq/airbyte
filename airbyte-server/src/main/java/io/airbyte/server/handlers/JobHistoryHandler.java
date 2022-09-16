@@ -131,18 +131,17 @@ public class JobHistoryHandler {
         JobStatus.NON_TERMINAL_STATUSES);
 
     if (!nonTerminalSyncJobsForConnection.isEmpty()) {
-
-      // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc, so index 0 is the
-      // latest.
-      // there *should* only be a single running sync job for a connection regardless so .get(0) should
-      // always be
-      // what we want.
-      final Job job = nonTerminalSyncJobsForConnection.get(0);
-
-      return Optional.of(JobConverter.getJobRead(job));
+      // there *should* only be a single running sync job for a connection, but
+      // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc so
+      // .findFirst will always return what we want.
+      return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
     } else {
       return Optional.empty();
     }
+  }
+
+  public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
+    return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {

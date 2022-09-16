@@ -562,6 +562,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Optional<Job> getLastSyncJob(final UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
+            "CAST(jobs.config_type AS VARCHAR) = " + Sqls.toSqlName(ConfigType.SYNC) + AND +
+            SCOPE_CLAUSE +
+            "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString())
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class))));
+  }
+
+  @Override
   public Optional<Job> getFirstReplicationJob(final UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +

@@ -120,16 +120,18 @@ public class WebBackendConnectionsHandler {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
     final OperationReadList operations = getOperationReadList(connectionRead);
+    final Optional<JobRead> latestSyncJob = jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId());
     final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(connectionRead.getConnectionId());
 
     final WebBackendConnectionRead webBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations)
         .catalogId(connectionRead.getSourceCatalogId());
 
-    if (latestRunningSyncJob.isPresent()) {
-      webBackendConnectionRead.isSyncing(true);
-      webBackendConnectionRead.setLatestSyncJobCreatedAt(latestRunningSyncJob.get().getCreatedAt());
-      webBackendConnectionRead.setLatestSyncJobStatus(latestRunningSyncJob.get().getStatus());
-    }
+    webBackendConnectionRead.setIsSyncing(latestRunningSyncJob.isPresent());
+
+    latestSyncJob.ifPresent(job -> {
+      webBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
+      webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
+    });
 
     return webBackendConnectionRead;
   }
