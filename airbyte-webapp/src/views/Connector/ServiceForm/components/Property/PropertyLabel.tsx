@@ -29,7 +29,9 @@ const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
       className={className}
       labelAdditionLength={0}
       label={label}
-      infoMessage={<LabelInfo label={label} examples={examples} description={description ?? property.description} />}
+      infoTooltipContent={
+        <LabelInfo label={label} examples={examples} description={description ?? property.description} />
+      }
       optional={optional ?? !property.isRequired}
     >
       {children}

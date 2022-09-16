@@ -16,7 +16,7 @@ export interface ControlLabelsProps {
   message?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
-  infoMessage?: React.ReactNode;
+  infoTooltipContent?: React.ReactNode;
   optional?: boolean;
 }
 
@@ -30,9 +30,9 @@ const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (pr
       nextLine={props.nextLine}
     >
       {props.label}
-      {props.infoMessage && (
+      {props.infoTooltipContent && (
         <InfoTooltip className={styles.tooltip} placement="top-start">
-          {props.infoMessage}
+          {props.infoTooltipContent}
         </InfoTooltip>
       )}
       {props.optional && (
