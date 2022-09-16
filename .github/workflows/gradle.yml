@@ -568,7 +568,7 @@ jobs:
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04-16core
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -590,7 +590,7 @@ jobs:
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
-    timeout-minutes: 90
+    timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
