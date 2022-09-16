@@ -18,7 +18,7 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
 
   public static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
 
-  private static final String SNOWFLAKE_DATETIME_FORMAT = "yyyy-MM-dd 'T' HH:mm:ss 'Z'";
+  private static final String SNOWFLAKE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
   private static final String SNOWFLAKE_DATE_FORMAT = "yyyy-MM-dd";
   private static final String POSTGRES_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'";
