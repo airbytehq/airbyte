@@ -171,7 +171,7 @@ describe("Service Form", () => {
       container = renderResult.container;
     });
 
-    test("should display general components: submit button, name and serviceType fields", () => {
+    it("should display general components: submit button, name and serviceType fields", () => {
       const name = container.querySelector("input[name='name']");
       const serviceType = container.querySelector("div[data-testid='serviceType']");
       const submit = container.querySelector("button[type='submit']");
@@ -181,30 +181,30 @@ describe("Service Form", () => {
       expect(submit).toBeInTheDocument();
     });
 
-    test("should display text input field", () => {
+    it("should display text input field", () => {
       const host = container.querySelector("input[name='connectionConfiguration.host']");
       expect(host).toBeInTheDocument();
       expect(host?.getAttribute("type")).toEqual("text");
     });
 
-    test("should display number input field", () => {
+    it("should display number input field", () => {
       const port = container.querySelector("input[name='connectionConfiguration.port']");
       expect(port).toBeInTheDocument();
       expect(port?.getAttribute("type")).toEqual("number");
     });
 
-    test("should display secret input field", () => {
+    it("should display secret input field", () => {
       const password = container.querySelector("input[name='connectionConfiguration.password']");
       expect(password).toBeInTheDocument();
       expect(password?.getAttribute("type")).toEqual("password");
     });
 
-    test("should display textarea field", () => {
+    it("should display textarea field", () => {
       const message = container.querySelector("textarea[name='connectionConfiguration.message']");
       expect(message).toBeInTheDocument();
     });
 
-    test("should display oneOf field", () => {
+    it("should display oneOf field", () => {
       const credentials = container.querySelector("div[data-testid='connectionConfiguration.credentials']");
       const credentialsValue = credentials?.querySelector("input[value='api key']");
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
@@ -214,17 +214,17 @@ describe("Service Form", () => {
       expect(apiKey).toBeInTheDocument();
     });
 
-    test("should display array of simple entity field", () => {
+    it("should display array of simple entity field", () => {
       const emails = container.querySelector("input[name='connectionConfiguration.emails']");
       expect(emails).toBeInTheDocument();
     });
 
-    test("should display array with items list field", () => {
+    it("should display array with items list field", () => {
       const workTime = container.querySelector("div[name='connectionConfiguration.workTime']");
       expect(workTime).toBeInTheDocument();
     });
 
-    test("should display array of objects field", () => {
+    it("should display array of objects field", () => {
       const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
       const addButton = priceList?.querySelector("button[data-testid='addItemButton']");
       expect(priceList).toBeInTheDocument();
@@ -255,7 +255,7 @@ describe("Service Form", () => {
       container = renderResult.container;
     });
 
-    test("should fill all fields by right values", async () => {
+    it("should fill all fields by right values", async () => {
       const name = container.querySelector("input[name='name']");
       const host = container.querySelector("input[name='connectionConfiguration.host']");
       const port = container.querySelector("input[name='connectionConfiguration.port']");
@@ -296,7 +296,7 @@ describe("Service Form", () => {
       });
     });
 
-    test("should fill right values in array of simple entity field", async () => {
+    it("should fill right values in array of simple entity field", async () => {
       const emails = container.querySelector("input[name='connectionConfiguration.emails']");
       userEvent.type(emails!, "test1@test.com{enter}test2@test.com{enter}test3@test.com");
 
@@ -307,7 +307,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.emails).toEqual(["test1@test.com", "test2@test.com", "test3@test.com"]);
     });
 
-    test("should fill right values in array with items list field", async () => {
+    it("should fill right values in array with items list field", async () => {
       const workTime = container.querySelector("div[name='connectionConfiguration.workTime']");
       userEvent.type(workTime!.querySelector("input")!, "day{enter}abc{enter}ni{enter}");
 
@@ -318,7 +318,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
-    test("change oneOf field value", async () => {
+    it("change oneOf field value", async () => {
       const credentials = screen.getByTestId("connectionConfiguration.credentials");
 
       const selectContainer = getByTestId(container, "connectionConfiguration.credentials");
@@ -334,7 +334,7 @@ describe("Service Form", () => {
       expect(uri).toBeInTheDocument();
     });
 
-    test("should fill right values oneOf field", async () => {
+    it("should fill right values oneOf field", async () => {
       const selectContainer = getByTestId(container, "connectionConfiguration.credentials");
 
       await selectEvent.select(selectContainer, "oauth", {
@@ -352,7 +352,7 @@ describe("Service Form", () => {
       });
     });
 
-    test("should fill right values in array of objects field", async () => {
+    it("should fill right values in array of objects field", async () => {
       // IntersectionObserver isn't available in test environment but is used by headless-ui dialog
       // used for this component
       useMockIntersectionObserver();

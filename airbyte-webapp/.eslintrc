@@ -81,6 +81,7 @@
         "unnamedComponents": "arrow-function"
       }
     ],
+    "jest/consistent-test-it": ["warn", { "fn": "it", "withinDescribe": "it" }],
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",
     "react/jsx-fragments": "warn",

@@ -1,19 +1,20 @@
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, H5 } from "components";
-import ContentCard from "components/ContentCard";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import useRouter from "hooks/useRouter";
+
+import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
 }
 
-const DeleteBlockComponent = styled(ContentCard)`
+const DeleteBlockComponent = styled(Card)`
   margin-top: 12px;
   padding: 19px 20px 20px;
   display: flex;
@@ -31,7 +32,7 @@ const Text = styled.div`
 
 const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { push } = useRouter();
+  const navigate = useNavigate();
 
   const onDeleteButtonClick = useCallback(() => {
     openConfirmationModal({
@@ -41,11 +42,11 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
       onSubmit: async () => {
         await onDelete();
         closeConfirmationModal();
-        push("../..");
+        navigate("../..");
       },
       submitButtonDataId: "delete",
     });
-  }, [closeConfirmationModal, onDelete, openConfirmationModal, push, type]);
+  }, [closeConfirmationModal, onDelete, openConfirmationModal, navigate, type]);
 
   return (
     <DeleteBlockComponent>

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ContentCard } from "components";
+import { Button, Card } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
@@ -90,10 +90,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard>
+      <Card>
         <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
-      </ContentCard>
+      </Card>
     );
   }
 
@@ -101,18 +101,20 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     <LoadingSchema />
   ) : (
     <Suspense fallback={<LoadingSchema />}>
-      <ConnectionForm
-        mode="create"
-        connection={connection}
-        onDropDownSelect={onSelectFrequency}
-        onSubmit={onSubmitConnectionStep}
-        additionalSchemaControl={
-          <Button onClick={onDiscoverSchema} type="button">
-            <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
-            <FormattedMessage id="connection.refreshSchema" />
-          </Button>
-        }
-      />
+      <div className={styles.connectionFormContainer}>
+        <ConnectionForm
+          mode="create"
+          connection={connection}
+          onDropDownSelect={onSelectFrequency}
+          onSubmit={onSubmitConnectionStep}
+          additionalSchemaControl={
+            <Button onClick={onDiscoverSchema} type="button">
+              <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
+              <FormattedMessage id="connection.refreshSchema" />
+            </Button>
+          }
+        />
+      </div>
     </Suspense>
   );
 };

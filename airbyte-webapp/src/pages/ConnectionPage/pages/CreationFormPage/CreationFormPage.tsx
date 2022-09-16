@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
@@ -12,7 +13,6 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -58,7 +58,7 @@ function usePreloadData(): {
   source?: SourceRead;
   destinationDefinition?: DestinationDefinitionRead;
 } {
-  const { location } = useRouter();
+  const location = useLocation();
 
   const source = useGetSource(hasSourceId(location.state) ? location.state.sourceId : null);
 
@@ -72,7 +72,8 @@ function usePreloadData(): {
 
 export const CreationFormPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
-  const { location, push } = useRouter();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { clearAllFormChanges } = useFormChangeTrackerService();
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
@@ -101,7 +102,7 @@ export const CreationFormPage: React.FC = () => {
 
   const onSelectExistingSource = (id: string) => {
     clearAllFormChanges();
-    push("", {
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         sourceId: id,
@@ -113,7 +114,7 @@ export const CreationFormPage: React.FC = () => {
 
   const onSelectExistingDestination = (id: string) => {
     clearAllFormChanges();
-    push("", {
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         destinationId: id,
@@ -165,13 +166,13 @@ export const CreationFormPage: React.FC = () => {
     const afterSubmitConnection = (connection: WebBackendConnectionRead) => {
       switch (type) {
         case EntityStepsTypes.DESTINATION:
-          push(`../${source?.sourceId}`);
+          navigate(`../${source?.sourceId}`);
           break;
         case EntityStepsTypes.SOURCE:
-          push(`../${destination?.destinationId}`);
+          navigate(`../${destination?.destinationId}`);
           break;
         default:
-          push(`../${connection.connectionId}`);
+          navigate(`../${connection.connectionId}`);
           break;
       }
     };

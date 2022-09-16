@@ -8,9 +8,8 @@ import { useConfig } from "config";
 import Status from "core/statuses";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
-import useWorkspace from "hooks/services/useWorkspace";
-import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 
+import { FirstSuccessfulSync } from "./FirstSuccessfulSync";
 import HighlightedText from "./HighlightedText";
 import ProgressBlock from "./ProgressBlock";
 import UseCaseBlock from "./UseCaseBlock";
@@ -33,35 +32,19 @@ const Videos = styled.div`
 
 const FinalStep: React.FC = () => {
   const config = useConfig();
-  const { sendFeedback } = useWorkspace();
-  const { feedbackPassed, passFeedback, visibleUseCases, useCaseLinks, skipCase } = useOnboardingService();
+  const { visibleUseCases, useCaseLinks, skipCase } = useOnboardingService();
   const { mutateAsync: syncConnection } = useSyncConnection();
   const { connections } = useConnectionList();
   const connection = useGetConnection(connections[0].connectionId, {
     refetchInterval: 2500,
   });
-  const [isOpen, setIsOpen] = useState(false);
+  const [isFirstSyncSuccessful, setIsFirstSyncSuccessful] = useState(false);
 
   useEffect(() => {
-    if (connection.latestSyncJobStatus === Status.SUCCEEDED && !feedbackPassed) {
-      setIsOpen(true);
+    if (connection.latestSyncJobStatus === Status.SUCCEEDED) {
+      setIsFirstSyncSuccessful(true);
     }
-  }, [connection.latestSyncJobStatus, feedbackPassed]);
-
-  const onSkipFeedback = () => {
-    passFeedback();
-    setIsOpen(false);
-  };
-
-  const onSendFeedback = (feedback: string) => {
-    sendFeedback({
-      feedback,
-      source: connection.source,
-      destination: connection.destination,
-    });
-    passFeedback();
-    setIsOpen(false);
-  };
+  }, [connection.latestSyncJobStatus]);
 
   const onSync = () => syncConnection(connections[0]);
 
@@ -81,8 +64,8 @@ const FinalStep: React.FC = () => {
           img="/videoCover.png"
         />
       </Videos>
-      {!feedbackPassed && <ProgressBlock connection={connection} onSync={onSync} />}
-
+      <ProgressBlock connection={connection} onSync={onSync} />
+      {isFirstSyncSuccessful && <FirstSuccessfulSync />}
       <Title bold>
         <FormattedMessage
           id="onboarding.useCases"
@@ -95,8 +78,6 @@ const FinalStep: React.FC = () => {
       {visibleUseCases?.map((item, key) => (
         <UseCaseBlock key={item} count={key + 1} href={useCaseLinks[item]} onSkip={skipCase} id={item} />
       ))}
-
-      {isOpen ? <SyncCompletedModal onClose={onSkipFeedback} onPassFeedback={onSendFeedback} /> : null}
     </>
   );
 };
