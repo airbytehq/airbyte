@@ -14,6 +14,8 @@ import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.annotation.Prototype;
 import java.io.FileInputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,7 @@ public class ApiClientBeanFactory {
             .setHost(parseHostName(airbyteApiHost))
             .setPort(parsePort(airbyteApiHost))
             .setBasePath("/api")
+            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setRequestInterceptor(builder -> {
               builder.setHeader("User-Agent", "WorkerApp");
               if (!airbyteApiAuthHeaderName.isBlank()) {
