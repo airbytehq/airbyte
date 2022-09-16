@@ -4,31 +4,38 @@
     "title": "Amazon Ads Spec",
     "type": "object",
     "properties": {
-      "auth_type": {
-        "title": "Auth Type",
-        "const": "oauth2.0",
-        "order": 0,
-        "type": "string"
-      },
-      "client_id": {
-        "title": "Client ID",
-        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
-        "order": 1,
-        "type": "string"
-      },
-      "client_secret": {
-        "title": "Client Secret",
-        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
-        "airbyte_secret": true,
-        "order": 2,
-        "type": "string"
-      },
-      "refresh_token": {
-        "title": "Refresh Token",
-        "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
-        "airbyte_secret": true,
-        "order": 3,
-        "type": "string"
+      "credentials": {
+        "type": "object",
+        "required": ["client_id", "client_secret", "refresh_token"],
+        "x-oauth2-provider": "amazon",
+        "properties": {
+          "auth_type": {
+            "title": "Auth Type",
+            "const": "oauth2.0",
+            "order": 0,
+            "type": "string"
+          },
+          "client_id": {
+            "title": "Client ID",
+            "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+            "order": 1,
+            "type": "string"
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+            "airbyte_secret": true,
+            "order": 2,
+            "type": "string"
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
+            "airbyte_secret": true,
+            "order": 3,
+            "type": "string"
+          }
+        }
       },
       "region": {
         "title": "Region *",
