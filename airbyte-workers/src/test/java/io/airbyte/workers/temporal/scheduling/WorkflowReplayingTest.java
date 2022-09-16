@@ -39,7 +39,6 @@ class WorkflowReplayingTest {
             .build())
         .build();
 
-
     final BeanRegistration shortActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("shortActivityOptions", activityOptions);
     final BeanRegistration longActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("longRunActivityOptions", activityOptions);
 
@@ -66,7 +65,6 @@ class WorkflowReplayingTest {
     // `http://${temporal-ui}/namespaces/default/workflows/connection_manager_-${uuid}/${uuid}/history`)
     // and export
 
-
     final URL historyPath = getClass().getClassLoader().getResource("syncWorkflowHistory.json");
 
     final File historyFile = new File(historyPath.toURI());
@@ -74,7 +72,7 @@ class WorkflowReplayingTest {
     WorkflowReplayer.replayWorkflowExecution(historyFile, temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }
 
-  private BeanRegistration  getActivityOptionBeanRegistration(String name, ActivityOptions activityOptions) {
+  private BeanRegistration getActivityOptionBeanRegistration(String name, ActivityOptions activityOptions) {
     final BeanIdentifier activitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
     when(activitiesBeanIdentifier.getName()).thenReturn(name);
@@ -83,4 +81,5 @@ class WorkflowReplayingTest {
 
     return activityOptionsBeanRegistration;
   }
+
 }
