@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.87
+- Fix, evaluate `response.text` only in debug mode
+
 ## 0.1.86
 - TypeTransformer now converts simple types to array of simple types
 - TypeTransformer make warning message more informative
