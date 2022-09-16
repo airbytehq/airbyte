@@ -104,6 +104,7 @@ create table "public"."connection"(
   "source_catalog_id" uuid null,
   "schedule_type" schedule_type null,
   "schedule_data" jsonb null,
+  "geography" geography_type null,
   constraint "connection_pkey"
     primary key ("id")
 );

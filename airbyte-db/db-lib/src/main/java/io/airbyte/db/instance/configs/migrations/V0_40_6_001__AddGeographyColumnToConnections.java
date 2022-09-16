@@ -4,7 +4,6 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import io.airbyte.db.instance.configs.migrations.V0_39_17_001__AddStreamDescriptorsToStateTable.StateType;
 import java.util.Arrays;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
