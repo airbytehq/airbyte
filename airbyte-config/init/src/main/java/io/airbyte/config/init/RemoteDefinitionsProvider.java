@@ -53,7 +53,7 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
         source -> source));
     this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
         StandardDestinationDefinition::getDestinationDefinitionId,
-        source -> source));
+        destination -> destination));
   }
 
   @Override

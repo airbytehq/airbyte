@@ -15,7 +15,7 @@ interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
   onStartEditTransformation?: () => void;
   onEndEditTransformation?: () => void;
-  wrapper: React.ComponentType;
+  wrapper: React.ComponentType<React.PropsWithChildren<unknown>>;
 }
 
 export const OperationsSection: React.FC<OperationsSectionProps> = ({

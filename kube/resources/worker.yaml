@@ -280,6 +280,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: USE_STREAM_CAPABLE_STATE
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKERS_MICRONAUT_ENVIRONMENTS
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool
