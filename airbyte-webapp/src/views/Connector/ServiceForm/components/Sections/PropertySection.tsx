@@ -42,7 +42,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     );
   }
 
-  const displayError = !!meta.error && meta.touched;
+  const hasError = !!meta.error && meta.touched;
 
   const errorValues = meta.error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
   const errorMessage = <FormattedMessage id={meta.error} values={errorValues} />;
@@ -56,9 +56,9 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
         removeUnfinishedFlow={removeUnfinishedFlow}
         unfinishedFlows={unfinishedFlows}
         disabled={disabled}
-        error={displayError}
+        error={hasError}
       />
-      {displayError && <PropertyError>{errorMessage}</PropertyError>}
+      {hasError && <PropertyError>{errorMessage}</PropertyError>}
     </PropertyLabel>
   );
 };

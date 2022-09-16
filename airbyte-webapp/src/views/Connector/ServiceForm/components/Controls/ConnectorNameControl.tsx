@@ -19,7 +19,7 @@ export const ConnectorNameControl: React.FC<ConnectorNameControlProps> = ({ prop
   const { formatMessage } = useIntl();
   const [field, fieldMeta] = useField(property.path);
 
-  const displayError = !!fieldMeta.error && fieldMeta.touched;
+  const hasError = !!fieldMeta.error && fieldMeta.touched;
 
   return (
     <PropertyLabel
@@ -31,14 +31,14 @@ export const ConnectorNameControl: React.FC<ConnectorNameControlProps> = ({ prop
     >
       <Input
         {...field}
-        error={displayError}
+        error={hasError}
         type="text"
         placeholder={formatMessage({
           id: `form.${formType}Name.placeholder`,
         })}
         disabled={disabled}
       />
-      {displayError && (
+      {hasError && (
         <PropertyError>
           {formatMessage({
             id: fieldMeta.error,
