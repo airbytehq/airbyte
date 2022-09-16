@@ -27,6 +27,7 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
+  "form.cron.invalid": "Invalid cron expression",
   "form.empty.error": "Required",
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
@@ -108,6 +109,9 @@
   "form.url.error": "field must be a valid URL",
   "form.setupGuide": "Setup Guide",
   "form.wait": "Please wait a little bit more…",
+  "form.advancedMode.label": "Advanced mode",
+  "form.advancedMode.switchLabel": "Enable advanced mode",
+  "form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
@@ -303,6 +307,9 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
+  "destinations.frequentlyUsed": "Most frequently used destinations",
+  "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
+  "destinations.startWith": "Start with {name}",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
@@ -324,6 +331,7 @@
   "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.resetData": "Reset your data",
+  "connection.loadMoreJobs": "Load more",
   "connection.updateSchema": "Refresh source schema",
   "connection.updateSchema.formChanged.title": "Unsaved changes",
   "connection.updateSchema.formChanged.text": "Your replication settings have unsaved changes. Those will be lost when refreshing the source schema. Save your changes before refreshing the source schema to not lose them.",
@@ -357,8 +365,13 @@
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
   "connection.canceling": "Canceling...",
+  "connection.linkedJobNotFound": "Job not found",
+  "connection.returnToSyncHistory": "Return to Sync History",
 
   "form.frequency": "Replication frequency*",
+  "form.cronExpression": "Cron expression*",
+  "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.message": "Enter a <lnk>cron expression</lnk> for when syncs should run (ex. \"0 0 12 * * ?\" => Will sync at 12:00 PM every day)",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
 
@@ -440,8 +453,6 @@
   "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field.",
   "admin.exportConfigurationText": "Download an archive of all configuration and state data. Exported data can be upgraded to another Airbyte version or can be exported to a different Airbyte deployment. For more information visit the <lnk>configuration archive</lnk> page in our docs.",
   "admin.importConfigurationText": "Upload an archive of all configuration and state data. <warn>Warning: This will overwrite all existing configuration!</warn>",
-  "admin.dropZoneTitle": "Drag 'n' drop file here, or click to select file",
-  "admin.dropZoneSubtitle": "Only *.tar and *.gz files will be accepted",
   "admin.logs": "Logs",
   "admin.logs.error": "Unable to download logs at this time.",
   "admin.downloadServerLogs": "Download Server Logs",
@@ -512,6 +523,7 @@
   "errorView.unknownError": "Unknown error occurred",
 
   "frequency.manual": "Manual",
+  "frequency.cron": "Cron",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 

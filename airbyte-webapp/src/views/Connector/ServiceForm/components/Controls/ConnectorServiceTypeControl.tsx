@@ -2,7 +2,7 @@ import { useField } from "formik";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
-import { MenuListComponentProps } from "react-select/src/components/Menu";
+import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
@@ -17,7 +17,6 @@ import { GAIcon } from "components/icons/GAIcon";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -79,7 +78,8 @@ const SingleValueContent = styled(components.SingleValue)`
   align-items: center;
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -98,7 +98,7 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
@@ -139,7 +139,8 @@ const Option: React.FC<OptionProps> = (props) => {
   );
 };
 
-const SingleValue: React.FC<SingleValueProps> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
   return (
     <SingleValueView>
       {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
@@ -154,7 +155,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
 };
 
 interface ConnectorServiceTypeControlProps {
-  property: FormBaseItem;
+  propertyPath: string;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
@@ -165,7 +166,7 @@ interface ConnectorServiceTypeControlProps {
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
-  property,
+  propertyPath,
   formType,
   isEditMode,
   onChangeServiceType,
@@ -176,7 +177,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const [field, fieldMeta, { setValue }] = useField(property.path);
+  const [field, fieldMeta, { setValue }] = useField(propertyPath);
   const analytics = useAnalyticsService();
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);

@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { render } from "test-utils/testutils";
 
 import {
   ConnectionStatus,
@@ -9,9 +10,8 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
-import { render } from "utils/testutils";
 
-import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -38,7 +38,8 @@ const mockConnection: WebBackendConnectionRead = {
   sourceId: "test-source",
   destinationId: "test-destination",
   status: ConnectionStatus.active,
-  schedule: undefined,
+  scheduleType: "manual",
+  scheduleData: undefined,
   syncCatalog: {
     streams: [],
   },
@@ -87,7 +88,7 @@ describe("<ConnectionForm />", () => {
 
       container = renderResult.container;
     });
-    test("it renders relevant items", async () => {
+    it("renders relevant items", async () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
@@ -95,7 +96,7 @@ describe("<ConnectionForm />", () => {
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });
-    test("pointer events are not turned off anywhere in the component", async () => {
+    it("pointer events are not turned off anywhere in the component", async () => {
       expect(container.innerHTML).toContain("checkbox");
     });
   });
@@ -109,11 +110,11 @@ describe("<ConnectionForm />", () => {
 
       container = renderResult.container;
     });
-    test("it renders only relevant items for the mode", async () => {
+    it("renders only relevant items for the mode", async () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
-    test("pointer events are turned off in the fieldset", async () => {
+    it("pointer events are turned off in the fieldset", async () => {
       expect(container.innerHTML).not.toContain("checkbox");
     });
   });

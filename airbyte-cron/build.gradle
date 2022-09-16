@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-config:config-models')
 
     runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
 
@@ -21,16 +21,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-cron-*.tar'
-    }
-    into 'build/docker/bin'
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
-
-Task dockerBuildTask = getDockerBuildTask("cron", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)

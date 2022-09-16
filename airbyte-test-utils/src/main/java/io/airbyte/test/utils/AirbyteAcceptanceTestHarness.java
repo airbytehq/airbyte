@@ -21,6 +21,8 @@ import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
+import io.airbyte.api.client.model.generated.ConnectionScheduleData;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
@@ -61,6 +63,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -144,14 +147,9 @@ public class AirbyteAcceptanceTestHarness {
   public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
-  public static final String TYPE = "type";
-  public static final String PUBLIC = "public";
-  public static final String TEST_CONNECTION = "test-connection";
-  public static final String STATE_AFTER_SYNC_ONE = "state after sync 1: {}";
-  public static final String STATE_AFTER_SYNC_TWO = "state after sync 2: {}";
-  public static final String GERALT = "geralt";
-
   private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
+
+  // Used for bypassing SSL modification for db configs
   private static final String IS_TEST = "is_test";
 
   private static boolean isKube;
@@ -318,8 +316,9 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private WorkflowClient getWorkflowClient() {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(
-        TemporalUtils.getAirbyteTemporalOptions("localhost:7233"),
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService(
+        TemporalWorkflowUtils.getAirbyteTemporalOptions("localhost:7233"),
         TemporalUtils.DEFAULT_NAMESPACE);
     return WorkflowClient.newInstance(temporalService);
   }
@@ -460,7 +459,8 @@ public class AirbyteAcceptanceTestHarness {
                                          final UUID destinationId,
                                          final List<UUID> operationIds,
                                          final AirbyteCatalog catalog,
-                                         final ConnectionSchedule schedule)
+                                         final ConnectionScheduleType scheduleType,
+                                         final ConnectionScheduleData scheduleData)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -468,7 +468,8 @@ public class AirbyteAcceptanceTestHarness {
             .sourceId(sourceId)
             .destinationId(destinationId)
             .syncCatalog(catalog)
-            .schedule(schedule)
+            .scheduleType(scheduleType)
+            .scheduleData(scheduleData)
             .operationIds(operationIds)
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
@@ -496,12 +497,16 @@ public class AirbyteAcceptanceTestHarness {
     );
   }
 
-  public DestinationRead createPostgresDestination() throws ApiException {
+  public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
     return createDestination(
         "AccTestDestination-" + UUID.randomUUID(),
         defaultWorkspaceId,
         getPostgresDestinationDefinitionId(),
-        getDestinationDbConfig());
+        getDestinationDbConfig(isLegacy));
+  }
+
+  public DestinationRead createPostgresDestination() throws ApiException {
+    return createPostgresDestination(false);
   }
 
   public DestinationRead createDestination(final String name,
@@ -564,25 +569,34 @@ public class AirbyteAcceptanceTestHarness {
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
   }
 
+  public JsonNode getSourceDbConfig(final boolean isLegacy) {
+    return getDbConfig(sourcePsql, false, false, isLegacy, Type.SOURCE);
+  }
+
   public JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
+    return getSourceDbConfig(false);
+  }
+
+  public JsonNode getDestinationDbConfig(final boolean isLegacy) {
+    return getDbConfig(destinationPsql, false, true, isLegacy, Type.DESTINATION);
   }
 
   public JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
+    return getDestinationDbConfig(false);
   }
 
   public JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true, false, Type.DESTINATION);
   }
 
   public JsonNode getDbConfig(final PostgreSQLContainer psql,
                               final boolean hiddenPassword,
                               final boolean withSchema,
+                              final boolean isLegacy,
                               final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+          : localConfig(psql, hiddenPassword, withSchema, isLegacy);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -591,7 +605,8 @@ public class AirbyteAcceptanceTestHarness {
 
   private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
                                           final boolean hiddenPassword,
-                                          final boolean withSchema)
+                                          final boolean withSchema,
+                                          final boolean isLegacy)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -619,8 +634,12 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
 
-    // bypasses the SSL modification for cloud acceptance tests
-    dbConfig.put(IS_TEST, true);
+    // bypasses the SSL modification for cloud acceptance tests. This use useful in cloud since it
+    // enforces most databases to have SSL on, but the postgres containers we use for testing does not
+    // allow SSL.
+    if (!isLegacy) {
+      dbConfig.put(IS_TEST, true);
+    }
     dbConfig.put(JdbcUtils.SSL_KEY, false);
 
     if (withSchema) {
@@ -645,12 +664,16 @@ public class AirbyteAcceptanceTestHarness {
         .documentationUrl(URI.create("https://example.com")));
   }
 
-  public SourceRead createPostgresSource() throws ApiException {
+  public SourceRead createPostgresSource(final boolean isLegacy) throws ApiException {
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
         defaultWorkspaceId,
         getPostgresSourceDefinitionId(),
-        getSourceDbConfig());
+        getSourceDbConfig(isLegacy));
+  }
+
+  public SourceRead createPostgresSource() throws ApiException {
+    return createPostgresSource(false);
   }
 
   public SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)

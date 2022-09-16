@@ -58,6 +58,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   @Override
   public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
+    LineGobbler.startSection("CHECK");
 
     try {
       process = integrationLauncher.check(
@@ -88,6 +89,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
+        LineGobbler.endSection("CHECK");
         return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
       } else {
         final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);

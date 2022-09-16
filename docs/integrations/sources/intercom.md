@@ -49,6 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.1.26  | 2022-08-18 | [16540](https://github.com/airbytehq/airbyte/pull/16540)  | Fix JSON schema    |
 | 0.1.25  | 2022-08-18 | [15681](https://github.com/airbytehq/airbyte/pull/15681)  | Update Intercom API to v 2.5    |
 | 0.1.24  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924)  | Remove `additionalProperties` field from schemas    |
 | 0.1.23  | 2022-07-19 | [14830](https://github.com/airbytehq/airbyte/pull/14830)  | Added `checkpoint_interval` for Incremental streams |

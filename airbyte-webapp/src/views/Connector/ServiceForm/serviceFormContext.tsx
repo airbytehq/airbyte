@@ -11,7 +11,7 @@ import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./uti
 
 interface ServiceFormContext {
   formType: "source" | "destination";
-  getValues: (values: ServiceFormValues) => ServiceFormValues;
+  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -46,12 +46,12 @@ interface ServiceFormContextProviderProps {
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   availableServices: ConnectorDefinition[];
-  getValues: (values: ServiceFormValues) => ServiceFormValues;
+  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   selectedConnector?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
 }
 
-export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProps> = ({
+export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<ServiceFormContextProviderProps>> = ({
   availableServices,
   children,
   widgetsInfo,

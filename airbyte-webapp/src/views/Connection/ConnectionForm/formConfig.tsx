@@ -13,7 +13,8 @@ import {
 } from "core/domain/connection/operation";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
-  ConnectionSchedule,
+  ConnectionScheduleData,
+  ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   NamespaceDefinitionType,
@@ -27,10 +28,12 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
+import { ConnectionOrPartialConnection } from "./ConnectionForm";
 
-interface FormikConnectionFormValues {
+export interface FormikConnectionFormValues {
   name?: string;
-  schedule?: ConnectionSchedule | null;
+  scheduleType?: ConnectionScheduleType | null;
+  scheduleData?: ConnectionScheduleData | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -39,21 +42,23 @@ interface FormikConnectionFormValues {
   normalization?: NormalizationType;
 }
 
-type ConnectionFormValues = ValuesProps;
+export type ConnectionFormValues = ValuesProps;
 
-const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
+export const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
   [SyncMode.incremental, DestinationSyncMode.append_dedup],
   [SyncMode.full_refresh, DestinationSyncMode.overwrite],
   [SyncMode.incremental, DestinationSyncMode.append],
   [SyncMode.full_refresh, DestinationSyncMode.append],
 ];
 
-const DEFAULT_SCHEDULE: ConnectionSchedule = {
-  units: 24,
-  timeUnit: "hours",
+const DEFAULT_SCHEDULE: ConnectionScheduleData = {
+  basicSchedule: {
+    units: 24,
+    timeUnit: "hours",
+  },
 };
 
-function useDefaultTransformation(): OperationCreate {
+export function useDefaultTransformation(): OperationCreate {
   const workspace = useCurrentWorkspace();
   return {
     name: "My dbt transformations",
@@ -69,16 +74,51 @@ function useDefaultTransformation(): OperationCreate {
   };
 }
 
-const connectionValidationSchema = yup
+export const connectionValidationSchema = yup
   .object({
     name: yup.string().required("form.empty.error"),
-    schedule: yup
-      .object({
-        units: yup.number().required("form.empty.error"),
-        timeUnit: yup.string().required("form.empty.error"),
-      })
-      .nullable()
-      .defined("form.empty.error"),
+    scheduleType: yup
+      .string()
+      .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
+    scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
+      if (scheduleType === ConnectionScheduleType.basic) {
+        return yup.object({
+          basicSchedule: yup
+            .object({
+              units: yup.number().required("form.empty.error"),
+              timeUnit: yup.string().required("form.empty.error"),
+            })
+            .defined("form.empty.error"),
+        });
+      } else if (scheduleType === ConnectionScheduleType.manual) {
+        return yup.mixed().notRequired();
+      }
+
+      return yup.object({
+        cron: yup
+          .object({
+            cronExpression: yup
+              .string()
+              .test({
+                name: "cronExpression",
+                message: "Incorrect cron string",
+                test(value) {
+                  if (value) {
+                    return true;
+                  }
+
+                  return this.createError({
+                    message: "form.cron.invalid",
+                    path: `cronExpression`,
+                  });
+                },
+              })
+              .required("form.empty.error"),
+            cronTimeZone: yup.string().required("form.empty.error"),
+          })
+          .defined("form.empty.error"),
+      });
+    }),
     namespaceDefinition: yup
       .string()
       .oneOf([
@@ -162,7 +202,7 @@ const connectionValidationSchema = yup
  * @param initialOperations
  * @param workspaceId
  */
-function mapFormPropsToOperation(
+export function mapFormPropsToOperation(
   values: {
     transformations?: OperationRead[];
     normalization?: NormalizationType;
@@ -200,10 +240,10 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-const getInitialTransformations = (operations: OperationCreate[]): OperationRead[] =>
+export const getInitialTransformations = (operations: OperationCreate[]): OperationRead[] =>
   operations?.filter(isDbtTransformation) ?? [];
 
-const getInitialNormalization = (
+export const getInitialNormalization = (
   operations?: Array<OperationRead | OperationCreate>,
   isEditMode?: boolean
 ): NormalizationType => {
@@ -217,10 +257,8 @@ const getInitialNormalization = (
     : NormalizationType.basic;
 };
 
-const useInitialValues = (
-  connection:
-    | WebBackendConnectionRead
-    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">),
+export const useInitialValues = (
+  connection: ConnectionOrPartialConnection,
   destDefinition: DestinationDefinitionSpecificationRead,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
@@ -234,7 +272,8 @@ const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      schedule: connection.connectionId ? connection.schedule ?? null : DEFAULT_SCHEDULE,
+      scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
+      scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -251,48 +290,70 @@ const useInitialValues = (
     }
 
     return initialValues;
-  }, [initialSchema, connection, isEditMode, destDefinition]);
+  }, [
+    connection.connectionId,
+    connection.destination.name,
+    connection.name,
+    connection.namespaceDefinition,
+    connection.namespaceFormat,
+    connection.operations,
+    connection.prefix,
+    connection.scheduleData,
+    connection.scheduleType,
+    connection.source.name,
+    destDefinition.supportsDbt,
+    destDefinition.supportsNormalization,
+    initialSchema,
+    isEditMode,
+  ]);
 };
 
-const useFrequencyDropdownData = (
-  additionalFrequency: WebBackendConnectionRead["schedule"]
+export const useFrequencyDropdownData = (
+  additionalFrequency: WebBackendConnectionRead["scheduleData"]
 ): DropDownRow.IDataItem[] => {
   const { formatMessage } = useIntl();
 
   return useMemo(() => {
     const frequencies = [...frequencyConfig];
-    if (additionalFrequency) {
+    if (additionalFrequency?.basicSchedule) {
       const additionalFreqAlreadyPresent = frequencies.some(
         (frequency) =>
-          frequency?.timeUnit === additionalFrequency.timeUnit && frequency?.units === additionalFrequency.units
+          frequency?.timeUnit === additionalFrequency.basicSchedule?.timeUnit &&
+          frequency?.units === additionalFrequency.basicSchedule?.units
       );
       if (!additionalFreqAlreadyPresent) {
-        frequencies.push(additionalFrequency);
+        frequencies.push(additionalFrequency.basicSchedule);
       }
     }
 
-    return frequencies.map((frequency) => ({
+    const basicFrequencies = frequencies.map((frequency) => ({
       value: frequency,
-      label: frequency
-        ? formatMessage(
-            {
-              id: `form.every.${frequency.timeUnit}`,
-            },
-            { value: frequency.units }
-          )
-        : formatMessage({ id: "frequency.manual" }),
+      label: formatMessage(
+        {
+          id: `form.every.${frequency.timeUnit}`,
+        },
+        { value: frequency.units }
+      ),
     }));
-  }, [formatMessage, additionalFrequency]);
-};
 
-export type { ConnectionFormValues, FormikConnectionFormValues };
-export {
-  connectionValidationSchema,
-  useInitialValues,
-  useFrequencyDropdownData,
-  mapFormPropsToOperation,
-  SUPPORTED_MODES,
-  useDefaultTransformation,
-  getInitialNormalization,
-  getInitialTransformations,
+    // Add Manual and Custom to the frequencies list
+    const customFrequency = formatMessage({
+      id: "frequency.cron",
+    });
+    const manualFrequency = formatMessage({
+      id: "frequency.manual",
+    });
+    const otherFrequencies = [
+      {
+        label: manualFrequency,
+        value: manualFrequency.toLowerCase(),
+      },
+      {
+        label: customFrequency,
+        value: customFrequency.toLowerCase(),
+      },
+    ];
+
+    return [...otherFrequencies, ...basicFrequencies];
+  }, [formatMessage, additionalFrequency]);
 };

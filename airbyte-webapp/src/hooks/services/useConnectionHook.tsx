@@ -10,7 +10,8 @@ import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
 import {
-  ConnectionSchedule,
+  ConnectionScheduleData,
+  ConnectionScheduleType,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
@@ -35,7 +36,8 @@ export const connectionsKeys = {
 
 export interface ValuesProps {
   name?: string;
-  schedule?: ConnectionSchedule;
+  scheduleData: ConnectionScheduleData;
+  scheduleType: ConnectionScheduleType;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;
@@ -99,7 +101,7 @@ export const useSyncConnection = () => {
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getFrequencyType(connection.schedule),
+      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
     });
 
     return service.sync(connection.connectionId);
@@ -144,7 +146,7 @@ const useCreateConnection = () => {
 
       analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
         actionDescription: "New connection created",
-        frequency: getFrequencyType(values.schedule),
+        frequency: getFrequencyType(values.scheduleData?.basicSchedule),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,

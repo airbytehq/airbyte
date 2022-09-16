@@ -5,7 +5,7 @@ import { InfoIcon } from "components/icons/InfoIcon";
 import styles from "./InfoTooltip.module.scss";
 import { Tooltip } from "./Tooltip";
 
-export const InfoTooltip: React.FC = ({ children }) => {
+export const InfoTooltip: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <Tooltip
       control={

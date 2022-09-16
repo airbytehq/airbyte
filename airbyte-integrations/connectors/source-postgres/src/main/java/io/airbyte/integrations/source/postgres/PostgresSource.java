@@ -473,6 +473,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
+  @Override
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }

@@ -49,10 +49,24 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL connection modes. <li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li><li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
+        "description": "SSL connection modes. <li><b>preferred</b> - Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.</li><li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li><li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
+          {
+            "title": "preferred",
+            "description": "Preferred SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "preferred",
+                "enum": ["preferred"],
+                "default": "preferred",
+                "order": 0
+              }
+            }
+          },
           {
             "title": "required",
             "description": "Require SSL mode.",
@@ -160,12 +174,40 @@
         ]
       },
       "replication_method": {
-        "type": "string",
+        "type": "object",
         "title": "Replication Method",
-        "description": "Replication method which is used for data extraction from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+        "description": "Replication method to use for extracting data from the database.",
         "order": 8,
-        "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"]
+        "oneOf": [
+          {
+            "title": "STANDARD",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              }
+            }
+          }
+        ]
       }
     }
   }
