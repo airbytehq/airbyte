@@ -6,8 +6,8 @@ import { Input } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
+import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
-import { PropertyError } from "../Sections/PropertyError";
 
 interface ConnectorNameControlProps {
   property: FormBaseItem;

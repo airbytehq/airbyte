@@ -8,8 +8,8 @@ import { FormBaseItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
+import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
-import { PropertyError } from "./PropertyError";
 import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
