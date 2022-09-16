@@ -134,6 +134,7 @@ public class WebBackendConnectionsHandler {
         .catalogId(connectionRead.getSourceCatalogId())
         .isSyncing(syncJobReadList.getJobs()
             .stream()
+
             .map(JobWithAttemptsRead::getJob)
             .anyMatch(WebBackendConnectionsHandler::isRunningJob));
     setLatestSyncJobProperties(webBackendConnectionRead, syncJobReadList);

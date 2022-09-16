@@ -18,10 +18,13 @@ dependencies {
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
 
-    testImplementation 'io.temporal:temporal-testing:1.8.1'
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-metrics:metrics-lib')
+
+    testImplementation 'io.temporal:temporal-testing:1.8.1'
+    // Needed to be able to mock final class
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
 }
 
 jsonSchema2Pojo {
