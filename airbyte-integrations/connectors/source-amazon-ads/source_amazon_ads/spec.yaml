@@ -6,9 +6,6 @@ connectionSpecification:
   type: object
   required:
     - credentials
-    - region
-    - report_wait_timeout
-    - report_generation_max_retries
   additionalProperties: true
   properties:
     region:
@@ -59,7 +56,7 @@ connectionSpecification:
         Profile IDs you want to fetch data for. See the docs for more detials https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles
       order: 8
       type: array
-      items:
+      items:g
         type: integer
     credentials:
       required: 
