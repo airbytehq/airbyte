@@ -17,7 +17,7 @@ const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinat
   );
 
 describe("<FrequentlyUsedDestinations />", () => {
-  test("should renders with mock data without crash", () => {
+  it("should renders with mock data without crash", () => {
     const { asFragment } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
       onDestinationSelect: jest.fn(),
@@ -27,7 +27,7 @@ describe("<FrequentlyUsedDestinations />", () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  test("should call provided handler with right param", async () => {
+  it("should call provided handler with right param", async () => {
     const handler = jest.fn();
     const { getByText } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
