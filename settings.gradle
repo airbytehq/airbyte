@@ -60,8 +60,6 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 // shared
 include ':airbyte-commons'
 
-include ':airbyte-persistence:job-persistence'
-
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
@@ -79,6 +77,7 @@ include ':airbyte-test-utils'
 include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
+include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:scheduler-models' // transitively used by airbyte-workers.
