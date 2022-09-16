@@ -75,7 +75,7 @@ describe("InviteUsersHint", () => {
     const { getByTestId } = render(<InviteUsersHint connectorType="source" />, { wrapper: TestWrapper });
     const element = getByTestId("inviteUsersHint-cta");
 
-    expect(element).toHaveAttribute("href", `../../${RoutePaths.Settings}/${CloudSettingsRoutes.AccessManagement}`);
+    expect(element).toHaveAttribute("href", `../${RoutePaths.Settings}/${CloudSettingsRoutes.AccessManagement}`);
 
     fireEvent.click(element);
     expect(mockToggleInviteUsersModalOpen).not.toHaveBeenCalled();
