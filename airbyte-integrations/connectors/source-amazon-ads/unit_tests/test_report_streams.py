@@ -17,10 +17,12 @@ from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.streams import (
+    SponsoredBrandsCampaigns,
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
+    SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
@@ -563,6 +565,32 @@ def test_display_report_stream_campaign_state_filer(mocker, config, state_filter
     mocker.patch.object(SponsoredDisplayCampaigns, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
 
     stream = SponsoredDisplayCampaigns(config, profiles)
+    params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in params:
+        assert params["stateFilter"] == ",".join(state_filter)
+    else:
+        assert state_filter is None
+
+
+@pytest.mark.parametrize("state_filter", [["enabled", "archived", "paused"], ["enabled"], None])
+def test_display_report_stream_product_campaign_state_filer(mocker, config, state_filter):
+    profiles = make_profiles()
+    mocker.patch.object(SponsoredProductCampaigns, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = SponsoredProductCampaigns(config, profiles)
+    params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in params:
+        assert params["stateFilter"] == ",".join(state_filter)
+    else:
+        assert state_filter is None
+
+
+@pytest.mark.parametrize("state_filter", [["enabled", "archived", "paused"], ["enabled"], None])
+def test_display_report_stream_brand_campaign_state_filer(mocker, config, state_filter):
+    profiles = make_profiles()
+    mocker.patch.object(SponsoredBrandsCampaigns, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = SponsoredBrandsCampaigns(config, profiles)
     params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
     if "stateFilter" in params:
         assert params["stateFilter"] == ",".join(state_filter)
