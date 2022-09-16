@@ -105,4 +105,5 @@ KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tes
 echo -e "$blue_text""Listing still running jobs! If you see any they thing won't end""$default_text"
 jobs
 kill $(jobs -p)
+rm -rf kind_logs
 echo -e "$blue_text""If you are reading the the script has completed without error""$default_text"
