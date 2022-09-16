@@ -1,35 +1,30 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { H6 } from "components";
 import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
-import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
-import ConnectionName from "./ConnectionName";
+import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface ConnectionPageTitleProps {
-  source: SourceRead;
-  destination: DestinationRead;
-  connection: WebBackendConnectionRead;
-  currentStep: ConnectionSettingsRoutes;
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
-  source,
-  destination,
-  connection,
-  currentStep,
-  onStatusUpdating,
-}) => {
+export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ onStatusUpdating }) => {
+  const params = useParams<{ id: string; "*": ConnectionSettingsRoutes }>();
   const navigate = useNavigate();
+  const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
+
+  const { connection } = useConnectionFormService();
 
   const steps = useMemo(() => {
     const steps = [
@@ -77,18 +72,11 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
       <H6 center bold highlighted>
         <FormattedMessage id="connection.title" />
       </H6>
-      <ConnectionName connection={connection} />
+      <ConnectionName />
       <div className={styles.statusContainer}>
-        <StatusMainInfo
-          connection={connection}
-          source={source}
-          destination={destination}
-          onStatusUpdating={onStatusUpdating}
-        />
+        <StatusMainInfo onStatusUpdating={onStatusUpdating} />
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>
   );
 };
-
-export default ConnectionPageTitle;

@@ -5,12 +5,14 @@ import styled from "styled-components";
 
 import { Switch } from "components";
 
+import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import { ConnectionStatus } from "../../../../../core/request/AirbyteClient";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -30,15 +32,16 @@ const Content = styled.div`
 `;
 
 interface EnabledControlProps {
-  connection: WebBackendConnectionRead;
   disabled?: boolean;
-  frequencyType?: string;
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
+
+  const { connection } = useConnectionFormService();
+  const frequencyType = getFrequencyType(connection.scheduleData?.basicSchedule);
 
   const onChangeStatus = async () => {
     await updateConnection(

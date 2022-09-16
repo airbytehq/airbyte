@@ -1,22 +1,10 @@
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useCallback, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import React, { Suspense } from "react";
 
-import { Button, Card } from "components";
+import { Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
-import {
-  ConnectionFormServiceProvider,
-  isSubmitCancel,
-  SubmitResult,
-} from "hooks/services/Connection/ConnectionFormService";
-import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
@@ -31,55 +19,51 @@ interface CreateConnectionContentProps {
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
-  destination,
-  afterSubmitConnection,
+  // destination,
+  // afterSubmitConnection,
 }) => {
-  const { mutateAsync: createConnection } = useCreateConnection();
-  const navigate = useNavigate();
+  // const { mutateAsync: createConnection } = useCreateConnection();
+  // const navigate = useNavigate();
 
-  const formId = useUniqueFormId();
-  const [changedFormsById] = useChangedFormsById();
-  const formDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
+  // TODO: Probably remove this
+  // const formId = useUniqueFormId();
 
-  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
-    source.sourceId,
-    true
-  );
+  const { isLoading, schemaErrorStatus, onDiscoverSchema } = useDiscoverSchema(source.sourceId, true);
 
-  const connection = {
-    syncCatalog: schema,
-    destination,
-    source,
-    catalogId,
-  };
+  // const connection = {
+  //   syncCatalog: schema,
+  //   destination,
+  //   source,
+  //   catalogId,
+  // };
 
-  const onSubmitConnectionStep = useCallback(
-    async (values: ValuesProps) => {
-      return await createConnection({
-        values,
-        source,
-        destination,
-        sourceDefinition: {
-          sourceDefinitionId: source?.sourceDefinitionId ?? "",
-        },
-        destinationDefinition: {
-          name: destination?.name ?? "",
-          destinationDefinitionId: destination?.destinationDefinitionId ?? "",
-        },
-        sourceCatalogId: catalogId,
-      });
-    },
-    [catalogId, createConnection, destination, source]
-  );
+  // const onSubmitConnectionStep = useCallback(
+  //   async (values: ValuesProps) => {
+  //     return await createConnection({
+  //       values,
+  //       source,
+  //       destination,
+  //       sourceDefinition: {
+  //         sourceDefinitionId: source?.sourceDefinitionId ?? "",
+  //       },
+  //       destinationDefinition: {
+  //         name: destination?.name ?? "",
+  //         destinationDefinitionId: destination?.destinationDefinitionId ?? "",
+  //       },
+  //       sourceCatalogId: catalogId,
+  //     });
+  //   },
+  //   [catalogId, createConnection, destination, source]
+  // );
 
-  const afterSubmit = useCallback(
-    (submitResult: SubmitResult) => {
-      if (!isSubmitCancel(submitResult)) {
-        afterSubmitConnection?.(submitResult) ?? navigate(`../../connections/${submitResult.connectionId}`);
-      }
-    },
-    [afterSubmitConnection, navigate]
-  );
+  // const afterSubmit = useCallback(
+  //   (submitResult: SubmitResult) => {
+  //     if (!isSubmitCancel(submitResult)) {
+  //       afterSubmitConnection?.(submitResult) ?? navigate(`../../connections/${submitResult.connectionId}`);
+  //     }
+  //   },
+  //   [afterSubmitConnection, navigate]
+  // );
 
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
@@ -96,23 +80,18 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   ) : (
     <Suspense fallback={<LoadingSchema />}>
       <div className={styles.connectionFormContainer}>
-        <ConnectionFormServiceProvider
-          connection={connection}
+        {/* <ConnectionFormServiceProvider
+          connection={connection as WebBackendConnectionRead /* TODO: IoC so this is what we want }
           mode="create"
-          formId={formId}
-          onSubmit={onSubmitConnectionStep}
           onAfterSubmit={afterSubmit}
-          formDirty={formDirty}
+          refreshCatalog={onDiscoverSchema}
+          formId={formId}
         >
           <ConnectionForm
-            additionalSchemaControl={
-              <Button onClick={onDiscoverSchema} type="button">
-                <FontAwesomeIcon className={styles.tryArrowIcon} icon={faRedoAlt} />
-                <FormattedMessage id="connection.refreshSchema" />
-              </Button>
-            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onFormSubmit={onSubmitConnectionStep as any}
           />
-        </ConnectionFormServiceProvider>
+        </ConnectionFormServiceProvider> */}
       </div>
     </Suspense>
   );

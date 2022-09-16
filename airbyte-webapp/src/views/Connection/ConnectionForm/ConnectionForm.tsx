@@ -1,14 +1,17 @@
-import { Field, FieldProps, Form, Formik } from "formik";
-import React from "react";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
+import React, { useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, H5, Input } from "components";
+import { Button, Card, ControlLabels, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
@@ -16,7 +19,12 @@ import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField"
 import { OperationsSection } from "./components/OperationsSection";
 import ScheduleField from "./components/ScheduleField";
 import SchemaField from "./components/SyncCatalogField";
-import { connectionValidationSchema } from "./formConfig";
+import { connectionValidationSchema, FormikConnectionFormValues } from "./formConfig";
+
+const TryArrow = styled(FontAwesomeIcon)`
+  margin: 0 10px -1px 0;
+  font-size: 14px;
+`;
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -93,19 +101,36 @@ export interface ConnectionFormProps {
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
-  additionalSchemaControl?: React.ReactNode;
+  onFormSubmit: (
+    values: FormikConnectionFormValues,
+    formikHelpers: FormikHelpers<FormikConnectionFormValues>
+  ) => Promise<void>;
+  onRefreshSourceSchema: () => Promise<void>;
+  onCancel?: () => void;
 }
 
 export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   className,
   successMessage,
   canSubmitUntouchedForm,
-  additionalSchemaControl,
+  onFormSubmit,
+  onRefreshSourceSchema,
+  onCancel,
 }) => {
-  const { initialValues, formId, mode, onFormSubmit, errorMessage, onCancel } = useConnectionFormService();
+  const { initialValues, formId, mode, submitError, connectionDirty } = useConnectionFormService();
 
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
+
+  const getErrorMessage = useCallback(
+    (formValid: boolean) =>
+      submitError
+        ? generateMessageFromError(submitError)
+        : connectionDirty && !formValid
+        ? formatMessage({ id: "connectionForm.validation.error" })
+        : null,
+    [connectionDirty, formatMessage, submitError]
+  );
 
   return (
     <Formik
@@ -219,9 +244,14 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <StyledSection>
               <Field
                 name="syncCatalog.streams"
-                additionalControl={additionalSchemaControl}
                 component={SchemaField}
                 isSubmitting={isSubmitting}
+                additionalControl={
+                  <Button onClick={onRefreshSourceSchema} type="button" secondary>
+                    <TryArrow icon={faSyncAlt} />
+                    <FormattedMessage id="connection.updateSchema" />
+                  </Button>
+                }
               />
             </StyledSection>
           </Card>
@@ -234,8 +264,8 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onCancel?.();
               }}
               successMessage={successMessage}
-              errorMessage={errorMessage}
-              enableControls={canSubmitUntouchedForm}
+              errorMessage={getErrorMessage(isValid)}
+              enableControls={canSubmitUntouchedForm || connectionDirty}
             />
           )}
           {mode === "create" && (
@@ -247,7 +277,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <CreateControls
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
-                errorMessage={errorMessage}
+                errorMessage={getErrorMessage(isValid)}
               />
             </>
           )}

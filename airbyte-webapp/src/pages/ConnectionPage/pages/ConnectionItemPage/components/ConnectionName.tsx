@@ -5,19 +5,16 @@ import React, { ChangeEvent, useState } from "react";
 import { Input } from "components";
 
 import { buildConnectionUpdate } from "core/domain/connection";
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
 import styles from "./ConnectionName.module.scss";
 
-interface ConnectionNameProps {
-  connection: WebBackendConnectionRead;
-}
-
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
-const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
+export const ConnectionName: React.FC = () => {
+  const { connection } = useConnectionFormService();
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,6 +50,12 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     try {
       setLoading(true);
 
+      // TODO: Once PATCH work is merged this will be fine.
+      // await updateConnection({
+      //   name: connectionNameTrimmed,
+      //   connectionId: connection.connectionId,
+      // });
+      // TODO: Make sure the top level connection object is updated after this
       await updateConnection(buildConnectionUpdate(connection, { name: connectionNameTrimmed }));
 
       setConnectionName(connectionNameTrimmed);
@@ -93,5 +96,3 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     </div>
   );
 };
-
-export default ConnectionName;

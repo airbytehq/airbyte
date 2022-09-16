@@ -73,21 +73,21 @@ export function useConnectionService() {
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
 
-export const useConnectionLoad = (
-  connectionId: string
-): {
-  connection: WebBackendConnectionRead;
-  refreshConnectionCatalog: () => Promise<void>;
-} => {
+export const useConnectionLoad = (connectionId: string) => {
   const [connection, setConnection] = useState(useGetConnection(connectionId));
   const connectionService = useWebConnectionService();
+  const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
   const refreshConnectionCatalog = async () => {
     setConnection(await connectionService.getConnection(connectionId, true));
+    setSchemaHasBeenRefreshed(true);
   };
 
   return {
     connection,
+    schemaHasBeenRefreshed,
+    setConnection,
+    setSchemaHasBeenRefreshed,
     refreshConnectionCatalog,
   };
 };

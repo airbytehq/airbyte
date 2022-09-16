@@ -27,6 +27,7 @@ const EditControls: React.FC<EditControlProps> = ({
   enableControls,
   withLine,
 }) => {
+  console.log({ successMessage, errorMessage, dirty });
   return (
     <>
       {withLine && <div className={styles.line} />}

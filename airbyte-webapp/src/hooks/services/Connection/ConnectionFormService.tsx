@@ -1,11 +1,8 @@
-import { FormikHelpers } from "formik";
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { useIntl } from "react-intl";
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { useAsyncFn } from "react-use";
 
-import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   ConnectionFormValues,
@@ -16,7 +13,7 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { useFormChangeTrackerService } from "../FormChangeTracker";
+import { useChangedFormsById } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
 
 export type ConnectionOrPartialConnection =
@@ -29,80 +26,90 @@ export interface SubmitCancel {
 export type SubmitResult = WebBackendConnectionRead | SubmitCancel;
 
 export interface ConnectionServiceProps {
-  connection: ConnectionOrPartialConnection;
+  connection: WebBackendConnectionRead;
+  schemaHasBeenRefreshed: boolean;
   mode: ConnectionFormMode;
-  formId?: string;
-  onSubmit: (values: ValuesProps) => Promise<SubmitResult>;
+  formId: string;
+  setConnection: (connection: WebBackendConnectionRead) => void;
+  setSchemaHasBeenRefreshed: (refreshed: boolean) => void;
+  onSubmit?: (values: ValuesProps) => Promise<SubmitResult>;
   onAfterSubmit?: (submitResult: SubmitResult) => void;
-  onCancel?: () => void;
-  formDirty: boolean;
+  refreshCatalog: () => Promise<void>;
 }
 
 export function isSubmitCancel(submitResult: SubmitResult): submitResult is { submitCancel: boolean } {
   return submitResult.hasOwnProperty("submitCancel");
 }
 
+export const tidyConnectionFormValues = (
+  values: FormikConnectionFormValues,
+  operations: OperationRead[] | undefined,
+  workspaceId: string
+): ValuesProps => {
+  // Set the scheduleType based on the schedule value
+  // TODO: I think this should be removed
+  values["scheduleType"] = values.scheduleData?.basicSchedule
+    ? ConnectionScheduleType.basic
+    : ConnectionScheduleType.manual;
+
+  // TODO: We should align these types
+  // With the PATCH-style endpoint available we might be able to forego this pattern
+  const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
+    context: { isRequest: true },
+  }) as unknown as ConnectionFormValues;
+
+  formValues.operations = mapFormPropsToOperation(values, operations, workspaceId);
+
+  return formValues;
+};
+
 const useConnectionForm = ({
   connection,
   mode,
   formId,
-  onSubmit,
+  schemaHasBeenRefreshed,
   onAfterSubmit,
-  onCancel,
-  formDirty,
+  setConnection,
+  setSchemaHasBeenRefreshed,
+  refreshCatalog,
 }: ConnectionServiceProps) => {
   const [submitError, setSubmitError] = useState<Error | null>(null);
-  const workspaceId = useCurrentWorkspaceId();
-  const { clearFormChange } = useFormChangeTrackerService();
-  const { formatMessage } = useIntl();
+
+  const [{ loading: isRefreshingCatalog }, refreshConnectionCatalog] = useAsyncFn(refreshCatalog, []);
+
+  const [changedFormsById] = useChangedFormsById();
+  const connectionDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
 
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
 
-  const onFormSubmit = useCallback(
-    async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
-        ? ConnectionScheduleType.basic
-        : ConnectionScheduleType.manual;
+  console.log({ submitError });
 
-      // TODO: We should align these types
-      // With the PATCH-style endpoint available we might be able to forego this pattern
-      const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
-        context: { isRequest: true },
-      }) as unknown as ConnectionFormValues;
+  // const onFormSubmit = useCallback(
+  //   async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
+  //     const formValues = tidyConnectionFormValues(values, connection.operations, workspaceId);
 
-      formValues.operations = mapFormPropsToOperation(values, connection.operations, workspaceId);
+  //     setSubmitError(null);
+  //     try {
+  //       // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
+  //       // TODO: onSubmit IoC
+  //       const submitResult = await onSubmit?.(formValues);
+  //       if (
+  //         submitResult &&
+  //         ((isSubmitCancel(submitResult) && !submitResult.submitCancel) || !isSubmitCancel(submitResult))
+  //       ) {
+  //         formikHelpers.resetForm({ values });
+  //         // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
+  //         clearFormChange(formId);
+  //         onAfterSubmit?.(submitResult);
+  //       }
+  //     } catch (e) {
+  //       setSubmitError(e);
+  //     }
+  //   },
+  //   [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
+  // );
 
-      setSubmitError(null);
-      try {
-        // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
-        const submitResult = await onSubmit(formValues);
-        if ((isSubmitCancel(submitResult) && !submitResult.submitCancel) || !isSubmitCancel(submitResult)) {
-          formikHelpers.resetForm({ values });
-          // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
-          // formId is never undefined
-          if (formId) {
-            clearFormChange(formId);
-          }
-          onAfterSubmit?.(submitResult);
-        }
-      } catch (e) {
-        setSubmitError(e);
-      }
-    },
-    [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
-  );
-
-  const errorMessage = useMemo(
-    () =>
-      submitError
-        ? generateMessageFromError(submitError)
-        : formDirty
-        ? formatMessage({ id: "connectionForm.validation.error" })
-        : null,
-    [formDirty, formatMessage, submitError]
-  );
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return {
@@ -110,12 +117,17 @@ const useConnectionForm = ({
     destDefinition,
     connection,
     mode,
-    errorMessage,
+    submitError,
     frequencies,
     formId,
-    onFormSubmit,
+    connectionDirty,
+    isRefreshingCatalog,
+    schemaHasBeenRefreshed,
     onAfterSubmit,
-    onCancel,
+    setConnection,
+    setSchemaHasBeenRefreshed,
+    refreshConnectionCatalog,
+    setSubmitError,
   };
 };
 

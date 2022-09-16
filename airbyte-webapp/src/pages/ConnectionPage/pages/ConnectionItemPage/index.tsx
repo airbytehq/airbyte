@@ -1,3 +1,1 @@
-import ConnectionItemPage from "./ConnectionItemPage";
-
-export default ConnectionItemPage;
+export * from "./ConnectionItemPage";
