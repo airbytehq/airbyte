@@ -1,7 +1,7 @@
 import React from "react";
 import sanitizeHtml from "sanitize-html";
 
-interface Props {
+interface TextWithHTMLProps {
   text?: string;
   className?: string;
 }
@@ -11,7 +11,7 @@ const allowedAttributes = {
   a: [...sanitizeHtml.defaults.allowedAttributes["a"], "rel"],
 };
 
-export const TextWithHTML: React.FC<Props> = ({ text, className }) => {
+export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text, className }) => {
   if (!text) {
     return null;
   }
