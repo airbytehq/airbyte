@@ -4,13 +4,12 @@ on:
   #ability to start task manually in Web UI
   workflow_dispatch:
   schedule:
+    # every hour
     - cron: "0 */1 * * *"
   push:
     # remove line before commit
     branches:
       - toph_stop_testing_gh_runners_in_prod
-    branches-ignore:
-      - "gitbook/v1"
 
 jobs:
   # COMMON TASKS
