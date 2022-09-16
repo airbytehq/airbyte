@@ -61,6 +61,7 @@ describe("ConnectionFormService", () => {
         onSubmit,
         onAfterSubmit,
         onCancel,
+        formDirty: false,
       },
     });
 
@@ -73,18 +74,13 @@ describe("ConnectionFormService", () => {
     expect(resetForm).toBeCalledWith({ values: testValues });
     expect(onSubmit).toBeCalledWith({
       operations: [],
-      scheduleData: {
-        basicSchedule: {
-          timeUnit: undefined,
-          units: undefined,
-        },
-      },
       scheduleType: "manual",
       syncCatalog: {
         streams: undefined,
       },
     });
     expect(onAfterSubmit).toBeCalledWith();
+    expect(result.current.errorMessage).toBe(null);
   });
 
   it("should catch if onSubmit throws and generate an error message", async () => {
@@ -102,6 +98,7 @@ describe("ConnectionFormService", () => {
         onSubmit,
         onAfterSubmit,
         onCancel,
+        formDirty: false,
       },
     });
 
@@ -129,6 +126,7 @@ describe("ConnectionFormService", () => {
         onSubmit,
         onAfterSubmit,
         onCancel,
+        formDirty: false,
       },
     });
 
@@ -140,5 +138,22 @@ describe("ConnectionFormService", () => {
 
     expect(result.current.errorMessage).toBe(null);
     expect(resetForm).not.toHaveBeenCalled();
+  });
+
+  it("should render the generic form invalid error message if the form is dirty and there has not been a submit error", async () => {
+    const { result } = renderHook(useConnectionFormService, {
+      wrapper: Wrapper,
+      initialProps: {
+        connection: mockConnection as WebBackendConnectionRead,
+        mode: "create",
+        formId: Math.random().toString(),
+        onSubmit,
+        onAfterSubmit,
+        onCancel,
+        formDirty: true,
+      },
+    });
+
+    expect(result.current.errorMessage).toBe("The form is invalid. Please make sure that all fields are correct.");
   });
 });

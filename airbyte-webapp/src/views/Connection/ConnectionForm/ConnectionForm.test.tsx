@@ -81,6 +81,7 @@ const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnect
         connection={connection}
         formId={Math.random().toString()}
         onSubmit={jest.fn()}
+        formDirty={false}
       >
         <ConnectionForm />
       </ConnectionFormServiceProvider>
