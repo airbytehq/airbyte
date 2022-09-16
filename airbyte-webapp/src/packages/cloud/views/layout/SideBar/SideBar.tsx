@@ -7,32 +7,30 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
+import { Text } from "components/base/Text";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 
+import { useConfig } from "config";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
+import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
+import RecipesIcon from "views/layout/SideBar/components/RecipesIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
+import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "views/layout/SideBar/components/SidebarDropdownMenu";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
-import { useConfig } from "../../../../../config";
 import { RoutePaths } from "../../../../../pages/routePaths";
-import ChatIcon from "../../../../../views/layout/SideBar/components/ChatIcon";
-import DocsIcon from "../../../../../views/layout/SideBar/components/DocsIcon";
-import RecipesIcon from "../../../../../views/layout/SideBar/components/RecipesIcon";
-import {
-  SidebarDropdownMenu,
-  SidebarDropdownMenuItemType,
-} from "../../../../../views/layout/SideBar/components/SidebarDropdownMenu";
-import StatusIcon from "../../../../../views/layout/SideBar/components/StatusIcon";
 import styles from "./SideBar.module.scss";
 
 const SideBar: React.FC = () => {
@@ -61,34 +59,34 @@ const SideBar: React.FC = () => {
             <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
-                <span className={styles.text}>
+                <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.onboarding" />
-                </span>
+                </Text>
               </NavLink>
             </li>
           ) : null}
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.connections" />
-              </span>
+              </Text>
             </NavLink>
           </li>
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.sources" />
-              </span>
+              </Text>
             </NavLink>
           </li>
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.destinations" />
-              </span>
+              </Text>
             </NavLink>
           </li>
         </ul>
@@ -97,13 +95,14 @@ const SideBar: React.FC = () => {
         <li>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
             <CreditsIcon />
-            <span className={styles.text}>
+            <Text className={styles.text} size="sm">
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
-            </span>
+            </Text>
           </NavLink>
         </li>
         <li>
           <SidebarDropdownMenu
+            label={{ icon: <DocsIcon />, displayName: <FormattedMessage id="sidebar.resources" /> }}
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
@@ -130,15 +129,14 @@ const SideBar: React.FC = () => {
                 displayName: <FormattedMessage id="sidebar.recipes" />,
               },
             ]}
-          >
-            <DocsIcon />
-            <span>
-              <FormattedMessage id="sidebar.resources" />
-            </span>
-          </SidebarDropdownMenu>
+          />
         </li>
         <li>
           <SidebarDropdownMenu
+            label={{
+              icon: <FontAwesomeIcon icon={faQuestionCircle} size="2x" />,
+              displayName: <FormattedMessage id="sidebar.support" />,
+            }}
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
@@ -153,12 +151,7 @@ const SideBar: React.FC = () => {
                 displayName: <FormattedMessage id="sidebar.chat" />,
               },
             ]}
-          >
-            <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
-            <span>
-              <FormattedMessage id="sidebar.support" />
-            </span>
-          </SidebarDropdownMenu>
+          />
         </li>
         <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
@@ -168,9 +161,9 @@ const SideBar: React.FC = () => {
               </React.Suspense>
             </IfFeatureEnabled>
             <SettingsIcon />
-            <span className={styles.text}>
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.settings" />
-            </span>
+            </Text>
           </NavLink>
         </li>
       </ul>

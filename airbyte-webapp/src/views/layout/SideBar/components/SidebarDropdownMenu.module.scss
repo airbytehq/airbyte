@@ -19,20 +19,19 @@
   border-radius: 12px;
   line-height: 15px;
   color: colors.$grey-30;
-  font-weight: normal;
-  font-size: 12px;
   text-decoration: none;
   transition: all 0.3s ease-out;
 
-  span {
+  .text {
     margin-top: 7px;
+    color: colors.$grey-30;
   }
 
   &.open {
-    background-color: colors.$dark-blue-800;
+    background-color: colors.$dark-blue-600;
   }
 
-  &:hover {
+  &:hover:not(.open) {
     background-color: colors.$dark-blue-800;
   }
 }
@@ -63,15 +62,13 @@
     border: 0;
     background-color: transparent;
     text-decoration: none;
-    color: colors.$dark-blue;
-    font-size: 14px;
-    font-weight: 500;
 
-    span {
+    .icon {
       display: flex;
       align-items: center;
       width: 34px;
       font-size: 22px;
+      color: colors.$dark-blue;
     }
 
     &.active {

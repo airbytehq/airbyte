@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { NavLink, useLocation } from "react-router-dom";
 
 import { Link } from "components";
+import { Text } from "components/base/Text";
 import Version from "components/Version";
 
 import { useConfig } from "config";
@@ -51,34 +52,34 @@ const SideBar: React.FC = () => {
             <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
-                <span className={styles.text}>
+                <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.onboarding" />
-                </span>
+                </Text>
               </NavLink>
             </li>
           ) : null}
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.connections" />
-              </span>
+              </Text>
             </NavLink>
           </li>
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.sources" />
-              </span>
+              </Text>
             </NavLink>
           </li>
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
-              <span className={styles.text}>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.destinations" />
-              </span>
+              </Text>
             </NavLink>
           </li>
         </ul>
@@ -87,13 +88,17 @@ const SideBar: React.FC = () => {
         <li>
           <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
-            <span className={styles.text}>
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.update" />
-            </span>
+            </Text>
           </a>
         </li>
         <li>
           <SidebarDropdownMenu
+            label={{
+              icon: <DocsIcon />,
+              displayName: <FormattedMessage id="sidebar.resources" />,
+            }}
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
@@ -114,12 +119,7 @@ const SideBar: React.FC = () => {
                 displayName: <FormattedMessage id="sidebar.recipes" />,
               },
             ]}
-          >
-            <DocsIcon />
-            <span>
-              <FormattedMessage id="sidebar.resources" />
-            </span>
-          </SidebarDropdownMenu>
+          />
         </li>
         <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
@@ -127,9 +127,9 @@ const SideBar: React.FC = () => {
               <NotificationIndicator />
             </React.Suspense>
             <SettingsIcon />
-            <span className={styles.text}>
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.settings" />
-            </span>
+            </Text>
           </NavLink>
         </li>
         {config.version ? (
