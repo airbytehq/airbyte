@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+# ------------- Import some defaults for the shell
+
+# Source shell defaults
+# $0 is the currently running program (this file)
+this_file_directory=$(dirname $0)
+relative_path_to_defaults=$this_file_directory/../shell_defaults
 
 . tools/lib/lib.sh
 
@@ -9,15 +14,25 @@ assert_root
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 if [ -n "$CI" ]; then
+  mkdir -p kind_logs
   echo "Loading images into KIND..."
-  kind load docker-image airbyte/server:dev --name chart-testing &
-  kind load docker-image airbyte/webapp:dev --name chart-testing &
-  kind load docker-image airbyte/worker:dev --name chart-testing &
-  kind load docker-image airbyte/db:dev --name chart-testing &
-  kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
-  kind load docker-image airbyte/bootloader:dev --name chart-testing &
-  kind load docker-image airbyte/cron:dev --name chart-testing &
-  wait
+  kind load docker-image airbyte/server:dev --name chart-testing > kind_logs/server &
+  process_ids=$!
+  kind load docker-image airbyte/webapp:dev --name chart-testing > kind_logs/webapp &
+  process_ids="$! $process_ids"
+  kind load docker-image airbyte/worker:dev --name chart-testing > kind_logs/worker &
+  process_ids="$! $process_ids"
+  kind load docker-image airbyte/db:dev --name chart-testing > kind_logs/db &
+  process_ids="$! $process_ids"
+  kind load docker-image airbyte/container-orchestrator:dev --name chart-testing > kind_logs/container &
+  process_ids="$! $process_ids"
+  kind load docker-image airbyte/bootloader:dev --name chart-testing > kind_logs/bootloader &
+  kind load docker-image airbyte/cron:dev --name chart-testing > kind_logs/cron &
+  process_ids="$! $process_ids"
+  tail -f kind_logs/* &
+  tail_id=$!
+  echo "Waiting for the follows process IDs to finish $process_ids"
+  wait $process_ids && kill $tail_id
 fi
 
 echo "Starting app..."
@@ -32,6 +47,7 @@ echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
+echo "Sleeping 120 seconds"
 sleep 120s
 
 if [ -n "$CI" ]; then
@@ -55,7 +71,13 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+kubectl port-forward svc/airbyte-server-svc 8001:8001 > /tmp/kubernetes_logs/port_forward_command.txt &
+process_ids=$!
+tail -f kind_logs/* &
+tail_id=$!
+echo "Waiting for the follows process IDs to finish $process_ids"
+wait -$process_ids && kill $tail_id
+
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
