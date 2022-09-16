@@ -64,7 +64,7 @@ connectionSpecification:
         - client_secret
         - refresh_token
       type: object
-      x-oauth-provider: amazon
+      x-oauth2-provider: amazon
       properties:
         auth_type:
           title: Auth Type
