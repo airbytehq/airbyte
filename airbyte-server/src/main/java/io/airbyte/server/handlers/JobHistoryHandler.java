@@ -132,8 +132,10 @@ public class JobHistoryHandler {
 
     if (!nonTerminalSyncJobsForConnection.isEmpty()) {
 
-      // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc, so index 0 is the latest.
-      // there *should* only be a single running sync job for a connection regardless so .get(0) should always be
+      // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc, so index 0 is the
+      // latest.
+      // there *should* only be a single running sync job for a connection regardless so .get(0) should
+      // always be
       // what we want.
       final Job job = nonTerminalSyncJobsForConnection.get(0);
 
