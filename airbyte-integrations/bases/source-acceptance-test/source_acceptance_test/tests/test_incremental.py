@@ -150,7 +150,10 @@ class TestIncremental(BaseTest):
         # the complete final state of streams must be assembled by going through all prior state messages received
         if is_per_stream_state(states_1[-1]):
             latest_state = construct_latest_state_from_messages(states_1)
-            state_input = list(latest_state.values())
+            state_input = list(
+                {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
+                for stream_name, stream_state in latest_state.items()
+            )
         else:
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
@@ -239,7 +242,10 @@ class TestIncremental(BaseTest):
                         stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
                             per_stream.stream_state.dict() if per_stream.stream_state else {}
                         )
-                state_input = [latest_per_stream for latest_per_stream in stream_name_to_per_stream_state.values()]
+                state_input = list(
+                    {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
+                    for stream_name, stream_state in latest_state.items()
+                )
                 complete_state = stream_name_to_per_stream_state
             else:
                 state_input = message_batch[0].state.data
