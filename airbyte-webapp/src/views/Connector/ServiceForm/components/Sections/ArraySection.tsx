@@ -64,6 +64,8 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     };
   }, [items, formField.properties]);
 
+  const clearEditIndex = () => setEditIndex(undefined);
+
   return (
     <GroupControls
       name={path}
@@ -77,6 +79,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
             editableItemIndex={editIndex}
             onStartEdit={setEditIndex}
             onRemove={arrayHelpers.remove}
+            onCancel={clearEditIndex}
             items={items}
             renderItemName={renderItemName}
             renderItemDescription={renderItemDescription}
@@ -95,11 +98,9 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                       : [...items, updatedItem];
 
                   fieldHelper.setValue(updatedValue);
-                  setEditIndex(undefined);
+                  clearEditIndex();
                 }}
-                onCancel={() => {
-                  setEditIndex(undefined);
-                }}
+                onCancel={clearEditIndex}
               />
             )}
           />
