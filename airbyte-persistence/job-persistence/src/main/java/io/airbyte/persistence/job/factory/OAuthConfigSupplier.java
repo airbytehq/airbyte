@@ -10,7 +10,6 @@ import static com.fasterxml.jackson.databind.node.JsonNodeType.OBJECT;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -25,6 +24,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class OAuthConfigSupplier {
           .ifPresent(sourceOAuthParameter -> {
             if (injectOAuthParameters(sourceDefinition.getName(), sourceDefinition.getSpec(), sourceOAuthParameter.getConfiguration(),
                 sourceConnectorConfig)) {
-              final ImmutableMap<String, Object> metadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+              final Map<String, Object> metadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
               Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
             }
           });
@@ -75,7 +75,7 @@ public class OAuthConfigSupplier {
           .ifPresent(destinationOAuthParameter -> {
             if (injectOAuthParameters(destinationDefinition.getName(), destinationDefinition.getSpec(), destinationOAuthParameter.getConfiguration(),
                 destinationConnectorConfig)) {
-              final ImmutableMap<String, Object> metadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
+              final Map<String, Object> metadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
               Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
             }
           });

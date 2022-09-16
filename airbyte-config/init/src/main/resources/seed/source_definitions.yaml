@@ -988,11 +988,11 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: TalkDesk Explore
   sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
   dockerRepository: airbyte/source-talkdesk-explore

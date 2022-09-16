@@ -26,7 +26,6 @@ import {
 } from "core/request/AirbyteClient";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { isValidCron } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 import { ConnectionOrPartialConnection } from "./ConnectionForm";
@@ -104,7 +103,7 @@ export const connectionValidationSchema = yup
                 name: "cronExpression",
                 message: "Incorrect cron string",
                 test(value) {
-                  if (value && isValidCron(value, { seconds: true, allowBlankDay: true })) {
+                  if (value) {
                     return true;
                   }
 

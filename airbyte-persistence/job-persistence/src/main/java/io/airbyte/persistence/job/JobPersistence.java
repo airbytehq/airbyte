@@ -207,6 +207,8 @@ public interface JobPersistence {
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
+  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
+
   Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;

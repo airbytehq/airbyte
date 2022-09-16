@@ -4,7 +4,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
@@ -56,7 +55,7 @@ public class OAuthHandler {
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
-    final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    final Map<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
@@ -85,7 +84,7 @@ public class OAuthHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
@@ -114,7 +113,7 @@ public class OAuthHandler {
         configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
-    final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
+    final Map<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = oAuthFlowImplementation.completeSourceOAuth(
@@ -146,7 +145,7 @@ public class OAuthHandler {
         configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = oAuthFlowImplementation.completeDestinationOAuth(
@@ -196,13 +195,13 @@ public class OAuthHandler {
     configRepository.writeDestinationOAuthParam(param);
   }
 
-  private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
+  private Map<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 
-  private ImmutableMap<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
+  private Map<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
