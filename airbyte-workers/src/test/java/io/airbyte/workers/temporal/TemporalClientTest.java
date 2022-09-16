@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;

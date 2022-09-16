@@ -5,6 +5,8 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
@@ -26,8 +28,6 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;

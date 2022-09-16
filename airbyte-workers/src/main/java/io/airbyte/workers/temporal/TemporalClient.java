@@ -8,6 +8,8 @@ import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowIm
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
