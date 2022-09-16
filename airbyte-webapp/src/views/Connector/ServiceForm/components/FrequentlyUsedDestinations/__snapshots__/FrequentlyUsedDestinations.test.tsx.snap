@@ -14,7 +14,7 @@ exports[`<FrequentlyUsedDestinations /> should renders with mock data without cr
         <p
           class="text sm"
         >
-          Most Frequently used destinations
+          Most frequently used destinations
         </p>
       </div>
       <div

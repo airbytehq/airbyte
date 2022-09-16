@@ -3,13 +3,13 @@
 exports[`<StartWithDestinations /> should renders without crash with provided props 1`] = `
 <DocumentFragment>
   <div
-    class="wrapper"
+    class="container"
   >
     <button
-      class="container"
+      class="button"
     >
       <div
-        class="container"
+        class="connectorCard container"
       >
         <div
           class="connectorCardWrapper"
