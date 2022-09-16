@@ -87,44 +87,6 @@ noscript {
     font-style: normal;
 }
 
-/* Bold Montserrat */
-@font-face {
-    font-family: "Montserrat";
-    src: url("/fonts/montserrat/Montserrat-Bold.eot"); /* IE9 Compat Modes */
-    src: local("Montserrat"),
-    url("/fonts/montserrat/Montserrat-Bold.eot?#iefix")
-    format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/montserrat/Montserrat-Bold.woff2") format("woff2"),
-        /* Super Modern Browsers */ url("/fonts/montserrat/Montserrat-Bold.woff")
-    format("woff"),
-        /* Modern Browsers */ url("/fonts/montserrat/Montserrat-Bold.ttf")
-    format("truetype"),
-        /* Safari, Android, iOS */
-    url("/fonts/montserrat/Montserrat-Bold.svg#OpenSans") format("svg"); /* Legacy iOS */
-
-    font-weight: bold;
-    font-style: normal;
-}
-
-/* Regular Montserrat */
-@font-face {
-    font-family: "Montserrat";
-    src: url("/fonts/montserrat/Montserrat-Regular.eot"); /* IE9 Compat Modes */
-    src: local("Montserrat"),
-    url("/fonts/montserrat/Montserrat-Regular.eot?#iefix")
-    format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/montserrat/Montserrat-Regular.woff2")
-    format("woff2"),
-        /* Super Modern Browsers */ url("/fonts/montserrat/Montserrat-Regular.woff")
-    format("woff"),
-        /* Modern Browsers */ url("/fonts/montserrat/Montserrat-Regular.ttf")
-    format("truetype"),
-        /* Safari, Android, iOS */
-    url("/fonts/montserrat/Montserrat-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
-
-    font-weight: normal;
-    font-style: normal;
-}
 
 /* Regular Roboto Mono */
 @font-face {

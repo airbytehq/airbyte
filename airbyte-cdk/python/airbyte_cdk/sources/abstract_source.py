@@ -134,7 +134,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def per_stream_state_enabled(self) -> bool:
-        return False  # While CDK per-stream is in active development we should keep this off
+        return True
 
     def _read_stream(
         self,
@@ -284,8 +284,7 @@ class AbstractSource(Source, ABC):
                 if self._limit_reached(internal_config, total_records_counter):
                     return
 
-    @staticmethod
-    def _checkpoint_state(stream: Stream, stream_state, state_manager):
+    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
@@ -293,7 +292,7 @@ class AbstractSource(Source, ABC):
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state_manager.get_legacy_state()))
+        return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
