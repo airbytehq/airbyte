@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import base64
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -14,17 +15,26 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 
 class SurveyctoStream(HttpStream, ABC):
     # @TODO: Make server name as a parameter
-    url_base = "https://dod.surveycto.com/api/v2/forms/data/wide/json/"
-
     primary_key = None
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.auth_token = config['auth_token']
+        self.server_name = config['server_name']
         self.form_id = config['form_id']
+        #base64 encode username and password as auth token
+        user_name_password = f"{config['username']}:{config['password']}"
+        self.auth_token = self._base64_encode(user_name_password)
+        
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def _base64_encode(self,string:str) -> str:
+        return base64.b64encode(string.encode("ascii")).decode("ascii")
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
