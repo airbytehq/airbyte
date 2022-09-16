@@ -565,9 +565,10 @@ public class DefaultJobPersistence implements JobPersistence {
   public Optional<Job> getLastSyncJob(final UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
-            "CAST(jobs.config_type AS VARCHAR) = " + Sqls.toSqlName(ConfigType.SYNC) + AND +
-            SCOPE_CLAUSE +
+            "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
+            "scope = ? " +
             "ORDER BY jobs.created_at DESC LIMIT 1",
+            Sqls.toSqlName(ConfigType.SYNC),
             connectionId.toString())
         .stream()
         .findFirst()
