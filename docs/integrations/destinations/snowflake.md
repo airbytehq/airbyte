@@ -2,8 +2,6 @@
 
 Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, Google Cloud Storage bucket, or Azure Blob Storage), and configuring the Snowflake destination connector using the Airbyte UI.
 
-This Snowflake destination connector is configured to rely on JDBC  3.13.22 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
-
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 ## Prerequisites
