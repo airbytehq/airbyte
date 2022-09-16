@@ -335,6 +335,21 @@ class JobHistoryHandlerTest {
   }
 
   @Test
+  @DisplayName("Should return an empty optional if no running sync job")
+  void testGetLatestRunningSyncJobWhenNone() throws IOException {
+    final var connectionId = UUID.randomUUID();
+
+    when(jobPersistence.listJobsForConnectionWithStatuses(
+        connectionId,
+        Collections.singleton(ConfigType.SYNC),
+        JobStatus.NON_TERMINAL_STATUSES)).thenReturn(Collections.emptyList());
+
+    final Optional<JobRead> actual = jobHistoryHandler.getLatestRunningSyncJob(connectionId);
+
+    assertTrue(actual.isEmpty());
+  }
+
+  @Test
   @DisplayName("Should return the latest sync job")
   void testGetLatestSyncJob() throws IOException {
     final var connectionId = UUID.randomUUID();
@@ -354,7 +369,6 @@ class JobHistoryHandlerTest {
 
     assertEquals(expectedJob, actualJob);
   }
-
 
   @Test
   @DisplayName("Should have compatible config enums")

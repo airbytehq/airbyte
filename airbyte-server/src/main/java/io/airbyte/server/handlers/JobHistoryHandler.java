@@ -130,14 +130,10 @@ public class JobHistoryHandler {
         Collections.singleton(ConfigType.SYNC),
         JobStatus.NON_TERMINAL_STATUSES);
 
-    if (!nonTerminalSyncJobsForConnection.isEmpty()) {
-      // there *should* only be a single running sync job for a connection, but
-      // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc so
-      // .findFirst will always return what we want.
-      return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
-    } else {
-      return Optional.empty();
-    }
+    // there *should* only be a single running sync job for a connection, but
+    // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc so
+    // .findFirst will always return what we want.
+    return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
   }
 
   public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
