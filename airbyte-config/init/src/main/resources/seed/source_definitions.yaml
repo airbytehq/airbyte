@@ -988,11 +988,11 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: TalkDesk Explore
   sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
   dockerRepository: airbyte/source-talkdesk-explore
@@ -1095,6 +1095,14 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/woocommerce
   icon: woocommerce.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Wrike
+  sourceDefinitionId: 9c13f986-a13b-4988-b808-4705badf71c2
+  dockerRepository: airbyte/source-wrike
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/wrike
+  icon: wrike.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat
