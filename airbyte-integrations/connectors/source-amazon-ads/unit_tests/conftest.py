@@ -10,9 +10,11 @@ from pytest import fixture
 @fixture
 def config():
     return {
-        "client_id": "test_client_id",
-        "client_secret": "test_client_secret",
-        "refresh_token": "test_refresh",
+        "credentials": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh",
+        },
         "region": "NA",
     }
 
