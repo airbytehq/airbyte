@@ -65,7 +65,7 @@ class SourceAmazonAds(AbstractSource):
         # in response body.
         # It doesnt support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
-        Profiles(config, authenticator=self._make_authenticator(config["credentials"])).get_all_profiles()
+        Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -109,9 +109,9 @@ class SourceAmazonAds(AbstractSource):
     def _make_authenticator(config: Mapping[str, Any]):
         return Oauth2Authenticator(
             token_refresh_endpoint=TOKEN_URL,
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
+            client_id=config["credentials"]["client_id"],
+            client_secret=config["credentials"]["client_secret"],
+            refresh_token=config["credentials"]["refresh_token"],
         )
 
     @staticmethod
