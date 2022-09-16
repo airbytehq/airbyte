@@ -205,10 +205,10 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
-        if stream_state:
+        if stream_slice:
             params.update(
                 **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
             )
