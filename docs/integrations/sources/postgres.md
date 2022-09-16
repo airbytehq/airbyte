@@ -111,15 +111,26 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
     :::warning
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
+9. For Airbyte Open Source, toggle the switch to connect using SSL. For Airbyte Cloud uses SSL by default.
+10. For SSL Modes, select:
+    - **disable** to disable encrypted communication between Airbyte and the source
+    - **allow** to enable encrypted communication only when required by the source
+    - **prefer** to allow unencrypted communication only when the source doesn't support encryption
+    - **require** to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+    - **verify-ca** to always require encryption and verify that the source has a valid SSL certificate
+    - **verify-full** to always require encryption and verify the identity of the source
+11. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
+12. For SSH Tunnel Method, select:
+    - **No Tunnel** for a direct connection to the database
+    - **SSH Key Authentication** to use an RSA Private as your secret for establishing the SSH tunnel
+    - **Password Authentication** to use a password as your secret for establishing the SSH tunnel
+    
+    :::warning
+    Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **disable**, **allow**, or **prefer** as the **SSL Mode**; otherwise, the connection will fail.
+    :::
 
-9. For Airbyte Open Source, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
-10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
-11. For SSH Tunnel Method, select:
-    - No Tunnel for a direct connection to the database
-    - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH tunnel
   Refer to [Connect via SSH Tunnel](#connect-via-ssh-tunnel​) for more information.
-12. Click **Set up source**.
+13. Click **Set up source**.
 
 ### Connect via SSH Tunnel​
 
@@ -372,6 +383,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.10  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                             |
 | 1.0.9   | 2022-09-13 | [16657](https://github.com/airbytehq/airbyte/pull/16657) | Improve CDC record queueing performance                                                                                                                                    |
 | 1.0.8   | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202) | Adds error messaging factory to UI                                                                                                                                         |
 | 1.0.7   | 2022-08-30 | [16114](https://github.com/airbytehq/airbyte/pull/16114) | Prevent traffic going on an unsecured channel in strict-encryption version of source postgres                                                                              |

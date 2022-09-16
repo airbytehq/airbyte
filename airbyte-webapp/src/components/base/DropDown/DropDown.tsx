@@ -68,9 +68,12 @@ function DropDownInner<T = unknown>(
       ref={ref}
       data-testid={props.name}
       $error={props.error}
+      menuPlacement="auto"
+      menuPosition="fixed"
+      menuPortalTarget={document.body}
+      menuShouldBlockScroll
       className="react-select-container"
       classNamePrefix="react-select"
-      menuPortalTarget={document.body}
       placeholder="..."
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}

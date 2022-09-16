@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
@@ -8,19 +9,18 @@ import HeadTitle from "components/HeadTitle";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = () => navigate(`${RoutePaths.ConnectionNew}`);
 
   return (
     <Suspense fallback={<LoadingPage />}>
