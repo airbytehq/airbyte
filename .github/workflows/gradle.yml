@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: "0 */1 * * *"
   push:
+    # remove line before commit
+    branches:
+      - toph_stop_testing_gh_runners_in_prod
     branches-ignore:
       - "gitbook/v1"
 
