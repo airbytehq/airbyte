@@ -566,7 +566,7 @@ class JsonSecretsProcessorTest {
       final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
       final JsonNode input = objectMapper.readTree(inputIs);
 
-      final String expectedFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final String expectedFilePath = folder + "/expected.json";
       final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
       final JsonNode expected = objectMapper.readTree(expectedIs);
 
