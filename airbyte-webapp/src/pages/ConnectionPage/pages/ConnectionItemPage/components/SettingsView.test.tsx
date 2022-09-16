@@ -36,7 +36,7 @@ jest.mock("components/DeleteBlock", () => () => {
 });
 
 describe("<SettingsView />", () => {
-  test("it only renders connection state when advanced mode is enabled", async () => {
+  it("only renders connection state when advanced mode is enabled", async () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);

@@ -1,7 +1,7 @@
 import { AirbyteJSONSchema } from "./types";
 import { applyFuncAt, removeNestedPaths } from "./utils";
 
-test("should filter paths", () => {
+it("should filter paths", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     required: ["host", "name"],
@@ -49,7 +49,7 @@ test("should filter paths", () => {
   });
 });
 
-test("should exclude nested paths", () => {
+it("should exclude nested paths", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     properties: {
@@ -102,7 +102,7 @@ test("should exclude nested paths", () => {
   });
 });
 
-test("should exclude paths in oneOf", () => {
+it("should exclude paths in oneOf", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     properties: {
@@ -152,7 +152,7 @@ test("should exclude paths in oneOf", () => {
   });
 });
 
-test("apply func at", () => {
+it("apply func at", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     properties: {

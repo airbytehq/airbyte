@@ -102,7 +102,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   canSubmitUntouchedForm,
   additionalSchemaControl,
 }) => {
-  const { initialValues, formId, mode, onFormSubmit, errorMessage, onCancel, connection } = useConnectionFormService();
+  const { initialValues, formId, mode, onFormSubmit, errorMessage, onCancel } = useConnectionFormService();
 
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
   const { formatMessage } = useIntl();
