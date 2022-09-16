@@ -19,7 +19,6 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
   public static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
 
   private static final String SNOWFLAKE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-
   private static final String SNOWFLAKE_DATE_FORMAT = "yyyy-MM-dd";
   private static final String POSTGRES_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'";
 
@@ -36,18 +35,18 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
     return result;
   }
 
-  private LocalDate parseDate(final String dateValue) {
+  private LocalDate parseDate(String dateValue) {
     if (dateValue != null) {
-      final var format = (dateValue.matches(".+Z") ? SNOWFLAKE_DATETIME_FORMAT : SNOWFLAKE_DATE_FORMAT);
+      var format = (dateValue.matches(".+Z") ? SNOWFLAKE_DATETIME_FORMAT : SNOWFLAKE_DATE_FORMAT);
       return LocalDate.parse(dateValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
     }
   }
 
-  private LocalDate parseLocalDate(final String dateTimeValue) {
+  private LocalDate parseLocalDate(String dateTimeValue) {
     if (dateTimeValue != null) {
-      final var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_WITH_TZ_FORMAT : AIRBYTE_DATETIME_FORMAT);
+      var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_WITH_TZ_FORMAT : AIRBYTE_DATETIME_FORMAT);
       return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
@@ -55,21 +54,21 @@ public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
   }
 
   @Override
-  protected boolean compareDateTimeValues(final String expectedValue, final String actualValue) {
-    final var destinationDate = parseLocalDate(actualValue);
-    final var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+  protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
+    var destinationDate = parseLocalDate(actualValue);
+    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
-  protected boolean compareDateValues(final String expectedValue, final String actualValue) {
-    final var destinationDate = parseDate(actualValue);
-    final var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
+  protected boolean compareDateValues(String expectedValue, String actualValue) {
+    var destinationDate = parseDate(actualValue);
+    var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
   @Override
-  protected ZonedDateTime parseDestinationDateWithTz(final String destinationValue) {
+  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
     return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)), ZoneOffset.UTC);
   }
 
