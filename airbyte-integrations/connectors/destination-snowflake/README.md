@@ -29,10 +29,10 @@ Put the contents of the following LastPass secrets into corresponding files unde
 | `destination snowflake - test creds (secrets/config.json)` | `secrets/config.json` |
 | `destination snowflake - insert test creds (secrets/insert_config.json)` | `secrets/insert_config.json` |
 | `destination snowflake - insert internal staging test creds (secrets/internal_staging_config.json)` | `secrets/internal_staging_config.json` |
-| `destination snowflake - s3 copy test creds (secrets/copy_s3_config.json)` | `secrets/copy_s3_config.json` |
-| `destination snowflake - s3 copy encrypted test creds (secrets/copy_s3_encrypted_config.json)` | `secrets/copy_s3_encrypted_config.json` |
-| `destination snowflake - gcs copy test creds (secrets/copy_gcs_config.json)` | `secrets/copy_gcs_config.json` |
-| `destination snowflake - azure blob copy test creds (secrets/copy_azure_blob_config.json)` | `secrets/copy_azure_blob_config.json` |
+| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)` | `secrets/copy_s3_config.json` |
+| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)` | `secrets/copy_s3_encrypted_config.json` |
+| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)` | `secrets/copy_gcs_config.json` |
+| `destination snowflake - azure blob staging test creds (secrets/copy_azure_blob_config.json)` | `secrets/copy_azure_blob_config.json` |
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.
 
