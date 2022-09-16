@@ -56,4 +56,14 @@ class ProcessFactoryTest {
     Assertions.assertEquals("sync-7339ba3b-cb53-4210-9591-c70d4a372330-10-", withoutRandSuffix);
   }
 
+  @Test
+  void testWithRegistryAndPort() {
+    final var uuid = "7339ba3b-cb53-4210-9591-c70d4a372330";
+    final var name = ProcessFactory.createProcessName("my-registry:5001/airbyte/image-name:0.1.0", AirbyteIntegrationLauncher.SYNC_JOB, uuid,
+        10, KubeProcessFactory.KUBE_NAME_LEN_LIMIT);
+
+    final var withoutRandSuffix = name.substring(0, name.length() - 5);
+    Assertions.assertEquals("image-name-sync-7339ba3b-cb53-4210-9591-c70d4a372330-10-", withoutRandSuffix);
+  }
+
 }
