@@ -7,7 +7,7 @@ import { Input } from "./Input";
 import styles from "./Input.module.scss";
 
 describe("<Input />", () => {
-  test("renders text input", async () => {
+  it("renders text input", async () => {
     const value = "aribyte@example.com";
     const { getByTestId, queryByTestId } = await render(<Input type="text" defaultValue={value} />);
 
@@ -16,7 +16,7 @@ describe("<Input />", () => {
     expect(queryByTestId("toggle-password-visibility-button")).toBeFalsy();
   });
 
-  test("renders another type of input", async () => {
+  it("renders another type of input", async () => {
     const type = "number";
     const value = 888;
     const { getByTestId, queryByTestId } = await render(<Input type={type} defaultValue={value} />);
@@ -26,7 +26,7 @@ describe("<Input />", () => {
     expect(queryByTestId("toggle-password-visibility-button")).toBeFalsy();
   });
 
-  test("renders password input with visibilty button", async () => {
+  it("renders password input with visibilty button", async () => {
     const value = "eight888";
     const { getByTestId, getByRole } = await render(<Input type="password" defaultValue={value} />);
 
@@ -35,7 +35,7 @@ describe("<Input />", () => {
     expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye");
   });
 
-  test("renders visible password when visibility button is clicked", async () => {
+  it("renders visible password when visibility button is clicked", async () => {
     const value = "eight888";
     const { getByTestId, getByRole } = await render(<Input type="password" defaultValue={value} />);
 
@@ -49,7 +49,7 @@ describe("<Input />", () => {
     expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye-slash");
   });
 
-  test("showing password should remember cursor position", async () => {
+  it("showing password should remember cursor position", async () => {
     const value = "eight888";
     const selectionStart = Math.round(value.length / 2);
 
@@ -65,7 +65,7 @@ describe("<Input />", () => {
     expect(inputEl.selectionStart).toBe(selectionStart);
   });
 
-  test("hides password on blur", async () => {
+  it("hides password on blur", async () => {
     const value = "eight888";
     const { getByTestId, getByRole } = await render(<Input type="password" defaultValue={value} />);
 
@@ -82,7 +82,7 @@ describe("<Input />", () => {
     });
   });
 
-  test("cursor position should be at the end after blur and and clicking on show password button", async () => {
+  it("cursor position should be at the end after blur and and clicking on show password button", async () => {
     const value = "eight888";
     const { getByTestId } = await render(<Input type="password" defaultValue={value} />);
     const inputEl = getByTestId("input") as HTMLInputElement;
@@ -103,7 +103,7 @@ describe("<Input />", () => {
     expect(inputEl.selectionStart).toBe(value.length);
   });
 
-  test("should trigger onChange once", async () => {
+  it("should trigger onChange once", async () => {
     const onChange = jest.fn();
     const { getByTestId } = await render(<Input onChange={onChange} />);
     const inputEl = getByTestId("input");
@@ -112,7 +112,7 @@ describe("<Input />", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
-  test("has focused class after focus", async () => {
+  it("has focused class after focus", async () => {
     const { getByTestId } = await render(<Input />);
     const inputEl = getByTestId("input");
 
@@ -122,7 +122,7 @@ describe("<Input />", () => {
     expect(getByTestId("input-container")).toHaveClass(styles.focused);
   });
 
-  test("does not have focused class after blur", async () => {
+  it("does not have focused class after blur", async () => {
     const { getByTestId } = await render(<Input />);
     const inputEl = getByTestId("input");
 
@@ -133,7 +133,7 @@ describe("<Input />", () => {
     expect(getByTestId("input-container")).not.toHaveClass(styles.focused);
   });
 
-  test("calls onFocus if passed as prop", async () => {
+  it("calls onFocus if passed as prop", async () => {
     const onFocus = jest.fn();
     const { getByTestId } = await render(<Input onFocus={onFocus} />);
     const inputEl = getByTestId("input");
@@ -143,7 +143,7 @@ describe("<Input />", () => {
     expect(onFocus).toHaveBeenCalledTimes(1);
   });
 
-  test("calls onBlur if passed as prop", async () => {
+  it("calls onBlur if passed as prop", async () => {
     const onBlur = jest.fn();
     const { getByTestId } = await render(<Input onBlur={onBlur} />);
     const inputEl = getByTestId("input");
