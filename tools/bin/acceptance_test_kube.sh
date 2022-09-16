@@ -31,7 +31,7 @@ if [ -n "$CI" ]; then
   process_ids="$! $process_ids"
   tail -f kind_logs/* &
   tail_id=$!
-  echo -e "$blue_text""Waiting for the follows process IDs to finish $process_ids""$default_text"
+  echo -e "$blue_text""Waiting for the following process IDs to finish $process_ids""$default_text"
   wait $process_ids && kill $tail_id
 fi
 
@@ -75,7 +75,7 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 > /tmp/kubernetes_logs/por
 process_ids=$!
 tail -f kind_logs/* &
 tail_id=$!
-echo -e "$blue_text""Waiting for the follows process IDs to finish $process_ids""$default_text"
+echo -e "$blue_text""Waiting for the following process IDs to finish $process_ids""$default_text"
 wait -$process_ids && kill $tail_id
 
 
