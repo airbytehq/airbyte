@@ -41,7 +41,7 @@ function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
       };
 }
 
-const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKey }) => {
+const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string }>> = ({ children, apiKey }) => {
   const { setFeatureOverwrites } = useFeatureService();
   const ldClient = useRef<LDClient.LDClient>();
   const [state, setState] = useState<LDInitState>("initializing");
@@ -169,7 +169,7 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
   return <ExperimentProvider value={experimentService}>{children}</ExperimentProvider>;
 };
 
-export const LDExperimentServiceProvider: React.FC = ({ children }) => {
+export const LDExperimentServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { launchDarkly: launchdarklyKey } = useConfig();
 
   return !launchdarklyKey ? (

@@ -1268,7 +1268,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.2.0"
+- dockerImage: "airbyte/source-bigquery:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -3318,7 +3318,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.45"
+- dockerImage: "airbyte/source-google-ads:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3418,6 +3418,9 @@
           order: 3
           items:
             type: "object"
+            required:
+            - "query"
+            - "table_name"
             properties:
               query:
                 type: "string"
@@ -3826,7 +3829,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.13"
+- dockerImage: "airbyte/source-google-search-console:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
@@ -3939,6 +3942,14 @@
                 type: "string"
                 description: "The email of the user which has permissions to access\
                   \ the Google Workspace Admin APIs."
+        custom_reports:
+          order: 4
+          type: "string"
+          title: "Custom Reports (Optional)"
+          description: "A JSON array describing the custom reports you want to sync\
+            \ from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\"\
+            >the docs</a> for more information about the exact format you can use\
+            \ to fill out this field."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5735,7 +5746,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.19"
+- dockerImage: "airbyte/source-mssql:0.4.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -6160,7 +6171,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.21"
+- dockerImage: "airbyte/source-mixpanel:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -6520,7 +6531,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.6.11"
+- dockerImage: "airbyte/source-mysql:0.6.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -8051,7 +8062,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.7"
+- dockerImage: "airbyte/source-postgres:1.0.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9849,7 +9860,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.20"
+- dockerImage: "airbyte/source-snowflake:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -10427,7 +10438,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.2.5"
+- dockerImage: "airbyte/source-tempo:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
     connectionSpecification:
@@ -10436,7 +10447,6 @@
       type: "object"
       required:
       - "api_token"
-      additionalProperties: false
       properties:
         api_token:
           type: "string"
@@ -11123,6 +11133,43 @@
           examples:
           - 14
           order: 5
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-wrike:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Wrike Spec"
+      type: "object"
+      required:
+      - "access_token"
+      - "wrike_instance"
+      properties:
+        access_token:
+          type: "string"
+          title: "Permanent Access Token"
+          description: "Permanent access token. You can find documentation on how\
+            \ to acquire a permanent access token  <a href=\"https://developers.wrike.com/oauth-20-authorization/\"\
+            >here</a>"
+          airbyte_secret: true
+          order: 0
+        wrike_instance:
+          type: "string"
+          title: "Wrike Instance (hostname)"
+          description: "Wrike's instance such as `app-us2.wrike.com`"
+          default: "app-us2.wrike.com"
+          order: 1
+        start_date:
+          type: "string"
+          title: "Start date for comments"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Only\
+            \ comments after this date will be replicated."
+          examples:
+          - "2017-01-25T00:00:00Z"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

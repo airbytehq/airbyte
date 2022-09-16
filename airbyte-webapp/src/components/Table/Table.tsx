@@ -14,7 +14,7 @@ type IHeaderProps = {
   collapse?: boolean;
   customWidth?: number;
   customPadding?: PaddingProps;
-} & ColumnInstance;
+} & ColumnInstance<Record<string, unknown>>;
 
 type ICellProps = {
   column: IHeaderProps;
