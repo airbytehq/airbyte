@@ -91,7 +91,7 @@ describe("Connection main actions", () => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
       expect(interception.request).property("body").to.contain({
-        name: sourceName + " <> " + destName,
+        name: sourceName + " <> " + destName + "Connection name",
         prefix: "auto_test",
         namespaceDefinition: "customformat",
         namespaceFormat: "${SOURCE_NAMESPACE}_test",
