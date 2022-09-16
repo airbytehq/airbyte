@@ -18,6 +18,8 @@ from source_netsuite.constraints import (
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
     USLESS_SCHEMA_ELEMENTS,
+    CUSTOM_INCREMENTAL_CURSOR,
+    INCREMENTAL_CURSOR,
 )
 
 
@@ -167,7 +169,7 @@ class NetsuiteStream(HttpStream, ABC):
 class IncrementalNetsuiteStream(NetsuiteStream):
     @property
     def cursor_field(self) -> str:
-        return "lastModifiedDate"
+        return INCREMENTAL_CURSOR
 
     def filter_records_newer_than_state(
         self,
@@ -241,4 +243,4 @@ class IncrementalNetsuiteStream(NetsuiteStream):
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
     @property
     def cursor_field(self) -> str:
-        return "lastmodified"
+        return CUSTOM_INCREMENTAL_CURSOR
