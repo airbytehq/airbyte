@@ -1,8 +1,9 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
+@use "../../../scss/z-indices";
 
 .nav {
-  z-index: 9999;
+  z-index: z-indices.$sidebar;
   display: flex;
   position: relative;
   flex-direction: column;
@@ -11,14 +12,14 @@
   width: 100px;
   min-width: 65px;
   background-color: colors.$dark-blue;
-  padding: 23px 4px 15px;
+  padding: variables.$spacing-xl variables.$spacing-sm variables.$spacing-lg;
   text-align: center;
 }
 
 .menu {
   width: 100%;
   padding: 0;
-  margin: 20px 0 0;
+  margin: variables.$spacing-xl 0 0;
 }
 
 .text {
