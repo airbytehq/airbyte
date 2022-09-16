@@ -2,6 +2,8 @@
 @use "../../scss/variables";
 
 $title-height: 34px;
+$group-spacing: variables.$spacing-lg;
+$border-width: variables.$border-thick;
 
 .container {
   margin-bottom: 27px;
@@ -11,7 +13,7 @@ $title-height: 34px;
 }
 
 .title {
-  padding-right: variables.$spacing-lg;
+  padding-right: $group-spacing;
   display: flex;
   align-items: center;
   height: $title-height;
@@ -28,19 +30,19 @@ $title-height: 34px;
 .content {
   border-color: colors.$grey-100;
   border-style: solid;
-  border-width: 0 variables.$border-thick variables.$border-thick;
+  border-width: 0 $border-width $border-width;
   border-radius: variables.$border-radius-sm;
 
   // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
-  box-shadow: 0 variables.$border-thick colors.$grey-100 inset;
-  padding: 0 variables.$spacing-lg;
+  box-shadow: 0 $border-width colors.$grey-100 inset;
+  padding: 0 $group-spacing;
 
   // only apply padding when there are children, so that empty group sections border is just a single line
   > :first-child {
-    padding-top: calc(variables.$spacing-lg + $title-height/2);
+    padding-top: calc($group-spacing + $title-height/2);
   }
 
   > div {
-    margin-bottom: variables.$spacing-lg;
+    margin-bottom: $group-spacing;
   }
 }
