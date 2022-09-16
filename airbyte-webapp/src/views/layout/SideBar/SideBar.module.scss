@@ -16,12 +16,6 @@
   text-align: center;
 }
 
-.menu {
-  width: 100%;
-  padding: 0;
-  margin: variables.$spacing-xl 0 0;
-}
-
 .text {
   margin-top: 7px;
   color: colors.$white;
@@ -30,6 +24,16 @@
 .helpIcon {
   font-size: 21px;
   line-height: 21px;
+}
+
+.menu {
+  width: 100%;
+  padding: 0;
+  margin: variables.$spacing-xl 0 0;
+
+  li {
+    margin-top: 7px;
+  }
 }
 
 .menuItem {
@@ -48,7 +52,6 @@
   font-weight: normal;
   font-size: 12px;
   line-height: 15px;
-  margin-top: 7px;
   text-decoration: none;
   position: relative;
 
