@@ -35,5 +35,6 @@ BambooHR has the [rate limits](https://documentation.bamboohr.com/docs/api-detai
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Added support for Custom Reports endpoint |
+| 0.2.1   | 2022-09-16 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add custom fields validation during check |
+| 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint |
 | 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |
