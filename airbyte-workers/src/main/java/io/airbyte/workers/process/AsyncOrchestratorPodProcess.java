@@ -98,8 +98,10 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     // trust the doc store if it's in a terminal state
     if (docStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+      log.info("State Store reports orchestrator pod {} failed", getInfo().name());
       return 1;
     } else if (docStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+      log.info("State Store reports orchestrator pod {} succeeded", getInfo().name());
       return 0;
     }
 
@@ -114,6 +116,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     // we must assume failure, since the document store is the "truth" for
     // async pod status.
     if (pod == null) {
+      log.info("State Store missing status. Orchestrator pod {} non-existent. Assume failure.", getInfo().name());
       return 1;
     }
 
@@ -125,11 +128,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       // we read the status from the Kubernetes API, we need to check the doc store again.
       final AsyncKubePodStatus secondDocStoreStatus = getDocStoreStatus();
       if (secondDocStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+        log.info("State Store reports orchestrator pod {} failed", getInfo().name());
         return 1;
       } else if (secondDocStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+        log.info("State Store reports orchestrator pod {} succeeded", getInfo().name());
         return 0;
       } else {
         // otherwise, the actual pod is terminal when the doc store says it shouldn't be.
+        log.info("State Store missing status, however orchestrator pod {} in terminal. Assume failure.", getInfo().name());
         return 1;
       }
     }

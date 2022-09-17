@@ -281,24 +281,27 @@ public class TemporalUtils {
     }
   }
 
-  public <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef,
+  public <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> afterCancellationCallbackRef,
                                        final Callable<T> callable,
                                        final Supplier<ActivityExecutionContext> activityContext) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
+      // Schedule the cancellation handler.
       scheduledExecutor.scheduleAtFixedRate(() -> {
         final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler(activityContext.get());
 
         cancellationHandler.checkAndHandleCancellation(() -> {
-          if (cancellationCallbackRef != null) {
-            final Runnable cancellationCallback = cancellationCallbackRef.get();
+          // After cancellation cleanup.
+          if (afterCancellationCallbackRef != null) {
+            final Runnable cancellationCallback = afterCancellationCallbackRef.get();
             if (cancellationCallback != null) {
               cancellationCallback.run();
             }
           }
         });
       }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+
 
       return callable.call();
     } catch (final ActivityCompletionException e) {
