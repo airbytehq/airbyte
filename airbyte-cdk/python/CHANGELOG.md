@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.88
+- Bugfix: Evaluate `response.text` only in debug mode
+
 ## 0.1.87
 - During incremental syncs allow for streams to emit state messages in the per-stream format
 
