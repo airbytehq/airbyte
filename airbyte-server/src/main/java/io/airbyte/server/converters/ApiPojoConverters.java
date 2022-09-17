@@ -120,6 +120,7 @@ public class ApiPojoConverters {
     return newConnection;
   }
 
+  // slow api - converting all the catalogs is bad
   public static ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(standardSync.getConnectionId())

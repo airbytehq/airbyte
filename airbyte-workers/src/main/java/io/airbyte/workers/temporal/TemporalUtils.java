@@ -302,7 +302,6 @@ public class TemporalUtils {
         });
       }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
-
       return callable.call();
     } catch (final ActivityCompletionException e) {
       log.warn("Job either timed out or was cancelled.");

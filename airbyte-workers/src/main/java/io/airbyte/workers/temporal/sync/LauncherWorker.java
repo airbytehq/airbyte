@@ -212,7 +212,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final Stopwatch stopwatch = Stopwatch.createStarted();
 
     while (!runningPods.isEmpty() && stopwatch.elapsed().compareTo(MAX_DELETION_TIMEOUT) < 0) {
-      log.warn("There are currently running pods for the connection: {}. Killing these pods to enforce one execution at a time.", getPodNames(runningPods).toString());
+      log.warn("There are currently running pods for the connection: {}. Killing these pods to enforce one execution at a time.",
+          getPodNames(runningPods).toString());
 
       log.info("Attempting to delete pods: {}", getPodNames(runningPods).toString());
       runningPods.stream()
