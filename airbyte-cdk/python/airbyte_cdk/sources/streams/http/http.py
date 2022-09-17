@@ -292,7 +292,7 @@ class HttpStream(Stream, ABC):
         response: requests.Response = self._session.send(request, **request_kwargs)
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
-        # Do it only debug mode
+        # Do it only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
