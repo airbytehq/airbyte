@@ -56,6 +56,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       S3Destination.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+
     } catch (final AmazonS3Exception e) {
       LOGGER.error("Exception attempting to access the AWS bucket: {}", e.getMessage());
       final String message = getErrorMessage(e.getErrorCode(), 0, e.getMessage(), e);
@@ -63,6 +64,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(message);
+
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the AWS bucket: {}. Please make sure you account has all of these roles: {}", e.getMessage(), EXPECTED_ROLES);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getMessage());
