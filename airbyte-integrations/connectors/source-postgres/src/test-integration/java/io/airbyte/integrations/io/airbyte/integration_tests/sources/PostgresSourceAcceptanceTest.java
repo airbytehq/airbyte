@@ -24,6 +24,8 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.DSLContext;
@@ -38,11 +40,21 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private static LocalDateTime startTime;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
+
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Starting test container...");
+    startTime = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA   " + startTime);
     container.start();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA   Test container started...");
+    LocalDateTime then = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Duration  " + Duration.between(startTime, then).getSeconds());
+
+
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -81,7 +93,11 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    container.stop();
     container.close();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Test container stopped");
+    LocalDateTime then = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Duration   " + Duration.between(startTime, then).getSeconds());
   }
 
   @Override

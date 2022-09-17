@@ -22,6 +22,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
@@ -33,6 +35,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected OracleContainer container;
   protected JsonNode config;
+  private static LocalDateTime startTime;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -40,7 +43,14 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         .withUsername("test")
         .withPassword("oracle")
         .usingSid();
+
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Starting test container...");
+    startTime = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA   " + startTime);
     container.start();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA   Test container started...");
+    LocalDateTime then = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Duration  " + Duration.between(startTime, then).getSeconds());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
@@ -87,7 +97,11 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    container.stop();
     container.close();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Test container stopped");
+    LocalDateTime then = LocalDateTime.now();
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Duration   " + Duration.between(startTime, then).getSeconds());
   }
 
   @Override
