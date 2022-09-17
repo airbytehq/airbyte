@@ -89,12 +89,13 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           options={options}
           isSearchable={false}
           styles={{
-            // TODO: hack to position select
+            // TODO: hack to position select. Should be refactored with Headless UI Menu
             menuPortal: (base) => ({
               ...base,
-              "margin-left": "-130px",
+              marginLeft: -130,
             }),
           }}
+          menuShouldBlockScroll={false}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
             <Button onClick={onOpen} disabled={!allowCreateConnection}>
