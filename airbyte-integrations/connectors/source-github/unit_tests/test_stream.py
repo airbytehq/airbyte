@@ -1091,7 +1091,7 @@ def test_stream_workflow_jobs_read_incremental():
     repository_args_with_start_date = {**repository_args, "start_date": "2022-09-01T00:00:00Z"}
 
     workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
-    stream = WorkflowJobs(workflow_runs_stream, **repository_args)
+    stream = WorkflowJobs(workflow_runs_stream, **repository_args_with_start_date)
 
     data = [
         {"id": 1, "completed_at": "2022-09-02T09:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}]},
