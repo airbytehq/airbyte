@@ -1,0 +1,509 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/connector_builder.yaml #TODO
+title: Connector Builder #TODO
+type: object
+description: Connector Builder structs #TODO
+properties:
+  version:
+    "$ref": "#/definitions/Version"
+  streams:
+    "$ref": "#/definitions/Streams"
+  check:
+    "$ref": "#/definitions/ConfiguredAirbyteCatalog" #TODO
+definitions:
+  "$options":
+    type: object
+    additionalProperties: true
+  Version:
+    type: string
+    description: "connector definition version"
+  Streams:
+    type: array
+    items:
+      "$ref": "#/definitions/Stream"
+  Stream: #TODO: add missing fields here
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - schema_loader
+      - retriever
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      name:
+        type: string
+      primary_key:
+        "$ref": "#/definitions/PrimaryKey"
+      schema_loader:
+        "$ref": "#/definitions/SchemaLoader"
+      retriever:
+        "$ref": "#/definitions/Retriever"
+    SchemaLoader:
+      type:
+        description: "Schema Loader type"
+        type: string
+        enum:
+          - JSON_SCHEMA
+        json_schema:
+          "$ref": "#/definitions/JsonSchema"
+    JsonSchema:
+      type: object
+      additionalProperties: false
+      required:
+        - file_path
+      properties:
+        file_path: string
+        options: object
+    PrimaryKey:
+      type: string #Fixme: should be Union[str, List[str], List[List[str]]]
+    Retriever:
+      type:
+        description: "Retriever type"
+        enum:
+          - SIMPLE_RETRIEVER
+      additionalProperties: false
+      simple_retriever:
+        "$ref": "#/definitions/SimpleRetriever"
+    SimpleRetriver:
+      type: object
+      additionalProperties: false
+      required:
+        - requester
+        - record_selector
+        - paginator
+        - stream_slicer
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        requester:
+          "$ref": "#/definitions/Requester"
+        record_selector:
+          "$ref": "#/definitions/HttpSelector"
+        paginator:
+          "$ref": "#/definitions/Paginator"
+        stream_slicer:
+          "$ref": "#/definitions/StreamSlicer"
+    Requester:
+      type:
+        description: "Requester type"
+        enum:
+          - HTTP_REQUESTER
+        additionalProperties: false
+        http_requester:
+          "$ref": "#/definitions/HttpRequester"
+    HttpRequester:
+      type: object
+      additionalProperties: false
+      required:
+        - url_base
+        - path
+        - http_method
+        - request_options_provider
+        - authenticator
+        - error_handler
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        url_base:
+          type: string
+          description: "base url"
+        path:
+          type: string
+          description: "path"
+        http_method:
+          "$ref": "#/definitions/HttpMethod"
+        request_options_provider:
+          "$ref": "#/definitions/RequestOptionsProvider"
+        authenticator:
+          "$ref": "#/definitions/Authenticator"
+        error_handler:
+          "$ref": "#/definitions/ErrorHandler" #TODO
+    HttpMethod:
+      type: string
+      enum:
+        - GET
+        - POST
+    RequestOptionsProvider:
+      type:
+        description: "Request Options provider type"
+        type: string
+        enum:
+          - InterpolatedRequestOptionsProvider
+      additionalProperties: false
+      required:
+        - type
+      description: "A request option provider"
+      interpolated_request_options_provider:
+        "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+    InterpolatedRequestOptionsProvider:
+      type: object
+      additionalProperties: false
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        request_parameters:
+          "$ref": "#/definitions/RequestInput" #TODO: Define request input? RequestInput = Union[str, Mapping[str, str]]
+        request_headers:
+          "$ref": "#/definitions/RequestInput"
+        request_body_data:
+          "$ref": "#/definitions/RequestInput"
+        request_body_json: #TODO: can we delete this in favor of request_body_data?
+          "$ref": "#/definitions/RequestInput"
+    Authenticator:
+      type:
+        description: "Authenticator type"
+        type: string
+        enum:
+          - OAuth
+          - ApiKeyAuthenticator
+          - BearerAuthenticator
+          - BasicHttpAuthenticator
+      oauth:
+        "$ref": "#/definitions/OAuth"
+      api_key:
+        "$ref": "#/definitions/ApiKeyAuthenticator"
+      bearer:
+        "$ref": "#/definitions/BearerAuthenticator"
+      basic:
+        "$ref": "#/definitions/BasicHttpAuthenticator"
+    ApiKeyAuthenticator:
+      type: object
+      additionalProperties: false
+      required:
+        - header
+        - api_token
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        header:
+          type: string
+        api_token:
+          type: string
+    BearerAuthenticator:
+      type: object
+      additionalProperties: false
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        api_token:
+          type: string
+    BasicHttpAuthenticator:
+      type: object
+      additionalProperties: false
+      required:
+        - username
+        - password
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        header:
+          type: string
+        api_token:
+          type: string
+    OAuth:
+      type: object
+      additionalProperties: false
+      required:
+        - token_refresh_endpoint
+        - client_id
+        - client_secret
+        - refresh_token
+        - access_token_name
+        - expires_in_name
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        token_refresh_endpoint:
+          type: string
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        refresh_token:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        token_expiry_date:
+          type: string
+        access_token_name:
+          type: string
+          default: "access_token"
+        expires_in_name:
+          type: string
+          default: "expires_in"
+        refresh_request_body:
+          type: object
+    Paginator:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+      properties:
+        type:
+          description: "Paginator type"
+          type: string
+          enum:
+            - LimitPaginator
+        limit_paginator:
+          "$ref": "#/definitions/LimitPaginator"
+    LimitPaginator:
+      type: object
+      additionalProperties: false
+      required:
+        - page_size
+        - limit_option
+        - page_token_option
+        - pagination_strategy
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        page_size:
+          type: integer
+        limit_option:
+          "$ref": "#/definitions/RequestOption"
+        page_token_option:
+          "$ref": "#/definitions/RequestOption"
+        pagination_strategy:
+          "$ref": "#/definitions/PaginationStrategy"
+    RequestOption:
+      type: object
+      additionalProperties: false
+      required:
+        - inject_into
+      properties:
+        inject_into:
+          "$ref": "#/definitions/RequestOptionType"
+        field_name:
+          type: string
+    RequestOptionType:
+      type: string
+      enum:
+        - request_parameter
+        - header
+        - path
+        - body_data
+        - body_json
+    PaginationStrategy:
+      type: object
+      required:
+        - type
+      additionalProperties: false
+      properties:
+        type:
+          description: "Pagination strategy type"
+          type: string
+          enum:
+            - cursor
+            - offset
+            - page
+        cursor_pagination:
+          "$ref": "#/definitions/CursorPagination"
+        offset_pagination:
+          "$ref": "#/definitions/OffsetIncrement"
+        page_pagination:
+          "$ref": "#/definitions/PageIncrement"
+    CursorPagination:
+      type: object
+      additionalProperties: false
+      required:
+        - cursor_value
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        cursor_value:
+          type: string
+        stop_condition:
+          type: string
+    OffsetIncrement:
+      type: object
+      additionalProperties: false
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+    PageIncrement:
+      type: object
+      additionalProperties: false
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+    HttpSelector:
+      type: object
+      required:
+        - type
+      additionalProperties: false
+      properties:
+        type:
+          description: "Http Selector type"
+          type: string
+          enum:
+            - record_selector
+        record_selector:
+          "$ref": "#/definitions/RecordSelector"
+    RecordSelector:
+      type: object
+      required:
+        - extractor
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        extractor:
+          "$ref": "#/definitions/RecordExtractor"
+        record_filter:
+          "$ref": "#/definitions/RecordFilter"
+    RecordExtractor:
+      type: object
+      required:
+        - type
+      additionalProperties: false
+      properties:
+        type:
+          description: "Record extractor type"
+          type: string
+          enum:
+            - dpath
+        record_selector:
+          "$ref": "#/definitions/DpathExtractor"
+    DpathExtractor:
+      type: object
+      additionalProperties: false
+      required:
+        - field_pointer
+      properties:
+        "$options":
+          "$ref": "#/definitions/$options"
+        field_pointer:
+          type: array
+          items:
+            type: string
+      RecordFilter:
+        type: object
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          condition:
+            type: string
+      StreamSlicer:
+        type: object
+        required:
+          - type
+        properties:
+          type:
+            description: "Stream slicer type"
+            type: string
+            enum:
+              - datetime
+              - list
+              - cartesian
+              - substream
+              - single_slice
+          datetime:
+            "$ref": "#/definitions/DatetimeStreamSlicer"
+          list:
+            "$ref": "#/definitions/ListStreamSlicer"
+          cartesian_product:
+            "$ref": "#/definitions/CartesianProductStreamSlicer" #TODO
+          substream:
+            "$ref": "#/definitions/SubstreamSlicer"
+          single_slice:
+            "$ref": "#/definitions/SingleSlice"
+      SingleSlice:
+        type: object
+        additionalProperties: false
+      SubstreamSlicer:
+        type: object
+        required:
+          - stream
+          - parent_key
+          - stream_slice_field
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          stream:
+            "$ref": "#/definitions/Stream"
+          parent_key:
+            type: string
+          stream_slice_field:
+            type: string
+          request_option:
+            "$ref": "#/definitions/RequestOption"
+      CartesianProductStreamSlicer:
+        type: object
+        required:
+          - stream_slicers
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          stream_slicers:
+            type: array
+            items:
+              "$ref": "#/definitions/StreamSlicer"
+      ListStreamSlicer:
+        type: object
+        required:
+          - slice_values
+          - cursor_field
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          slice_values:
+            "$ref": "#/definitions/slice_values" #TODO Union[str, List[str]]
+          cursor_field:
+            type: string
+          request_option:
+            "$ref": "#/definitions/RequestOption"
+      DatetimeStreamSlicer:
+        type: object
+        required:
+          - start_datetime
+          - end_datetime
+          - step
+          - cursor_field
+          - datetime_format
+        additional_properties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          start_datetime:
+            "$ref": "#/definitions/MinMaxDatetime"
+          end_datetime:
+            "$ref": "#/definitions/MinMaxDatetime"
+          step:
+            type: string
+          cursor_field:
+            type: string
+          datetime_format:
+            type: string
+          start_time_option:
+            "$ref": "#/definitions/RequestOption"
+          end_time_option:
+            "$ref": "#/definitions/RequestOption"
+          stream_state_field_start:
+            type: string
+          stream_state_field_end:
+            type: string
+          lookback_window:
+            type: string
+      MinMaxDatetime:
+        type: object
+        required:
+          - datetime
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          datetime:
+            type: string
+          datetime_format:
+            type: string
+          min_datetime:
+            type: string
+          max_datetime:
+            type: string
