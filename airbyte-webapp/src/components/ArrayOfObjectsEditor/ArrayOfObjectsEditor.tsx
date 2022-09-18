@@ -24,6 +24,7 @@ export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
   renderItemEditorForm: (item?: T) => React.ReactNode;
   onStartEdit: (n: number) => void;
   onRemove: (index: number) => void;
+  onCancel?: () => void;
   mode?: ConnectionFormMode;
   disabled?: boolean;
   editModalSize?: ModalProps["size"];
@@ -32,6 +33,7 @@ export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
 export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   onStartEdit,
   onRemove,
+  onCancel,
   renderItemName = (item) => item.name,
   renderItemDescription = (item) => item.description,
   renderItemEditorForm,
@@ -54,6 +56,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
         title={<FormattedMessage id={item ? "form.edit" : "form.add"} />}
         size={editModalSize}
         testId="arrayOfObjects-editModal"
+        onClose={onCancel}
       >
         {renderItemEditorForm(item)}
       </Modal>
