@@ -238,6 +238,11 @@
             "order": 2,
             "type": "string"
           },
+          "use_aws_default_credential_provider_chain": {
+            "title": "Use Aws Default Credential Provider Chain",
+            "description": "Use default AWS credential provider chain (such as EC2 instance profile). Leave the Access Key ID and Secret Access Key blank if setting this to true.",
+            "type": "boolean"
+          },          
           "path_prefix": {
             "title": "Path Prefix",
             "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",

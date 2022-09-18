@@ -39,6 +39,10 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             airbyte_secret=True,
             order=2,
         )
+        use_aws_default_credential_provider_chain: bool = Field(
+            default=None,
+            description="Use default AWS credential provider chain (such as EC2 instance profile). Leave the Access Key ID and Secret Access Key blank if setting this to true.",
+        )        
         path_prefix: str = Field(
             default="",
             description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "

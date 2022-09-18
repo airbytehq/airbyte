@@ -1,13 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from typing import Callable, Iterator
 
-from boto3 import session as boto3session
-from botocore import UNSIGNED
-from botocore.config import Config
 from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
@@ -28,16 +25,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :yield: key (name) of each object
         """
         provider = self._provider
-
-        client_config = None
-        if S3File.use_aws_account(provider):
-            session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
-            )
-        else:
-            session = boto3session.Session()
-            client_config = Config(signature_version=UNSIGNED)
-        client = make_s3_client(provider, config=client_config, session=session)
+        client = make_s3_client(provider)
 
         ctoken = None
         while True:
