@@ -42,12 +42,6 @@ class Assignments(PrimetricStream):
         return "assignments"
 
 
-class Capacities(PrimetricStream):
-
-    def path(self, **kwargs) -> str:
-        return "capacities"
-
-
 class Employees(PrimetricStream):
 
     def path(self, **kwargs) -> str:
@@ -227,7 +221,6 @@ class SourcePrimetric(AbstractSource):
         authenticator = TokenAuthenticator(response.json()["access_token"])
 
         return [Assignments(authenticator=authenticator),
-                Capacities(authenticator=authenticator),
                 Employees(authenticator=authenticator),
                 Hashtags(authenticator=authenticator),
                 OrganizationClients(authenticator=authenticator),

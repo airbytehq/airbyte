@@ -14,7 +14,8 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+      validate_schema: True
+      empty_streams: ["organization_rag_scopes"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

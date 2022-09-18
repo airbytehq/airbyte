@@ -480,107 +480,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
-      "destination_sync_mode" : "overwrite"
-    },
-    {
-      "stream" : {
-        "name" : "capacities",
-        "json_schema" : {
-          "type" : "object",
-          "properties" : {
-            "uuid" : {
-              "type" : "string",
-              "format" : "uuid"
-            },
-            "starts_at" : {
-              "type" : [
-                "null",
-                "string"
-              ],
-              "format" : "date"
-            },
-            "ends_at" : {
-              "type" : [
-                "null",
-                "string"
-              ],
-              "format" : "date"
-            },
-            "employment_type" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_monday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_tuesday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_wednesday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_thursday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_friday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_saturday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "capacity_sunday" : {
-              "type" : [
-                "null",
-                "integer"
-              ]
-            },
-            "contract_title" : {
-              "type" : [
-                "null",
-                "string"
-              ]
-            },
-            "employee_id" : {
-              "type" : "string",
-              "format" : "uuid"
-            },
-            "custom_attributes" : {
-              "$ref" : "custom_attributes.json"
-            }
-          },
-          "supported_sync_modes" : [
-            "full_refresh"
-          ],
-          "source_defined_cursor" : false,
-          "source_defined_primary_key" : [
-            [
-              "uuid"
-            ]
-          ]
-        }
-      },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -689,7 +589,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -717,7 +617,7 @@
           ]
         ]
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -745,7 +645,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -773,7 +673,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -801,7 +701,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -835,7 +735,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -863,7 +763,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -907,7 +807,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -924,7 +824,8 @@
               "type" : "string"
             },
             "default_hour_rate" : {
-              "type" : "number"
+              "type": "string",
+              "airbyte_type": "big_number"
             }
           },
           "supported_sync_modes" : [
@@ -938,7 +839,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -969,7 +870,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -997,7 +898,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1025,7 +926,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1053,7 +954,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1113,7 +1014,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1276,7 +1177,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1339,7 +1240,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1375,7 +1276,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1430,7 +1331,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1500,7 +1401,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     },
     {
@@ -1587,7 +1488,7 @@
           ]
         }
       },
-      "sync_mode" : "incremental",
+      "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
     }
   ]

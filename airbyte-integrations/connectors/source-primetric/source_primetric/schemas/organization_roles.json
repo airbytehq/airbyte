@@ -9,7 +9,8 @@
       "type" : "string"
     },
     "default_hour_rate" : {
-      "type" : "number"
+      "type": "string",
+      "airbyte_type": "big_number"
     }
   }
 }
