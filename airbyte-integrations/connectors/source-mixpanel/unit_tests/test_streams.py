@@ -25,7 +25,7 @@ from source_mixpanel.streams import (
     Revenue,
 )
 
-from .utils import get_url_to_mock, setup_response
+from .utils import get_url_to_mock, read_full_refresh, setup_response
 
 logger = AirbyteLogger()
 
@@ -450,3 +450,9 @@ def test_export_stream_request_params(config):
     assert "where" in request_params
     timestamp = int(datetime.datetime.fromisoformat("2021-06-16T17:00:00").timestamp())
     assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
+
+
+def test_export_terminated_early(requests_mock, config):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
+    assert list(read_full_refresh(stream)) == []
