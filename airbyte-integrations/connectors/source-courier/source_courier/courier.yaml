@@ -97,7 +97,7 @@ definitions:
     type: DeclarativeStream
     $options:
       name: message_history
-    primary_key: id
+    primary_key: message_id
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
@@ -115,7 +115,7 @@ definitions:
     type: DeclarativeStream
     $options:
       name: message_output
-    primary_key: id
+    primary_key: message_id
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:

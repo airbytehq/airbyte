@@ -1,282 +1,100 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "anyOf": [
-    {
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string"
+    },
+    "ts": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "event": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "override": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "recipient": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "notification_id": {
+      "type": "string"
+    },
+    "merged_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "received_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "stored_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "output": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "channel": {
       "type": "object",
       "properties": {
-        "message_id": {
+        "id": {
           "type": "string"
         },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "ENQUEUED"
-        },
-        "data": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
-        "event": {
-          "type": "string"
-        },
-        "profile": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
-        "override": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
-        "recipient": {
+        "label": {
           "type": "string"
         }
       }
     },
-    {
+    "integration": {
       "type": "object",
       "properties": {
-        "message_id": {
+        "id": {
           "type": "string"
         },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "MAPPED"
-        },
-        "event_id": {
-          "type": "string"
-        },
-        "notification_id": {
+        "provider": {
           "type": "string"
         }
       }
     },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "PROFILE_LOADED"
-        },
-        "merged_profile": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
-        "received_profile": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
-        "stored_profile": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        }
-      }
+    "reason": {
+      "type": "string",
+      "enum": [
+        "FILTERED",
+        "NO_CHANNELS",
+        "NO_PROVIDERS",
+        "PROVIDER_ERROR",
+        "UNPUBLISHED",
+        "UNDELIVERABLE",
+        "UNSUBSCRIBED"
+      ]
     },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "RENDERED"
-        },
-        "output": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "CLICKED",
-            "DELIVERED",
-            "ENQUEUED",
-            "OPENED",
-            "SENT",
-            "UNDELIVERABLE",
-            "UNMAPPED",
-            "UNROUTABLE"
-          ]
-        },
-        "channel": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          }
-        },
-        "integration": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "DELIVERED"
-        },
-        "channel": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          }
-        },
-        "integration": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "UNDELIVERABLE"
-        },
-        "channel": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            }
-          }
-        },
-        "integration": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "UNDELIVERABLE"
-        },
-        "reason": {
-          "type": "string",
-          "enum": [
-            "FILTERED",
-            "NO_CHANNELS",
-            "NO_PROVIDERS",
-            "PROVIDER_ERROR",
-            "UNPUBLISHED",
-            "UNDELIVERABLE",
-            "UNSUBSCRIBED"
-          ]
-        },
-        "reasonCode": {
-          "type": "string",
-          "enum": ["HARD", "SOFT"]
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "message_id": {
-          "type": "string"
-        },
-        "ts": {
-          "type": "number"
-        },
-        "type": {
-          "const": "UNROUTABLE"
-        },
-        "reason": {
-          "type": "string",
-          "enum": [
-            "FILTERED",
-            "NO_CHANNELS",
-            "NO_PROVIDERS",
-            "PROVIDER_ERROR",
-            "UNPUBLISHED",
-            "UNDELIVERABLE",
-            "UNSUBSCRIBED"
-          ]
-        }
-      }
+    "reasonCode": {
+      "type": "string",
+      "enum": ["HARD", "SOFT"]
     }
-  ]
+  }
 }
