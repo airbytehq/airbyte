@@ -1,0 +1,28 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "prices",
+                "supported_sync_modes": [
+                    "incremental"
+                ],
+                "json_schema": {
+                    "properties": {
+                        "date": {
+                            "type": "string"
+                        },
+                        "price": {
+                            "type": "number"
+                        },
+                        "stock_ticker": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+            "stock_prices": { "date": "2020-02-01"}
+        }
+    ]
+}
