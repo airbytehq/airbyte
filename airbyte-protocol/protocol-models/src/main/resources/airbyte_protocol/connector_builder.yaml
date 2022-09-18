@@ -40,6 +40,14 @@ definitions:
         "$ref": "#/definitions/SchemaLoader"
       retriever:
         "$ref": "#/definitions/Retriever"
+      cursor_field:
+        type: string #TODO:actual type is Optional[Union[List[str], str]]
+      transformations:
+        type: array
+        items:
+          "$ref": "#/definitions/RecordTransformation" #TODO
+      checkpoint_interval:
+        type: integer
     SchemaLoader:
       type:
         description: "Schema Loader type"
@@ -507,3 +515,187 @@ definitions:
             type: string
           max_datetime:
             type: string
+      ErrorHandler:
+        type: object
+        required:
+          - type
+        additionalProperties: false
+        properties:
+          type:
+            description: "Error handler type"
+            type: string
+            enum:
+              - default
+              - composite
+          default:
+            "$ref": "#/definitions/DefaultErrorHandler"
+          composite:
+            "$ref": "#/definitions/CompositeErrorHandler" #TODO
+      DefaultErrorHandler:
+        type: object
+        required:
+          - max_retries
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          response_filters:
+            type: array
+            items:
+              "$ref": "#/definitions/HttpResponseFilter"
+          max_retries:
+            type: integer
+            default: 5
+          backoff_strategies:
+            type: array
+            items:
+              "$ref": "#/definitions/BackoffStrategy" #TODO
+            default: []
+      HttpResponseFilter:
+        type: object
+        required:
+          - action
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          action:
+            "$ref": "#/definitions/ResponseAction"
+          http_codes:
+            type: array
+            items:
+              type: integer
+            default: []
+          error_message_contains:
+            type: string
+          predicate:
+            type: string
+      ResponseAction:
+        type: string
+        enum:
+          - SUCCESS
+          - FAIL
+          - IGNORE
+          - RETRY
+      BackoffStrategy:
+        type: object
+        required:
+          - type
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+              - exponential
+              - constant
+              - wait_time_from_header
+              - wait_time_until_from_header
+          exponential:
+            "$ref": "#/definitions/ExponentialBackoff"
+          constant:
+            "$ref": "#/definitions/ConstantBackoff"
+          wait_time_from_header:
+            "$ref": "#/definitions/WaitTimeFromHeader"
+          wait_time_until_from_header:
+            "$ref": "#/definitions/WaitTimeUntilFromHeader"
+      ExponentialBackoff:
+        type: object
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          factor:
+            type: integer
+            default: 5
+      ConstantBackoff:
+        type: object
+        additionalProperties: false
+        required:
+          - backoff_time_in_seconds
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          backoff_time_in_seconds:
+            type: integer
+      WaitTimeFromHeader:
+        type: object
+        additionalProperties: false
+        required:
+          - header
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          header:
+            type: string
+          regex:
+            type: string
+      WaitTimeUntilFromHeader:
+        type: object
+        additionalProperties: false
+        required:
+          - header
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          header:
+            type: string
+          regex:
+            type: string
+          min_wait:
+            type: float
+      RecordTransformation:
+        type: object
+        required:
+          - type
+        additionalProperties: false
+        properties:
+          type:
+            description: "Record transformation type"
+            enum:
+              - add_fields
+              - remove_fields
+          add:
+            "$ref": "#/definitions/AddFields"
+          remove:
+            "$ref": "#/definitions/RemoveFields" #TODO
+      AddFields:
+        type: object
+        required:
+          - fields
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          fields:
+            type: array
+            items:
+              "$ref": "#/definitions/AddedFieldDefinition"
+      AddedFieldDefinition:
+        type: object
+        required:
+          - path
+          - value
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          path:
+            "$ref": "#/definitions/FieldPointer"
+          value:
+            type: string
+        FieldPointer:
+          type: array
+          items:
+            type: string
+        RemoveFields:
+          type: object
+          required:
+            - field_pointers
+          additionalProperties: false
+          properties:
+            "$options":
+              "$ref": "#/definitions/$options"
+            field_pointers:
+              type: array
+              items:
+                "$ref": "#/definitions/FieldPointer"
