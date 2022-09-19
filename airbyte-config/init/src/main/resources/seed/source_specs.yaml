@@ -11669,7 +11669,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zenloop:0.1.1"
+- dockerImage: "airbyte/source-zenloop:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
     connectionSpecification:
@@ -11678,7 +11678,6 @@
       type: "object"
       required:
       - "api_token"
-      additionalProperties: false
       properties:
         api_token:
           type: "string"
