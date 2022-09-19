@@ -13,7 +13,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from jsonschema import validate
-
 from source_google_search_console.exceptions import InvalidSiteURLValidationError
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
@@ -74,10 +73,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             with requests.Session() as s:
                 response = s.send(s.prepare_request(request))
         else:
-            response = requests.get(
-                "https://www.googleapis.com/webmasters/v3/sites",
-                headers=auth.get_auth_header()
-            )
+            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
         response_data = response.json()
 
         site_urls = set([s["siteUrl"] for s in response_data["siteEntry"]])
