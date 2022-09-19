@@ -49,6 +49,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 @SuppressWarnings("PMD.SignatureDeclareThrowsException")
 class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPersistenceTest {
 
+  private final String DEFAULT_PROTOCOL_VERSION = "0.2.0";
   private final ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
 
   @BeforeAll
@@ -139,7 +140,9 @@ class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPersistenc
   @DisplayName("When a connector is not in use, its definition should be updated")
   void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
-    final StandardDestinationDefinition snowflakeV2 = Jsons.clone(DESTINATION_SNOWFLAKE).withDockerImageTag("10000.2.0");
+    final StandardDestinationDefinition snowflakeV2 = Jsons.clone(DESTINATION_SNOWFLAKE)
+        .withDockerImageTag("10000.2.0")
+        .withProtocolVersion(DEFAULT_PROTOCOL_VERSION);
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 

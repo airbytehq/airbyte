@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.api.model.generated.ImportRead;
 import io.airbyte.api.model.generated.ImportRead.StatusEnum;
 import io.airbyte.api.model.generated.ImportRequestBody;
@@ -78,7 +79,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
-public class ArchiveHandlerTest {
+class ArchiveHandlerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
@@ -97,6 +98,7 @@ public class ArchiveHandlerTest {
   private JsonSecretsProcessor jsonSecretsProcessor;
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
+  private WorkspaceHelper workspaceHelper;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
 
@@ -104,12 +106,13 @@ public class ArchiveHandlerTest {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
+    @Override
     public void register(final Path path) {}
 
   }
 
   @BeforeAll
-  public static void dbSetup() {
+  static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
@@ -118,12 +121,12 @@ public class ArchiveHandlerTest {
   }
 
   @AfterAll
-  public static void dbDown() {
+  static void dbDown() {
     container.close();
   }
 
   @BeforeEach
-  public void setup() throws Exception {
+  void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
@@ -134,7 +137,7 @@ public class ArchiveHandlerTest {
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
-        .build();;
+        .build();
     configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
@@ -144,6 +147,8 @@ public class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION.serialize());
 
+    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
@@ -151,7 +156,7 @@ public class ArchiveHandlerTest {
         secretsRepositoryWriter,
         jobPersistence,
         seedPersistence,
-        new WorkspaceHelper(configRepository, jobPersistence),
+        workspaceHelper,
         new NoOpFileTtlManager(),
         true);
   }
@@ -416,7 +421,7 @@ public class ArchiveHandlerTest {
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
         assertTrue(
-            actualRecords.contains(expectedRecord),
+            backwardCompatibleContains(actualRecords, expectedRecord),
             String.format(
                 "\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
@@ -428,6 +433,22 @@ public class ArchiveHandlerTest {
               Strings.join(expectedRecords, "\n"),
               Strings.join(actualRecords, "\n")));
     }
+  }
+
+  /*
+   * The protocol version is currently optional and defaults to 0.2.0 To reflect that today we need to
+   * support connectors without protocol version in the spec, we add a secondary check with the
+   * default protocol version
+   */
+  private boolean backwardCompatibleContains(final Set<JsonNode> actualRecords, final JsonNode expectedRecord) {
+    return actualRecords.contains(expectedRecord) ||
+        (!expectedRecord.has("protocolVersion") && actualRecords.contains(cloneWithDefaultVersion(expectedRecord)));
+  }
+
+  private JsonNode cloneWithDefaultVersion(final JsonNode json) {
+    final ObjectNode clonedJson = json.deepCopy();
+    clonedJson.put("protocolVersion", "0.2.0");
+    return clonedJson;
   }
 
 }

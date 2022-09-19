@@ -38,10 +38,9 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   private final NamingConventionTransformer nameTransformer;
   private final PulsarClient client;
 
-  private AirbyteMessage lastStateMessage = null;
-
   public PulsarRecordConsumer(final PulsarDestinationConfig pulsarDestinationConfig,
                               final ConfiguredAirbyteCatalog catalog,
+                              final PulsarClient pulsarClient,
                               final Consumer<AirbyteMessage> outputRecordCollector,
                               final NamingConventionTransformer nameTransformer) {
     this.config = pulsarDestinationConfig;
@@ -49,7 +48,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
-    this.client = PulsarUtils.buildClient(this.config.getServiceUrl());
+    this.client = pulsarClient;
   }
 
   @Override
@@ -60,7 +59,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
       final Producer<GenericRecord> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
@@ -100,9 +99,6 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
         LOGGER.error("Error sending message to topic.", e);
         throw new RuntimeException("Cannot send message to Pulsar. Error: " + e.getMessage(), e);
       }
-      if (lastStateMessage != null) {
-        outputRecordCollector.accept(lastStateMessage);
-      }
     }
   }
 
@@ -113,10 +109,6 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       Exceptions.swallow(producer::close);
     });
     Exceptions.swallow(client::close);
-
-    if (lastStateMessage != null) {
-      outputRecordCollector.accept(lastStateMessage);
-    }
   }
 
 }

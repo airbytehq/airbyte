@@ -81,12 +81,15 @@ To write to a custom S3 log location, replace the following variables in the `.e
 ```text
 S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
 S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
-AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
-AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 # Set this to empty.
 S3_MINIO_ENDPOINT=
 # Set this to empty.
 S3_PATH_STYLE_ACCESS=
+```
+Additionally, replace the following variables in the `.secrets` file in the `kube/overlays/stable` directory:
+```text
+AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 ```
 
 See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket and [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on creating AWS credentials.

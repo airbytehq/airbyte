@@ -61,6 +61,8 @@ tags:
     description: Healthchecks
   - name: deployment
     description: Export/Import Airbyte Configuration and Database resources.
+  - name: attempt
+    description: Interactions with attempt related resources.
 
 paths:
   /v1/workspaces/create:
@@ -1402,6 +1404,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/state/create_or_update:
+    post:
+      tags:
+        - connection
+        - internal
+      summary: Create or update the state for a connection.
+      operationId: createOrUpdateState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionStateCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -2087,6 +2113,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_light:
+    post:
+      tags:
+        - jobs
+      summary: Get information about a job excluding attempt info and logs
+      operationId: getJobInfoLight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoLightRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/cancel:
     post:
       tags:
@@ -2186,100 +2235,26 @@ paths:
               schema:
                 type: string
                 format: binary
-  /v1/deployment/export:
+  /v1/attempt/set_workflow_in_attempt:
     post:
       tags:
-        - deployment
-      summary: Export Airbyte Configuration and Data Archive
-      operationId: exportArchive
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/x-gzip:
-              schema:
-                $ref: "#/components/schemas/AirbyteArchive"
-  /v1/deployment/import:
-    post:
-      tags:
-        - deployment
-      summary: Import Airbyte Configuration and Data Archive
-      operationId: importArchive
-      requestBody:
-        content:
-          application/x-gzip:
-            schema:
-              $ref: "#/components/schemas/AirbyteArchive"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImportRead"
-  /v1/deployment/export_workspace:
-    post:
-      tags:
-        - deployment
-      summary: Export Airbyte Workspace Configuration
-      operationId: exportWorkspace
+        - attempt
+        - internal
+      summary: For worker to register the workflow id in attempt.
+      operationId: setWorkflowInAttempt
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/SetWorkflowInAttemptRequestBody"
         required: true
       responses:
         "200":
-          description: Successful operation
-          content:
-            application/x-gzip:
-              schema:
-                $ref: "#/components/schemas/AirbyteArchive"
-  /v1/deployment/upload_archive_resource:
-    post:
-      tags:
-        - deployment
-      summary: Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
-      operationId: uploadArchiveResource
-      requestBody:
-        content:
-          application/x-gzip:
-            schema:
-              $ref: "#/components/schemas/AirbyteArchive"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadRead"
-  /v1/deployment/import_into_workspace:
-    post:
-      tags:
-        - deployment
-      summary: >
-        Import Airbyte Configuration into Workspace (this operation might change ids of imported
-        configurations). Note, in order to use this api endpoint, you might need to upload a
-        temporary archive resource with 'deployment/upload_archive_resource' first
-      operationId: importIntoWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ImportRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImportRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
+                $ref: "#/components/schemas/InternalOperationResult"
 components:
   securitySchemes:
     bearerAuth:
@@ -2557,12 +2532,22 @@ components:
           format: uri
         icon:
           type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
+          type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        sourceType:
+          type: string
+          enum:
+            - api
+            - file
+            - database
+            - custom
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:
@@ -2910,6 +2895,9 @@ components:
           format: uri
         icon:
           type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
+          type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
@@ -3190,6 +3178,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3229,6 +3221,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3240,6 +3236,16 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+    ConnectionStateCreateOrUpdate:
+      type: object
+      required:
+        - connectionId
+        - connectionState
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        connectionState:
+          $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
       required:
@@ -3270,6 +3276,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3307,11 +3317,15 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
-        withRefreshedCatalog:
+        skipReset:
           type: boolean
         operations:
           type: array
@@ -3356,6 +3370,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3386,6 +3404,10 @@ components:
           $ref: "#/components/schemas/DestinationId"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -3415,6 +3437,10 @@ components:
           $ref: "#/components/schemas/DestinationId"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -3437,6 +3463,8 @@ components:
         - active
         - inactive
         - deprecated
+    # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove.
+    # Prefer the ConnectionScheduleType and ConnectionScheduleData properties.
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
@@ -3455,6 +3483,46 @@ components:
             - days
             - weeks
             - months
+    ConnectionScheduleType:
+      description: determine how the schedule data should be interpreted
+      type: string
+      enum:
+        - manual
+        - basic
+        - cron
+    ConnectionScheduleData:
+      description: schedule for when the the connection should run, per the schedule type
+      type: object
+      properties:
+        # This should be populated when schedule type is basic.
+        basicSchedule:
+          type: object
+          required:
+            - timeUnit
+            - units
+          properties:
+            timeUnit:
+              type: string
+              enum:
+                - minutes
+                - hours
+                - days
+                - weeks
+                - months
+            units:
+              type: integer
+              format: int64
+        # This should be populated when schedule type is cron.
+        cron:
+          type: object
+          required:
+            - cronExpression
+            - cronTimeZone
+          properties:
+            cronExpression:
+              type: string
+            cronTimeZone:
+              type: string
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
@@ -3730,6 +3798,9 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns the number of pages of jobs necessary to include this job. Returns an empty list if this job is specified and cannot be found in this connection.
+          $ref: "#/components/schemas/JobId"
         pagination:
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
@@ -3947,11 +4018,16 @@ components:
       type: object
       required:
         - jobs
+        - totalJobCount
       properties:
         jobs:
           type: array
           items:
             $ref: "#/components/schemas/JobWithAttemptsRead"
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
     JobInfoRead:
       type: object
       required:
@@ -3964,6 +4040,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+    JobInfoLightRead:
+      type: object
+      required:
+        - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
@@ -4534,6 +4617,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         operationIds:
@@ -4625,6 +4712,31 @@ components:
           $ref: "#/components/schemas/ResourceId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    AttemptNumber:
+      type: integer
+      format: int32
+    WorkflowId:
+      type: string
+    SetWorkflowInAttemptRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - workflowId
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        workflowId:
+          $ref: "#/components/schemas/WorkflowId"
+    InternalOperationResult:
+      type: object
+      required:
+        - succeeded
+      properties:
+        succeeded:
+          type: boolean
     InvalidInputProperty:
       type: object
       required:

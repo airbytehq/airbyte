@@ -4,6 +4,10 @@
 
 The Airbyte Kafka destination allows you to sync data to Kafka. Each stream is written to the corresponding Kafka topic.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kafka connector to version `0.1.10` or newer
+
+
 ### Sync overview
 
 #### Output schema

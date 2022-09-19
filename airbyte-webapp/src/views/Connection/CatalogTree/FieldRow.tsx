@@ -3,27 +3,23 @@ import styled from "styled-components";
 
 import { Cell, CheckBox, RadioButton } from "components";
 
+import { SyncSchemaField } from "core/domain/catalog";
+import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { equal } from "utils/objects";
+
 import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 import DataTypeCell from "./components/DataTypeCell";
+import { pathDisplayName } from "./components/PathPopout";
 import { NameContainer } from "./styles";
 
 interface FieldRowProps {
-  name: string;
-  path: string[];
-  type: string;
-  format?: string;
-  airbyte_type?: string;
-  nullable?: boolean;
-  destinationName: string;
-  isPrimaryKey: boolean;
   isPrimaryKeyEnabled: boolean;
-  isCursor: boolean;
   isCursorEnabled: boolean;
-  anyOf?: unknown[];
-  oneOf?: unknown[];
 
   onPrimaryKeyChange: (pk: string[]) => void;
   onCursorChange: (cs: string[]) => void;
+  field: SyncSchemaField;
+  config: AirbyteStreamConfiguration | undefined;
 }
 
 const FirstCell = styled(Cell)`
@@ -34,25 +30,32 @@ const LastCell = styled(Cell)`
   margin-right: -10px;
 `;
 
-const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
-  const dataType = useTranslateDataType(props);
+const FieldRowInner: React.FC<FieldRowProps> = ({
+  onPrimaryKeyChange,
+  onCursorChange,
+  field,
+  config,
+  isCursorEnabled,
+  isPrimaryKeyEnabled,
+}) => {
+  const dataType = useTranslateDataType(field);
+  const name = pathDisplayName(field.path);
+
+  const isCursor = equal(config?.cursorField, field.path);
+  const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
 
   return (
     <>
       <FirstCell ellipsis flex={1.5}>
-        <NameContainer title={props.name}>{props.name}</NameContainer>
+        <NameContainer title={name}>{name}</NameContainer>
       </FirstCell>
-      <DataTypeCell nullable={props.nullable}>{dataType}</DataTypeCell>
+      <DataTypeCell>{dataType}</DataTypeCell>
+      <Cell>{isCursorEnabled && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}</Cell>
       <Cell>
-        {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
+        {isPrimaryKeyEnabled && <CheckBox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
       </Cell>
-      <Cell>
-        {props.isPrimaryKeyEnabled && (
-          <CheckBox checked={props.isPrimaryKey} onChange={() => onPrimaryKeyChange(path)} />
-        )}
-      </Cell>
-      <LastCell ellipsis title={props.destinationName} flex={1.5}>
-        {props.destinationName}
+      <LastCell ellipsis title={field.cleanedName} flex={1.5}>
+        {field.cleanedName}
       </LastCell>
     </>
   );

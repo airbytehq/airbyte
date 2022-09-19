@@ -2,143 +2,374 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import collections
+import datetime
 import json
 import logging
-from datetime import datetime
-from typing import Any, Generator, Mapping, MutableMapping
+import pkgutil
+import uuid
+from abc import ABC
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    SyncMode,
-    Type,
-)
-from airbyte_cdk.sources import Source
-from google.analytics.data_v1beta import RunReportResponse
-from source_google_analytics_data_api.client import DEFAULT_CURSOR_FIELD, Client
+import requests
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.http import HttpStream, auth
+from source_google_analytics_data_api import utils
+from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
+
+metrics_data_types_map: Dict = {
+    "METRIC_TYPE_UNSPECIFIED": "string",
+    "TYPE_INTEGER": "integer",
+    "TYPE_FLOAT": "number",
+    "TYPE_SECONDS": "number",
+    "TYPE_MILLISECONDS": "number",
+    "TYPE_MINUTES": "number",
+    "TYPE_HOURS": "number",
+    "TYPE_STANDARD": "number",
+    "TYPE_CURRENCY": "number",
+    "TYPE_FEET": "number",
+    "TYPE_MILES": "number",
+    "TYPE_METERS": "number",
+    "TYPE_KILOMETERS": "number",
+}
 
 
-class SourceGoogleAnalyticsDataApi(Source):
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+def get_metrics_type(t: str) -> str:
+    return metrics_data_types_map.get(t, "number")
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json/spec.yaml file
 
-        :return: AirbyteConnectionStatus indicating a Success or Failure
-        """
-        try:
-            self._run_report(config)
+metrics_data_native_types_map: Dict = {
+    "METRIC_TYPE_UNSPECIFIED": str,
+    "TYPE_INTEGER": int,
+    "TYPE_FLOAT": float,
+    "TYPE_SECONDS": float,
+    "TYPE_MILLISECONDS": float,
+    "TYPE_MINUTES": float,
+    "TYPE_HOURS": float,
+    "TYPE_STANDARD": float,
+    "TYPE_CURRENCY": float,
+    "TYPE_FEET": float,
+    "TYPE_MILES": float,
+    "TYPE_METERS": float,
+    "TYPE_KILOMETERS": float,
+}
 
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+def metrics_type_to_python(t: str) -> type:
+    return metrics_data_native_types_map.get(t, str)
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json/spec.yaml file
 
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
-            - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
-        """
-        report_name = config.get("report_name")
+def get_dimensions_type(d: str) -> str:
+    return "string"
 
-        response = self._run_report(config)
 
-        properties = {DEFAULT_CURSOR_FIELD: {"type": "string"}}
+authenticator_class_map: Dict = {
+    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": json.loads(credentials["credentials_json"])}),
+    "Client": (
+        auth.Oauth2Authenticator,
+        lambda credentials: {
+            "token_refresh_endpoint": "https://oauth2.googleapis.com/token",
+            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "client_secret": credentials["client_secret"],
+            "client_id": credentials["client_id"],
+            "refresh_token": credentials["refresh_token"],
+        },
+    ),
+}
 
-        for dimension in response.dimension_headers:
-            properties[dimension.name] = {"type": "string"}
 
-        for metric in response.metric_headers:
-            properties[metric.name] = {"type": "number"}
+def get_authenticator(credentials):
+    try:
+        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
+    except KeyError as e:
+        raise e
+    return authenticator_class(**get_credentials(credentials))
 
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": properties,
-        }
 
-        primary_key = list(map(lambda h: [h.name], response.dimension_headers))
+class MetadataDescriptor:
+    def __init__(self):
+        self._metadata = None
 
-        stream = AirbyteStream(
-            name=report_name,
-            json_schema=json_schema,
-            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-            source_defined_primary_key=primary_key,
-            default_cursor_field=[DEFAULT_CURSOR_FIELD],
-        )
-        return AirbyteCatalog(streams=[stream])
+    def __get__(self, instance, owner):
+        if not self._metadata:
+            authenticator = (
+                instance.authenticator
+                if not isinstance(instance.authenticator, auth.NoAuth)
+                else get_authenticator(instance.config["credentials"])
+            )
+            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=authenticator)
+            try:
+                metadata = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
+            except Exception as e:
+                raise e
 
-    def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Generator[AirbyteMessage, None, None]:
-        """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
+            self._metadata = {
+                "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
+                "metrics": {m["apiName"]: m for m in metadata["metrics"]},
+            }
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.json/spec.yaml file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
+        return self._metadata
 
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
-        """
-        report_name = config.get("report_name")
 
-        response = self._run_report(config)
-        rows = Client.response_to_list(response)
+class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
+    url_base = "https://analyticsdata.googleapis.com/v1beta/"
+    http_method = "POST"
 
-        last_cursor_value = state.get(report_name, {}).get(DEFAULT_CURSOR_FIELD, "")
+    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config = config
 
-        for row in rows:
-            if last_cursor_value <= row[DEFAULT_CURSOR_FIELD]:
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=report_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
-                )
+    @property
+    def config(self):
+        return self._config
 
-                last_cursor_value = row[DEFAULT_CURSOR_FIELD]
 
-        yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={report_name: {DEFAULT_CURSOR_FIELD: last_cursor_value}}))
+class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
+    row_limit = 100000
+
+    metadata = MetadataDescriptor()
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return "uuid"
 
     @staticmethod
-    def _run_report(config: Mapping[str, Any]) -> RunReportResponse:
-        property_id = config.get("property_id")
-        dimensions = config.get("dimensions", "").split(",")
-        metrics = config.get("metrics", "").split(",")
-        start_date = config.get("date_ranges_start_date")
-        end_date = config.get("date_ranges_end_date")
-        json_credentials = config.get("json_credentials")
+    def add_primary_key() -> dict:
+        return {"uuid": str(uuid.uuid4())}
 
-        return Client(json.loads(json_credentials)).run_report(property_id, dimensions, metrics, start_date, end_date)
+    @staticmethod
+    def add_property_id(property_id):
+        return {"property_id": property_id}
+
+    @staticmethod
+    def add_dimensions(dimensions, row) -> dict:
+        return dict(zip(dimensions, [v["value"] for v in row["dimensionValues"]]))
+
+    @staticmethod
+    def add_metrics(metrics, metric_types, row) -> dict:
+        def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
+            metric_name, metric_value = metric_data
+            python_type = metrics_type_to_python(metric_types[metric_name])
+            return metric_name, python_type(metric_value)
+
+        return dict(map(_metric_type_to_python, zip(metrics, [v["value"] for v in row["metricValues"]])))
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
+        """
+        schema: Dict[str, Any] = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "property_id": {"type": ["string"]},
+                "uuid": {"type": ["string"], "description": "Custom unique identifier for each record, to support primary key"},
+            },
+        }
+
+        schema["properties"].update(
+            {
+                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                for d in self.config["dimensions"]
+            }
+        )
+
+        schema["properties"].update(
+            {
+                m: {
+                    "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
+                    "description": self.metadata["metrics"].get(m, {}).get("description", m),
+                }
+                for m in self.config["metrics"]
+            }
+        )
+
+        return schema
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        r = response.json()
+
+        if all(key in r for key in ["limit", "offset", "rowCount"]):
+            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+
+            if total_rows <= offset:
+                return None
+
+            return {"limit": limit, "offset": offset + limit}
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}:runReport"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        r = response.json()
+
+        dimensions = [h["name"] for h in r["dimensionHeaders"]]
+        metrics = [h["name"] for h in r["metricHeaders"]]
+        metrics_type_map = {h["name"]: h["type"] for h in r["metricHeaders"]}
+
+        rows = []
+
+        for row in r.get("rows", []):
+            rows.append(
+                collections.ChainMap(
+                    *[
+                        self.add_primary_key(),
+                        self.add_property_id(self.config["property_id"]),
+                        self.add_dimensions(dimensions, row),
+                        self.add_metrics(metrics, metrics_type_map, row),
+                    ]
+                )
+            )
+        r["records"] = rows
+
+        yield r
+
+
+class IncrementalGoogleAnalyticsDataApiStream(GoogleAnalyticsDataApiBaseStream, IncrementalMixin, ABC):
+    _date_format = "%Y-%m-%d"
+
+    def __init__(self, *args, **kwargs):
+        super(IncrementalGoogleAnalyticsDataApiStream, self).__init__(*args, **kwargs)
+        self._cursor_value = None
+
+
+class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStream):
+    _default_window_in_days = 1
+    _record_date_format = "%Y%m%d"
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "date"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {self.cursor_field: self._cursor_value or utils.string_to_date(self.config["date_ranges_start_date"], self._date_format)}
+
+    @state.setter
+    def state(self, value):
+        self._cursor_value = utils.string_to_date(value[self.cursor_field], self._date_format) + datetime.timedelta(days=1)
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        return {
+            "metrics": [{"name": m} for m in self.config["metrics"]],
+            "dimensions": [{"name": d} for d in self.config["dimensions"]],
+            "dateRanges": [stream_slice],
+        }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            return []
+        records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        for record in records:
+            for row in record["records"]:
+                next_cursor_value = utils.string_to_date(row[self.cursor_field], self._record_date_format)
+                self._cursor_value = max(self._cursor_value, next_cursor_value) if self._cursor_value else next_cursor_value
+                yield row
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        dates = []
+
+        today: datetime.date = datetime.date.today()
+        start_date: datetime.date = self.state[self.cursor_field]
+
+        timedelta: int = self.config["window_in_days"] or self._default_window_in_days
+
+        while start_date <= today:
+            end_date: datetime.date = start_date + datetime.timedelta(days=timedelta)
+            if timedelta > 1 and end_date > today:
+                end_date: datetime.date = start_date + datetime.timedelta(days=timedelta - (end_date - today).days)
+
+            dates.append(
+                {
+                    "startDate": utils.date_to_string(start_date, self._date_format),
+                    "endDate": utils.date_to_string(end_date, self._date_format),
+                }
+            )
+
+            start_date: datetime.date = end_date + datetime.timedelta(days=1)
+
+        return dates or [None]
+
+
+class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractStream):
+    primary_key = None
+    http_method = "GET"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}/metadata"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        yield response.json()
+
+
+class SourceGoogleAnalyticsDataApi(AbstractSource):
+    def __init__(self, *args, **kwargs):
+        super(SourceGoogleAnalyticsDataApi, self).__init__(*args, **kwargs)
+
+        self._authenticator = None
+
+    def get_authenticator(self, config: Mapping[str, Any]):
+        if not self._authenticator:
+            self._authenticator = get_authenticator(config["credentials"])
+        return self._authenticator
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        authenticator = self.get_authenticator(config)
+        stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=authenticator)
+        try:
+            next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
+        except Exception as e:
+            return False, str(e)
+        return True, None
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        authenticator = self.get_authenticator(config)
+
+        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
+        if "custom_reports" in config:
+            custom_reports = json.loads(config["custom_reports"])
+            reports += custom_reports
+
+        return [
+            type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
+                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=authenticator
+            )
+            for report in reports
+        ]

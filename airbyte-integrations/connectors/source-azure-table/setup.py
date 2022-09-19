@@ -9,6 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "azure.data.tables"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "pytest-mock~=3.6.1",
     "source-acceptance-test",
 ]
 

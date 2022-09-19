@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -79,9 +80,9 @@ public class JobNotifier {
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription = getJobDescription(job, failReason);
       final String logUrl = webUrlHelper.getConnectionUrl(workspaceId, connectionId);
-      final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
-      final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
-      final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
+      final Map<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
+      final Map<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+      final Map<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
       for (final Notification notification : notifications) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
@@ -101,28 +102,29 @@ public class JobNotifier {
               workspaceId,
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-          switch (action) {
-            case FAILURE_NOTIFICATION:
-              if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-                LOGGER.warn("Failed to successfully notify failure: {}", notification);
-              }
-              break;
-            case SUCCESS_NOTIFICATION:
-              if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-                LOGGER.warn("Failed to successfully notify success: {}", notification);
-              }
-              break;
-            case CONNECTION_DISABLED_NOTIFICATION:
-              if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  workspaceId, connectionId)) {
-                LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
-              }
-              break;
-            case CONNECTION_DISABLED_WARNING_NOTIFICATION:
-              if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  workspaceId, connectionId)) {
-                LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
-              }
+
+          if (FAILURE_NOTIFICATION == action) {
+            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
+              LOGGER.warn("Failed to successfully notify failure: {}", notification);
+            }
+            break;
+          } else if (SUCCESS_NOTIFICATION == action) {
+            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
+              LOGGER.warn("Failed to successfully notify success: {}", notification);
+            }
+            break;
+          } else if (CONNECTION_DISABLED_NOTIFICATION == action) {
+            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                workspaceId, connectionId)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+            }
+            break;
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION == action) {
+            if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                workspaceId, connectionId)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
+            }
+
           }
         } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
@@ -180,16 +182,6 @@ public class JobNotifier {
 
   protected NotificationClient getNotificationClient(final Notification notification) {
     return NotificationClient.createNotificationClient(notification);
-  }
-
-  private static String formatDurationPart(final long durationPart, final String timeUnit) {
-    if (durationPart == 1) {
-      return String.format(" %s %s", durationPart, timeUnit);
-    } else if (durationPart > 1) {
-      // Use plural timeUnit
-      return String.format(" %s %ss", durationPart, timeUnit);
-    }
-    return "";
   }
 
 }

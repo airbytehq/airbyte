@@ -44,7 +44,7 @@ class OauthModelConverterTest {
 
   @ParameterizedTest
   @MethodSource("testProvider")
-  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
+  void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
     final ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
         new AuthSpecification()
             .withAuthType(AuthSpecification.AuthType.OAUTH_2_0)

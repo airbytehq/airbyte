@@ -1,7 +1,8 @@
 # This is an action that runs when an Airbyte version bump is merged into master.
 # It fetches the changelog from the version bump PR and automatically creates a
 # Release for the version bump.
-name: Create Release
+
+name: Create Airbyte GH Release
 
 on:
   push:
@@ -67,5 +68,4 @@ jobs:
         with:
           body: ${{ env.CHANGELOG }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
           tag: v${{ steps.get_version.outputs.VERSION }}

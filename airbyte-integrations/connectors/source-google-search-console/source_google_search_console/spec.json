@@ -4,7 +4,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
     "type": "object",
-    "additionalProperties": false,
     "required": ["site_urls", "start_date", "authorization"],
     "properties": {
       "site_urls": {
@@ -96,7 +95,8 @@
                 "description": "The JSON key of the service account to use for authorization. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">here</a>.",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                ]
+                ],
+                "airbyte_secret": true
               },
               "email": {
                 "title": "Admin Email",
@@ -106,6 +106,12 @@
             }
           }
         ]
+      },
+      "custom_reports": {
+        "order": 4,
+        "type": "string",
+        "title": "Custom Reports (Optional)",
+        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
       }
     }
   },

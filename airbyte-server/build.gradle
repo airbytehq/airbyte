@@ -15,10 +15,19 @@ dependencies {
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-scheduler:client')
+    implementation(project(':airbyte-scheduler:client')) {
+        exclude module: 'airbyte-workers'
+    }
     implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
-    implementation project(':airbyte-workers')
+    implementation(project(':airbyte-workers')) {
+        // Temporary hack to avoid dependency conflicts
+        exclude group: 'io.micronaut'
+        exclude group: 'io.micronaut.flyway'
+        exclude group: 'io.micronaut.jaxrs'
+        exclude group: 'io.micronaut.security'
+        exclude group: 'io.micronaut.sql'
+    }
 
     implementation libs.flyway.core
     implementation 'com.github.slugify:slugify:2.4'
@@ -32,6 +41,7 @@ dependencies {
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
 
 
     testImplementation project(':airbyte-test-utils')
@@ -83,25 +93,15 @@ run {
     environment "TEMPORAL_HOST", "localhost:7233"
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-server-*.tar'
-    }
-    into 'build/docker/bin'
-}
-
-Task dockerBuildTask = getDockerBuildTask("server", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)
-
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -5,6 +5,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   airbyte_cdk.sources.declarative.auth
    airbyte_cdk.sources.declarative.checks
    airbyte_cdk.sources.declarative.datetime
    airbyte_cdk.sources.declarative.decoders
@@ -14,8 +15,8 @@ Subpackages
    airbyte_cdk.sources.declarative.requesters
    airbyte_cdk.sources.declarative.retrievers
    airbyte_cdk.sources.declarative.schema
-   airbyte_cdk.sources.declarative.states
    airbyte_cdk.sources.declarative.stream_slicers
+   airbyte_cdk.sources.declarative.transformations
 
 Submodules
 ----------
@@ -40,6 +41,14 @@ airbyte\_cdk.sources.declarative.declarative\_stream module
 -----------------------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.declarative.declarative_stream
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+airbyte\_cdk.sources.declarative.exceptions module
+--------------------------------------------------
+
+.. automodule:: airbyte_cdk.sources.declarative.exceptions
    :members:
    :undoc-members:
    :show-inheritance:

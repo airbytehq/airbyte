@@ -6,30 +6,36 @@ package io.airbyte.integrations.destination.mssql;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
 
-  public static final String ACTUAL_MSSQL_AIRBYTE_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+  private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLTestDataComparator.class);
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
-  protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
-    if (!isDateTimeValue(destinationValue)) {
-      destinationValue = LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(ACTUAL_MSSQL_AIRBYTE_DATETIME_FORMAT)).toString();
-    }
-    return super.compareDateTimeValues(airbyteMessageValue, destinationValue);
-  }
+  protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue,
+                                                final String destinationValue) {
+    try {
+      final ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
+          getAirbyteDateTimeWithTzFormatter());
 
-  @Override
-  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    LocalDateTime parsedDateTime = LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(ACTUAL_MSSQL_AIRBYTE_DATETIME_FORMAT));
-    return ZonedDateTime.of(parsedDateTime, ZoneOffset.UTC);
+      final ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue,
+          getAirbyteDateTimeParsedWithTzFormatter());
+      return airbyteDate.equals(destinationDate);
+    } catch (DateTimeParseException e) {
+      LOGGER.warn(
+          "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
+          airbyteMessageValue, destinationValue, e);
+      return compareTextValues(airbyteMessageValue, destinationValue);
+    }
   }
 
   @Override
@@ -43,6 +49,33 @@ public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
       result.add(resolved.toUpperCase());
     }
     return result;
+  }
+
+  @Override
+  protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
+    final var destinationDate = parseLocalDateTime(actualValue);
+    final var expectedDate = LocalDate.parse(expectedValue,
+        DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+    return expectedDate.equals(destinationDate);
+  }
+
+  private LocalDate parseLocalDateTime(String dateTimeValue) {
+    if (dateTimeValue != null) {
+      return LocalDate.parse(dateTimeValue,
+          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+    } else {
+      return null;
+    }
+  }
+
+  private String getFormat(String dateTimeValue) {
+    if (dateTimeValue.contains("T")) {
+      // MsSql stores array of objects as a jsobb type, i.e. array of string for all cases
+      return AIRBYTE_DATETIME_FORMAT;
+    } else {
+      // MsSql stores datetime as datetime type after normalization
+      return AIRBYTE_DATETIME_PARSED_FORMAT;
+    }
   }
 
 }

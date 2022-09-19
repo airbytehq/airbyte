@@ -7,6 +7,8 @@ package io.airbyte.workers.general;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -18,8 +20,12 @@ import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +53,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override
-  public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
     try {
       process = integrationLauncher.discover(
           jobRoot,
@@ -56,15 +62,19 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Optional<AirbyteCatalog> catalog;
+      final Map<Type, List<AirbyteMessage>> messagesByType;
+
       try (final InputStream stdout = process.getInputStream()) {
-        catalog = streamFactory.create(IOs.newBufferedReader(stdout))
-            .filter(message -> message.getType() == Type.CATALOG)
-            .map(AirbyteMessage::getCatalog)
-            .findFirst();
+        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
       }
+
+      final Optional<AirbyteCatalog> catalog = messagesByType
+          .getOrDefault(Type.CATALOG, new ArrayList<>()).stream()
+          .map(AirbyteMessage::getCatalog)
+          .findFirst();
 
       final int exitCode = process.exitValue();
       if (exitCode == 0) {
@@ -78,9 +88,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
 
-        return catalog.get();
+        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withDiscoverCatalog(catalog.get());
       } else {
-        throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));
+        return WorkerUtils.getJobFailureOutputOrThrow(
+            OutputType.DISCOVER_CATALOG,
+            messagesByType,
+            String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
     } catch (final WorkerException e) {
       throw e;

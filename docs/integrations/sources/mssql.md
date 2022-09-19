@@ -18,6 +18,10 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 You may run into an issue where the connector provides wrong values for some data types. See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
 
+Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check
+[this ticket](https://github.com/airbytehq/airbyte/issues/14411)
+
+
 ## Getting Started \(Airbyte Cloud\)
 
 On Airbyte Cloud, only TLS connections to your MSSQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
@@ -298,13 +302,60 @@ MSSQL data types are mapped to the following data types when synchronizing data.
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
+## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
+There is a backwards incompatible spec change between Microsoft SQL Source connector versions 0.4.17 and 0.4.18. As part of that spec change
+`replication_method` configuration parameter was changed to `object` from `string`.
+
+In Microsoft SQL source connector versions 0.4.17 and older, `replication_method` configuration parameter was saved in the configuration database as follows:
+
+```
+"replication_method": "STANDARD"
+```
+
+Starting with version 0.4.18, `replication_method` configuration parameter is saved as follows:
+```
+"replication_method": {
+    "method": "STANDARD"
+}
+```
+
+After upgrading Microsoft SQL Source connector from 0.4.17 or older version to 0.4.18 or newer version you need to fix source configurations in the `actor` table
+in Airbyte database. To do so, you need to run two SQL queries. Follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
+run SQL queries on Airbyte database.
+
+If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:
+
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
+WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'STANDARD');
+```
+
+If you have connections with Microsoft SQL Source using _Logicai Replication (CDC)_ method,  run this SQL:
+
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
+WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
+```
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
-| 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) | Omit using 'USE' keyword on Azure SQL with CDC            |
-| 0.4.5   | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management |
-| 0.4.3   | 2022-06-17 | [13887](https://github.com/airbytehq/airbyte/pull/13887) | Increase version to include changes from [13854](https://github.com/airbytehq/airbyte/pull/13854)           |
+| 0.4.20  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
+| 0.4.19  | 2022-09-05 | [16002](https://github.com/airbytehq/airbyte/pull/16002) | Added ability to specify schemas for discovery during setting connector up |
+| 0.4.18  | 2022-09-03 | [14910](https://github.com/airbytehq/airbyte/pull/14910) | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |
+| 0.4.17  | 2022-09-01 | [16261](https://github.com/airbytehq/airbyte/pull/16261) | Emit state messages more frequently |
+| 0.4.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.4.15  | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538) | Allow additional properties in db stream state |
+| 0.4.14  | 2022-08-10 | [15430](https://github.com/airbytehq/airbyte/pull/15430) | fixed a bug on handling special character on database name  
+| 0.4.13  | 2022-08-04 | [15268](https://github.com/airbytehq/airbyte/pull/15268) | Added [] enclosing to escape special character in the database name                                    |
+| 0.4.12  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                              |
+| 0.4.11  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                            |
+| 0.4.10  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                         |
+| 0.4.9   | 2022-07-05 | [14379](https://github.com/airbytehq/airbyte/pull/14379) | Aligned Normal and CDC migration + added some fixes for datatypes processing                           |
+| 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) | Omit using 'USE' keyword on Azure SQL with CDC                                                         |
+| 0.4.5   | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management                                                                           |
+| 0.4.3   | 2022-06-17 | [13887](https://github.com/airbytehq/airbyte/pull/13887) | Increase version to include changes from [13854](https://github.com/airbytehq/airbyte/pull/13854)      |
 | 0.4.2   | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size                                            |
 | 0.4.1   | 2022-05-25 | [13419](https://github.com/airbytehq/airbyte/pull/13419) | Correct enum for Standard method.                                                                      |
 | 0.4.0   | 2022-05-25 | [12759](https://github.com/airbytehq/airbyte/pull/12759) [13168](https://github.com/airbytehq/airbyte/pull/13168) | For CDC, Add option to ignore existing data and only sync new changes from the database.               |
@@ -341,3 +392,4 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync                                                                               |  |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas                                             |  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                |  |
+

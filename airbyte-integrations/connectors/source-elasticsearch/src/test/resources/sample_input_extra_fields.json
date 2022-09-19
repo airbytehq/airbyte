@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "product_name": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      },
+      "analyzer": "english"
+    }
+  }
+}

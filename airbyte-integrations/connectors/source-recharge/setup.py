@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "requests-mock",
 ]
 
 setup(

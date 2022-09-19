@@ -4,12 +4,15 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,14 +24,19 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);
 
-  PostgresSourceStrictEncrypt() {
+  public PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
   }
 
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    final ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
+    // Assume that the first item is the "disable" option; remove it
+    modifiedSslModes.remove(0);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
     return spec;
   }
 

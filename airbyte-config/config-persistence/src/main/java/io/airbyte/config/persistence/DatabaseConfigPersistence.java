@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -47,6 +48,7 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -617,6 +619,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
       standardSyncs.add(new ConfigWithMetadata<>(
           record.get(CONNECTION.ID).toString(),
           ConfigSchema.STANDARD_SYNC.name(),
@@ -1080,6 +1085,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(CONNECTION)
           .where(CONNECTION.ID.eq(standardSync.getConnectionId())));
 
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
+
       if (isExistingConfig) {
         ctx.update(CONNECTION)
             .set(CONNECTION.ID, standardSync.getConnectionId())
@@ -1096,6 +1105,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
@@ -1130,6 +1144,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.CREATED_AT, timestamp)
@@ -1853,12 +1872,20 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                final AirbyteConfig configType,
                                                final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+      final StandardSourceDefinition sourceDef = Jsons.object(definition, StandardSourceDefinition.class);
+      sourceDef.withProtocolVersion(getProtocolVersion(sourceDef.getSpec()));
+      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDef), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class);
+      destDef.withProtocolVersion(getProtocolVersion(destDef.getSpec()));
+      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(destDef), ctx);
     } else {
       throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
     }
+  }
+
+  private static String getProtocolVersion(final ConnectorSpecification spec) {
+    return AirbyteProtocolVersion.getWithDefault(spec != null ? spec.getProtocolVersion() : null).serialize();
   }
 
   @VisibleForTesting

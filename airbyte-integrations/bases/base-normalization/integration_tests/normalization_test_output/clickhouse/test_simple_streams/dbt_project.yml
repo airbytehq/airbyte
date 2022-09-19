@@ -1,28 +1,28 @@
 name: airbyte_utils
-version: "1.0"
+version: '1.0'
 config-version: 2
 profile: normalize
 model-paths:
-  - models
+- models
 docs-paths:
-  - docs
+- docs
 analysis-paths:
-  - analysis
+- analysis
 test-paths:
-  - tests
+- tests
 seed-paths:
-  - data
+- data
 macro-paths:
-  - macros
+- macros
 target-path: ../build
 log-path: ../logs
 packages-install-path: /dbt
 clean-targets:
-  - build
-  - dbt_modules
+- build
+- dbt_modules
 quoting:
   database: true
-  schema: false
+  schema: true
   identifier: true
 models:
   airbyte_utils:
@@ -30,7 +30,7 @@ models:
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
-        +materialized: ephemeral
+        +materialized: view
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental
@@ -42,10 +42,10 @@ models:
         +tags: airbyte_internal_views
         +materialized: view
 dispatch:
-  - macro_namespace: dbt_utils
-    search_order:
-      - airbyte_utils
-      - dbt_utils
+- macro_namespace: dbt_utils
+  search_order:
+  - airbyte_utils
+  - dbt_utils
 vars:
   json_column: _airbyte_data
   models_to_source:
@@ -83,3 +83,8 @@ vars:
     multiple_column_names_conflicts_stg: test_normalization._airbyte_raw_multiple_column_names_conflicts
     multiple_column_names_conflicts_scd: test_normalization._airbyte_raw_multiple_column_names_conflicts
     multiple_column_names_conflicts: test_normalization._airbyte_raw_multiple_column_names_conflicts
+    types_testing_ab1: test_normalization._airbyte_raw_types_testing
+    types_testing_ab2: test_normalization._airbyte_raw_types_testing
+    types_testing_stg: test_normalization._airbyte_raw_types_testing
+    types_testing_scd: test_normalization._airbyte_raw_types_testing
+    types_testing: test_normalization._airbyte_raw_types_testing

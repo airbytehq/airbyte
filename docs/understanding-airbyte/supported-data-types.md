@@ -2,7 +2,7 @@
 
 AirbyteRecords are required to conform to the Airbyte type system. This means that all sources must produce schemas and records within these types, and all destinations must handle records that conform to this type system.
 
-Because Airybet's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some linmitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
+Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
 
 This type system does not (generally) constrain values. Sources may declare streams using additional features of JSON schema (such as the `length` property for strings), but those constraints will be ignored by all other Airbyte components. The exception is in numeric types; `integer` and `number` fields must be representable within 64-bit primitives.
 
@@ -17,13 +17,15 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 | Datetime with timezone                                         | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45+05:00"`                                                   |
 | Datetime without timezone                                      | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}` | `"2022-11-22T01:23:45"`                                                         |
 | Integer                                                        | `{"type": "integer"}`                                                                    | `42`                                                                            |
-| Big integer (unrepresentable as a 64-bit two's complement int) | `{"type": "string", "airbyte_type": "big_integer"}`                                      | `"123141241234124123141241234124123141241234124123141241234124123141241234124"` |
+| Big integer (unrepresentable as a 64-bit two's complement int) | `{"type": "string", "airbyte_type": "big_integer"}`                                      | `"12345678901234567890123456789012345678"` |
 | Number                                                         | `{"type": "number"}`                                                                     | `1234.56`                                                                       |
 | Big number (unrepresentable as a 64-bit IEEE 754 float)        | `{"type": "string", "airbyte_type": "big_number"}`                                       | `"1,000,000,...,000.1234"` with 500 0's                                         |
 | Array                                                          | `{"type": "array"}`; optionally `items` and `additionalItems`                            | `[1, 2, 3]`                                                                     |
 | Object                                                         | `{"type": "object"}`; optionally `properties` and `additionalProperties`                 | `{"foo": "bar"}`                                                                |
 | Untyped (i.e. any value is valid)                              | `{}`                                                                                     |                                                                                 |
 | Union                                                          | `{"anyOf": [...]}` or `{"oneOf": [...]}`                                                 |                                                                                 |
+
+Note that some of these may be destination-dependent. For example, Snowflake `NUMERIC` columns can be at most 38 digits wide, but Postgres `NUMERIC` columns may have up to 131072 digits before the decimal point.
 
 ### Record structure
 As a reminder, sources expose a `discover` command, which returns a list of [`AirbyteStreams`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L122), and a `read` method, which emits a series of [`AirbyteRecordMessages`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L46-L66). The type system determines what a valid `json_schema` is for an `AirbyteStream`, which in turn dictates what messages `read` is allowed to emit.

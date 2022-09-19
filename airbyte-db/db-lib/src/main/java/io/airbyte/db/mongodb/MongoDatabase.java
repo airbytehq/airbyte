@@ -7,6 +7,7 @@ package io.airbyte.db.mongodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
+import com.mongodb.MongoConfigurationException;
 import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -16,6 +17,7 @@ import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
+import io.airbyte.db.exception.ConnectionErrorException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -47,8 +49,11 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       this.connectionString = new ConnectionString(connectionString);
       mongoClient = MongoClients.create(this.connectionString);
       database = mongoClient.getDatabase(databaseName);
+    } catch (final MongoConfigurationException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e.getMessage(), e);
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
       throw new RuntimeException(e);
     }
   }
@@ -112,12 +117,12 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
             try {
               cursor.close();
             } catch (final Exception e) {
-              throw new RuntimeException();
+              throw new RuntimeException(e.getMessage(), e);
             }
           });
 
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to read data from collection: ", collectionName, e.getMessage());
+      LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.getMessage());
       throw new RuntimeException(e);
     }
   }

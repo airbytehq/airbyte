@@ -78,7 +78,7 @@ class WorkspaceHelperTest {
   WorkspaceHelper workspaceHelper;
 
   @BeforeEach
-  public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     jobPersistence = mock(JobPersistence.class);
 
     configRepository = mock(ConfigRepository.class);
@@ -95,7 +95,7 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testMissingObjectsRuntimeException() {
+  void testMissingObjectsRuntimeException() {
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(UUID.randomUUID()));
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(UUID.randomUUID()));
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(UUID.randomUUID()));
@@ -105,7 +105,7 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testMissingObjectsProperException() {
+  void testMissingObjectsProperException() {
     assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
     assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
     assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
@@ -116,7 +116,7 @@ class WorkspaceHelperTest {
 
   @Test
   @DisplayName("Validate that source caching is working")
-  public void testSource() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void testSource() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
     verify(configRepository, times(1)).getSourceConnection(SOURCE_ID);
@@ -128,7 +128,7 @@ class WorkspaceHelperTest {
 
   @Test
   @DisplayName("Validate that destination caching is working")
-  public void testDestination() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void testDestination() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
     verify(configRepository, times(1)).getDestinationConnection(DEST_ID);
@@ -139,7 +139,7 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void testConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     // test retrieving by connection id
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(CONNECTION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
@@ -155,7 +155,7 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testOperation() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void testOperation() throws IOException, JsonValidationException, ConfigNotFoundException {
     // test retrieving by connection id
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
@@ -166,7 +166,7 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testConnectionAndJobs() throws IOException {
+  void testConnectionAndJobs() throws IOException {
     // test jobs
     final long jobId = 123;
     final Job job = new Job(

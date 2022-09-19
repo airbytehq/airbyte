@@ -4,7 +4,7 @@
 
 import json
 from datetime import datetime
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -103,13 +103,12 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
-        if response.text == "terminated early\n":
-            # no data available
-            self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
-            return []
 
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
-        for record_line in response.iter_lines():
+        for record_line in response.iter_lines(decode_unicode=True):
+            if record_line == "terminated early":
+                self.logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
+                break
             record = json.loads(record_line)
             # transform record into flat dict structure
             item = {"event": record["event"]}
@@ -149,3 +148,16 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        mapping = {"from_date": stream_slice["start_date"], "to_date": stream_slice["end_date"]}
+        if stream_state and "date" in stream_state:
+            mapping["where"] = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+        return mapping
+
+    def request_kwargs(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"stream": True}

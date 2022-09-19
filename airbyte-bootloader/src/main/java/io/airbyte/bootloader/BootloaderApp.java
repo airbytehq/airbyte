@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * - setting all required Airbyte metadata information.
  */
+@SuppressWarnings("PMD.UnusedPrivateField")
 public class BootloaderApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BootloaderApp.class);

@@ -6,8 +6,9 @@ import { ApiServices } from "core/ApiServices";
 import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
@@ -28,7 +29,7 @@ import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
 
-const StyleProvider: React.FC = ({ children }) => (
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
@@ -37,16 +38,18 @@ const StyleProvider: React.FC = ({ children }) => (
 
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <WorkspaceServiceProvider>
-        <FeatureService>
+        <FeatureService features={defaultFeatures}>
           <NotificationService>
             <ConfirmationModalService>
-              <FormChangeTrackerService>
-                <ApiServices>{children}</ApiServices>
-              </FormChangeTrackerService>
+              <ModalServiceProvider>
+                <FormChangeTrackerService>
+                  <ApiServices>{children}</ApiServices>
+                </FormChangeTrackerService>
+              </ModalServiceProvider>
             </ConfirmationModalService>
           </NotificationService>
         </FeatureService>

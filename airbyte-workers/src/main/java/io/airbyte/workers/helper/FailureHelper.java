@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.helper;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -20,6 +21,29 @@ public class FailureHelper {
   private static final String JOB_ID_METADATA_KEY = "jobId";
   private static final String ATTEMPT_NUMBER_METADATA_KEY = "attemptNumber";
   private static final String TRACE_MESSAGE_METADATA_KEY = "from_trace_message";
+  private static final String CONNECTOR_COMMAND_METADATA_KEY = "connector_command";
+
+  public enum ConnectorCommand {
+
+    SPEC("spec"),
+    CHECK("check"),
+    DISCOVER("discover"),
+    WRITE("write"),
+    READ("read");
+
+    private final String value;
+
+    ConnectorCommand(final String value) {
+      this.value = value;
+    }
+
+    @Override
+    @JsonValue
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+  }
 
   private static final String WORKFLOW_TYPE_SYNC = "SyncWorkflow";
   private static final String ACTIVITY_TYPE_REPLICATE = "Replicate";
@@ -56,38 +80,60 @@ public class FailureHelper {
     }
     return new FailureReason()
         .withInternalMessage(m.getError().getInternalMessage())
+        .withExternalMessage(m.getError().getMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
         .withFailureType(failureType)
         .withMetadata(traceMessageMetadata(jobId, attemptNumber));
   }
 
-  public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+  public static FailureReason connectorCommandFailure(final AirbyteTraceMessage m,
+                                                      final Long jobId,
+                                                      final Integer attemptNumber,
+                                                      final ConnectorCommand connectorCommand) {
+    final Metadata metadata = traceMessageMetadata(jobId, attemptNumber);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
+    return genericFailure(m, jobId, attemptNumber)
+        .withMetadata(metadata);
+  }
+
+  public static FailureReason connectorCommandFailure(final Throwable t,
+                                                      final Long jobId,
+                                                      final Integer attemptNumber,
+                                                      final ConnectorCommand connectorCommand) {
+    final Metadata metadata = jobAndAttemptMetadata(jobId, attemptNumber);
+    metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString());
     return genericFailure(t, jobId, attemptNumber)
+        .withMetadata(metadata);
+  }
+
+  public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withExternalMessage("Something went wrong within the source connector");
   }
 
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.SOURCE)
-        .withExternalMessage(m.getError().getMessage());
+    return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.READ)
+        .withFailureOrigin(FailureOrigin.SOURCE);
   }
 
   public static FailureReason destinationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(t, jobId, attemptNumber)
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.WRITE)
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage("Something went wrong within the destination connector");
   }
 
   public static FailureReason destinationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
-    return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.DESTINATION)
-        .withExternalMessage(m.getError().getMessage());
+    return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.WRITE)
+        .withFailureOrigin(FailureOrigin.DESTINATION);
   }
 
-  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
-    return genericFailure(t, jobId, attemptNumber)
+  public static FailureReason checkFailure(final Throwable t,
+                                           final Long jobId,
+                                           final Integer attemptNumber,
+                                           final FailureReason.FailureOrigin origin) {
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK)
         .withFailureOrigin(origin)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
         .withRetryable(false)
@@ -111,6 +157,12 @@ public class FailureHelper {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.NORMALIZATION)
         .withExternalMessage("Something went wrong during normalization");
+  }
+
+  public static FailureReason normalizationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.NORMALIZATION)
+        .withExternalMessage(m.getError().getMessage());
   }
 
   public static FailureReason dbtFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -162,13 +214,13 @@ public class FailureHelper {
                                                                    final Throwable t,
                                                                    final Long jobId,
                                                                    final Integer attemptNumber) {
-    if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
+    if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_REPLICATE.equals(activityType)) {
       return replicationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_PERSIST.equals(activityType)) {
       return persistenceFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_NORMALIZE)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_NORMALIZE.equals(activityType)) {
       return normalizationFailure(t, jobId, attemptNumber);
-    } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_DBT_RUN)) {
+    } else if (WORKFLOW_TYPE_SYNC.equals(workflowType) && ACTIVITY_TYPE_DBT_RUN.equals(activityType)) {
       return dbtFailure(t, jobId, attemptNumber);
     } else {
       return unknownOriginFailure(t, jobId, attemptNumber);
