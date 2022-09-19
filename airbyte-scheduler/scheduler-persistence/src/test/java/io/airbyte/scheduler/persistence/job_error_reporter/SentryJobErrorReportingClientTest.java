@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import static io.airbyte.scheduler.persistence.job_error_reporter.SentryJobErrorReportingClient.STACKTRACE_PARSE_ERROR_TAG_KEY;
+import static io.airbyte.scheduler.persistence.job_error_reporter.SentryJobErrorReportingClient.STACKTRACE_PLATFORM_TAG_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +18,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.IHub;
 import io.sentry.NoOpHub;
 import io.sentry.SentryEvent;
@@ -136,7 +138,8 @@ class SentryJobErrorReportingClientTest {
     exception.setValue("Something went wrong");
     exceptions.add(exception);
 
-    when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(Optional.of(exceptions));
+    final SentryParsedException parsedException = new SentryParsedException("python", exceptions);
+    when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(Optional.of(parsedException));
 
     final FailureReason failureReason = new FailureReason()
         .withInternalMessage(ERROR_MESSAGE)
@@ -148,6 +151,8 @@ class SentryJobErrorReportingClientTest {
     final SentryEvent actualEvent = eventCaptor.getValue();
     assertEquals(exceptions, actualEvent.getExceptions());
     assertNull(actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
+    assertEquals("python", actualEvent.getPlatform());
+    assertEquals("python", actualEvent.getTag(STACKTRACE_PLATFORM_TAG_KEY));
   }
 
   @Test

@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.Hub;
 import io.sentry.IHub;
 import io.sentry.NoOpHub;
@@ -24,6 +25,7 @@ import java.util.Optional;
 public class SentryJobErrorReportingClient implements JobErrorReportingClient {
 
   static final String STACKTRACE_PARSE_ERROR_TAG_KEY = "stacktrace_parse_error";
+  static final String STACKTRACE_PLATFORM_TAG_KEY = "stacktrace_platform";
   private final IHub sentryHub;
   private final SentryExceptionHelper exceptionHelper;
 
@@ -98,9 +100,12 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     // attach failure reason stack trace
     final String failureStackTrace = failureReason.getStacktrace();
     if (failureStackTrace != null && !failureStackTrace.isBlank()) {
-      final Optional<List<SentryException>> parsedExceptions = exceptionHelper.buildSentryExceptions(failureStackTrace);
-      if (parsedExceptions.isPresent()) {
-        event.setExceptions(parsedExceptions.get());
+      final Optional<SentryParsedException> optParsedException = exceptionHelper.buildSentryExceptions(failureStackTrace);
+      if (optParsedException.isPresent()) {
+        final SentryParsedException parsedException = optParsedException.get();
+        event.setPlatform(parsedException.platform());
+        event.setTag(STACKTRACE_PLATFORM_TAG_KEY, parsedException.platform());
+        event.setExceptions(parsedException.exceptions());
       } else {
         event.setTag(STACKTRACE_PARSE_ERROR_TAG_KEY, "1");
 

@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
@@ -28,15 +29,15 @@ class SentryExceptionHelperTest {
   @Test
   void testBuildSentryExceptionsInvalid() {
     final String stacktrace = "this is not a stacktrace";
-    final Optional<List<SentryException>> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertTrue(exceptionList.isEmpty());
+    final Optional<SentryParsedException> parsedException = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(parsedException.isEmpty());
   }
 
   @Test
   void testBuildSentryExceptionsPartiallyInvalid() {
     final String stacktrace = "Traceback (most recent call last):\n  Oops!";
-    final Optional<List<SentryException>> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertTrue(exceptionList.isEmpty());
+    final Optional<SentryParsedException> parsedException = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(parsedException.isEmpty());
   }
 
   @Test
@@ -64,9 +65,12 @@ class SentryExceptionHelperTest {
         RuntimeError: My other error
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("python", parsedException.platform());
     Assertions.assertEquals(2, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "requests.exceptions.HTTPError", "400 Client Error: Bad Request for url: https://airbyte.com",
@@ -116,9 +120,12 @@ class SentryExceptionHelperTest {
         RuntimeError
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("python", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "RuntimeError", null, List.of(
@@ -149,9 +156,12 @@ class SentryExceptionHelperTest {
         AttributeError: 'NoneType' object has no attribute 'from_call'
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("python", parsedException.platform());
     Assertions.assertEquals(2, exceptionList.size());
 
     final String expectedValue =
@@ -190,9 +200,12 @@ class SentryExceptionHelperTest {
         	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("java", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "java.lang.ArithmeticException", "/ by zero",
@@ -251,9 +264,12 @@ class SentryExceptionHelperTest {
         	... 3 more
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("java", parsedException.platform());
     Assertions.assertEquals(2, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "java.util.concurrent.CompletionException",
@@ -305,9 +321,12 @@ class SentryExceptionHelperTest {
         	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2675)
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("java", parsedException.platform());
     Assertions.assertEquals(2, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "io.temporal.failure.ApplicationFailure",
@@ -349,9 +368,12 @@ class SentryExceptionHelperTest {
           compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/public/midaug_start_users.sql
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtDatabaseError",
@@ -370,9 +392,12 @@ class SentryExceptionHelperTest {
         Setting attempt to FAILED because the job was cancelled
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtDatabaseSQLCompilationError",
@@ -402,9 +427,12 @@ class SentryExceptionHelperTest {
         Setting attempt to FAILED because the job was cancelled
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtDatabaseInvalidInputError",
@@ -428,9 +456,12 @@ class SentryExceptionHelperTest {
         	                                              ^
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtDatabaseSyntaxError",
@@ -459,9 +490,12 @@ class SentryExceptionHelperTest {
         	[33mCompilation Error in model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions, caused by compilation error in referenced ephemeral model model.airbyte_utils.1595965687212073_ads_insights_video_time_watched_actions_ab2[0m
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtUnhandledError",
@@ -485,9 +519,12 @@ class SentryExceptionHelperTest {
         	  > called by model sheet1 (models/generated/airbyte_tables/dbo/sheet1.sql)
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtCompilationAmbiguousRelationError",
@@ -505,9 +542,12 @@ class SentryExceptionHelperTest {
           Model 'model.airbyte_utils.banking_test' (models/generated/airbyte_tables/public/banking_test.sql) depends on a source named 'public._airbyte_raw_banking_test' which was not found
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtCompilationError",
@@ -525,9 +565,12 @@ class SentryExceptionHelperTest {
           Code: 102. Unexpected packet from server abcdefg.eu-west-1.aws.clickhouse.cloud:8443 (expected Hello or Exception, got Unknown packet)
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtRuntimeError",
@@ -548,9 +591,12 @@ class SentryExceptionHelperTest {
         message='io.temporal.serviceclient.CheckedExceptionWrapper: java.util.concurrent.ExecutionException: java.lang.RuntimeException: io.airbyte.workers.exception.WorkerException: Running the launcher replication-orchestrator failed', type='java.lang.RuntimeException', nonRetryable=false
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtRuntimeDatabaseError",
@@ -569,9 +615,12 @@ class SentryExceptionHelperTest {
         Setting attempt to FAILED because the job was cancelled
         """;
 
-    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    final Optional<SentryParsedException> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
-    final List<SentryException> exceptionList = optionalSentryExceptions.get();
+
+    final SentryParsedException parsedException = optionalSentryExceptions.get();
+    final List<SentryException> exceptionList = parsedException.exceptions();
+    Assertions.assertEquals("other", parsedException.platform());
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "DbtDatabaseError",

@@ -23,10 +23,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public class SentryExceptionHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
+  public record SentryParsedException(String platform, List<SentryException> exceptions) {}
 
-  public static final String ERROR_MAP_MESSAGE_KEY = "errorMessage";
-  public static final String ERROR_MAP_TYPE_KEY = "errorType";
+  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
 
   public enum ERROR_MAP_KEYS {
     ERROR_MAP_MESSAGE_KEY,
@@ -40,7 +39,7 @@ public class SentryExceptionHelper {
    * encountered, an empty optional will be returned, in which case we can fall back to alternate
    * grouping.
    */
-  public Optional<List<SentryException>> buildSentryExceptions(final String stacktrace) {
+  public Optional<SentryParsedException> buildSentryExceptions(final String stacktrace) {
     return Exceptions.swallowWithDefault(() -> {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
@@ -56,7 +55,7 @@ public class SentryExceptionHelper {
     }, Optional.empty());
   }
 
-  private static Optional<List<SentryException>> buildPythonSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildPythonSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -115,10 +114,10 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException("python", sentryExceptions));
   }
 
-  private static Optional<List<SentryException>> buildJavaSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildJavaSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -182,13 +181,13 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException("java", sentryExceptions));
   }
 
-  private static Optional<List<SentryException>> buildNormalizationDbtSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildNormalizationDbtSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
-    Map<ERROR_MAP_KEYS, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
+    final Map<ERROR_MAP_KEYS, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
 
     // if our errorMessage from the function != stacktrace then we know we've pulled out something
     // useful
@@ -202,18 +201,18 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException("other", sentryExceptions));
   }
 
-  public static Map<ERROR_MAP_KEYS, String> getUsefulErrorMessageAndTypeFromDbtError(String stacktrace) {
+  public static Map<ERROR_MAP_KEYS, String> getUsefulErrorMessageAndTypeFromDbtError(final String stacktrace) {
     // the dbt 'stacktrace' is really just all the log messages at 'error' level, stuck together.
     // therefore there is not a totally consistent structure to these,
     // see the docs: https://docs.getdbt.com/guides/legacy/debugging-errors
     // the logic below is built based on the ~450 unique dbt errors we encountered before this PR
     // and is a best effort to isolate the useful part of the error logs for debugging and grouping
     // and bring some semblance of exception 'types' to differentiate between errors.
-    Map<ERROR_MAP_KEYS, String> errorMessageAndType = new HashMap<>();
-    String[] stacktraceLines = stacktrace.split("\n");
+    final Map<ERROR_MAP_KEYS, String> errorMessageAndType = new HashMap<>();
+    final String[] stacktraceLines = stacktrace.split("\n");
 
     boolean defaultNextLine = false;
     // TODO: this whole code block is quite ugh, commented to try and make each part clear but could be
@@ -234,7 +233,7 @@ public class SentryExceptionHelper {
           }
           // Database Error: Invalid input
           else if (stacktraceLines[i + 1].contains("Invalid input")) {
-            for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
+            for (final String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
               if (followingLine.trim().startsWith("context:")) {
                 errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
                     String.format("%s\n%s", stacktraceLines[i + 1].trim(), followingLine.trim()));
@@ -279,7 +278,7 @@ public class SentryExceptionHelper {
         // Runtime Errors
         else if (stacktraceLines[i].contains("Runtime Error")) {
           // Runtime Error: Database error
-          for (String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
+          for (final String followingLine : Arrays.copyOfRange(stacktraceLines, i + 1, stacktraceLines.length)) {
             if ("Database Error".equals(followingLine.trim())) {
               errorMessageAndType.put(ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY,
                   String.format("%s", stacktraceLines[Arrays.stream(stacktraceLines).toList().indexOf(followingLine) + 1].trim()));
