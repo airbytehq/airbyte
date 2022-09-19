@@ -5,7 +5,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 import pytest
@@ -231,25 +231,9 @@ class TestIncremental(BaseTest):
         stream_name_to_per_stream_state = dict()
         for idx, message_batch in enumerate(checkpoint_messages):
             assert len(message_batch) > 0 and message_batch[0].type == Type.STATE
-
-            if is_per_stream:
-                # Including all the latest state values from previous batches, update the combined stream state
-                # with the current batch's stream state and then use it in the following read() request
-                current_state = message_batch[0].state
-                if current_state and current_state.type == AirbyteStateType.STREAM:
-                    per_stream = current_state.stream
-                    if per_stream.stream_state:
-                        stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
-                            per_stream.stream_state.dict() if per_stream.stream_state else {}
-                        )
-                state_input = list(
-                    {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
-                    for stream_name, stream_state in latest_state.items()
-                )
-                complete_state = stream_name_to_per_stream_state
-            else:
-                state_input = message_batch[0].state.data
-                complete_state = message_batch[0].state.data
+            state_input, complete_state = self.get_next_state_input(
+                message_batch, latest_state, stream_name_to_per_stream_state, is_per_stream
+            )
 
             if len(checkpoint_messages) >= min_batches_to_test and idx % sample_rate != 0:
                 continue
@@ -272,3 +256,28 @@ class TestIncremental(BaseTest):
             not records
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"
+
+    def get_next_state_input(
+        self,
+        message_batch: List[AirbyteStateMessage],
+        latest_state: MutableMapping,
+        stream_name_to_per_stream_state: MutableMapping,
+        is_per_stream,
+    ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
+        if is_per_stream:
+            # Including all the latest state values from previous batches, update the combined stream state
+            # with the current batch's stream state and then use it in the following read() request
+            current_state = message_batch[0].state
+            if current_state and current_state.type == AirbyteStateType.STREAM:
+                per_stream = current_state.stream
+                if per_stream.stream_state:
+                    stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
+                        per_stream.stream_state.dict() if per_stream.stream_state else {}
+                    )
+            state_input = [
+                {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
+                for stream_name, stream_state in latest_state.items()
+            ]
+            return state_input, stream_name_to_per_stream_state
+        else:
+            return message_batch[0].state.data, message_batch[0].state.data
