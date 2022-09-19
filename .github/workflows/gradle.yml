@@ -648,7 +648,7 @@ jobs:
           CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan --warn
 
       - name: Flaky - Run Kubernetes End-to-End Acceptance Tests
         env:
