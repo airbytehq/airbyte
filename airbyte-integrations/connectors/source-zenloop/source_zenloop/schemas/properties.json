@@ -2,18 +2,14 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
-    "title": {
+    "id": {
       "type": ["null", "string"]
     },
-    "status": {
+    "name": {
       "type": ["null", "string"]
     },
-    "public_hash_id": {
+    "value": {
       "type": ["null", "string"]
-    },
-    "inserted_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }
