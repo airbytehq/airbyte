@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 

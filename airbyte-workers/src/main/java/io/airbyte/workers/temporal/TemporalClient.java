@@ -69,7 +69,7 @@ import org.apache.commons.lang3.time.StopWatch;
 @Slf4j
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 public class TemporalClient {
 
   /**

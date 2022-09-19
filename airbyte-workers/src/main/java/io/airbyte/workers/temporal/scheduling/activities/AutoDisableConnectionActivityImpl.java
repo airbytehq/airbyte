@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
   @Inject
