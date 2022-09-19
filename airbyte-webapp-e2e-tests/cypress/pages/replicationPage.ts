@@ -9,7 +9,7 @@ const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const cursorFieldDropdown = 'button[class^="PathPopoutButton_button"]';
 const primaryKeyText = 'div[class^="PathPopout_text"]';
-const successResult = "span[data-id='success-result']";
+const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
 const streamNameInput = "input[data-testid='input']";
