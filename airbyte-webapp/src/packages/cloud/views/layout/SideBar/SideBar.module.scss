@@ -2,6 +2,9 @@
 @use "../../../../../scss/variables";
 @forward "../../../../../views/layout/SideBar/SideBar.module.scss";
 
+$sidebar-workspace-font-size: 9px;
+$sidebar-workspace-font-weight: 400;
+
 .workspaceButton {
   overflow: hidden;
   cursor: pointer;
@@ -13,8 +16,8 @@
   background-color: rgba(255, 255, 255, 20%);
   margin-top: variables.$spacing-md;
   padding: 0 8px;
-  font-size: 9px;
-  font-weight: 400;
+  font-size: $sidebar-workspace-font-size;
+  font-weight: $sidebar-workspace-font-weight;
   color: colors.$white;
   white-space: nowrap;
   text-overflow: ellipsis;
