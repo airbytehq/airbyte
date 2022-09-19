@@ -1,0 +1,7 @@
+.tableHeader {
+  user-select: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

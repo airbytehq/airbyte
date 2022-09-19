@@ -32,7 +32,7 @@
     box-shadow: 0 3px 4px -2px rgba(26, 25, 77, 21%);
   }
 
-  &:focus {
+  &:focus-visible {
     outline: 3px solid colors.$blue-50;
   }
 
@@ -55,12 +55,14 @@
     }
 
     &.typeSecondary,
+    &.typeNoStroke,
     &.typeLight {
       color: colors.$grey-300;
     }
 
     &.isRegularIcon {
-      &.typeSecondary {
+      &.typeSecondary,
+      &.typeNoStroke {
         &:hover {
           color: colors.$grey-400;
         }
@@ -160,6 +162,20 @@
 
     &:active {
       border-color: colors.$grey-400;
+      color: colors.$grey-400;
+    }
+  }
+
+  &.typeNoStroke {
+    background-color: colors.$transparentColor;
+    color: colors.$grey-300;
+    box-shadow: none;
+
+    &:hover {
+      color: colors.$grey-400;
+    }
+
+    &:active {
       color: colors.$grey-400;
     }
   }

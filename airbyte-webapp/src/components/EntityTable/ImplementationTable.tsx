@@ -13,7 +13,7 @@ import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
 import ConnectorCell from "./components/ConnectorCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
-import SortButton from "./components/SortButton";
+import SortIcon from "./components/SortIcon";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
 
@@ -69,14 +69,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     () => [
       {
         Header: (
-          <>
+          <th className={styles.tableHeader} onClick={() => onSortClick("entity")}>
             <FormattedMessage id="tables.name" />
-            <SortButton
-              wasActive={sortBy === "entity"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("entity")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "entity"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </th>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -87,14 +83,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <>
+          <th className={styles.tableHeader} onClick={() => onSortClick("connector")}>
             <FormattedMessage id="tables.connector" />
-            <SortButton
-              wasActive={sortBy === "connector"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("connector")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "connector"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </th>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
@@ -110,14 +102,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <>
+          <th className={styles.tableHeader} onClick={() => onSortClick("lastSync")}>
             <FormattedMessage id="tables.lastSync" />
-            <SortButton
-              wasActive={sortBy === "lastSync"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("lastSync")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "lastSync"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </th>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (

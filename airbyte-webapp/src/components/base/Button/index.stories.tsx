@@ -69,3 +69,9 @@ Danger.args = {
   variant: "danger",
   children: "Danger",
 };
+
+export const NoStroke = Template.bind({});
+NoStroke.args = {
+  variant: "noStroke",
+  children: "No Stroke",
+};

@@ -5,3 +5,11 @@
     padding-left: 32px !important;
   }
 }
+
+.tableHeader {
+  user-select: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

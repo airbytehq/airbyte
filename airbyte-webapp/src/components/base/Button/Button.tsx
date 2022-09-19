@@ -28,6 +28,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     [styles.sizeS]: size === "sm",
     [styles.sizeXS]: size === "xs",
     [styles.typeDanger]: variant === "danger",
+    [styles.typeNoStroke]: variant === "noStroke",
     [styles.typeLight]: variant === "light",
     [styles.typePrimary]: variant === "primary",
     [styles.typeSecondary]: variant === "secondary",

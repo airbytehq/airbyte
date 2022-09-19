@@ -101,7 +101,10 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
             toggleIsContentVisible();
             focusOnInputElement();
           }}
+          tabIndex={-1}
+          size="xs"
           type="button"
+          variant="noStroke"
           aria-label={formatMessage({
             id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
           })}

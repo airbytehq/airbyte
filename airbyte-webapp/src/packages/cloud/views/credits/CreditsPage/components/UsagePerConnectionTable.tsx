@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import SortButton from "components/EntityTable/components/SortButton";
+import SortIcon from "components/EntityTable/components/SortIcon";
 import { SortOrderEnum } from "components/EntityTable/types";
 import Table from "components/Table";
 
@@ -16,6 +16,7 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
+import styles from "./UsagePerConnectionTable.module.scss";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -111,14 +112,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     () => [
       {
         Header: (
-          <>
+          <th className={styles.tableHeader} onClick={() => onSortClick("connection")}>
             <FormattedMessage id="credits.connection" />
-            <SortButton
-              wasActive={sortBy === "connection"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("connection")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "connection"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </th>
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
@@ -133,14 +130,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       },
       {
         Header: (
-          <>
+          <th className={styles.tableHeader} onClick={() => onSortClick("usage")}>
             <FormattedMessage id="credits.usage" />
-            <SortButton
-              wasActive={sortBy === "usage"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("usage")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "usage"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </th>
         ),
         accessor: "creditsConsumed",
         collapse: true,
