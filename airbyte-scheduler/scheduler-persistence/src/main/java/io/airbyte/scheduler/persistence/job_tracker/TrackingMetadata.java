@@ -110,20 +110,30 @@ public class TrackingMetadata {
           final JobOutput jobOutput = lastAttempt.getOutput().get();
           if (jobOutput.getSync() != null) {
             final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
-            metadata.put("sync_start_time", syncSummary.getStartTime());
-            metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
-            metadata.put("volume_mb", syncSummary.getBytesSynced());
-            metadata.put("volume_rows", syncSummary.getRecordsSynced());
-            metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
-            metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
-            metadata.put("max_seconds_before_source_state_message_emitted",
-                syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
-            metadata.put("mean_seconds_before_source_state_message_emitted",
-                syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
-            metadata.put("max_seconds_between_state_message_emit_and_commit",
-                syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
-            metadata.put("mean_seconds_between_state_message_emit_and_commit",
-                syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
+            if (syncSummary.getStartTime() != null)
+              metadata.put("sync_start_time", syncSummary.getStartTime());
+            if (syncSummary.getEndTime() != null && syncSummary.getStartTime() != null)
+              metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
+            if (syncSummary.getBytesSynced() != null)
+              metadata.put("volume_mb", syncSummary.getBytesSynced());
+            if (syncSummary.getRecordsSynced() != null)
+              metadata.put("volume_rows", syncSummary.getRecordsSynced());
+            if (syncSummary.getTotalStats().getSourceStateMessagesEmitted() != null)
+              metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
+            if (syncSummary.getTotalStats().getDestinationStateMessagesEmitted() != null)
+              metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
+            if (syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted() != null)
+              metadata.put("max_seconds_before_source_state_message_emitted",
+                  syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
+            if (syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted() != null)
+              metadata.put("mean_seconds_before_source_state_message_emitted",
+                  syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
+            if (syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted() != null)
+              metadata.put("max_seconds_between_state_message_emit_and_commit",
+                  syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
+            if (syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted() != null)
+              metadata.put("mean_seconds_between_state_message_emit_and_commit",
+                  syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
           }
         }
 
