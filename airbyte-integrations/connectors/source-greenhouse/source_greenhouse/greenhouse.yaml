@@ -7,7 +7,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: [ ]
+      field_pointer: []
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
