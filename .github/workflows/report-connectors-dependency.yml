@@ -12,6 +12,13 @@ jobs:
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
+      - name: Extract current repo name
+        shell: bash
+        run: |
+          echo ${{ github.repository }}
+          echo ${{ github.repository_owner }}
+          echo ${{ github.actor }}
+        id: extract_repository
       - name: Extract current branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${{ github.head_ref }})"
