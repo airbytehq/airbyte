@@ -257,6 +257,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     return source;
   }
 
+  protected Source getCustomSource(final List<ConfiguredAirbyteStream> streamsToSnapshot) {
+    return new PostgresSource() {
+      @Override
+      protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+        return streamsToSnapshot;
+      }
+    };
+  }
+
   @Override
   protected JsonNode getConfig() {
     return config;

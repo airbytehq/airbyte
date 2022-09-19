@@ -20,10 +20,10 @@ function useGetService() {
   const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecificationRead => {

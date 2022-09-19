@@ -57,10 +57,10 @@ export interface ListConnection {
 function useWebConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(
-    () => new WebBackendConnectionService(config.apiUrl, middlewares),
-    [config.apiUrl, middlewares]
-  );
+  return useInitService(() => new WebBackendConnectionService(config.apiUrl, middlewares), [
+    config.apiUrl,
+    middlewares,
+  ]);
 }
 
 function useConnectionService() {

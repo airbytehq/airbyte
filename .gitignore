@@ -13,6 +13,8 @@ data
 .vscode
 **/gmon.out
 static_checker_reports/
+.vscode
+**/bin/
 
 # Logs
 acceptance_tests_logs/

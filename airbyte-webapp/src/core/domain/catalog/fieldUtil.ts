@@ -60,7 +60,8 @@ function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomF
     case NamespaceDefinitionType.destination:
       return destinationSetting;
     case NamespaceDefinitionType.customformat:
-    default: // Default is never hit, but typescript prefers it declared
+    default:
+      // Default is never hit, but typescript prefers it declared
       if (!opt.sourceNamespace?.trim()) {
         return destinationSetting;
       }

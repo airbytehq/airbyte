@@ -28,9 +28,9 @@ describe("calculateInitialCatalog", () => {
     const { id, ...restProps } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
-      {
+      ({
         streams: [restProps],
-      } as unknown as SyncSchema,
+      } as unknown) as SyncSchema,
       [],
       false
     );
@@ -44,7 +44,7 @@ describe("calculateInitialCatalog", () => {
     const { config, stream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
-      {
+      ({
         streams: [
           {
             id: "1",
@@ -55,7 +55,7 @@ describe("calculateInitialCatalog", () => {
             config,
           },
         ],
-      } as unknown as SyncSchema,
+      } as unknown) as SyncSchema,
       [],
       false
     );

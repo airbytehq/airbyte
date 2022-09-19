@@ -19,10 +19,10 @@ function useGetService(): SourceDefinitionSpecificationService {
   const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export const useGetSourceDefinitionSpecification = (id: string) => {

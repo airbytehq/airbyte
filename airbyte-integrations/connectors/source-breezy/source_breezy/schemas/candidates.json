@@ -1,0 +1,555 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_message_to_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "entered_stage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "meta_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "assigned_to": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "cover_letter": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "creation_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "position_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "position": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "friendly_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "org_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "department": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+
+    "education": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "school_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "field_of_study": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "degree": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_current": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "email_address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "followed_by": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "headline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "initial": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "origin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "overall_score": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "very_good": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "good": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "neutral": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "poor": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "very_poor": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "scored_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "score": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_photo_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "questionnaire": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "response": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "sourced_by": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email_address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "resume": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "filename": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pdf_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "social_profiles": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "typeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "typeName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "source": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "logo_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "stage": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "updated_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "work_history": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "company_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_current": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "start_date": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "end_date": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "location": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "disposition_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}
