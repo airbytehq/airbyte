@@ -120,7 +120,7 @@ def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict
     latest_per_stream_by_name = dict()
     for message in messages:
         current_state = message.state
-        if current_state and current_state.type == AirbyteStateType.STREAM and hasattr(current_state, "stream"):
+        if current_state and current_state.type == AirbyteStateType.STREAM:
             per_stream = current_state.stream
             latest_per_stream_by_name[per_stream.stream_descriptor.name] = per_stream.stream_state.dict() if per_stream.stream_state else {}
     return latest_per_stream_by_name
@@ -236,7 +236,7 @@ class TestIncremental(BaseTest):
                 # Including all the latest state values from previous batches, update the combined stream state
                 # with the current batch's stream state and then use it in the following read() request
                 current_state = message_batch[0].state
-                if current_state and current_state.type == AirbyteStateType.STREAM and hasattr(current_state, "stream"):
+                if current_state and current_state.type == AirbyteStateType.STREAM:
                     per_stream = current_state.stream
                     if per_stream.stream_state:
                         stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
