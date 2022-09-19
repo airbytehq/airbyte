@@ -126,6 +126,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
           .setCredentials(credentials)
+          .setHeaderProvider(BigQueryUtils.getHeaders())
           .build().getService();
       final List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
@@ -165,6 +166,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       return bigQueryBuilder
           .setProjectId(projectId)
           .setCredentials(credentials)
+          .setHeaderProvider(BigQueryUtils.getHeaders())
           .build()
           .getService();
     } catch (final IOException e) {

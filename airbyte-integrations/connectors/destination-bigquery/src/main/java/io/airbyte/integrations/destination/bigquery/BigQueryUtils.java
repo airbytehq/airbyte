@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.gax.rpc.FixedHeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -31,6 +32,7 @@ import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -43,9 +45,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -347,6 +352,26 @@ public class BigQueryUtils {
         throw new BigQueryException(e.getCode(), errorMessage, e);
       }
     }
+  }
+
+  public static FixedHeaderProvider getHeaders() {
+    String connectorName = getConnectorNameFromEnv();
+
+    return new FixedHeaderProvider() {
+      @Nullable
+      @Override
+      public Map<String, String> getHeaders() {
+        return ImmutableMap.of("user-agent", connectorName + " (GPN:Airbyte)");
+      }
+    };
+  }
+
+  private static String getConnectorNameFromEnv() {
+    String imageName = System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE);
+    // Next 2 lines changes format of connectors name.
+    // Example airbyte/destination-bigquery:1.2.0 -> destination-bigquery/1.2.0
+    imageName = imageName.replace("airbyte/", Strings.EMPTY);
+    return imageName.replace(":", "/");
   }
 
   private static String convertDateToInstantFormat(final String data) {
