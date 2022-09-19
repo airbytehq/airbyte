@@ -143,7 +143,20 @@ class Events(IncrementalAmplitudeStream):
     state_checkpoint_interval = 1000
     time_interval = {"days": 1}
 
+    # To avoid raising http exceptions by default. (HttpStream class raises http errors by default if set to True)
+    # Export API(Used to get events data) returns 404 when there is no data which is being propogated to UI as error in sync
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return False
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        # Read records func calls this func which raises exception when 404 is sent as response
+        if response.status_code == 404:
+            self.logger.warn("No data available for the time range requested.")
+            return []
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
@@ -237,7 +250,8 @@ class ActiveUsers(IncrementalAmplitudeStream):
                 try:    
                     yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
                 except (IndexError,KeyError) as e:
-                    self.logger.exception(e)
+                    #To avoid propogating this error to UI
+                    self.logger.warn(e)
                 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
@@ -260,7 +274,8 @@ class AverageSessionLength(IncrementalAmplitudeStream):
                 try:
                     yield {"date": date, "length": series[i]}
                 except IndexError as e:
-                    self.logger.exception(e)
+                    #To avoid propogating this error to UI
+                    self.logger.warn(e)
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"
