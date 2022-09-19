@@ -116,7 +116,7 @@ spec:
   template:
     spec:
       containers:
-        - name: airbyte-cron
+        - name: airbyte-cron-container
           resources:
             limits:
               cpu: 0.5

@@ -110,6 +110,9 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put("client_key", certs.getClientKey())
         .put("client_key_password", "Passw0rd")
         .build();
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "CDC")
+            .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -119,7 +122,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
-        .put("replication_method", ReplicationMethod.CDC)
+        .put("replication_method", replicationMethod)
         .build());
 
     revokeAllPermissions();

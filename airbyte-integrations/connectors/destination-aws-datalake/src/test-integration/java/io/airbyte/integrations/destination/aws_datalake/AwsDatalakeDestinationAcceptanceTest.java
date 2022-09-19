@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -185,6 +186,26 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
   protected void tearDown(TestDestinationEnv testEnv) {
     // TODO Implement this method to run any cleanup actions needed after every test case
     // glueHelper.purgeDatabase(config.getDatabaseName());
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AwsDatalakeTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return false;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
 }

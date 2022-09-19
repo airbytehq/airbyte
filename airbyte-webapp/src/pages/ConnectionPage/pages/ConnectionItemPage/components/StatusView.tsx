@@ -2,14 +2,20 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { Link, useLocation } from "react-router-dom";
 
-import { Button, ContentCard } from "components";
+import { Button, LoadingButton } from "components";
+import { Card } from "components/base/Card";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
+import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 
+import { getFrequencyType } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
+import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
@@ -17,6 +23,8 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
+
+const JOB_PAGE_SIZE_INCREMENT = 25;
 
 enum ActionType {
   RESET = "reset_connection",
@@ -42,12 +50,27 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
 };
 
 const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
-
-  const jobs = useListJobs({
+  const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
+  const analyticsService = useAnalyticsService();
+  const { jobId: linkedJobId } = useAttemptLink();
+  const { pathname } = useLocation();
+  const {
+    jobs,
+    totalJobCount,
+    isPreviousData: isJobPageLoading,
+  } = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+    includingJobId: linkedJobId ? Number(linkedJobId) : undefined,
+    pagination: {
+      pageSize: jobPageSize,
+    },
   });
+
+  const linkedJobNotFound = linkedJobId && jobs.length === 0;
+  const moreJobPagesAvailable = !linkedJobNotFound && jobPageSize < totalJobCount;
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
@@ -61,6 +84,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           // We need to disable button when job is canceled but the job list still has a running job
         } as ActiveJob)
     );
+
+    // necessary because request to listJobs may return a result larger than the current page size if a linkedJobId is passed in
+    setJobPageSize((prevJobPageSize) => Math.max(prevJobPageSize, jobs.length));
   }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -102,6 +128,21 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     return cancelJob(activeJob.id);
   };
 
+  const onLoadMoreJobs = () => {
+    setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_INCREMENT);
+
+    analyticsService.track(Namespace.CONNECTION, Action.LOAD_MORE_JOBS, {
+      actionDescription: "Load more jobs button was clicked",
+      connection_id: connection.connectionId,
+      connector_source: connection.source?.sourceName,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      frequency: getFrequencyType(connection.schedule),
+      job_page_size: jobPageSize,
+    });
+  };
+
   const cancelJobBtn = (
     <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
       <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
@@ -112,7 +153,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
   return (
     <div className={styles.statusView}>
-      <ContentCard
+      <Card
         className={styles.contentCard}
         title={
           <div className={styles.title}>
@@ -143,8 +184,29 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </div>
         }
       >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </ContentCard>
+        {jobs.length ? (
+          <JobsList jobs={jobs} />
+        ) : linkedJobNotFound ? (
+          <EmptyResource
+            text={<FormattedMessage id="connection.linkedJobNotFound" />}
+            description={
+              <Link to={pathname}>
+                <FormattedMessage id="connection.returnToSyncHistory" />
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+        )}
+      </Card>
+
+      {(moreJobPagesAvailable || isJobPageLoading) && (
+        <footer className={styles.footer}>
+          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+            <FormattedMessage id="connection.loadMoreJobs" />
+          </LoadingButton>
+        </footer>
+      )}
     </div>
   );
 };

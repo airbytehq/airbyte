@@ -13,9 +13,11 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
@@ -24,18 +26,21 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
 
-  public static ImmutableMap<String, Object> generateSyncMetadata(final StandardSync standardSync) {
+  public static Map<String, Object> generateSyncMetadata(final StandardSync standardSync) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", standardSync.getConnectionId());
 
     final String frequencyString;
-    if (standardSync.getManual()) {
+    if (standardSync.getScheduleType() != null) {
+      frequencyString = getFrequencyStringFromScheduleType(standardSync.getScheduleType(), standardSync.getScheduleData());
+    } else if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
       final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
@@ -71,7 +76,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
+  public static Map<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
@@ -83,7 +88,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
+  public static Map<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
@@ -95,7 +100,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateJobAttemptMetadata(final Job job) {
+  public static Map<String, Object> generateJobAttemptMetadata(final Job job) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     if (job != null) {
       final List<Attempt> attempts = job.getAttempts();
@@ -162,6 +167,24 @@ public class TrackingMetadata {
     linkedHashMap.put("timestamp", failureReason.getTimestamp());
 
     return Jsons.jsonNode(linkedHashMap);
+  }
+
+  private static String getFrequencyStringFromScheduleType(final ScheduleType scheduleType, final ScheduleData scheduleData) {
+    switch (scheduleType) {
+      case MANUAL -> {
+        return "manual";
+      }
+      case BASIC_SCHEDULE -> {
+        return TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(scheduleData.getBasicSchedule())) + " min";
+      }
+      case CRON -> {
+        // TODO(https://github.com/airbytehq/airbyte/issues/2170): consider something more detailed.
+        return "cron";
+      }
+      default -> {
+        throw new RuntimeException("Unexpected schedule type");
+      }
+    }
   }
 
 }

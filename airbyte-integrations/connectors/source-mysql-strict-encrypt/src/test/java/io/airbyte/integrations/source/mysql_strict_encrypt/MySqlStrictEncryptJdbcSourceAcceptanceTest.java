@@ -6,13 +6,18 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
+import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -22,6 +27,8 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -62,6 +69,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
@@ -204,7 +212,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   }
 
   @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
@@ -227,4 +235,96 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     return expectedMessages;
   }
 
+  @Test
+  void testStrictSSLUnsecuredNoTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "preferred")
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "NO_TUNNEL")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals("Unsecured connection not allowed", actual.getMessage());
+  }
+
+  @Test
+  void testStrictSSLSecuredNoTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "NO_TUNNEL")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertNotEquals("Unsecured connection not allowed", actual.getMessage());
+  }
+
+  @Test
+  void testStrictSSLSecuredWithTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "SSH_KEY_AUTH")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+  }
+
+  @Test
+  void testStrictSSLUnsecuredWithTunnel() throws Exception {
+    final String PASSWORD = "Passw0rd";
+    final var certs = MySqlUtils.getCertificate(container, true);
+    final var sslMode = ImmutableMap.builder()
+        .put(JdbcUtils.MODE_KEY, "preferred")
+        .build();
+
+    final var tunnelMode = ImmutableMap.builder()
+        .put("tunnel_method", "SSH_KEY_AUTH")
+        .build();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+        .put(JdbcUtils.SSL_KEY, true)
+        .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
+    ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
+
+    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
 }

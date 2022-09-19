@@ -14,10 +14,10 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
 2. In the Workspace Settings sidebar, click **Access Management**.
-3. In the top right-hand corner, click **+ New User**.
-4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
+3. Click **+ New user**.
+4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
 
     :::info
     The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
@@ -27,7 +27,7 @@ To add a user to your workspace:
 
 To switch between workspaces:
 
-1. On the Airbyte Cloud dashboard, click the current workspace name under the Airbyte logo in the left-hand navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
 
 2. Click **View all workspaces**.
 
@@ -37,7 +37,7 @@ To switch between workspaces:
 
 To rename a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **General Settings**.
 
@@ -47,24 +47,24 @@ To rename a workspace:
 
 To delete a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **General Settings**.
 
 3. Click **Delete your workspace**.
 
-## Single Workspace vs. Multiple Workspaces
+### Single workspace vs. multiple workspaces
  
 You can use one or multiple workspaces with Airbyte Cloud. 
  
-### Access
-| Number of Workspaces | Benefits                                                                      | Considerations                                                                                                                              |
+#### Access
+| Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
 | Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
  
-### Billing
-| Number of Workspaces | Benefits                                                                      | Considerations                                                                                                                              |
+#### Billing
+| Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
 | Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example,  different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
@@ -73,7 +73,7 @@ You can use one or multiple workspaces with Airbyte Cloud.
 
 To set up Slack notifications:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
 2. In the Workspace Settings sidebar, click **Notifications.**
 
@@ -97,11 +97,11 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the Sync Log Summary
+## View the sync log summary
 The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
  
 To view the sync log summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
 
     The Connections page displays.
 
@@ -113,8 +113,8 @@ To view the sync log summary:
 
 4. For more information about a sync, click the sync log dropdown.  
  
-## Sync Log Summary
-### Succeeded
+### Sync log summary
+#### Succeeded
 The log summary for a successful sync shows the following data.
 
 | Log                            | Description                                                                                                                                             |
@@ -131,7 +131,7 @@ In a successful sync, the number of emitted records and committed records should
 
 :::  
 
-### Cancelled
+#### Cancelled
 The log summary for a cancelled sync may show the following data.
 
 | Log            | Description                                                                                     |
@@ -148,7 +148,7 @@ Airbyte will try to sync your data three times. After a third failure, it will s
     
 :::
 
-### Failed
+#### Failed
 The log summary for a failed sync may show the following data.
 
 | Log            | Description                                                                                 |
@@ -159,12 +159,12 @@ The log summary for a failed sync may show the following data.
 | Sync or Reset  | The action that was performed (either a sync or a reset).                                   |
 | Failure Origin | The cause of the sync failure.                                                              |
 
-### Running
+#### Running
 The sync log summary displays **Running** when the sync is actively running.
 
 ## Edit stream configuration
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.  
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click a connection in the list you want to change.  
 
     The **Connection** page displays.  
 
@@ -197,7 +197,9 @@ To search for a stream:
 3. Streams matching your search are displayed in the list.
 
 To change individual stream configuration:
-![Single Stream Edits gif](https://user-images.githubusercontent.com/106352739/186750001-7e78d77e-9e24-450a-967e-a90812a76fdf.gif)
+
+![Single Edit Gif 7](https://user-images.githubusercontent.com/106352739/187313088-85c61a6d-1025-45fa-b14e-a7fe86defea4.gif)
+
 1. In the **Sync** column of the stream, toggle the sync on or off. 
 
 2. Click the dropdown arrow in the **Sync mode** column and select the sync mode you want to apply.
@@ -211,7 +213,9 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 3. If there is a dropdown arrow in the **Cursor** or **Primary key** fields, click the dropdown arrow and choose the cursor or primary key. 
 
 To change multiple stream configurations:
-![Batch Edit 1](https://user-images.githubusercontent.com/106352739/186749992-a35e3aa0-7b77-4b21-a487-7c490d5bc364.gif)
+
+![Batch Edit gif 5](https://user-images.githubusercontent.com/106352739/187312110-d16b4f9a-9d43-4b23-b644-b64004f33b58.gif)
+
 1. Click the first checkbox in the table header to select all streams in the connection.
     
 2. Deselect the checkboxes of streams you do not want to apply these changes to.
@@ -242,13 +246,13 @@ To refresh the source schema:
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
 
-## Buy Credits
+## Buy credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
  To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **coin icon**.
+1. On the Airbyte Cloud dashboard, click the **coin icon** in the navigation bar.
     
     The Credits page displays.
 
@@ -256,7 +260,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
 3. Click **Buy credits**. The Stripe payment page displays.
 
-4. If you want to change the amount of credits, click Qty **200**. **Update quantity** displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
+4. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
     Purchase limits:
