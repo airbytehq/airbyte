@@ -330,9 +330,7 @@ def test_download_parse_response(patch_base_class):
         {"watchID": "00000000", "dateTime": "2022-07-01T12:00:00"},
         {"watchID": "00000001", "dateTime": "2022-07-01T12:00:10"},
     ]
-    mock_response = MockResponse(
-        {}, 200, text="watchID\tdateTime\n00000000\t2022-07-01 12:00:00\n00000000\t2022-07-01 12:00:10"
-    )
+    mock_response = MockResponse({}, 200, text="watchID\tdateTime\n00000000\t2022-07-01 12:00:00\n00000000\t2022-07-01 12:00:10")
     inputs = {"response": mock_response}
 
     generator = stream.parse_response(**inputs)
