@@ -190,6 +190,12 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 1. In the **Replication Frequency** dropdown, click **Cron**. 
 2. Enter a cron expression and choose a time zone to create a sync schedule.
 
+:::info
+
+Only one sync per connection can run at a time. If cron schedules a sync to run before the last sync finishes, the sync will start after the last one completes. 
+
+:::
+
 In the **Activate the streams you want to sync section**, you can make changes to any stream you choose.
 
 To search for a stream:
