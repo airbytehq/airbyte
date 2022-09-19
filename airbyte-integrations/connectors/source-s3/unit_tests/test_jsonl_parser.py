@@ -167,5 +167,5 @@ class TestJsonlParser(AbstractTestParser):
                 "inferred_schema": {"meta": "object", "payload": "object"},
                 "line_checks": {},
                 "fails": [],
-            }
+            },
         }

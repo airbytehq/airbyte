@@ -19,7 +19,10 @@ class JsonlParser(AbstractFileParser):
         "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
         "string": ("large_string", "string"),
         # TODO: support object type rather than coercing to string
-        "object": ("struct", "large_string",),
+        "object": (
+            "struct",
+            "large_string",
+        ),
         # TODO: support array type rather than coercing to string
         "array": ("large_string",),
         "null": ("large_string",),
@@ -58,10 +61,7 @@ class JsonlParser(AbstractFileParser):
         }
         if json_schema:
             schema = self.json_schema_to_pyarrow_schema(json_schema)
-            schema = pa.schema({
-                field: type_ for field, type_ in schema.items()
-                if type_ not in self.NON_SCALAR_TYPES.values()
-            })
+            schema = pa.schema({field: type_ for field, type_ in schema.items() if type_ not in self.NON_SCALAR_TYPES.values()})
             parse_options["explicit_schema"] = schema
         return parse_options
 
@@ -76,6 +76,7 @@ class JsonlParser(AbstractFileParser):
         Json reader support multi thread hence, donot need to add external process
         https://arrow.apache.org/docs/python/generated/pyarrow.json.ReadOptions.html
         """
+
         def field_type_to_str(type_: Any) -> str:
             if isinstance(type_, pa.lib.StructType):
                 return "struct"

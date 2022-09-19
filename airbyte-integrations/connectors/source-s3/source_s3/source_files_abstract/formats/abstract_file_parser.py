@@ -13,9 +13,7 @@ from source_s3.source_files_abstract.file_info import FileInfo
 class AbstractFileParser(ABC):
     logger = AirbyteLogger()
 
-    NON_SCALAR_TYPES = {
-        "struct": "struct"
-    }
+    NON_SCALAR_TYPES = {"struct": "struct"}
     TYPE_MAP = {
         "boolean": ("bool_", "bool"),
         "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
