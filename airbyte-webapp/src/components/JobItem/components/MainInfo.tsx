@@ -59,15 +59,6 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   };
 
   const label = () => {
-    let type = "";
-    switch (jobConfigType) {
-      case "reset_connection":
-        type = "reset";
-        break;
-      case "sync":
-        type = "sync";
-        break;
-    }
     let status = "";
     switch (true) {
       case jobStatus === JobStatus.failed:
@@ -91,7 +82,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     return (
       <FormattedMessage
         values={{ count: streamsToReset?.length || 0, status: "failed" }}
-        id={`sources.jobStatus.${type}.${status}`}
+        id={`sources.jobStatus.${jobConfigType}.${status}`}
       />
     );
   };
