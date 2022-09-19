@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ContentCard, H4 } from "components";
+import { H4 } from "components";
+import { Card } from "components/base/Card";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -20,7 +21,6 @@ import {
   getInitialNormalization,
   getInitialTransformations,
   mapFormPropsToOperation,
-  useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
@@ -42,7 +42,7 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const NoSupportedTransformationCard = styled(ContentCard)`
+const NoSupportedTransformationCard = styled(Card)`
   max-width: 500px;
   margin: 0 auto;
   min-height: 100px;
@@ -56,7 +56,6 @@ const CustomTransformationsCard: React.FC<{
   onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
-  const defaultTransformation = useDefaultTransformation();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const initialValues = useMemo(
@@ -82,7 +81,6 @@ const CustomTransformationsCard: React.FC<{
       <FieldArray name="transformations">
         {(formProps) => (
           <TransformationField
-            defaultTransformation={defaultTransformation}
             {...formProps}
             mode={mode}
             onStartEdit={toggleEditingTransformation}

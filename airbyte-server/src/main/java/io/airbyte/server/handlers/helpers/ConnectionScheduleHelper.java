@@ -8,6 +8,7 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Cron;
+import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -44,6 +45,14 @@ public class ConnectionScheduleHelper {
                 new BasicSchedule().withTimeUnit(ApiPojoConverters.toBasicScheduleTimeUnit(scheduleData.getBasicSchedule().getTimeUnit()))
                     .withUnits(scheduleData.getBasicSchedule().getUnits())))
             .withManual(false);
+        // Populate the legacy format for now as well, since some places still expect it to exist.
+        // TODO(https://github.com/airbytehq/airbyte/issues/11432): remove.
+        final Schedule schedule = new Schedule()
+            .withTimeUnit(ApiPojoConverters.toLegacyScheduleTimeUnit(scheduleData.getBasicSchedule().getTimeUnit()))
+            .withUnits(scheduleData.getBasicSchedule().getUnits());
+        standardSync
+            .withManual(false)
+            .withSchedule(schedule);
       }
       case CRON -> {
         if (scheduleData.getCron() == null) {

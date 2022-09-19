@@ -7,18 +7,14 @@ package io.airbyte.workers.temporal.spec;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.activity.ActivityOptions;
-import io.temporal.workflow.Workflow;
-import java.time.Duration;
+import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
+import javax.inject.Singleton;
 
+@Singleton
 public class SpecWorkflowImpl implements SpecWorkflow {
 
-  final ActivityOptions options = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(Duration.ofHours(1))
-      .setRetryOptions(TemporalUtils.NO_RETRY)
-      .build();
-  private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
+  @TemporalActivityStub(activityOptionsBeanName = "specActivityOptions")
+  private SpecActivity activity;
 
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {

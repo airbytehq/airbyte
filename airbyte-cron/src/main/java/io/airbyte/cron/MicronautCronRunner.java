@@ -16,7 +16,6 @@ public class MicronautCronRunner {
 
   public static void main(final String[] args) {
     Micronaut.build(args)
-        .eagerInitSingletons(true)
         .mainClass(MicronautCronRunner.class)
         .start();
   }
