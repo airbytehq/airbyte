@@ -197,4 +197,4 @@ Verify the sync by checking the logs:
 
 ## Allowlist IP address
 
-You may need to allowlist `34.106.109.131` to enable access to Airbyte.
+You may need to allowlist the following IP addresses `34.106.109.131, 34.106.196.165, 34.106.60.246` to enable access to Airbyte.
