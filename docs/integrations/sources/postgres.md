@@ -17,7 +17,7 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
-- Allowlist the IP address `34.106.109.131` to enable access to Airbyte
+- Allowlist the following IP addresses `34.106.109.131, 34.106.196.165, 34.106.60.246` to enable access to Airbyte.
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
