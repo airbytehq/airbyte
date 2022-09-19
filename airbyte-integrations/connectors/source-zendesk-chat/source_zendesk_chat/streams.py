@@ -296,3 +296,20 @@ class RoutingSettings(Stream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "routing_settings/account"
+
+class DepartmentEvents(TimeIncrementalStream):
+    """
+    Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-department-events-export
+    """
+    cursor_field = "timestamp"
+    data_field = "department_events"
+    limit = 1000
+
+
+class Conversions(TimeIncrementalStream):
+    """
+    Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-conversions-export
+    """
+    cursor_field = "timestamp"
+    data_field = "conversions"
+    limit = 1000
