@@ -5,7 +5,7 @@ interface TooltipTableProps {
   rows: React.ReactNode[][];
 }
 
-export const TooltipTable: React.VFC<TooltipTableProps> = ({ rows }) => {
+export const TooltipTable: React.FC<TooltipTableProps> = ({ rows }) => {
   const { theme } = useTooltipContext();
 
   return rows.length > 0 ? (

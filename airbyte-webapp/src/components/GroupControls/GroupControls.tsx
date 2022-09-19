@@ -27,7 +27,7 @@ interface GroupControlsProps {
   fullWidthTitle?: boolean;
 }
 
-const GroupControls: React.FC<GroupControlsProps> = ({
+const GroupControls: React.FC<React.PropsWithChildren<GroupControlsProps>> = ({
   title,
   description,
   children,

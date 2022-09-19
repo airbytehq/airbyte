@@ -1,3 +1,4 @@
+import { appendRandomString } from "commands/common";
 import { createLocalJsonDestination, deleteDestination, updateDestination } from "commands/destination";
 import { initialSetupCompleted } from "commands/workspaces";
 
@@ -13,18 +14,24 @@ describe("Destination main actions", () => {
   });
 
   it("Update destination", () => {
-    createLocalJsonDestination("Test destination cypress for update", "/local");
-    updateDestination("Test destination cypress for update", "connectionConfiguration.destination_path", "/local/my-json");
+    const destName = appendRandomString("Test destination cypress for update");
+    createLocalJsonDestination(destName, "/local");
+    updateDestination(
+      destName,
+      "connectionConfiguration.destination_path",
+      "/local/my-json"
+    );
 
     cy.get("div[data-id='success-result']").should("exist");
     cy.get("input[value='/local/my-json']").should("exist");
   });
 
   it("Delete destination", () => {
-    createLocalJsonDestination("Test destination cypress for delete", "/local");
-    deleteDestination("Test destination cypress for delete");
+    const destName = appendRandomString("Test destination cypress for delete");
+    createLocalJsonDestination(destName, "/local");
+    deleteDestination(destName);
 
     cy.visit("/destination");
-    cy.get("div").contains("Test destination cypress for delete").should("not.exist");
+    cy.get("div").contains(destName).should("not.exist");
   });
 });

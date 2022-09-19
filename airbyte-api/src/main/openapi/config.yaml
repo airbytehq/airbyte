@@ -2113,6 +2113,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_light:
+    post:
+      tags:
+        - jobs
+      summary: Get information about a job excluding attempt info and logs
+      operationId: getJobInfoLight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoLightRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/cancel:
     post:
       tags:
@@ -2509,6 +2532,9 @@ components:
           format: uri
         icon:
           type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
+          type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
@@ -2868,6 +2894,9 @@ components:
           type: string
           format: uri
         icon:
+          type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
           type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
@@ -3769,6 +3798,9 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns the number of pages of jobs necessary to include this job. Returns an empty list if this job is specified and cannot be found in this connection.
+          $ref: "#/components/schemas/JobId"
         pagination:
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
@@ -3986,11 +4018,16 @@ components:
       type: object
       required:
         - jobs
+        - totalJobCount
       properties:
         jobs:
           type: array
           items:
             $ref: "#/components/schemas/JobWithAttemptsRead"
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
     JobInfoRead:
       type: object
       required:
@@ -4003,6 +4040,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+    JobInfoLightRead:
+      type: object
+      required:
+        - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
