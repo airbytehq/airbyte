@@ -326,7 +326,14 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7
+| Version | Date       | Pull Request                                             | Subject                                          |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Align with strict-encrypt version                |
+| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7 |
 
+
+## Changelog (Strict Encrypt)
+
+| Version | Date       | Pull Request                                             | Subject                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Initial commit. Based on source-postgres-strict-encrypt  |
