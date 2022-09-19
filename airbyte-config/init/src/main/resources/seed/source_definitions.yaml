@@ -1203,3 +1203,10 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
+- name: Yandex Metrica
+  sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
+  dockerRepository: airbyte/source-yandex-metrica
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/yandex-metrica
+  sourceType: api
+  releaseStage: alpha
