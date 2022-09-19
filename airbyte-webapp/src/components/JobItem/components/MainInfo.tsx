@@ -5,7 +5,6 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
 import { StatusIcon } from "components";
-import { ResetIcon } from "components/icons/ResetIcon";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
@@ -39,6 +38,7 @@ interface MainInfoProps {
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
   const jobStatus = getJobStatus(job);
+  const jobConfigType = getJobConfig(job);
   const streamsToReset = "job" in job ? job.job.resetConfig?.streamsToReset : undefined;
   const isPartialSuccess = partialSuccessCheck(attempts);
 
@@ -47,8 +47,6 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
       case jobStatus === JobStatus.cancelled:
       case !isPartialSuccess && isFailed:
         return <StatusIcon status="error" />;
-      case Boolean(streamsToReset):
-        return <ResetIcon />;
       case jobStatus === JobStatus.running:
         return <StatusIcon status="loading" />;
       case jobStatus === JobStatus.succeeded:
@@ -59,17 +57,43 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         return null;
     }
   };
-  const showAttemptDetails = !streamsToReset || (streamsToReset && isFailed);
-  const showResetStreamsDetails = streamsToReset && !isFailed;
 
   const label = () => {
-    if (showResetStreamsDetails) {
-      return <FormattedMessage values={{ count: streamsToReset.length }} id="sources.streamsReset" />;
+    let type = "";
+    switch (jobConfigType) {
+      case "reset_connection":
+        type = "reset";
+        break;
+      case "sync":
+        type = "sync";
+        break;
     }
-    if (isPartialSuccess) {
-      return <FormattedMessage id="sources.partialSuccess" />;
+    let status = "";
+    switch (true) {
+      case jobStatus === JobStatus.failed:
+        status = "failed";
+        break;
+      case jobStatus === JobStatus.cancelled:
+        status = "cancelled";
+        break;
+      case jobStatus === JobStatus.running:
+        status = "running";
+        break;
+      case jobStatus === JobStatus.succeeded:
+        status = "succeeded";
+        break;
+      case isPartialSuccess:
+        status = "partialSuccess";
+        break;
+      default:
+        break;
     }
-    return <FormattedMessage id={`sources.${getJobStatus(job)}`} />;
+    return (
+      <FormattedMessage
+        values={{ count: streamsToReset?.length || 0, status: "failed" }}
+        id={`sources.jobStatus.${type}.${status}`}
+      />
+    );
   };
 
   return (
@@ -88,11 +112,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
                   <FormattedMessage id="sources.lastAttempt" />
                 </div>
               )}
-              {showAttemptDetails && (
+              {jobConfigType === "reset_connection" ? (
+                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name) || []} />
+              ) : (
                 <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
-              )}
-              {showResetStreamsDetails && (
-                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset.map((stream) => stream.name)} />
               )}
             </>
           )}
