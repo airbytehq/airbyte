@@ -1,4 +1,5 @@
 @use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
 @forward "../../../../../views/layout/SideBar/SideBar.module.scss";
 
 .workspaceButton {
@@ -10,9 +11,8 @@
   border: 0;
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 20%);
-  margin-top: 13px;
+  margin-top: variables.$spacing-md;
   padding: 0 8px;
-  line-height: 21px;
   font-size: 9px;
   font-weight: 400;
   color: colors.$white;
