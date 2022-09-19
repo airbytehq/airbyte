@@ -10,11 +10,21 @@ properties:
   streams:
     "$ref": "#/definitions/Streams"
   check:
-    "$ref": "#/definitions/ConfiguredAirbyteCatalog" #TODO
+    "$ref": "#/definitions/ConnectionChecker" #TODO
 definitions:
   "$options":
     type: object
     additionalProperties: true
+  ConnectionChecker:
+    type: object
+    required: type
+    additionalProperties: false
+    properties:
+      type:
+        description: "Check type"
+        type: string
+        enum:
+          - CheckStream
   Version:
     type: string
     description: "connector definition version"
@@ -22,7 +32,7 @@ definitions:
     type: array
     items:
       "$ref": "#/definitions/Stream"
-  Stream: #TODO: add missing fields here
+  Stream:
     type: object
     additionalProperties: false
     required:
@@ -41,11 +51,13 @@ definitions:
       retriever:
         "$ref": "#/definitions/Retriever"
       cursor_field:
-        type: string #TODO:actual type is Optional[Union[List[str], str]]
+        type: array
+        items:
+          type: string
       transformations:
         type: array
         items:
-          "$ref": "#/definitions/RecordTransformation" #TODO
+          "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
     SchemaLoader:
@@ -127,7 +139,7 @@ definitions:
         authenticator:
           "$ref": "#/definitions/Authenticator"
         error_handler:
-          "$ref": "#/definitions/ErrorHandler" #TODO
+          "$ref": "#/definitions/ErrorHandler"
     HttpMethod:
       type: string
       enum:
@@ -152,13 +164,16 @@ definitions:
         "$options":
           "$ref": "#/definitions/$options"
         request_parameters:
-          "$ref": "#/definitions/RequestInput" #TODO: Define request input? RequestInput = Union[str, Mapping[str, str]]
+          "$ref": "#/definitions/RequestInput"
         request_headers:
           "$ref": "#/definitions/RequestInput"
         request_body_data:
           "$ref": "#/definitions/RequestInput"
         request_body_json: #TODO: can we delete this in favor of request_body_data?
           "$ref": "#/definitions/RequestInput"
+    RequestInput:
+      type: object
+      additionalProperties: true
     Authenticator:
       type:
         description: "Authenticator type"
@@ -262,8 +277,6 @@ definitions:
       type: object
       additionalProperties: false
       required:
-        - page_size
-        - limit_option
         - page_token_option
         - pagination_strategy
       properties:
@@ -329,15 +342,23 @@ definitions:
     OffsetIncrement:
       type: object
       additionalProperties: false
+      required:
+        - page_size
       properties:
         "$options":
           "$ref": "#/definitions/$options"
+        page_size:
+          type: integer
     PageIncrement:
       type: object
       additionalProperties: false
+      required:
+        - page_size
       properties:
         "$options":
           "$ref": "#/definitions/$options"
+        page_size:
+          type: integer
     HttpSelector:
       type: object
       required:
@@ -414,7 +435,7 @@ definitions:
           list:
             "$ref": "#/definitions/ListStreamSlicer"
           cartesian_product:
-            "$ref": "#/definitions/CartesianProductStreamSlicer" #TODO
+            "$ref": "#/definitions/CartesianProductStreamSlicer"
           substream:
             "$ref": "#/definitions/SubstreamSlicer"
           single_slice:
@@ -423,6 +444,18 @@ definitions:
         type: object
         additionalProperties: false
       SubstreamSlicer:
+        type: object
+        required:
+          - parent_stream_configs
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          parent_stream_configs:
+            type: array
+            items:
+              "$ref": "#/definitions/ParentStreamConfig"
+      ParentStreamConfig:
         type: object
         required:
           - stream
@@ -462,7 +495,9 @@ definitions:
           "$options":
             "$ref": "#/definitions/$options"
           slice_values:
-            "$ref": "#/definitions/slice_values" #TODO Union[str, List[str]]
+            type: array
+            items:
+              type: string
           cursor_field:
             type: string
           request_option:
@@ -530,7 +565,7 @@ definitions:
           default:
             "$ref": "#/definitions/DefaultErrorHandler"
           composite:
-            "$ref": "#/definitions/CompositeErrorHandler" #TODO
+            "$ref": "#/definitions/CompositeErrorHandler"
       DefaultErrorHandler:
         type: object
         required:
@@ -549,8 +584,19 @@ definitions:
           backoff_strategies:
             type: array
             items:
-              "$ref": "#/definitions/BackoffStrategy" #TODO
+              "$ref": "#/definitions/BackoffStrategy"
             default: []
+      CompositeErrorHandler:
+        type: object
+        required:
+          - error_handlers
+        additionalProperties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          error_handlers:
+            type: array
+            items:
+              "$ref": "#/definitions/ErrorHandler"
       HttpResponseFilter:
         type: object
         required:
@@ -657,7 +703,7 @@ definitions:
           add:
             "$ref": "#/definitions/AddFields"
           remove:
-            "$ref": "#/definitions/RemoveFields" #TODO
+            "$ref": "#/definitions/RemoveFields"
       AddFields:
         type: object
         required:
@@ -683,19 +729,19 @@ definitions:
             "$ref": "#/definitions/FieldPointer"
           value:
             type: string
-        FieldPointer:
-          type: array
-          items:
-            type: string
-        RemoveFields:
-          type: object
-          required:
-            - field_pointers
-          additionalProperties: false
-          properties:
-            "$options":
-              "$ref": "#/definitions/$options"
-            field_pointers:
-              type: array
-              items:
-                "$ref": "#/definitions/FieldPointer"
+      FieldPointer:
+        type: array
+        items:
+          type: string
+      RemoveFields:
+        type: object
+        required:
+          - field_pointers
+        additionalProperties: false
+        properties:
+          "$options":
+            "$ref": "#/definitions/$options"
+          field_pointers:
+            type: array
+            items:
+              "$ref": "#/definitions/FieldPointer"
