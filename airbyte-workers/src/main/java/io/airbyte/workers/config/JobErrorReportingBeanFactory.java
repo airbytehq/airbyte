@@ -64,7 +64,7 @@ public class JobErrorReportingBeanFactory {
         NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
         NormalizationRunnerFactory.NORMALIZATION_VERSION,
         webUrlHelper,
-        jobErrorReportingClient.orElse(new LoggingJobErrorReportingClient()));
+        jobErrorReportingClient.orElseGet(() -> new LoggingJobErrorReportingClient()));
   }
 
 }
