@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.micronaut.core.util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -264,7 +265,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withMountPath(KubePodProcess.CONFIG_DIR)
         .build());
 
-    if (secretName != null && secretMountPath != null && googleApplicationCredentials != null) {
+    if (secretName != null && secretMountPath != null && StringUtils.isNotEmpty(googleApplicationCredentials)) {
       volumes.add(new VolumeBuilder()
           .withName("airbyte-secret")
           .withSecret(new SecretVolumeSourceBuilder()
