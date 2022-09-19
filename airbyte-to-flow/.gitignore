@@ -1,0 +1,21 @@
+# Outputs from project build that we don't version.
+target/
+.build/
+.build-ci/
+
+# Outputs from catalog build & test that we don't version.
+/dist
+/node_modules
+examples.db*
+
+# Ordinarily one *would* version package-lock.json.
+# In our case, though, we want early warning if dependencies of the
+# vanilla package.json produce broken builds.
+/package-lock.json
+
+# Typical IDE stuff.
+.vim
+*.swp
+Session.vim
+.idea
+

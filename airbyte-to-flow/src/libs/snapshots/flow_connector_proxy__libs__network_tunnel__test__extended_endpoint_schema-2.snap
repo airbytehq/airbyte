@@ -1,0 +1,26 @@
+---
+source: crates/connector_proxy/src/libs/network_tunnel.rs
+assertion_line: 156
+expression: "NetworkTunnel::extend_endpoint_schema(schema).unwrap()"
+---
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Generic Database Connection Spec",
+  "type": "object",
+  "required": [
+    "credentials",
+    "hostname"
+  ],
+  "properties": {
+    "credentials": {
+      "description": "Some login credentials or something.",
+      "type": "string",
+      "secret": true
+    },
+    "hostname": {
+      "title": "Server Hostname",
+      "description": "The hostname at which the server can be reached.",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+---
+source: crates/connector_proxy/src/libs/network_tunnel.rs
+assertion_line: 160
+expression: "NetworkTunnel::extend_endpoint_schema(schema).unwrap()"
+---
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Generic Database Connection Spec",
+  "type": "object",
+  "required": [
+    "address",
+    "credentials"
+  ],
+  "properties": {
+    "address": {
+      "title": "Server Address",
+      "description": "The host or host:port at which the database can be reached.",
+      "type": "string"
+    },
+    "credentials": {
+      "description": "Some login credentials or something.",
+      "type": "string",
+      "secret": true
+    },
+    "networkTunnel": {
+      "title": "Network Tunneling",
+      "description": "Setup a network tunnel to access systems on a private network",
+      "oneOf": [
+        {
+          "title": "SSH Forwarding",
+          "type": "object",
+          "properties": {
+            "sshForwarding": {
+              "title": "SSH Tunnel",
+              "description": "Connect to your system through an SSH server that acts as a bastion host for your network.",
+              "type": "object",
+              "required": [
+                "privateKey",
+                "sshEndpoint"
+              ],
+              "properties": {
+                "privateKey": {
+                  "title": "SSH Private Key",
+                  "description": "Private key to connect to the remote SSH server.",
+                  "type": "string",
+                  "multiline": true,
+                  "secret": true
+                },
+                "sshEndpoint": {
+                  "description": "Endpoint of the remote SSH server that supports tunneling, in the form of ssh://user@hostname[:port]",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Disabled",
+          "type": "null"
+        }
+      ],
+      "advanced": true
+    }
+  }
+}

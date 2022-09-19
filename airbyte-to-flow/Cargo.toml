@@ -1,0 +1,36 @@
+[package]
+name = "airbyte-to-flow"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+flow_cli_common = { git = "https://github.com/estuary/flow", rev = "c4e18b5" }
+proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+
+anyhow = "*"
+async-trait = "*"
+bytelines = "*"
+byteorder = "*"
+bytes = "*"
+clap = { version = "^3", features = ["derive"] }
+futures = "*"
+futures-core = "*"
+futures-util = "*"
+prost = "*"
+schemars = "*"
+serde = { version = "*", features = ["derive"]}
+serde_json = { version = "*", features = ["raw_value"]}
+structopt = "*"
+strum = "*"
+strum_macros = "*"
+tempfile = "*"
+thiserror = "*"
+tracing = "*"
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "*", features = ["io"] }
+
+[dev-dependencies]
+insta = "*"
