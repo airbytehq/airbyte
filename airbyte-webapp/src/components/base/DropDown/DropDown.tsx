@@ -62,15 +62,16 @@ function DropDownInner<T = unknown>(
       zIndex: 9999,
     }),
   };
-
   return (
     <CustomSelect
       ref={ref}
       data-testid={props.name}
       $error={props.error}
+      menuPlacement="auto"
+      menuPosition="fixed"
+      menuShouldBlockScroll
       className="react-select-container"
       classNamePrefix="react-select"
-      menuPortalTarget={document.body}
       placeholder="..."
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
