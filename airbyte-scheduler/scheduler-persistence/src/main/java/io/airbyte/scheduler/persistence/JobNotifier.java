@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -79,9 +80,9 @@ public class JobNotifier {
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription = getJobDescription(job, failReason);
       final String logUrl = webUrlHelper.getConnectionUrl(workspaceId, connectionId);
-      final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
-      final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
-      final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
+      final Map<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
+      final Map<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+      final Map<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
       for (final Notification notification : notifications) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {

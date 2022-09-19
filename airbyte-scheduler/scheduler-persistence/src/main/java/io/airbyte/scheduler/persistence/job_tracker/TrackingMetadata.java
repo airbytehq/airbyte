@@ -26,13 +26,14 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
 
-  public static ImmutableMap<String, Object> generateSyncMetadata(final StandardSync standardSync) {
+  public static Map<String, Object> generateSyncMetadata(final StandardSync standardSync) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", standardSync.getConnectionId());
 
@@ -75,7 +76,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
+  public static Map<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
@@ -87,7 +88,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
+  public static Map<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
@@ -99,7 +100,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateJobAttemptMetadata(final Job job) {
+  public static Map<String, Object> generateJobAttemptMetadata(final Job job) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     if (job != null) {
       final List<Attempt> attempts = job.getAttempts();

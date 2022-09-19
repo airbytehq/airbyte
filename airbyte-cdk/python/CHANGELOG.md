@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.88
+- Bugfix: Evaluate `response.text` only in debug mode
+
+## 0.1.87
+- During incremental syncs allow for streams to emit state messages in the per-stream format
+
 ## 0.1.86
 - TypeTransformer now converts simple types to array of simple types
 - TypeTransformer make warning message more informative

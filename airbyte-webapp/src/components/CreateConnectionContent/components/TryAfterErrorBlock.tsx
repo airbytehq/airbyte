@@ -16,7 +16,6 @@ const Title = styled(H4)`
 interface TryAfterErrorBlockProps {
   message?: React.ReactNode;
   onClick: () => void;
-  additionControl?: React.ReactNode;
 }
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
