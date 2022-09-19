@@ -31,6 +31,7 @@ import {
   toggleStreamWithChangesAccordion,
 } from "../pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
+import { update, ceil } from "cypress/types/lodash";
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -80,13 +81,16 @@ describe("Connection main actions", () => {
   });
 
   it("Connection sync mode Incremental Append", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-    createTestConnection("Test update connection Postgres source cypress", "Test update connection Postgres destination cypress");
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
-    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
@@ -96,7 +100,8 @@ describe("Connection main actions", () => {
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
-
+    
+    cy.wait(5000);
     cy.wait("@updateConnection").then((interception) => {
       assert.isNotNull(interception.response?.statusCode, '200');    
     });
@@ -104,8 +109,8 @@ describe("Connection main actions", () => {
     checkSuccessResult();
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
-    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
@@ -113,18 +118,21 @@ describe("Connection main actions", () => {
 
     checkCursorField("email");
 
-    deleteSource("Test update connection Postgres source cypress");
-    deleteDestination("Test update connection Postgres destination cypress");
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 
   it("Connection sync mode Incremental Deduped History", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-    createTestConnection("Test update connection Postgres source cypress", "Test update connection Postgres destination cypress");
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
-    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
@@ -144,8 +152,8 @@ describe("Connection main actions", () => {
     checkSuccessResult();
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection Postgres source cypress");
-    openSourceDestinationFromGrid("Test update connection Postgres destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
@@ -153,8 +161,8 @@ describe("Connection main actions", () => {
 
     checkCursorField("email");
 
-    deleteSource("Test update connection Postgres source cypress");
-    deleteDestination("Test update connection Postgres destination cypress");
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 
   it("Update connection (pokeAPI)", () => {
@@ -167,7 +175,7 @@ describe("Connection main actions", () => {
 
     goToSourcePage();
     openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
