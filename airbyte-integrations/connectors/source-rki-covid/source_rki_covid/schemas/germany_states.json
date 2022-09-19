@@ -1,0 +1,1580 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "SH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "HH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "NI": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "HB": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "NW": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "HE": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "RP": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "BW": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "BY": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "SL": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "BE": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "BB": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "MV": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "SN": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "ST": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        },
+        "TH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "population": {
+              "type": "integer"
+            },
+            "cases": {
+              "type": "integer"
+            },
+            "deaths": {
+              "type": "integer"
+            },
+            "casesPerWeek": {
+              "type": "integer"
+            },
+            "deathsPerWeek": {
+              "type": "integer"
+            },
+            "recovered": {
+              "type": "integer"
+            },
+            "abbreviation": {
+              "type": "string"
+            },
+            "weekIncidence": {
+              "type": "number"
+            },
+            "casesPer100k": {
+              "type": "number"
+            },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "cases": {
+                  "type": "integer"
+                },
+                "deaths": {
+                  "type": "integer"
+                },
+                "recovered": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "cases",
+                "deaths",
+                "recovered"
+              ]
+            },
+            "hospitalization": {
+              "type": "object",
+              "properties": {
+                "cases7Days": {
+                  "type": "integer"
+                },
+                "incidence7Days": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cases7Days",
+                "date",
+                "incidence7Days",
+                "lastUpdate"
+              ]
+            }
+          },
+          "required": [
+            "abbreviation",
+            "cases",
+            "casesPer100k",
+            "casesPerWeek",
+            "deaths",
+            "deathsPerWeek",
+            "delta",
+            "hospitalization",
+            "id",
+            "name",
+            "population",
+            "recovered",
+            "weekIncidence"
+          ]
+        }
+      },
+      "required": [
+        "BB",
+        "BE",
+        "BW",
+        "BY",
+        "HB",
+        "HE",
+        "HH",
+        "MV",
+        "NI",
+        "NW",
+        "RP",
+        "SH",
+        "SL",
+        "SN",
+        "ST",
+        "TH"
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        },
+        "info": {
+          "type": "string"
+        },
+        "lastUpdate": {
+          "type": "string"
+        },
+        "lastCheckedForUpdate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "contact",
+        "info",
+        "lastCheckedForUpdate",
+        "lastUpdate",
+        "source"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "meta"
+  ]
+}

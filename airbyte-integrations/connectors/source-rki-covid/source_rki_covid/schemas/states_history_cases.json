@@ -1,0 +1,604 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "SH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "HH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "NI": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "HB": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "NW": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "HE": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "RP": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "BW": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "BY": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "SL": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "BE": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "BB": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "MV": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "SN": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "ST": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        },
+        "TH": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cases": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cases",
+                  "date"
+                ]
+              }
+            }
+          },
+          "required": [
+            "history",
+            "id",
+            "name"
+          ]
+        }
+      },
+      "required": [
+        "BB",
+        "BE",
+        "BW",
+        "BY",
+        "HB",
+        "HE",
+        "HH",
+        "MV",
+        "NI",
+        "NW",
+        "RP",
+        "SH",
+        "SL",
+        "SN",
+        "ST",
+        "TH"
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        },
+        "info": {
+          "type": "string"
+        },
+        "lastUpdate": {
+          "type": "string"
+        },
+        "lastCheckedForUpdate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "contact",
+        "info",
+        "lastCheckedForUpdate",
+        "lastUpdate",
+        "source"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "meta"
+  ]
+}

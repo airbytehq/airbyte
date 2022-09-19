@@ -50,6 +50,24 @@ class Germany(RkiCovidStream):
         return "germany/"
 
 
+# class that contains main source states | full-refresh
+class GermanyStates(RkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/states"""
+
+    primary_key = None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.json():
+            for key, value in response.json().get("data").items():
+                yield value
+        return [{}]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "states/"
+
+
 # class that contains source age-groups in germany. | full-refresh
 class GermanyAgeGroups(RkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/age-groups"""
@@ -395,6 +413,37 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         return "germany/history/hospitalization/"
 
 
+# STATES FULL-REFRESH | INCREMENTAL
+# source: states/history/cases/:days | Full-Refresh
+class StatesHistoryCases(RkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/states/history/cases/:days"""
+
+    primary_key = None
+
+    def __init__(self, config, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = config.get("start_date")
+
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days <= 0:
+            return 1
+        return diff.days
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.json():
+            for key, value in response.json().get("data").items():
+                yield value
+        return [{}]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        if self.start_date:
+            return "states/history/cases/" + str(self.date_to_int(self.start_date))
+        return "states/history/cases/"
+
+
 # Source
 class SourceRkiCovid(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -417,8 +466,8 @@ class SourceRkiCovid(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
-        return [
+        # Streams For Germany
+        streams = [
             Germany(),
             GermanyAgeGroups(),
             GermanyHistoryCases(config=config),
@@ -428,3 +477,13 @@ class SourceRkiCovid(AbstractSource):
             GermanHistoryFrozenIncidence(config=config),
             GermanHistoryHospitalization(config=config),
         ]
+
+        # Streams For States Of Germany
+        streams.extend(
+            [
+                GermanyStates(),
+                StatesHistoryCases(config=config),
+            ]
+        )
+
+        return streams
