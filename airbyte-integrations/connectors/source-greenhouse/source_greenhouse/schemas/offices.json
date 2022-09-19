@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "primary_contact_user_id": {
+      "type": "integer"
+    },
+    "parent_id": {
+      "type": "integer"
+    },
+    "parent_office_external_id": {
+      "type": "string"
+    },
+    "child_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "child_office_external_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external_id": {
+      "type": "string"
+    }
+  }
+}

@@ -24,7 +24,6 @@ def create_response(headers):
     response.headers = headers
     return response
 
-
 def test_next_page_token_has_next(applications_stream):
     headers = {"link": '<https://harvest.greenhouse.io/v1/applications?per_page=100&since_id=123456789>; rel="next"'}
     response = create_response(headers)
@@ -152,3 +151,10 @@ def test_parse_response_empty_content(applications_stream):
     records = [record for record in parsed_response]
 
     assert records == []
+
+
+def test_number_of_streams():
+    source = SourceGreenhouse()
+    streams = source.streams({})
+    assert len(streams) == 36
+

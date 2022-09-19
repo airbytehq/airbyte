@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "offer_id": {
+      "type": "integer"
+    },
+    "sequential": {
+      "type": "boolean"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "approval_type": {
+      "type": "string"
+    },
+    "approval_status": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "integer"
+    },
+    "requested_by_user_id": {
+      "type": "integer"
+    },
+    "approver_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "approvals_required": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "resolved_at": {
+            "type": ["null", "string"]
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "job_id": {
+            "type": "integer"
+          },
+          "offer_id": {
+            "type": ["integer", "null"]
+          },
+          "approvers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "employee_id": {
+                  "type": "string"
+                },
+                "email_addresses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

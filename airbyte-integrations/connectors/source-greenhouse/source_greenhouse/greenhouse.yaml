@@ -7,7 +7,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_pointer: [ ]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -35,6 +35,14 @@ definitions:
       page_token_option:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
+  no-pagination-retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
   base_stream:
     $options:
       name: "applications"
@@ -79,11 +87,6 @@ definitions:
       name: "close_reasons"
       path: "close_reasons"
     primary_key: "id"
-  degrees_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "degrees"
-      path: "degrees"
   departments_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -262,6 +265,122 @@ definitions:
     $options:
       name: "demographics_answer_options"
       path: "demographics/answer_options"
+  activity_feed_stream:
+    $options:
+      name: "activity_feed"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "candidates/{{ stream_slice.parent_id }}/activity_feed"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.candidates_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+  approvals_stream:
+    $options:
+      name: "approvals"
+      primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "jobs/{{ stream_slice.parent_id }}/approval_flows"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.jobs_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+  degrees_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "degrees"
+      path: "degrees"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester: "*ref(definitions.requester)"
+  disciplines_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "disciplines"
+      path: "disciplines"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester: "*ref(definitions.requester)"
+  schools_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "schools"
+      path: "schools"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester: "*ref(definitions.requester)"
+  eeoc_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "eeoc"
+      path: "eeoc"
+    stream_cursor_field: "submitted_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        request_cursor_field: "submitted_after"
+        cursor_field: "submitted_at"
+        class_name: source_greenhouse.components.GreenHouseSlicer
+  email_templates_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "email_templates"
+      path: "email_templates"
+  offices_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "offices"
+      path: "offices"
+  prospect_pools_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "prospect_pools"
+      path: "prospect_pools"
+  tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tags"
+      path: "tags/candidate"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester: "*ref(definitions.requester)"
+  user_permissions_stream:
+    $options:
+      name: "user_permissions"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.no-pagination-retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "users/{{ stream_slice.parent_id }}/permissions/jobs"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.users_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+  user_roles_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "user_roles"
+      path: "user_roles"
+
 streams:
   - "*ref(definitions.applications_stream)"
   - "*ref(definitions.applications_demographics_answers_stream)"
@@ -269,7 +388,6 @@ streams:
   - "*ref(definitions.candidates_stream)"
   - "*ref(definitions.close_reasons_stream)"
   - "*ref(definitions.custom_fields_stream)"
-  - "*ref(definitions.degrees_stream)"
   - "*ref(definitions.demographics_answers_stream)"
   - "*ref(definitions.demographics_answer_options_stream)"
   - "*ref(definitions.questions_stream)"
@@ -288,7 +406,20 @@ streams:
   - "*ref(definitions.scorecards_stream)"
   - "*ref(definitions.sources_stream)"
   - "*ref(definitions.users_stream)"
+  - "*ref(definitions.activity_feed_stream)"
+  - "*ref(definitions.approvals_stream)"
+  - "*ref(definitions.degrees_stream)"
+  - "*ref(definitions.disciplines_stream)"
+  - "*ref(definitions.schools_stream)"
+  - "*ref(definitions.eeoc_stream)"
+  - "*ref(definitions.email_templates_stream)"
+  - "*ref(definitions.offices_stream)"
+  - "*ref(definitions.prospect_pools_stream)"
+  - "*ref(definitions.tags_stream)"
+  - "*ref(definitions.user_permissions_stream)"
+  - "*ref(definitions.user_roles_stream)"
+
 
 check:
   type: CheckStream
-  stream_names: ["applications"]
+  stream_names: [ "applications" ]
