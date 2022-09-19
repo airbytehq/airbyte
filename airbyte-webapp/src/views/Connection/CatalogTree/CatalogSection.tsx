@@ -6,6 +6,7 @@ import { DropDownRow } from "components";
 
 import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
@@ -15,7 +16,6 @@ import {
   NamespaceDefinitionType,
   SyncMode,
 } from "../../../core/request/AirbyteClient";
-import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import styles from "./CatalogSection.module.scss";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
@@ -24,12 +24,10 @@ import { flatten, getPathType } from "./utils";
 interface CatalogSectionInnerProps {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
-  destinationSupportedSyncModes: DestinationSyncMode[];
   namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat: string;
   prefix: string;
   updateStream: (id: string | undefined, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
-  mode?: ConnectionFormMode;
   changedSelected: boolean;
 }
 
@@ -40,10 +38,12 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   namespaceFormat,
   prefix,
   errors,
-  destinationSupportedSyncModes,
-  mode,
   changedSelected,
 }) => {
+  const {
+    destDefinition: { supportedDestinationSyncModes },
+  } = useConnectionFormService();
+
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
 
@@ -99,11 +99,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     () =>
       SUPPORTED_MODES.filter(
         ([syncMode, destinationSyncMode]) =>
-          stream?.supportedSyncModes?.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode)
+          stream?.supportedSyncModes?.includes(syncMode) && supportedDestinationSyncModes?.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
       })),
-    [stream?.supportedSyncModes, destinationSupportedSyncModes]
+    [stream?.supportedSyncModes, supportedDestinationSyncModes]
   );
 
   const destNamespace = getDestinationNamespace({
@@ -145,7 +145,6 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         onCursorChange={onCursorSelect}
         hasFields={hasChildren}
         onExpand={onExpand}
-        mode={mode}
         changedSelected={changedSelected}
         hasError={hasError}
       />
