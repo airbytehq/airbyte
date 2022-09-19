@@ -151,7 +151,7 @@ expected_array_schema = {
         "type": {"type": "string"},
     },
     "required": ["batters", "id", "name", "ppu", "topping", "type"],
-    "type": "object"
+    "type": "object",
 }
 
 
