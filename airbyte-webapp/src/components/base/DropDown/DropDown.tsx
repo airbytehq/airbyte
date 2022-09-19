@@ -62,7 +62,6 @@ function DropDownInner<T = unknown>(
       zIndex: 9999,
     }),
   };
-
   return (
     <CustomSelect
       ref={ref}
@@ -70,7 +69,6 @@ function DropDownInner<T = unknown>(
       $error={props.error}
       menuPlacement="auto"
       menuPosition="fixed"
-      menuPortalTarget={document.body}
       menuShouldBlockScroll
       className="react-select-container"
       classNamePrefix="react-select"
