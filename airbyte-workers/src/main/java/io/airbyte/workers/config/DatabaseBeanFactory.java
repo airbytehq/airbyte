@@ -43,7 +43,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("configDatabase")
   public Database configDatabase(@Named("config") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
@@ -51,7 +51,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobsDatabase")
   public Database jobsDatabase(@Named("jobs") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
@@ -59,7 +59,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("configFlyway")
   public Flyway configFlyway(@Named("config") final FlywayConfigurationProperties configFlywayConfigurationProperties,
                              @Named("config") final DataSource configDataSource,
@@ -76,7 +76,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobsFlyway")
   public Flyway jobsFlyway(@Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties,
                            @Named("jobs") final DataSource jobsDataSource,
@@ -93,7 +93,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase,
                                              final JsonSecretsProcessor jsonSecretsProcessor) {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
@@ -101,7 +101,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public ConfigRepository configRepository(@Named("configPersistence") final ConfigPersistence configPersistence,
                                            @Named("configDatabase") final Database configDatabase) {
     return new ConfigRepository(configPersistence, configDatabase);
@@ -109,28 +109,28 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobDatabase) {
     return new DefaultJobPersistence(jobDatabase);
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public StatePersistence statePersistence(@Named("configDatabase") final Database configDatabase) {
     return new StatePersistence(configDatabase);
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public StreamResetPersistence streamResetPersistence(@Named("configDatabase") final Database configDatabase) {
     return new StreamResetPersistence(configDatabase);
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("configsDatabaseMigrationCheck")
   public DatabaseMigrationCheck configsDatabaseMigrationCheck(@Named("config") final DSLContext dslContext,
                                                               @Named("configFlyway") final Flyway configsFlyway,
@@ -144,7 +144,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobsDatabaseMigrationCheck")
   public DatabaseMigrationCheck jobsDatabaseMigrationCheck(@Named("jobs") final DSLContext dslContext,
                                                            @Named("jobsFlyway") final Flyway jobsFlyway,
@@ -157,7 +157,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobsDatabaseAvailabilityCheck")
   public JobsDatabaseAvailabilityCheck jobsDatabaseAvailabilityCheck(@Named("jobs") final DSLContext dslContext) {
     return new JobsDatabaseAvailabilityCheck(dslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
