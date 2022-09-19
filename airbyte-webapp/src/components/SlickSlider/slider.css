@@ -7,11 +7,13 @@
   display: block;
   overflow: hidden;
   user-select: none;
+  margin: 0 -9px; /* add space between slides */
 }
 
 .slick-track {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px; /* fix for cut slide borders */
+  display: flex; /* make horizontal slider */
+}
+
+.slick-slide {
+  margin: 0 10px; /* add space between slides */
 }
