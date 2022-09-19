@@ -8,7 +8,7 @@ pub mod interceptors;
 pub mod libs;
 
 use apis::FlowCaptureOperation;
-use connector_runner::run_airbyte_source_connector;
+use connector_runner::{run_airbyte_source_connector, StreamMode};
 use errors::Error;
 
 #[derive(clap::Parser, Debug)]
@@ -37,10 +37,11 @@ async fn main() {
         operation,
         socket,
         log_args,
+        stream_mode,
     } = Args::parse();
     init_logging(&log_args);
 
-    let result = run_airbyte_source_connector(connector_entrypoint, operation, socket).await;
+    let result = run_airbyte_source_connector(connector_entrypoint, operation, socket, stream_mode).await;
 
     match result {
         Err(Error::CommandExecutionError(_)) => {

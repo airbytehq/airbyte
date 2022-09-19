@@ -1,12 +1,12 @@
+use crate::libs::json::{create_root_schema, tokenize_jsonpointer};
 use crate::apis::{FlowCaptureOperation, InterceptorStream};
 
-use crate::errors::{create_custom_error, raise_err, Error};
+use crate::errors::Error;
 use crate::libs::airbyte_catalog::{
     self, ConfiguredCatalog, ConfiguredStream, DestinationSyncMode, Range, ResourceSpec, Status,
     SyncMode,
 };
 use crate::libs::command::READY;
-use crate::libs::json::{create_root_schema, tokenize_jsonpointer};
 use crate::libs::protobuf::encode_message;
 use crate::libs::stream::{get_airbyte_response, get_decoded_message, stream_airbyte_responses, stream_runtime_messages};
 
@@ -17,10 +17,11 @@ use proto_flow::capture::{
     ValidateRequest, ValidateResponse,
 };
 use proto_flow::flow::{DriverCheckpoint, Slice};
+use schemars::JsonSchema;
+use schemars::schema::RootSchema;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use validator::Validate;
 
 use futures::{stream, StreamExt, TryStreamExt};
 use serde_json::value::RawValue;
@@ -163,13 +164,13 @@ impl AirbyteSourceInterceptor {
             let connection_status = message.connection_status.unwrap();
 
             if connection_status.status != Status::Succeeded {
-                return raise_err(&format!("validation failed {:?}", connection_status));
+                return Err(Error::ConnectionStatusUnsuccessful)
             }
 
             let req = validate_request.lock().await;
             let req = req
                 .as_ref()
-                .ok_or(create_custom_error("missing validate request."))?;
+                .ok_or(Error::MissingValidateRequest)?;
             let mut resp = ValidateResponse::default();
             for binding in &req.bindings {
                 let resource: ResourceSpec = serde_json::from_str(&binding.resource_spec_json)?;

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
-flow_cli_common = { git = "https://github.com/estuary/flow", rev = "c4e18b5" }
+flow_cli_common = { git = "https://github.com/estuary/flow" }
 proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 
 anyhow = "*"

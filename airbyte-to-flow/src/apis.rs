@@ -17,4 +17,4 @@ pub enum FlowCaptureOperation {
 
 // An interceptor modifies the request/response streams between Flow runtime and the connector.
 // InterceptorStream defines the type of input and output streams handled by interceptors.
-pub type InterceptorStream = Pin<Box<dyn Stream<Item = std::io::Result<Bytes>> + Send + Sync>>;
+pub type InterceptorStream = Pin<Box<dyn Stream<Item = anyhow::Result<Bytes>> + Send + Sync>>;

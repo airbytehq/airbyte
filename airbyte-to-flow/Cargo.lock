@@ -302,7 +302,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "flow_cli_common"
 version = "0.1.0"
-source = "git+https://github.com/estuary/flow?rev=c4e18b5#c4e18b5549b5f158c86d9f57ec486b9b5d0e385d"
+source = "git+https://github.com/estuary/flow#5eddf746e5c975f06486c4c0407c6c678d1e5b6f"
 dependencies = [
  "anyhow",
  "atty",

@@ -19,7 +19,7 @@ async fn flatten_join_handle<T, E: std::convert::From<tokio::task::JoinError>>(
     }
 }
 
-#[derive(Clone, clap::ArgEnum)]
+#[derive(Clone, clap::ArgEnum, Debug)]
 pub enum StreamMode {
     UnixSocket,
     TCP,
