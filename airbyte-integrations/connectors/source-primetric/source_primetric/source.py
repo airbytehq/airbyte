@@ -35,6 +35,24 @@ class PrimetricStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["results"]
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """This method is called if we run into the rate limit.
+        Primetric puts the retry time in the `Retry-After` response header so we
+        we return that value. If the response is anything other than a 429 (e.g: 5XX)
+        fall back on default retry behavior.
+        Rate Limits Docs: https://developer.primetric.com/#rate-limits"""
+
+        return 31
+        # if response.status_code == 429:
+
+        #if "Retrying. Sleeping for *" in response.headers:
+        #    response.status_code
+
+            #return int(response.headers["Retry-After"])
+        #else:
+        #    self.logger.info("Retry-after header not found. Using default backoff value")
+        #    return 5
+
 
 class Assignments(PrimetricStream):
 
