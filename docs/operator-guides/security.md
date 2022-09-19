@@ -77,7 +77,7 @@ Airbyte Cloud is currently deployed on GCP with all servers located in the Unite
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 
 ### Network security
-- You may need to allowlist one of our IP addresses to enable access to Airbyte.
+- You may need to allowlist one of our IP addresses to enable access to Airbyte:
   - 34.106.109.131
   - 34.106.196.165
   - 34.106.60.246
