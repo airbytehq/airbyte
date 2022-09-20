@@ -136,7 +136,7 @@ The log summary for a cancelled sync may show the following data.
 
 | Log            | Description                                                                                     |
 |----------------|-------------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync was cancelled, the log does not show how much data was moved before cancelling.  |
+| 0 Bytes        | Since the sync was cancelled, the log does not show how much data was moved before cancelling.  |
 | No records     | Since the sync was cancelled, the log does not show emitted or committed records.               |
 | xh xm xs       | Total time (hours, minutes, seconds) between the beginning of sync and when it was cancelled.   |
 | Sync or Reset  | The action that was performed (either a sync or a reset).                                       |
@@ -153,7 +153,7 @@ The log summary for a failed sync may show the following data.
 
 | Log            | Description                                                                                 |
 |----------------|---------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync failed, the amount of data is zero.                                          |
+| 0 Bytes        | Since the sync failed, the amount of data is zero.                                          |
 | No records     | Since the sync failed, there are no emitted or committed records.                           |
 | xh xm xs       | Total time (hours, minutes, seconds) between the beginning of the sync and when it failed.  |
 | Sync or Reset  | The action that was performed (either a sync or a reset).                                   |
