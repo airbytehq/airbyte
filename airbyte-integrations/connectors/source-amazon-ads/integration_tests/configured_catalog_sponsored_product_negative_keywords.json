@@ -3,7 +3,32 @@
     {
       "stream": {
         "name": "sponsored_product_negative_keywords",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "keywordId": {
+              "type": "number"
+            },
+            "adGroupId": {
+              "type": "number"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "keywordText": {
+              "type": "string"
+            },
+            "matchType": {
+              "type": "string",
+              "enum": ["negativeExact", "negativePhrase"]
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["keywordId"]]
       },

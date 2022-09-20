@@ -1,9 +1,185 @@
 {
-  "streams" : [
+  "streams": [
     {
       "stream": {
         "name": "sponsored_display_targetings",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "bid": {
+              "type": ["null", "integer"]
+            },
+            "targetId": {
+              "type": "integer"
+            },
+            "adGroupId": {
+              "type": "integer"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "expressionType": {
+              "type": "string",
+              "enum": ["manual", "auto"]
+            },
+            "expression": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "title": "TargetingPredicate",
+                  "type": "string",
+                  "enum": [
+                    "asinCategorySameAs",
+                    "asinBrandSameAs",
+                    "asinPriceBetween",
+                    "asinPriceGreaterThan",
+                    "asinPriceLessThan",
+                    "asinReviewRatingLessThan",
+                    "asinReviewRatingGreaterThan",
+                    "asinReviewRatingBetween",
+                    "asinIsPrimeShippingEligible",
+                    "asinAgeRangeSameAs",
+                    "asinGenreSameAs",
+                    "similarProduct"
+                  ],
+                  "value": "string"
+                },
+                {
+                  "title": "TargetingPredicateLegacy",
+                  "type": "string",
+                  "enum": [
+                    "asinCategorySameAs",
+                    "asinBrandSameAs",
+                    "asinPriceBetween",
+                    "asinPriceGreaterThan",
+                    "asinPriceLessThan",
+                    "asinReviewRatingLessThan",
+                    "asinReviewRatingGreaterThan",
+                    "asinReviewRatingBetween",
+                    "similarProduct",
+                    "exactProduct",
+                    "asinIsPrimeShippingEligible",
+                    "asinAgeRangeSameAs",
+                    "asinGenreSameAs"
+                  ],
+                  "value": "string",
+                  "eventType": {
+                    "type": "string",
+                    "enum": ["views"]
+                  }
+                },
+                {
+                  "title": "TargetingPredicateNested",
+                  "type": "string",
+                  "enum": ["views", "audience", "purchases"],
+                  "value": {
+                    "title": "TargetingPredicateBase",
+                    "type": "string",
+                    "value": "string",
+                    "enum": [
+                      "asinCategorySameAs",
+                      "asinBrandSameAs",
+                      "asinPriceBetween",
+                      "asinPriceGreaterThan",
+                      "asinPriceLessThan",
+                      "asinReviewRatingLessThan",
+                      "asinReviewRatingGreaterThan",
+                      "asinReviewRatingBetween",
+                      "similarProduct",
+                      "exactProduct",
+                      "asinIsPrimeShippingEligible",
+                      "asinAgeRangeSameAs",
+                      "asinGenreSameAs",
+                      "audienceSameAs",
+                      "lookback",
+                      "negative",
+                      "relatedProduct"
+                    ]
+                  }
+                }
+              ],
+              "resolvedExpression": {
+                "oneOf": [
+                  {
+                    "title": "TargetingPredicate",
+                    "type": "string",
+                    "enum": [
+                      "asinSameAs",
+                      "asinCategorySameAs",
+                      "asinBrandSameAs",
+                      "asinPriceBetween",
+                      "asinPriceGreaterThan",
+                      "asinPriceLessThan",
+                      "asinReviewRatingLessThan",
+                      "asinReviewRatingGreaterThan",
+                      "asinReviewRatingBetween",
+                      "asinIsPrimeShippingEligible",
+                      "asinAgeRangeSameAs",
+                      "asinGenreSameAs",
+                      "similarProduct"
+                    ],
+                    "value": "string"
+                  },
+                  {
+                    "title": "TargetingPredicateLegacy",
+                    "type": "string",
+                    "enum": [
+                      "asinCategorySameAs",
+                      "asinBrandSameAs",
+                      "asinPriceBetween",
+                      "asinPriceGreaterThan",
+                      "asinPriceLessThan",
+                      "asinReviewRatingLessThan",
+                      "asinReviewRatingGreaterThan",
+                      "asinReviewRatingBetween",
+                      "similarProduct",
+                      "exactProduct",
+                      "asinIsPrimeShippingEligible",
+                      "asinAgeRangeSameAs",
+                      "asinGenreSameAs"
+                    ],
+                    "value": "string",
+                    "eventType": {
+                      "type": "string",
+                      "enum": ["views"]
+                    }
+                  },
+                  {
+                    "title": "TargetingPredicateNested",
+                    "type": "string",
+                    "enum": ["views", "audience", "purchases"],
+                    "value": {
+                      "title": "TargetingPredicateBase",
+                      "type": "string",
+                      "enum": [
+                        "asinCategorySameAs",
+                        "asinBrandSameAs",
+                        "asinPriceBetween",
+                        "asinPriceGreaterThan",
+                        "asinPriceLessThan",
+                        "asinReviewRatingLessThan",
+                        "asinReviewRatingGreaterThan",
+                        "asinReviewRatingBetween",
+                        "similarProduct",
+                        "exactProduct",
+                        "asinIsPrimeShippingEligible",
+                        "asinAgeRangeSameAs",
+                        "asinGenreSameAs",
+                        "audienceSameAs",
+                        "lookback",
+                        "negative",
+                        "relatedProduct"
+                      ],
+                      "value": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["targetId"]]
       },

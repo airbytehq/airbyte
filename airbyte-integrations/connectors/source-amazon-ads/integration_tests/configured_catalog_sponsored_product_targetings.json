@@ -3,7 +3,84 @@
     {
       "stream": {
         "name": "sponsored_product_targetings",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "targetId": {
+              "type": "number"
+            },
+            "adGroupId": {
+              "type": "number"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "expression": {
+              "title": "TargetingExpressionPredicate",
+              "value": "string",
+              "type": {
+                "value": "string",
+                "enum": [
+                  "asinCategorySameAs",
+                  "asinBrandSameAs",
+                  "asinPriceLessThan",
+                  "asinPriceBetween",
+                  "asinPriceGreaterThan",
+                  "asinReviewRatingLessThan",
+                  "asinReviewRatingBetween",
+                  "asinReviewRatingGreaterThan",
+                  "asinSameAs",
+                  "queryBroadRelMatches",
+                  "queryHighRelMatches",
+                  "asinSubstituteRelated",
+                  "asinAccessoryRelated",
+                  "asinAgeRangeSameAs",
+                  "asinGenreSameAs",
+                  "asinIsPrimeShippingEligible"
+                ]
+              }
+            },
+            "resolvedExpression": {
+              "title": "TargetingExpressionPredicate",
+              "value": "string",
+              "type": {
+                "type": "string",
+                "enum": [
+                  "asinCategorySameAs",
+                  "asinBrandSameAs",
+                  "asinPriceLessThan",
+                  "asinPriceBetween",
+                  "asinPriceGreaterThan",
+                  "asinReviewRatingLessThan",
+                  "asinReviewRatingBetween",
+                  "asinReviewRatingGreaterThan",
+                  "asinSameAs",
+                  "queryBroadRelMatches",
+                  "queryHighRelMatches",
+                  "asinSubstituteRelated",
+                  "asinAccessoryRelated",
+                  "asinAgeRangeSameAs",
+                  "asinGenreSameAs",
+                  "asinIsPrimeShippingEligible"
+                ]
+              }
+            },
+            "expressionType": {
+              "ExpressionType": {
+                "type": "string",
+                "enum": ["manual", "auto"]
+              }
+            },
+            "bid": {
+              "Bid": "number"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["targetId"]]
       },

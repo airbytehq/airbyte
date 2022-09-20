@@ -3,7 +3,28 @@
     {
       "stream": {
         "name": "sponsored_product_ad_groups",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "defaultBid": {
+              "type": "number"
+            },
+            "adGroupId": {
+              "type": "number"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["adGroupId"]]
       },

@@ -3,7 +3,40 @@
     {
       "stream": {
         "name": "sponsored_display_ad_groups",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "defaultBid": {
+              "type": "number"
+            },
+            "bidOptimization": {
+              "type": "string",
+              "enum": ["clicks", "conversions", "reach"]
+            },
+            "adGroupId": {
+              "type": "integer"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "tactic": {
+              "type": "string",
+              "enum": ["t00020", "t00030"]
+            },
+            "creativeType": {
+              "type": ["null", "string"],
+              "enum": ["image", "video"]
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["adGroupId"]]
       },
