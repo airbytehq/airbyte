@@ -10,8 +10,8 @@ import { Cell, CheckBox, DropDownRow, Row, Switch } from "components";
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
-import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
@@ -44,7 +44,6 @@ interface StreamHeaderProps {
   isRowExpanded: boolean;
   hasFields: boolean;
   onExpand: () => void;
-  mode?: ConnectionFormMode;
   changedSelected: boolean;
   hasError: boolean;
 }
@@ -64,10 +63,10 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   isRowExpanded,
   hasFields,
   onExpand,
-  mode,
   changedSelected,
   hasError,
 }) => {
+  const { mode } = useConnectionFormService();
   const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
   const isEnabled = stream.config?.selected;
 
