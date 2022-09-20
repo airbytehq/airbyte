@@ -50,18 +50,19 @@ const isHeadingType = (props: TextProps | HeadingProps): props is HeadingProps =
   return props.as ? /^h[0-6]$/.test(props.as) : false;
 };
 
-export const Text: React.FC<TextProps | HeadingProps> = React.memo((props) => {
+export const Text: React.FC<React.PropsWithChildren<TextProps | HeadingProps>> = React.memo((props) => {
   const isHeading = isHeadingType(props);
-  const { as = "p", centered = false, children } = props;
+  const { as = "p", centered = false, children, className: classNameProp, ...remainingProps } = props;
 
   const className = classNames(
     isHeading
       ? getHeadingClassNames({ centered, size: props.size ?? "md" })
       : getTextClassNames({ centered, size: props.size ?? "md", bold: props.bold ?? false }),
-    props.className
+    classNameProp
   );
 
   return React.createElement(as, {
+    ...remainingProps,
     className,
     children,
   });

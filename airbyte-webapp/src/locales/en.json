@@ -306,6 +306,9 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
+  "destinations.frequentlyUsed": "Most frequently used destinations",
+  "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
+  "destinations.startWith": "Start with {name}",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
@@ -361,8 +364,13 @@
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
   "connection.canceling": "Canceling...",
+  "connection.linkedJobNotFound": "Job not found",
+  "connection.returnToSyncHistory": "Return to Sync History",
 
   "form.frequency": "Replication frequency*",
+  "form.cronExpression": "Cron expression*",
+  "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.message": "Enter a <lnk>cron expression</lnk> for when syncs should run (ex. \"0 0 12 * * ?\" => Will sync at 12:00 PM every day)",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
 
@@ -514,6 +522,7 @@
   "errorView.unknownError": "Unknown error occurred",
 
   "frequency.manual": "Manual",
+  "frequency.cron": "Cron",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 

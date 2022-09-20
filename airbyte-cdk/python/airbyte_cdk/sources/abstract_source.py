@@ -93,14 +93,12 @@ class AbstractSource(Source, ABC):
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
-        state_manager = ConnectorStateManager(state=state)
-        connector_state = state_manager.get_legacy_state()
-
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
@@ -116,7 +114,7 @@ class AbstractSource(Source, ABC):
                         logger=logger,
                         stream_instance=stream_instance,
                         configured_stream=configured_stream,
-                        connector_state=connector_state,
+                        state_manager=state_manager,
                         internal_config=internal_config,
                     )
                 except AirbyteTracedException as e:
@@ -135,15 +133,15 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     @property
-    def per_stream_state_enabled(self):
-        return False  # While CDK per-stream is in active development we should keep this off
+    def per_stream_state_enabled(self) -> bool:
+        return True
 
     def _read_stream(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         self._apply_log_level_to_stream_logger(logger, stream_instance)
@@ -172,7 +170,7 @@ class AbstractSource(Source, ABC):
                 logger,
                 stream_instance,
                 configured_stream,
-                connector_state,
+                state_manager,
                 internal_config,
             )
         else:
@@ -206,7 +204,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         """Read stream using incremental algorithm
@@ -214,12 +212,13 @@ class AbstractSource(Source, ABC):
         :param logger:
         :param stream_instance:
         :param configured_stream:
-        :param connector_state:
+        :param state_manager:
         :param internal_config:
         :return:
         """
         stream_name = configured_stream.stream.name
-        stream_state = connector_state.get(stream_name, {})
+        stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
+
         if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
@@ -233,7 +232,7 @@ class AbstractSource(Source, ABC):
         total_records_counter = 0
         if not slices:
             # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_instance, stream_state, connector_state)
+            checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
@@ -248,7 +247,7 @@ class AbstractSource(Source, ABC):
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(stream_instance, stream_state, connector_state)
+                    yield self._checkpoint_state(stream_instance, stream_state, state_manager)
 
                 total_records_counter += 1
                 # This functionality should ideally live outside of this method
@@ -258,7 +257,7 @@ class AbstractSource(Source, ABC):
                     # Break from slice loop to save state and exit from _read_incremental function.
                     break
 
-            yield self._checkpoint_state(stream_instance, stream_state, connector_state)
+            yield self._checkpoint_state(stream_instance, stream_state, state_manager)
             if self._limit_reached(internal_config, total_records_counter):
                 return
 
@@ -285,13 +284,15 @@ class AbstractSource(Source, ABC):
                 if self._limit_reached(internal_config, total_records_counter):
                     return
 
-    def _checkpoint_state(self, stream, stream_state, connector_state):
+    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
         try:
-            connector_state[stream.name] = stream.state
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
         except AttributeError:
-            connector_state[stream.name] = stream_state
-
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
+        return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @lru_cache(maxsize=None)
     def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
