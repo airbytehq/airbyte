@@ -196,7 +196,7 @@ export const SignupForm: React.FC = () => {
     return yup.object().shape(shape);
   }, [showName, showCompanyName]);
 
-  const [params, _] = useSearchParams();
+  const [params] = useSearchParams();
   const search = Object.fromEntries(params);
 
   const initialValues = params.get("email")
