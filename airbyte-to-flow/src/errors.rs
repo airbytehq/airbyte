@@ -71,6 +71,10 @@ pub enum Error {
 
     #[error("go.estuary.dev/E023: Invalid connector catalog: {0}")]
     InvalidCatalog(ValidationErrors),
+
+    #[error("go.estuary.dev/E032: Invalid socket specification: {0}")]
+    InvalidSocketSpecification(String),
+
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {

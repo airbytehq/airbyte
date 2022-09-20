@@ -6,7 +6,7 @@ use crate::errors::Error;
 
 // Flow Capture operations defined in
 // https://github.com/estuary/flow/blob/master/go/protocols/capture/capture.proto
-#[derive(Debug, strum_macros::Display, clap::ArgEnum, PartialEq, Clone)]
+#[derive(Debug, strum_macros::Display, clap::ValueEnum, PartialEq, Clone)]
 #[strum(serialize_all = "kebab_case")]
 pub enum FlowCaptureOperation {
     Spec,
@@ -18,7 +18,7 @@ pub enum FlowCaptureOperation {
 }
 
 // Mode of streaming, Unix socket or TCP
-#[derive(Clone, strum_macros::Display, clap::ArgEnum, PartialEq, Debug)]
+#[derive(Clone, strum_macros::Display, clap::ValueEnum, PartialEq, Debug)]
 #[strum(serialize_all = "kebab_case")]
 pub enum StreamMode {
     UnixSocket,
