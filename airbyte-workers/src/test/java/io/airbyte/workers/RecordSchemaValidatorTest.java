@@ -15,7 +15,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RecordSchemaValidatorTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class RecordSchemaValidatorTest {
 
   private StandardSyncInput syncInput;
   private static final String STREAM_NAME = "user_preferences";

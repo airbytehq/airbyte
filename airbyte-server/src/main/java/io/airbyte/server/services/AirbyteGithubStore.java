@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class AirbyteGithubStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
@@ -80,7 +81,8 @@ public class AirbyteGithubStore {
         .header("accept", "*/*") // accept any file type
         .build();
     final var resp = httpClient.send(request, BodyHandlers.ofString());
-    if (resp.statusCode() >= 400) {
+    final Boolean isErrorResponse = resp.statusCode() / 100 != 2;
+    if (isErrorResponse) {
       throw new IOException("getFile request ran into status code error: " + resp.statusCode() + "with message: " + resp.getClass());
     }
     return resp.body();

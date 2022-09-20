@@ -26,10 +26,12 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token/";
 
+  @Override
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "app_id");
   }
 
+  @Override
   protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "secret");
   }
@@ -67,10 +69,10 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String appId,
-                                                              String secret,
-                                                              String authCode,
-                                                              String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String appId,
+                                                              final String secret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("auth_code", authCode)

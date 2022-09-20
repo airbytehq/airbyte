@@ -1,0 +1,50 @@
+@use "../../scss/colors";
+
+.admonition {
+  border-radius: 8px;
+  border-left: 8px solid colors.$grey-300;
+  padding: 1px 16px 1px 48px;
+  margin: -1px 0 15px;
+  background-color: colors.$grey-50;
+  position: relative;
+
+  &::before {
+    content: "ℹ️";
+    position: absolute;
+    top: 16px;
+    left: 16px;
+  }
+
+  &--caution,
+  &--warning {
+    background-color: colors.$yellow-50;
+    border-left-color: colors.$yellow-300;
+
+    &::before {
+      content: "⚠️";
+    }
+  }
+
+  &--danger {
+    background-color: colors.$red-50;
+    border-left-color: colors.$red-300;
+
+    &::before {
+      content: "⚠️";
+    }
+  }
+
+  &--note::before {
+    content: "📝";
+  }
+
+  &--tip,
+  &--info {
+    background-color: colors.$blue-50;
+    border-left-color: colors.$blue-300;
+  }
+
+  &--tip::before {
+    content: "💡";
+  }
+}

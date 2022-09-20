@@ -5,6 +5,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   airbyte_cdk.sources.declarative
    airbyte_cdk.sources.deprecated
    airbyte_cdk.sources.singer
    airbyte_cdk.sources.streams
@@ -17,6 +18,14 @@ airbyte\_cdk.sources.abstract\_source module
 --------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.abstract_source
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+airbyte\_cdk.sources.config module
+----------------------------------
+
+.. automodule:: airbyte_cdk.sources.config
    :members:
    :undoc-members:
    :show-inheritance:

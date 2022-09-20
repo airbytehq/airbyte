@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Azure table storage supports Full Refresh syncs. You can choose which tables you want to replicate.
+The Azure table storage supports Full Refresh and Incremental syncs. You can choose which tables you want to replicate.
 
 ### Output schema
 
@@ -36,7 +36,7 @@ Azure Table Storage uses different [property](https://docs.microsoft.com/en-us/r
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental - Append Sync | No |
+| Incremental - Append Sync | Yes |
 | Incremental - Dedupe Sync | No |
 | SSL connection | Yes |
 | Namespaces | No |
@@ -67,5 +67,6 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2   | 2021-12-23 | [14212](https://github.com/airbytehq/airbyte/pull/14212) | Adding incremental load capability |
 | 0.1.1   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 

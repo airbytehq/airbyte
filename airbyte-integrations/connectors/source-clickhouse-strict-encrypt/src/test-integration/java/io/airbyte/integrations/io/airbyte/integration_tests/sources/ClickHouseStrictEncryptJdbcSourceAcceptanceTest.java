@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,25 +14,39 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.clickhouse.ClickHouseStrictEncryptSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  public static final Integer HTTP_PORT = 8123;
+  public static final Integer NATIVE_PORT = 9000;
+  public static final Integer HTTPS_PORT = 8443;
+  public static final Integer NATIVE_SECURE_PORT = 9440;
+  private static final String DEFAULT_DB_NAME = "default";
+  private static final String DEFAULT_USER_NAME = "default";
 
   private static GenericContainer container;
   private static JdbcDatabase db;
@@ -67,33 +82,48 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
 
   @BeforeAll
   static void init() {
-    container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
+
+    container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
+        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+            .withEnv("TZ", "UTC")
+            .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
+            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+            .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
+                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     container.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("username", "default")
-        .put("password", "")
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(container))
+        .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
+        .put(JdbcUtils.USERNAME_KEY, DEFAULT_USER_NAME)
+        .put("database", DEFAULT_DB_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
     db = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
+            configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickHouseSource.DRIVER_CLASS,
-            String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asText())));
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
+                ClickHouseSource.HTTPS_PROTOCOL,
+                configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+                configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt(),
+                configWithoutDbName.get("database").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     db.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
     super.setup();
   }

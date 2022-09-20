@@ -146,7 +146,6 @@ export const theme = {
   transparentColor: scss.transparentColor,
 
   regularFont: scss.regularFont,
-  highlightFont: scss.highlightFont,
   codeFont: scss.codeFont,
   italicFont: scss.italicFont,
 };

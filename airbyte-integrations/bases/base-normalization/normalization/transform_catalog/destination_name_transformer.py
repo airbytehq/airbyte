@@ -29,6 +29,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://www.stitchdata.com/docs/destinations/databricks-delta/reference#:~:text=Must%20be%20less,Databricks%20Delta%20Lake%20(AWS). (According that stitch is correct)
     DestinationType.DATABRICKS.value: 122,
+    # https://docs.pingcap.com/tidb/stable/tidb-limitations
+    DestinationType.TIDB.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -166,10 +168,11 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            if (
-                self.destination_type.value != DestinationType.MYSQL.value
-                and self.destination_type.value != DestinationType.DATABRICKS.value
-            ):
+            if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                result = result.replace('"', "_")
+                result = result.replace("`", "_")
+                result = result.replace("'", "_")
+            elif self.destination_type.value != DestinationType.MYSQL.value and self.destination_type.value != DestinationType.TIDB.value and self.destination_type.value != DestinationType.DATABRICKS.value:
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")
@@ -187,13 +190,15 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def apply_quote(self, input: str) -> str:
+    def apply_quote(self, input: str, literal=True) -> str:
+        if literal:
+            input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
-            return f"quote('{input}')"
+            return f"quote({input})"
         elif self.destination_type == DestinationType.CLICKHOUSE:
-            return f"quote('{input}')"
-        return f"adapter.quote('{input}')"
+            return f"quote({input})"
+        return f"adapter.quote({input})"
 
     def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name
@@ -238,6 +243,9 @@ class DestinationNameTransformer:
             pass
         elif self.destination_type.value == DestinationType.DATABRICKS.value:
             pass
+        elif self.destination_type.value == DestinationType.TIDB.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -276,7 +284,7 @@ class DestinationNameTransformer:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
-        elif self.destination_type.value == DestinationType.DATABRICKS.value:
+        elif self.destination_type.value == DestinationType.DATABRICKS.value or self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")

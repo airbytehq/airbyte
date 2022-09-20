@@ -25,18 +25,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-public class StateAggregatorTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class StateAggregatorTest {
 
   StateAggregator stateAggregator;
+  boolean USE_STREAM_CAPABLE_STATE = true;
+  boolean DONT_USE_STREAM_CAPABLE_STATE = false;
 
   @BeforeEach
-  public void init() {
-    stateAggregator = new DefaultStateAggregator();
+  void init() {
+    stateAggregator = new DefaultStateAggregator(DONT_USE_STREAM_CAPABLE_STATE);
   }
 
   @ParameterizedTest
   @EnumSource(AirbyteStateType.class)
-  public void testCantMixType(final AirbyteStateType stateType) {
+  void testCantMixType(final AirbyteStateType stateType) {
     final Stream<AirbyteStateType> allTypes = Arrays.stream(AirbyteStateType.values());
 
     stateAggregator.ingest(getEmptyMessage(stateType));
@@ -46,7 +49,7 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testCantMixNullType() {
+  void testCantMixNullType() {
     final List<AirbyteStateType> allIncompatibleTypes = Lists.newArrayList(GLOBAL, STREAM);
 
     stateAggregator.ingest(getEmptyMessage(null));
@@ -57,7 +60,7 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testNullState() {
+  void testNullState() {
     final AirbyteStateMessage state1 = getNullMessage(1);
     final AirbyteStateMessage state2 = getNullMessage(2);
 
@@ -71,7 +74,7 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testLegacyState() {
+  void testLegacyState() {
     final AirbyteStateMessage state1 = getLegacyMessage(1);
     final AirbyteStateMessage state2 = getLegacyMessage(2);
 
@@ -85,7 +88,7 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testGlobalState() {
+  void testGlobalState() {
     final AirbyteStateMessage state1 = getGlobalMessage(1);
     final AirbyteStateMessage state2 = getGlobalMessage(2);
 
@@ -99,10 +102,31 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testStreamState() {
+  void testStreamStateWithFeatureFlagOff() {
     final AirbyteStateMessage state1 = getStreamMessage("a", 1);
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
     final AirbyteStateMessage state3 = getStreamMessage("b", 3);
+
+    stateAggregator.ingest(state1);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state1))));
+
+    stateAggregator.ingest(state2);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state2))));
+
+    stateAggregator.ingest(state3);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state3))));
+  }
+
+  @Test
+  void testStreamStateWithFeatureFlagOn() {
+    final AirbyteStateMessage state1 = getStreamMessage("a", 1);
+    final AirbyteStateMessage state2 = getStreamMessage("b", 2);
+    final AirbyteStateMessage state3 = getStreamMessage("b", 3);
+
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
 
     stateAggregator.ingest(state1);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()

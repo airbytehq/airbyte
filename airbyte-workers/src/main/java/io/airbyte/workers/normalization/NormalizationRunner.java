@@ -7,8 +7,10 @@ package io.airbyte.workers.normalization;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 public interface NormalizationRunner extends AutoCloseable {
 
@@ -61,5 +63,7 @@ public interface NormalizationRunner extends AutoCloseable {
                     ConfiguredAirbyteCatalog catalog,
                     ResourceRequirements resourceRequirements)
       throws Exception;
+
+  Stream<AirbyteTraceMessage> getTraceMessages();
 
 }

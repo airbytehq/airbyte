@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.constant.S3Constants;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 /**
  * Currently only S3 is supported. So the data source config is always {@link S3DestinationConfig}.
@@ -58,10 +60,10 @@ public class DatabricksDestinationConfig {
   }
 
   public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
-    return S3DestinationConfig.create(
-        dataSource.get("s3_bucket_name").asText(),
-        dataSource.get("s3_bucket_path").asText(),
-        dataSource.get("s3_bucket_region").asText())
+    final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
+        dataSource.get(S3Constants.S_3_BUCKET_NAME).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_PATH).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
             dataSource.get("s3_access_key_id").asText(),
             dataSource.get("s3_secret_access_key").asText())

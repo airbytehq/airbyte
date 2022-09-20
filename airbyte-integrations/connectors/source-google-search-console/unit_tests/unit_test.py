@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_google_search_console.source import SourceGoogleSearchConsole
-from source_google_search_console.streams import ROW_LIMIT, GoogleSearchConsole, SearchAnalyticsByDate
+from source_google_search_console.streams import ROW_LIMIT, GoogleSearchConsole, SearchAnalyticsByCustomDimensions, SearchAnalyticsByDate
 
 logger = logging.getLogger("airbyte")
 
@@ -135,9 +135,10 @@ def test_parse_response(stream_class, expected):
     assert record == expected
 
 
-def test_check_connection_ok(config, requests_mock):
+def test_check_connection_ok(config, mocker, requests_mock):
     url = "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com"
     requests_mock.get(url, json={})
+    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com"}]})
     ok, error_msg = SourceGoogleSearchConsole().check_connection(logger, config=config)
 
     assert ok
@@ -173,3 +174,12 @@ def test_get_start_date():
     )
 
     assert date == str(state_date)
+
+
+def test_custom_streams():
+    dimensions = ["date", "country"]
+    stream = SearchAnalyticsByCustomDimensions(dimensions, None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
+    schema = stream.get_json_schema()
+
+    for d in ["clicks", "ctr", "date", "impressions", "position", "search_type", "site_url", "country"]:
+        assert d in schema["properties"]

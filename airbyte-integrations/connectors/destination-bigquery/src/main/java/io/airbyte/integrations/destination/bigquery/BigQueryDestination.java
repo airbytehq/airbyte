@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
@@ -176,14 +175,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
-      return ServiceAccountCredentials.getApplicationDefault();
+      return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    return ServiceAccountCredentials.fromStream(
+    return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
@@ -210,6 +209,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
+      stream.setNamespace(BigQueryUtils.getDatasetId(config));
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -222,11 +222,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      uploaderMap.put(
-          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          BigQueryUploaderFactory.getUploader(uploaderConfig));
+      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
     }
     return uploaderMap;
+  }
+
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream,
+                                          final UploaderConfig uploaderConfig,
+                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+      throws IOException {
+    uploaderMap.put(
+        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 
   /**
@@ -255,7 +262,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, BigQueryUtils.getDatasetId(config));
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,

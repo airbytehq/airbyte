@@ -57,7 +57,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()));
+            config.get("connection_data").get("service_name").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -117,7 +117,9 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
-        .put("sid", db.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", db.getSid())
+            .put("connection_type", "service_name").build())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")

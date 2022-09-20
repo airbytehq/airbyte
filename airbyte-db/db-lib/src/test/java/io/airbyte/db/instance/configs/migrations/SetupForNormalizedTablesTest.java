@@ -89,6 +89,7 @@ public class SetupForNormalizedTablesTest {
   private static final Field<OffsetDateTime> CREATED_AT = field("created_at", OffsetDateTime.class);
   private static final Field<OffsetDateTime> UPDATED_AT = field("updated_at", OffsetDateTime.class);
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
+  private static final String CONNECTION_SPEC = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
 
   public static void setup(final DSLContext context) {
     createConfigInOldTable(context, standardWorkspace(), ConfigSchema.STANDARD_WORKSPACE);
@@ -202,7 +203,7 @@ public class SetupForNormalizedTablesTest {
   private static ConnectorSpecification connectorSpecification() {
     return new ConnectorSpecification()
         .withAuthSpecification(new AuthSpecification().withAuthType(AuthType.OAUTH_2_0))
-        .withConnectionSpecification(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConnectionSpecification(Jsons.jsonNode(CONNECTION_SPEC))
         .withDocumentationUrl(URI.create("whatever"))
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
@@ -239,14 +240,14 @@ public class SetupForNormalizedTablesTest {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withSourceId(SOURCE_ID_2);
     return Arrays.asList(sourceConnection1, sourceConnection2);
   }
@@ -257,26 +258,26 @@ public class SetupForNormalizedTablesTest {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withDestinationId(DESTINATION_ID_2);
     return Arrays.asList(destinationConnection1, destinationConnection2);
   }
 
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withWorkspaceId(null)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withWorkspaceId(WORKSPACE_ID)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_2);
@@ -285,12 +286,12 @@ public class SetupForNormalizedTablesTest {
 
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withWorkspaceId(null)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPEC))
         .withWorkspaceId(WORKSPACE_ID)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_2);
@@ -408,16 +409,16 @@ public class SetupForNormalizedTablesTest {
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPEC)));
     final StandardSyncState standardSyncState2 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_2)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPEC)));
     final StandardSyncState standardSyncState3 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_3)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPEC)));
     final StandardSyncState standardSyncState4 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_4)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPEC)));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
   }
 

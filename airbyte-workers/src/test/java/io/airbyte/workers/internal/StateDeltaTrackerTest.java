@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StateDeltaTrackerTest {
+class StateDeltaTrackerTest {
 
   private static final int STATE_1_HASH = 1;
   private static final int STATE_2_HASH = 2;
@@ -40,7 +40,7 @@ public class StateDeltaTrackerTest {
   private StateDeltaTracker stateDeltaTracker;
 
   @BeforeEach
-  public void setup() throws Exception {
+  void setup() throws Exception {
     final Map<Short, Long> state1Counts = new HashMap<>();
     state1Counts.put(STREAM_INDEX_1, STATE_1_STREAM_1_COUNT);
     state1Counts.put(STREAM_INDEX_2, STATE_1_STREAM_2_COUNT);
@@ -60,13 +60,13 @@ public class StateDeltaTrackerTest {
   }
 
   @Test
-  public void testAddState_throwsExceptionWhenCapacityExceeded() {
+  void testAddState_throwsExceptionWhenCapacityExceeded() {
     Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.addState(4, Collections.singletonMap((short) 444, 44L)));
     Assertions.assertTrue(stateDeltaTracker.capacityExceeded);
   }
 
   @Test
-  public void testCommitStateHash_throwsExceptionWhenStateHashConflict() throws Exception {
+  void testCommitStateHash_throwsExceptionWhenStateHashConflict() throws Exception {
     stateDeltaTracker.commitStateHash(STATE_1_HASH);
     stateDeltaTracker.commitStateHash(STATE_2_HASH);
 
@@ -74,18 +74,18 @@ public class StateDeltaTrackerTest {
   }
 
   @Test
-  public void testCommitStateHash_throwsExceptionIfCapacityExceededEarlier() {
+  void testCommitStateHash_throwsExceptionIfCapacityExceededEarlier() {
     stateDeltaTracker.capacityExceeded = true;
     Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.commitStateHash(STATE_1_HASH));
   }
 
   @Test
-  public void testCommitStateHash_throwsExceptionIfCommitStateHashCalledBeforeAddingState() {
+  void testCommitStateHash_throwsExceptionIfCommitStateHashCalledBeforeAddingState() {
     Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.commitStateHash(NEVER_ADDED_STATE_HASH));
   }
 
   @Test
-  public void testGetCommittedRecordsByStream() throws Exception {
+  void testGetCommittedRecordsByStream() throws Exception {
     // before anything is committed, returned map should be empty and deltas should contain three states
     final Map<Short, Long> expected = new HashMap<>();
     Assertions.assertEquals(expected, stateDeltaTracker.getStreamToCommittedRecords());

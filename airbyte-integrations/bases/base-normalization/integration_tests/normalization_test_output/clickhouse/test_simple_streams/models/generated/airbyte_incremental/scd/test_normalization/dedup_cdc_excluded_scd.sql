@@ -32,12 +32,12 @@
                         from (
                                 select distinct _airbyte_unique_key as unique_key
                                 from {{ this }}
-                                where 1=1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
+                                where 1=1 {{ incremental_clause('_airbyte_normalized_at', quote(this.schema) + '.' + quote('dedup_cdc_excluded')) }}
                             ) recent_records
                             left join (
                                 select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as active_count
                                 from {{ this }}
-                                where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
+                                where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', quote(this.schema) + '.' + quote('dedup_cdc_excluded')) }}
                                 group by _airbyte_unique_key
                             ) active_counts
                             on recent_records.unique_key = active_counts.unique_key

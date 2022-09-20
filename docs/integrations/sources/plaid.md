@@ -66,6 +66,6 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.2 | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
 | 0.3.1 | 2022-03-31 | [11104](https://github.com/airbytehq/airbyte/pull/11104) | Fix 100 record limit and added start_date |
 | 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |
-| 0.3.1 | 2022-xx-xx | [7977](https://github.com/airbytehq/airbyte/pull/11104) | Fix 100 record limit and added start_date |

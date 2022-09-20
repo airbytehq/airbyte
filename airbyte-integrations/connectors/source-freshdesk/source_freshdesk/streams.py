@@ -34,9 +34,7 @@ class FreshdeskStream(HttpStream, ABC):
         # Since this logic rely not on updated tickets, it can break tickets dependant streams - conversations.
         # So updated_since parameter will be always used in tickets streams. And start_date will be used too
         # with default value 30 days look back.
-        self.start_date = (
-            pendulum.parse(config.get("start_date")) if config.get("start_date") else pendulum.now() - pendulum.duration(days=30)
-        )
+        self.start_date = config.get("start_date") or (pendulum.now() - pendulum.duration(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
     def url_base(self) -> str:
@@ -331,7 +329,6 @@ class Tickets(IncrementalFreshdeskStream):
         if next_page_token and int(next_page_token["page"]) > self.ticket_paginate_limit:
             # get last_record from latest batch, pos. -1, because of ACS order of records
             last_record_updated_at = response.json()[-1]["updated_at"]
-            last_record_updated_at = pendulum.parse(last_record_updated_at)
             # updating request parameters with last_record state
             next_page_token[self.cursor_filter] = last_record_updated_at
             next_page_token.pop("page")

@@ -225,11 +225,8 @@ public class GlobalStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
     final DbState dbState = new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(cdcState)))
-        .withStreams(List.of(new DbStreamState().
-            withStreamName("name").
-            withStreamNamespace("namespace").
-            withCursor("").
-            withCursorField(Collections.emptyList())))
+        .withStreams(List
+            .of(new DbStreamState().withStreamName("name").withStreamNamespace("namespace").withCursor("").withCursorField(Collections.emptyList())))
         .withCdc(true);
     final StateManager stateManager =
         new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState)), catalog);

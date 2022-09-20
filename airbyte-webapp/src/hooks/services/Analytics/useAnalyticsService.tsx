@@ -66,12 +66,12 @@ export const useAnalytics = (): AnalyticsServiceProviderValue => {
   return analyticsContext;
 };
 
-export const useAnalyticsIdentifyUser = (userId?: string): void => {
+export const useAnalyticsIdentifyUser = (userId?: string, traits?: Record<string, unknown>): void => {
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
     if (userId) {
-      analyticsService.identify(userId);
+      analyticsService.identify(userId, traits);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);

@@ -32,12 +32,14 @@ public class OracleSpecTest {
                                               {
                                                 "host": "localhost",
                                                 "port": 1521,
-                                                "sid": "ora_db",
                                                 "username": "ora",
                                                 "password": "pwd",
                                                 "schemas": [
                                                   "public"
                                                 ],
+                                                "connection_data": {
+                                                  "sid": "ora_db"
+                                                },
                                                 "jdbc_url_params": "property1=pValue1&property2=pValue2"
                                               }
                                               """;
@@ -70,7 +72,7 @@ public class OracleSpecTest {
   @Test
   void testSsidMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config).remove("sid");
+    ((ObjectNode) (config.get("connection_data"))).remove("sid");
     assertFalse(validator.test(schema, config));
   }
 

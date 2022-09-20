@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static org.apache.logging.log4j.util.Strings.EMPTY;
+
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;

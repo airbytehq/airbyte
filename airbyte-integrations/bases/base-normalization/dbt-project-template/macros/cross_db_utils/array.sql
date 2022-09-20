@@ -43,6 +43,10 @@
     left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
 
+{% macro tidb__cross_join_unnest(stream_name, array_col) -%}
+    left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
+{%- endmacro %}
+
 {% macro redshift__cross_join_unnest(stream_name, array_col) -%}
     left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
@@ -93,6 +97,10 @@
 {%- endmacro %}
 
 {% macro databricks__unnested_column_value(column_col) -%}
+    _airbyte_nested_data
+{%- endmacro %}
+
+{% macro tidb__unnested_column_value(column_col) -%}
     _airbyte_nested_data
 {%- endmacro %}
 
@@ -189,4 +197,8 @@ joined as (
         -- to the number of items in {{ from_table }}.{{ column_col }}
         where numbers.generated_number <= json_length({{ column_col }})
     )
+{%- endmacro %}
+
+{% macro tidb__unnest_cte(from_table, stream_name, column_col) -%}
+    {{ mysql__unnest_cte(from_table, stream_name, column_col) }}
 {%- endmacro %}
