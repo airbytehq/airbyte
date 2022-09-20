@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -93,13 +94,14 @@ class SourceSalesforce(AbstractSource):
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains
         (Salesforce has a strict API limit on requests).
         """
-        connector_state = copy.deepcopy(state or {})
+        connector_state: MutableMapping[str, Any] = copy.deepcopy(state or {})
         config, internal_config = split_config(config)
         # get the streams once in case the connector needs to make any queries to generate them
         logger.info("Starting generating streams")
         stream_instances = {s.name: s for s in self.streams(config, catalog=catalog, state=state)}
         logger.info(f"Starting syncing {self.name}")
         self._stream_to_instance_map = stream_instances
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=connector_state)
         for configured_stream in catalog.streams:
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
@@ -112,7 +114,7 @@ class SourceSalesforce(AbstractSource):
                     logger=logger,
                     stream_instance=stream_instance,
                     configured_stream=configured_stream,
-                    connector_state=connector_state,
+                    state_manager=state_manager,
                     internal_config=internal_config,
                 )
             except exceptions.HTTPError as error:
