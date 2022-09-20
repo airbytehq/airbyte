@@ -4,12 +4,29 @@ connectionSpecification:
   title: Surveycto Spec
   type: object
   required:
-    - auth_token
+    - server_name
+    - username
+    - password
     - form_id
   properties:
-    auth_token:
+    server_name:
       type: string
-      description: Basic auth or base64 encoded of your "username:password"
+      title: Server Name
+      description: The name of the SurveryCTO server
+      order: 0
+    username:
+      type: string
+      title: Username
+      description: Username to authenticate into the SurveyCTO server
+      order: 1
+    password:
+      type: string
+      title: Password
+      description: Password to authenticate into the SurveyCTO server
+      airbyte_secret: true
+      order: 2
     form_id:
       type: string
+      title: Form ID
       description: Unique identifier for one of your forms
+      order: 3
