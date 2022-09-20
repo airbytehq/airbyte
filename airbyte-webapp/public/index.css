@@ -108,26 +108,6 @@ noscript {
     font-style: normal;
 }
 
-/* Regular Courier */
-@font-face {
-    font-family: "Courier Prime";
-    src: url("/fonts/courierPrime/CourierPrime-Regular.eot"); /* IE9 Compat Modes */
-    src: local("Roboto Mono"),
-    url("/fonts/courierPrime/CourierPrime-Regular.eot?#iefix")
-    format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/courierPrime/CourierPrime-Regular.woff2")
-    format("woff2"),
-        /* Super Modern Browsers */
-    url("/fonts/courierPrime/CourierPrime-Regular.woff") format("woff"),
-        /* Modern Browsers */ url("/fonts/courierPrime/CourierPrime-Regular.ttf")
-    format("truetype"),
-        /* Safari, Android, iOS */
-    url("/fonts/courierPrime/CourierPrime-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
-
-    font-weight: normal;
-    font-style: normal;
-}
-
 /* Roboto Medium */
 @font-face {
     font-family: "Roboto";

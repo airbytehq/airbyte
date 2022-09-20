@@ -146,7 +146,6 @@ export const theme = {
   transparentColor: scss.transparentColor,
 
   regularFont: scss.regularFont,
-  codeFont: scss.codeFont,
 };
 
 export const barChartColors = [scss.grey500, scss.grey300];
