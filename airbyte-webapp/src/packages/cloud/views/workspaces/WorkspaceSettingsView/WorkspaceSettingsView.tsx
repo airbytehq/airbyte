@@ -12,10 +12,11 @@ import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveWorkspace,
-  useUpdateWorkspace,
+  useUpdateCloudWorkspace,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
+import { useInvalidateWorkspaceQuery } from "services/workspaces/WorkspacesService";
 
 import styles from "./WorkspaceSettingsView.module.scss";
 
@@ -38,7 +39,8 @@ export const WorkspaceSettingsView: React.FC = () => {
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();
-  const updateWorkspace = useUpdateWorkspace();
+  const updateCloudWorkspace = useUpdateCloudWorkspace();
+  const invalidateWorkspaceQuery = useInvalidateWorkspaceQuery();
   const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
 
   return (
@@ -59,12 +61,15 @@ export const WorkspaceSettingsView: React.FC = () => {
             advancedMode: isAdvancedMode,
           }}
           onSubmit={async (payload) => {
+            const { workspaceId } = workspace;
             setAdvancedMode(payload.advancedMode);
-            return updateWorkspace.mutateAsync({
-              workspaceId: workspace.workspaceId,
+            await updateCloudWorkspace.mutateAsync({
+              workspaceId,
               name: payload.name,
             });
+            await invalidateWorkspaceQuery(workspaceId);
           }}
+          enableReinitialize
           validationSchema={ValidationSchema}
         >
           {({ dirty, isSubmitting, resetForm, isValid, setFieldValue }) => (

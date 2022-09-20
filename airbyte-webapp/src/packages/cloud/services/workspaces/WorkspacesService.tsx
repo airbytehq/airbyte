@@ -5,11 +5,13 @@ import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspace
 import { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
+import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { useWorkspaceService } from "services/workspaces/WorkspacesService";
 
-import { useSuspenseQuery } from "../../../../services/connector/useSuspenseQuery";
+export { useWorkspaceService };
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "cloud_workspaces"] as const,
@@ -57,7 +59,7 @@ export function useCreateWorkspace() {
   }).mutateAsync;
 }
 
-export function useUpdateWorkspace() {
+export function useUpdateCloudWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();
 
@@ -81,7 +83,7 @@ export function useUpdateWorkspace() {
           return [...list.slice(0, index), result, ...list.slice(index + 1)];
         });
 
-        queryClient.setQueryData<CloudWorkspace>([workspaceKeys.detail(result.workspaceId)], (old) => {
+        queryClient.setQueryData<CloudWorkspace>(workspaceKeys.detail(result.workspaceId), (old) => {
           return {
             ...old,
             ...result,
@@ -108,14 +110,14 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () => service.get(workspaceId));
+  return useSuspenseQuery<CloudWorkspace>(workspaceKeys.detail(workspaceId), () => service.get(workspaceId));
 }
 
 export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<void> {
   const queryClient = useQueryClient();
 
   return useCallback(
-    () => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]),
+    () => queryClient.invalidateQueries(workspaceKeys.detail(workspaceId)),
     [queryClient, workspaceId]
   );
 }
@@ -123,7 +125,5 @@ export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<
 export function useGetUsage(workspaceId: string): CloudWorkspaceUsage {
   const service = useGetWorkspaceService();
 
-  return useSuspenseQuery<CloudWorkspaceUsage>([workspaceKeys.usage(workspaceId)], () => service.getUsage(workspaceId));
+  return useSuspenseQuery<CloudWorkspaceUsage>(workspaceKeys.usage(workspaceId), () => service.getUsage(workspaceId));
 }
-
-export { useWorkspaceService } from "services/workspaces/WorkspacesService";
