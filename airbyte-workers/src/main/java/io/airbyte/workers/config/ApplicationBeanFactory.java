@@ -107,7 +107,7 @@ public class ApplicationBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JobNotifier jobNotifier(
                                  final ConfigRepository configRepository,
                                  final TrackingClient trackingClient,
@@ -122,7 +122,7 @@ public class ApplicationBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JobTracker jobTracker(
                                final ConfigRepository configRepository,
                                final JobPersistence jobPersistence,
@@ -132,7 +132,7 @@ public class ApplicationBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -142,14 +142,14 @@ public class ApplicationBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public WebUrlHelper webUrlHelper(@Value("${airbyte.web-app.url}") final String webAppUrl) {
     return new WebUrlHelper(webAppUrl);
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public WorkspaceHelper workspaceHelper(
                                          final ConfigRepository configRepository,
                                          final JobPersistence jobPersistence) {
