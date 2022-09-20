@@ -64,6 +64,7 @@ jobs:
           - source-bing-ads
           - source-github
           - source-amazon-ads
+          - source-notion
 
     steps:
       - uses: actions/checkout@v2
