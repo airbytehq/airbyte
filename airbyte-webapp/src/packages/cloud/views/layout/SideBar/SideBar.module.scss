@@ -12,7 +12,7 @@ $sidebar-workspace-font-weight: 400;
   height: 21px;
   width: 100%;
   border: 0;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-md;
   background-color: rgba(255, 255, 255, 20%);
   margin-top: variables.$spacing-md;
   padding: 0 8px;
