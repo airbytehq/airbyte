@@ -20,7 +20,7 @@ const Content = styled.div`
 const WorkspacesList: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
   const { selectWorkspace } = useWorkspaceService();
-  const createWorkspace = useCreateCloudWorkspace();
+  const createCloudWorkspace = useCreateCloudWorkspace();
 
   return (
     <Content>
@@ -29,7 +29,7 @@ const WorkspacesList: React.FC = () => {
           {workspace.name}
         </WorkspaceItem>
       ))}
-      <WorkspacesControl onSubmit={createWorkspace} />
+      <WorkspacesControl onSubmit={createCloudWorkspace} />
     </Content>
   );
 };

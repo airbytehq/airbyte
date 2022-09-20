@@ -62,7 +62,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
+  const invalidateCloudWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
@@ -79,7 +79,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       if (!hasRecentCreditIncrease(cloudWorkspace)) {
         setIsWaitingForCredits(true);
         retryIntervalId.current = window.setInterval(() => {
-          invalidateWorkspace();
+          invalidateCloudWorkspace();
         }, 3000);
       }
     }
