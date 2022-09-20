@@ -24,6 +24,7 @@ dependencies {
         exclude group: 'io.micronaut.security'
         exclude group: 'io.micronaut.sql'
     }
+    implementation project(':airbyte-workers')
 
     runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
 
