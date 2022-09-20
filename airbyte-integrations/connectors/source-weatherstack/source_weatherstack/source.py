@@ -11,9 +11,10 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 
+from .constants import url_base
 
 class CurrentWeather(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    
 
     # Set this as a noop.
     primary_key = None
@@ -197,17 +198,22 @@ class LocationLookup(HttpStream):
 # Source
 class SourceWeatherstack(AbstractSource):
 
-    def max_retries(self) -> int:
-        return 20
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        accepted_queries = {"New York", "London", "33128"}
-        query = config["query"]
-        if query not in accepted_queries:
-            return False, f"Input City {query} is invalid. Please check your spelling or input a valid City."
-        else:
-            return True, None
+        
+        try:
+            query = config["query"]
+            access_key = config["access_key"]
 
+            response = requests.get(f"{url_base}/current?access_key={access_key}&query={query}");
+            response = response.text
+
+            if response.find('"success": false') != -1:
+                return False, "Check Query and Access Key"
+            else:
+                return True, None
+        except requests.exceptions.RequestException as e:
+            return False, repr(e)
+       
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = NoAuth()  
         return [
