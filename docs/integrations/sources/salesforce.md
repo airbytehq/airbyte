@@ -119,6 +119,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.16   | 2022-09-20 | [16684](https://github.com/airbytehq/airbyte/pull/16684)     | Improve writing file of decode |
 | 1.0.15   | 2022-08-30 | [16086](https://github.com/airbytehq/airbyte/pull/16086)     | Improve API type detection                                                                                                      |
 | 1.0.14   | 2022-08-29 | [16119](https://github.com/airbytehq/airbyte/pull/16119)     | Exclude `KnowledgeArticleVersion` from using bulk API |
 | 1.0.13   | 2022-08-23 | [15901](https://github.com/airbytehq/airbyte/pull/15901)     | Exclude `KnowledgeArticle` from using bulk API |
