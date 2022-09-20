@@ -10,6 +10,7 @@ doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 flow_cli_common = { git = "https://github.com/estuary/flow" }
 proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 
+validator = { version = "*", features = ["derive"] }
 anyhow = "*"
 async-trait = "*"
 bytelines = "*"
@@ -24,8 +25,8 @@ schemars = "*"
 serde = { version = "*", features = ["derive"]}
 serde_json = { version = "*", features = ["raw_value"]}
 structopt = "*"
-strum = "*"
 strum_macros = "*"
+strum = { version = "0.24.1", features = ["derive"] }
 tempfile = "*"
 thiserror = "*"
 tracing = "*"

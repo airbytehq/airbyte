@@ -7,7 +7,7 @@ use tokio_util::io::{ReaderStream, StreamReader};
 use proto_flow::capture::PullResponse;
 use proto_flow::flow::DriverCheckpoint;
 
-use crate::{apis::{InterceptorStream, FlowCaptureOperation}, interceptors::airbyte_source_interceptor::AirbyteSourceInterceptor, errors::Error, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
+use crate::{apis::{InterceptorStream, FlowCaptureOperation, StreamMode}, interceptors::airbyte_source_interceptor::AirbyteSourceInterceptor, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
 
 async fn flatten_join_handle<T, E: std::convert::From<tokio::task::JoinError>>(
     handle: JoinHandle<Result<T, E>>,
@@ -19,37 +19,26 @@ async fn flatten_join_handle<T, E: std::convert::From<tokio::task::JoinError>>(
     }
 }
 
-#[derive(Clone, clap::ArgEnum, Debug)]
-pub enum StreamMode {
-    UnixSocket,
-    TCP,
-}
-
-async fn flow_read_stream(socket_path: String, mode: StreamMode) -> anyhow::Result<InterceptorStream> {
+async fn flow_read_stream(socket_path: &str, mode: &StreamMode) -> Result<InterceptorStream, Error> {
     match mode {
         StreamMode::UnixSocket => 
-            Ok(Box::pin(ReaderStream::new(UnixStream::connect(&socket_path).await?))),
+            Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(UnixStream::connect(&socket_path).await?)))),
         StreamMode::TCP =>
-            Ok(Box::pin(ReaderStream::new(TcpStream::connect(&socket_path).await?)))
+            Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(TcpStream::connect(&socket_path).await?))))
     }
 }
 
-pub enum WriteStream {
-    UnixSocket(UnixStream),
-    TCP(TcpStream)
-}
-
-async fn flow_write_stream(socket_path: String, mode: StreamMode) -> anyhow::Result<Pin<Box<dyn AsyncWrite + Send>>> {
+async fn flow_write_stream(socket_path: &str, mode: &StreamMode) -> Result<Pin<Box<dyn AsyncWrite + Send>>, Error> {
     match mode {
         StreamMode::UnixSocket => 
-            Ok(Box::pin(UnixStream::connect(&socket_path).await?)),
+            Ok(Box::pin(UnixStream::connect(socket_path).await?)),
         StreamMode::TCP =>
-            Ok(Box::pin(TcpStream::connect(&socket_path).await?))
+            Ok(Box::pin(TcpStream::connect(socket_path).await?))
     }
 }
 
 fn airbyte_response_stream(child_stdout: ChildStdout) -> InterceptorStream {
-    Box::pin(ReaderStream::new(child_stdout))
+    Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(child_stdout)))
 }
 
 pub fn parse_child(mut child: Child) -> Result<(Child, ChildStdin, ChildStdout), Error> {
@@ -71,11 +60,11 @@ pub async fn run_airbyte_source_connector(
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
 
     let (mut child, child_stdin, child_stdout) =
-        parse_child(invoke_connector_delayed(entrypoint)?)?;
+        parse_child(invoke_connector_delayed(full_entrypoint)?)?;
 
     let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
         &op,
-        flow_read_stream(socket_path, stream_mode).await?
+        flow_read_stream(&socket_path, &stream_mode).await?
     )?;
 
     let adapted_response_stream =
@@ -101,9 +90,7 @@ pub async fn run_airbyte_source_connector(
                         (msg, bytes)
                     }
                     None => {
-                        sender.send(transaction_pending).map_err(|_|
-                            create_custom_error("Could not send signal for Airbyte connector's pending checkpoint. This can happen if the connector exits abruptly.")
-                        )?;
+                        sender.send(transaction_pending).map_err(|_| Error::AirbyteCheckpointPending)?;
                         return Ok(None);
                     }
                 };
@@ -115,7 +102,7 @@ pub async fn run_airbyte_source_connector(
         adapted_response_stream
     };
 
-    let response_write = flow_write_stream(socket_path, stream_mode).await?;
+    let response_write = flow_write_stream(&socket_path, &stream_mode).await?;
 
     let streaming_all_task = tokio::spawn(streaming_all(
         child_stdin,
@@ -137,7 +124,7 @@ pub async fn run_airbyte_source_connector(
             if tp_receiver.await.unwrap() {
                 // We generate a synthetic commit now, and the empty checkpoint means the assumed behavior
                 // of the next invocation will be "full refresh".
-                tracing::warn!("connector exited without writing a final state checkpoint, writing an empty object {{}} merge patch driver checkpoint.");
+                tracing::warn!("go.estuary.dev/W001: connector exited without writing a final state checkpoint, writing an empty object {{}} merge patch driver checkpoint.");
                 let mut resp = PullResponse::default();
                 resp.checkpoint = Some(DriverCheckpoint {
                     driver_checkpoint_json: b"{}".to_vec(),
@@ -177,8 +164,8 @@ async fn streaming_all(
     response_stream: InterceptorStream,
     mut response_stream_writer: Pin<Box<dyn AsyncWrite + Send>>,
 ) -> Result<(), Error> {
-    let mut request_stream_reader = StreamReader::new(request_stream);
-    let mut response_stream_reader = StreamReader::new(response_stream);
+    let mut request_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(request_stream));
+    let mut response_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(response_stream));
 
     let request_stream_copy =
         tokio::spawn(

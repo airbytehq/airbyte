@@ -7,9 +7,8 @@ pub mod errors;
 pub mod interceptors;
 pub mod libs;
 
-use apis::FlowCaptureOperation;
-use connector_runner::{run_airbyte_source_connector, StreamMode};
-use errors::Error;
+use apis::{FlowCaptureOperation, StreamMode};
+use connector_runner::run_airbyte_source_connector;
 
 #[derive(clap::Parser, Debug)]
 #[clap(about = "Command to start an Airbyte to Flow protocol adaptor")]
@@ -18,12 +17,13 @@ pub struct Args {
     #[clap(long)]
     connector_entrypoint: String,
 
+    #[clap(arg_enum)]
     operation: FlowCaptureOperation,
 
     #[clap(long)]
     socket: String,
 
-    #[clap(long)]
+    #[clap(long, arg_enum)]
     stream_mode: StreamMode,
 
     #[clap(flatten)]
@@ -31,7 +31,7 @@ pub struct Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let Args {
         connector_entrypoint,
         operation,
@@ -44,17 +44,12 @@ async fn main() {
     let result = run_airbyte_source_connector(connector_entrypoint, operation, socket, stream_mode).await;
 
     match result {
-        Err(Error::CommandExecutionError(_)) => {
-            // This error summarizes an error of a child process.
-            // As its stderr is passed through, we don't log its failure again here.
-            std::process::exit(1);
-        }
         Err(err) => {
-            tracing::error!(error = ?err, message = "airbyte-to-flow failed");
-            std::process::exit(1);
+            Err(err.into())
         }
         Ok(()) => {
-            tracing::info!(message = "airbyte-to-flow exiting");
+            tracing::info!(message = "connector-proxy exiting");
+            Ok(())
         }
     }
 }

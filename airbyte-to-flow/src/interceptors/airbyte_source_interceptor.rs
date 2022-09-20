@@ -17,11 +17,11 @@ use proto_flow::capture::{
     ValidateRequest, ValidateResponse,
 };
 use proto_flow::flow::{DriverCheckpoint, Slice};
-use schemars::JsonSchema;
-use schemars::schema::RootSchema;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+
+use validator::Validate;
 
 use futures::{stream, StreamExt, TryStreamExt};
 use serde_json::value::RawValue;
@@ -60,7 +60,7 @@ impl AirbyteSourceInterceptor {
 
     fn adapt_spec_response_stream(&mut self, in_stream: InterceptorStream) -> InterceptorStream {
         Box::pin(stream::once(async {
-            let message = get_airbyte_response(in_stream, |m| m.spec.is_some()).await?;
+            let message = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
             let spec = message.spec.unwrap();
             let auth_spec = spec.auth_specification.map(|s| serde_json::from_str(s.get())).transpose()?;
 
@@ -94,7 +94,7 @@ impl AirbyteSourceInterceptor {
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async {
-            let message = get_airbyte_response(in_stream, |m| m.catalog.is_some()).await?;
+            let message = get_airbyte_response(in_stream, |m| m.catalog.is_some(), "catalog").await?;
             let catalog = message.catalog.unwrap();
 
             let mut resp = DiscoverResponse::default();
@@ -159,7 +159,7 @@ impl AirbyteSourceInterceptor {
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             let message =
-                get_airbyte_response(in_stream, |m| m.connection_status.is_some()).await?;
+                get_airbyte_response(in_stream, |m| m.connection_status.is_some(), "connection status").await?;
 
             let connection_status = message.connection_status.unwrap();
 
@@ -194,7 +194,7 @@ impl AirbyteSourceInterceptor {
         Box::pin(stream::once(async {
             // TODO(johnny): Due to the current factoring, we invoke the connector with `spec`
             // and discard its response. This is a bit silly.
-            _ = get_airbyte_response(in_stream, |m| m.spec.is_some()).await?;
+            _ = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
 
             encode_message(&ApplyResponse::default())
         }))
@@ -274,7 +274,7 @@ impl AirbyteSourceInterceptor {
                         }
 
                         if let Err(e) = catalog.validate() {
-                            raise_err(&format!("invalid config_catalog: {:?}", e))?
+                            return Err(Error::InvalidCatalog(e))
                         }
 
                         serde_json::to_writer(File::create(catalog_file_path.clone())?, &catalog)?
@@ -326,12 +326,9 @@ impl AirbyteSourceInterceptor {
                     Ok(Some((encode_message(&resp)?, (stb, stream))))
                 } else if let Some(record) = message.record {
                     let stream_to_binding = stb.lock().await;
-                    let binding = stream_to_binding.get(&record.stream).ok_or_else(|| {
-                        create_custom_error(&format!(
-                            "connector record with unknown stream {}",
-                            record.stream
-                        ))
-                    })?;
+                    let binding = stream_to_binding.get(&record.stream).ok_or(
+                        Error::DanglingConnectorRecord(record.stream)
+                    )?;
                     let arena = record.data.get().as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
                     resp.documents = Some(Documents {
@@ -345,7 +342,7 @@ impl AirbyteSourceInterceptor {
                     drop(stream_to_binding);
                     Ok(Some((encode_message(&resp)?, (stb, stream))))
                 } else {
-                    raise_err("unexpected pull response.")
+                    Err(Error::InvalidPullResponse)
                 }
             },
         );

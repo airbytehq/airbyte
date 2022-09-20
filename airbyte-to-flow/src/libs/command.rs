@@ -5,17 +5,6 @@ use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 
 pub const READY: &[u8] = "READY\n".as_bytes();
 
-// Start the connector directly.
-pub fn invoke_connector_direct(entrypoint: String, args: Vec<String>) -> Result<Child, Error> {
-    invoke_connector(
-        Stdio::piped(),
-        Stdio::piped(),
-        Stdio::inherit(),
-        &entrypoint,
-        &args,
-    )
-}
-
 // Check the connector execution exit status.
 // TODO: replace this function after `exit_status_error` is stable. https://github.com/rust-lang/rust/issues/84908
 pub fn check_exit_status(message: &str, result: std::io::Result<ExitStatus>) -> Result<(), Error> {
@@ -47,18 +36,14 @@ pub fn check_exit_status(message: &str, result: std::io::Result<ExitStatus>) -> 
 // The stdin passed to delayed connector processes must start with a line that serves as a signal
 // for readiness of the configuration files.
 pub fn invoke_connector_delayed(entrypoint: String) -> Result<Child, Error> {
-    tracing::debug!(%entrypoint, ?args, "invoke_connector_delayed");
+    tracing::debug!(%entrypoint, "invoke_connector_delayed");
 
 
     invoke_connector(
         Stdio::piped(),
         Stdio::piped(),
         Stdio::inherit(),
-        "sh",
-        &[
-            "-c".to_string(),
-            format!("read -r connector_proxy_dummy_var && exec {entrypoint}"),
-        ],
+        "read -r connector_proxy_dummy_var && exec {entrypoint}",
     )
 }
 

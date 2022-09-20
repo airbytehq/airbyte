@@ -2,20 +2,21 @@ use byteorder::{ByteOrder, LittleEndian};
 use bytes::{BufMut, Bytes, BytesMut};
 use prost::Message;
 use tokio::io::{AsyncRead, AsyncReadExt};
+use crate::errors::Error;
 
 pub async fn decode_message<
     T: Message + std::default::Default,
     R: AsyncRead + std::marker::Unpin,
 >(
     reader: &mut R,
-) -> Result<Option<T>, std::io::Error> {
+) -> Result<Option<T>, Error> {
     let mut length_buf: [u8; 4] = [0; 4];
 
     match reader.read_exact(&mut length_buf).await {
         Err(e) => match e.kind() {
             // By the current communication protocol, UnexpectedEof indicates the ending of the stream.
             std::io::ErrorKind::UnexpectedEof => return Ok(None),
-            _ => return Err(e),
+            _ => return Err(Error::IOError(e)),
         },
         Ok(_) => {}
     }
@@ -27,7 +28,7 @@ pub async fn decode_message<
     Ok(Some(T::decode(&message_buf[..])?))
 }
 
-pub fn encode_message<T: Message>(message: &T) -> Result<Bytes, std::io::Error> {
+pub fn encode_message<T: Message>(message: &T) -> Result<Bytes, Error> {
     let mut message_buf: Vec<u8> = Vec::new();
     message.encode(&mut message_buf)?;
 

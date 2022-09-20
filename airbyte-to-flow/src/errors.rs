@@ -1,3 +1,9 @@
+use bytes::Bytes;
+use futures::{TryStream, Stream, TryStreamExt};
+use validator::ValidationErrors;
+
+use crate::apis::InterceptorStream;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("go.estuary.dev/E001: Network Tunnel startup timeout of 5 seconds exceeded. Please troubleshoot your network tunnel configuration and connection and try again")]
@@ -36,9 +42,6 @@ pub enum Error {
     #[error("go.estuary.dev/E011: Missing required image inspect file. Specify it via --image-inspect-json-path in command line")]
     MissingImageInspectFile,
 
-    #[error("go.estuary.dev/E012: Network Tunnel")]
-    NetworkTunnelError(#[from] network_tunnel::errors::Error),
-
     #[error("go.estuary.dev/E013: Creating and persisting temporary file")]
     TempfilePersistError(#[from] tempfile::PersistError),
 
@@ -65,4 +68,23 @@ pub enum Error {
 
     #[error("go.estuary.dev/E021: Invalid PullResponse received from connector")]
     InvalidPullResponse,
+
+    #[error("go.estuary.dev/E023: Invalid connector catalog: {0}")]
+    InvalidCatalog(ValidationErrors),
+}
+
+pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {
+    Err(create_custom_error(message))
+}
+
+pub fn create_custom_error(message: &str) -> std::io::Error {
+    std::io::Error::new(std::io::ErrorKind::Other, message)
+}
+
+pub fn interceptor_stream_to_io_stream(stream: InterceptorStream) -> impl TryStream<Item = std::io::Result<Bytes>, Ok = Bytes, Error = std::io::Error> {
+    stream.map_err(|e| create_custom_error(&e.to_string()))
+}
+
+pub fn io_stream_to_interceptor_stream(stream: impl Stream<Item = std::io::Result<Bytes>> + Send + Sync + 'static) -> InterceptorStream {
+    Box::pin(stream.map_err(|e| Error::IOError(e)))
 }

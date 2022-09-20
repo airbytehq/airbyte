@@ -1,7 +1,7 @@
 use crate::libs::airbyte_catalog::Message;
 use crate::{apis::InterceptorStream, errors::create_custom_error};
 
-use crate::errors::raise_err;
+use crate::errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream};
 use bytelines::AsyncByteLines;
 use bytes::Bytes;
 use futures::{StreamExt, TryStream, TryStreamExt};
@@ -16,10 +16,10 @@ use super::protobuf::decode_message;
 // on lines, simplifying their logic
 pub fn stream_lines(
     in_stream: InterceptorStream,
-) -> impl TryStream<Item = std::io::Result<Bytes>, Error = std::io::Error, Ok = bytes::Bytes> {
-    AsyncByteLines::new(StreamReader::new(in_stream))
+) -> impl TryStream<Item = Result<Bytes, Error>, Error = Error, Ok = bytes::Bytes> {
+    io_stream_to_interceptor_stream(AsyncByteLines::new(StreamReader::new(interceptor_stream_to_io_stream(in_stream)))
         .into_stream()
-        .map_ok(Bytes::from)
+        .map_ok(Bytes::from))
 }
 
 /// Given a stream of lines, try to deserialize them into Airbyte Messages.
@@ -29,7 +29,7 @@ pub fn stream_lines(
 /// * See https://docs.airbyte.com/understanding-airbyte/airbyte-specification#the-airbyte-protocol
 pub fn stream_airbyte_responses(
     in_stream: InterceptorStream,
-) -> impl TryStream<Item = std::io::Result<Message>, Ok = Message, Error = std::io::Error> {
+) -> impl TryStream<Item = Result<Message, Error>, Ok = Message, Error = Error> {
     stream_lines(in_stream).try_filter_map(|line| async move {
         let message: Message = match serde_json::from_slice(&line) {
             Ok(m) => m,
@@ -76,7 +76,8 @@ pub fn stream_airbyte_responses(
 pub fn get_airbyte_response<F: 'static>(
     in_stream: InterceptorStream,
     predicate: F,
-) -> impl futures::Future<Output = std::io::Result<Message>>
+    descriptor: &'static str,
+) -> impl futures::Future<Output = Result<Message, Error>>
 where
     F: Fn(&Message) -> bool,
 {
@@ -85,13 +86,13 @@ where
 
         let message = match stream_head {
             Some(m) => m,
-            None => return raise_err("Could not find message in stream"),
+            None => return Err(Error::EmptyStream)
         }?;
 
         if predicate(&message) {
             Ok(message)
         } else {
-            raise_err("Could not find message matching condition")
+            Err(Error::MessageNotFound(descriptor))
         }
     }
 }
@@ -99,23 +100,23 @@ where
 /// Read the given stream of bytes from runtime and try to decode it to type <T>
 pub fn get_decoded_message<'a, T>(
     in_stream: InterceptorStream,
-) -> impl futures::Future<Output = std::io::Result<T>>
+) -> impl futures::Future<Output = Result<T, Error>>
 where
     T: prost::Message + std::default::Default,
 {
     async move {
-        let mut reader = StreamReader::new(in_stream);
+        let mut reader = StreamReader::new(interceptor_stream_to_io_stream(in_stream));
         decode_message::<T, _>(&mut reader)
             .await?
-            .ok_or(create_custom_error("missing request"))
+            .ok_or(Error::MessageNotFound(std::any::type_name::<T>()))
     }
 }
 
 // Stream bytes from runtime and continuously decode them into message type T in a stream
 pub fn stream_runtime_messages<T: prost::Message + std::default::Default>(
     in_stream: InterceptorStream,
-) -> impl TryStream<Item = std::io::Result<T>, Ok = T, Error = std::io::Error> {
-    let reader = StreamReader::new(in_stream);
+) -> impl TryStream<Item = Result<T, Error>, Ok = T, Error = Error> {
+    let reader = StreamReader::new(interceptor_stream_to_io_stream(in_stream));
 
     futures::stream::try_unfold(reader, |mut reader| async {
         match decode_message::<T, _>(&mut reader).await {
@@ -147,8 +148,8 @@ mod test {
 
     fn create_stream<T>(
         input: Vec<T>,
-    ) -> Pin<Box<impl TryStream<Item = std::io::Result<T>, Ok = T, Error = std::io::Error>>> {
-        Box::pin(stream::iter(input.into_iter().map(Ok::<T, std::io::Error>)))
+    ) -> Pin<Box<impl TryStream<Item = Result<T, Error>, Ok = T, Error = Error>>> {
+        Box::pin(stream::iter(input.into_iter().map(Ok::<T, Error>)))
     }
 
     #[tokio::test]
@@ -273,7 +274,7 @@ mod test {
         };
 
         let msg_buf = encode_message(&msg).unwrap();
-        let read_stream = ReaderStream::new(std::io::Cursor::new(msg_buf));
+        let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new(msg_buf)));
 
         let stream: InterceptorStream = Box::pin(read_stream);
         let result = get_decoded_message::<ValidateRequest>(stream)
@@ -308,11 +309,11 @@ mod test {
 
         let msg_buf1 = encode_message(&msg1).unwrap();
         let msg_buf2 = encode_message(&msg2).unwrap();
-        let read_stream = ReaderStream::new(std::io::Cursor::new([msg_buf1, msg_buf2].concat()));
+        let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new([msg_buf1, msg_buf2].concat())));
 
         let stream: InterceptorStream = Box::pin(read_stream);
         let result = stream_runtime_messages::<ValidateRequest>(stream)
-            .collect::<Vec<std::io::Result<ValidateRequest>>>()
+            .collect::<Vec<Result<ValidateRequest, Error>>>()
             .await
             .into_iter()
             .filter_map(|item| {
