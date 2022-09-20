@@ -105,8 +105,8 @@ pub async fn run_airbyte_source_connector(
     let response_write = flow_write_stream(&socket_path, &stream_mode).await?;
 
     let streaming_all_task = tokio::spawn(streaming_all(
-        child_stdin,
         adapted_request_stream,
+        child_stdin,
         adapted_response_stream,
         response_write,
     ));
@@ -158,9 +158,11 @@ pub async fn run_airbyte_source_connector(
     Ok(())
 }
 
+/// Stream request_stream into request_stream_writer and response_stream into
+/// response_stream_writer.
 async fn streaming_all(
-    mut request_stream_writer: ChildStdin,
     request_stream: InterceptorStream,
+    mut request_stream_writer: ChildStdin,
     response_stream: InterceptorStream,
     mut response_stream_writer: Pin<Box<dyn AsyncWrite + Send>>,
 ) -> Result<(), Error> {
