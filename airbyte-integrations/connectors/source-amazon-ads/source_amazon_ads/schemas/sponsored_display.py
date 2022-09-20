@@ -8,7 +8,7 @@ from .common import CatalogModel, Targeting
 
 
 class DisplayCampaign(CatalogModel):
-    campaignId: Decimal
+    campaignId: int
     name: str
     budgetType: str
     budget: Decimal
@@ -23,8 +23,8 @@ class DisplayCampaign(CatalogModel):
 
 class DisplayAdGroup(CatalogModel):
     name: str
-    campaignId: Decimal
-    adGroupId: Decimal
+    campaignId: int
+    adGroupId: int
     defaultBid: Decimal
     bidOptimization: str
     state: str
@@ -33,9 +33,9 @@ class DisplayAdGroup(CatalogModel):
 
 class DisplayProductAds(CatalogModel):
     state: str
-    adId: Decimal
-    campaignId: Decimal
-    adGroupId: Decimal
+    adId: int
+    campaignId: int
+    adGroupId: int
     asin: str
     sku: str
 

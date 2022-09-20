@@ -9,7 +9,7 @@ from .common import CatalogModel
 
 
 class BrandsCampaign(CatalogModel):
-    campaignId: Decimal
+    campaignId: int
     name: str
     tags: Dict[str, str]
     budget: Decimal
@@ -26,6 +26,6 @@ class BrandsCampaign(CatalogModel):
 
 
 class BrandsAdGroup(CatalogModel):
-    campaignId: Decimal
-    adGroupId: Decimal
+    campaignId: int
+    adGroupId: int
     name: str

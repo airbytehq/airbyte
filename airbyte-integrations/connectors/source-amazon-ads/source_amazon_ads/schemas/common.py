@@ -54,17 +54,17 @@ class MetricsReport(CatalogModel):
 
 
 class Targeting(CatalogModel):
-    targetId: Decimal
-    adGroupId: Decimal
+    targetId: int
+    adGroupId: int
     state: str
     expressionType: str
     bid: Decimal
 
 
 class KeywordsBase(CatalogModel):
-    keywordId: Decimal
-    campaignId: Decimal
-    adGroupId: Decimal
+    keywordId: int
+    campaignId: int
+    adGroupId: int
     state: str
     keywordText: str
 

@@ -20,7 +20,7 @@ class Bidding(CatalogModel):
 
 class ProductCampaign(CatalogModel):
     portfolioId: Decimal
-    campaignId: Decimal
+    campaignId: int
     name: str
     tags: Dict[str, str]
     campaignType: str
@@ -34,21 +34,21 @@ class ProductCampaign(CatalogModel):
 
 
 class ProductAdGroups(CatalogModel):
-    adGroupId: Decimal
+    adGroupId: int
     name: str
-    campaignId: Decimal
+    campaignId: int
     defaultBid: Decimal
     state: str
 
 
 class ProductAd(CatalogModel):
-    adId: Decimal
-    campaignId: Decimal
-    adGroupId: Decimal
+    adId: int
+    campaignId: int
+    adGroupId: int
     sku: str
     asin: str
     state: str
 
 
 class ProductTargeting(Targeting):
-    campaignId: Decimal
+    campaignId: int
