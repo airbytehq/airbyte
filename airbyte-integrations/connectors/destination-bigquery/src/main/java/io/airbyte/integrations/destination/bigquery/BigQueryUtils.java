@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.gax.rpc.FixedHeaderProvider;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -45,11 +45,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
@@ -355,16 +353,10 @@ public class BigQueryUtils {
     }
   }
 
-  public static FixedHeaderProvider getHeaders() {
+  public static HeaderProvider getHeaders() {
     String connectorName = getConnectorNameFromEnv();
 
-    return new FixedHeaderProvider() {
-      @Nullable
-      @Override
-      public Map<String, String> getHeaders() {
-        return ImmutableMap.of("user-agent", connectorName + " (GPN:Airbyte)");
-      }
-    };
+    return () -> ImmutableMap.of("user-agent", connectorName + " (GPN:Airbyte)");
   }
 
   private static String getConnectorNameFromEnv() {
