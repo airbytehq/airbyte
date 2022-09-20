@@ -1,6 +1,7 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
@@ -195,15 +196,27 @@ export const SignupForm: React.FC = () => {
     return yup.object().shape(shape);
   }, [showName, showCompanyName]);
 
-  return (
-    <Formik<FormValues>
-      initialValues={{
+  const [params, _] = useSearchParams();
+  const search = Object.fromEntries(params);
+
+  const initialValues = params.get("email")
+    ? {
+        name: search.firstname ? `${search.firstname} ${search.lastname}` : "",
+        companyName: search.company,
+        email: search.email,
+        password: "",
+        news: true,
+      }
+    : {
         name: "",
         companyName: "",
         email: "",
         password: "",
         news: true,
-      }}
+      };
+  return (
+    <Formik<FormValues>
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
         signUp(values).catch((err) => {
