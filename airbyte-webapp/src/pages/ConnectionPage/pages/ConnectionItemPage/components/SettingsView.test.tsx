@@ -17,9 +17,11 @@ jest.mock("hooks/services/useConnectionHook", () => ({
   useGetConnectionState: () => ({ state: null, globalState: null, streamState: null }),
 }));
 
-jest.mock("hooks/services/Analytics/useAnalyticsService", () => ({
-  useTrackPage: () => null,
-}));
+jest.mock("hooks/services/Analytics/useAnalyticsService", () => {
+  const analyticsService = jest.requireActual("hooks/services/Analytics/useAnalyticsService");
+  analyticsService.useTrackPage = () => null;
+  return analyticsService;
+});
 
 // Mocking the DeleteBlock component is a bit ugly, but it's simpler and less
 // brittle than mocking the providers it depends on; at least it's a direct,
