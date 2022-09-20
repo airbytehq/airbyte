@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
 public interface JobPersistence {
 
   List<SyncStats> getSyncStats(Long attemptId) throws IOException;
+
+  List<NormalizationSummary> getNormalizationSummary(Long attemptId) throws IOException;
 
   Job getJob(long jobId) throws IOException;
 
@@ -128,7 +131,7 @@ public interface JobPersistence {
    * StandardSyncOutput#state in the configs database by calling
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
-  <T> void writeOutput(long jobId, int attemptNumber, T output, SyncStats syncStats) throws IOException;
+  <T> void writeOutput(long jobId, int attemptNumber, T output, SyncStats syncStats, NormalizationSummary normalizationSummary) throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.
@@ -203,6 +206,8 @@ public interface JobPersistence {
       throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
+
+  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
 
   Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
 

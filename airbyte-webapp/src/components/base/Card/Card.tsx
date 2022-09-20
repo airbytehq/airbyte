@@ -13,7 +13,7 @@ export interface CardProps {
   roundedBottom?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card: React.FC<React.PropsWithChildren<CardProps>> = ({
   children,
   title,
   className,

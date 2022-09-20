@@ -294,6 +294,22 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
+        - name: MICRONAUT_ENVIRONMENTS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKERS_MICRONAUT_ENVIRONMENTS
+        - name: WORKER_LOGS_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKER_LOGS_STORAGE_TYPE
+        - name: WORKER_STATE_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKER_STATE_STORAGE_TYPE
+
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
