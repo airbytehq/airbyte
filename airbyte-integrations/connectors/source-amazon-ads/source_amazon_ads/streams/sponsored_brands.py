@@ -26,6 +26,7 @@ class SponsoredBrandsAdGroups(SubProfilesStream):
     """
 
     primary_key = "adGroupId"
+    required = primary_key
     model = BrandsAdGroup
 
     def path(self, **kvargs) -> str:
@@ -39,6 +40,7 @@ class SponsoredBrandsKeywords(SubProfilesStream):
     """
 
     primary_key = "adGroupId"
+    required = "adGroupId"
     model = BrandsAdGroup
 
     def path(self, **kvargs) -> str:
