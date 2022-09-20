@@ -13,10 +13,9 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveCloudWorkspace,
   useUpdateCloudWorkspace,
-  useWorkspaceService,
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
-import { useInvalidateWorkspace } from "services/workspaces/WorkspacesService";
+import { useInvalidateWorkspace, useWorkspaceService } from "services/workspaces/WorkspacesService";
 
 import styles from "./WorkspaceSettingsView.module.scss";
 
@@ -38,7 +37,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
-  const removeWorkspace = useRemoveCloudWorkspace();
+  const removeCloudWorkspace = useRemoveCloudWorkspace();
   const updateCloudWorkspace = useUpdateCloudWorkspace();
   const invalidateWorkspace = useInvalidateWorkspace(workspace.workspaceId);
   const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
@@ -120,9 +119,9 @@ export const WorkspaceSettingsView: React.FC = () => {
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
             <LoadingButton
-              isLoading={removeWorkspace.isLoading}
+              isLoading={removeCloudWorkspace.isLoading}
               danger
-              onClick={() => removeWorkspace.mutateAsync(workspace.workspaceId)}
+              onClick={() => removeCloudWorkspace.mutateAsync(workspace.workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
             </LoadingButton>

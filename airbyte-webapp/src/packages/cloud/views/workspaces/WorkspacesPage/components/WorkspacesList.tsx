@@ -4,8 +4,8 @@ import styled from "styled-components";
 import {
   useCreateCloudWorkspace,
   useListCloudWorkspaces,
-  useWorkspaceService,
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { useWorkspaceService } from "services/workspaces/WorkspacesService";
 
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";

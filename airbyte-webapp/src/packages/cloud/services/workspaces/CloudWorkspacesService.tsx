@@ -9,9 +9,6 @@ import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { useWorkspaceService } from "services/workspaces/WorkspacesService";
-
-export { useWorkspaceService };
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "cloud_workspaces"] as const,
