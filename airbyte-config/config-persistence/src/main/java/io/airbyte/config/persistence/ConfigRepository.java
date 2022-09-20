@@ -23,6 +23,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -46,6 +47,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -205,6 +207,8 @@ public class ConfigRepository {
     final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
     for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
         StandardSourceDefinition.class)) {
+      sourceDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(sourceDefinition.getSpec() != null ? sourceDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
         sourceDefinitions.add(sourceDefinition);
       }
@@ -305,6 +309,8 @@ public class ConfigRepository {
 
     for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         StandardDestinationDefinition.class)) {
+      destinationDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(destinationDefinition.getSpec() != null ? destinationDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
         destinationDefinitions.add(destinationDefinition);
       }
@@ -987,6 +993,12 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return CatalogHelpers.extractStreamDescriptors(standardSync.getCatalog());
+  }
+
+  public ConfiguredAirbyteCatalog getConfiguredCatalogForConnection(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync standardSync = getStandardSync(connectionId);
+    return standardSync.getCatalog();
   }
 
 }

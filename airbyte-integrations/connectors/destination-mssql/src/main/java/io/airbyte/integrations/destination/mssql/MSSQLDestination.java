@@ -8,13 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -25,9 +25,6 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
 
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
@@ -65,19 +62,20 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
     final String jdbcUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl)
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("schema", schema);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.SCHEMA_KEY, schema);
 
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      // configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));
-      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      // configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
+      // config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -96,7 +94,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new MSSQLDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public static void main(final String[] args) throws Exception {

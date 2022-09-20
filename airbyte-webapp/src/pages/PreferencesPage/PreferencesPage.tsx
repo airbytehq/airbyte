@@ -6,7 +6,7 @@ import { H1 } from "components";
 import { PageViewContainer } from "components/CenteredPageComponents";
 import HeadTitle from "components/HeadTitle";
 
-import { useTrackPage } from "hooks/services/Analytics/useAnalyticsService";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
 
@@ -15,7 +15,7 @@ const Title = styled(H1)`
 `;
 
 const PreferencesPage: React.FC = () => {
-  useTrackPage("Preferences Page");
+  useTrackPage(PageTrackingCodes.PREFERENCES);
 
   const { setInitialSetupConfig } = useWorkspace();
 

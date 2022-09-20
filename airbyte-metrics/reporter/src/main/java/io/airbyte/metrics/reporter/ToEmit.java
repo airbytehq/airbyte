@@ -6,6 +6,7 @@ package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
@@ -48,11 +49,20 @@ public enum ToEmit {
       MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
     }
   })),
+  NUM_ABNORMAL_SCHEDULED_SYNCS_LAST_DAY(countMetricEmission(() -> {
+    final var count = ReporterApp.configDatabase.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
+  }), 1, TimeUnit.HOURS),
+  NUM_TOTAL_SCHEDULED_SYNCS_LAST_DAY(countMetricEmission(() -> {
+    final var count = ReporterApp.configDatabase.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
+  }), 1, TimeUnit.HOURS),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {
       MetricClientFactory.getMetricClient().distribution(
-          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
+          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(),
+          new MetricAttribute(MetricTags.JOB_STATUS, MetricTags.getJobStatus(pair.getLeft())));
     }
   }), 1, TimeUnit.HOURS);
 

@@ -46,6 +46,5 @@
         }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

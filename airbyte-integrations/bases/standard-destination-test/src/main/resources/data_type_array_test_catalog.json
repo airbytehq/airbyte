@@ -52,13 +52,6 @@
               "type": "integer"
             }
           },
-          "array_big_integer": {
-            "type": ["array"],
-            "items": {
-              "type": "string",
-              "airbyte_type": "big_integer"
-            }
-          },
           "array_boolean": {
             "type": ["array"],
             "items": {

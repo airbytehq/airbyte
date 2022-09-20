@@ -39,6 +39,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
     this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
+  @Override
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);

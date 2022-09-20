@@ -8,7 +8,6 @@ import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
@@ -91,9 +90,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   @Override
   public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      onStreamFlush.accept(stream, writer);
-    }, Map.of("bufferSizeInBytes", writer.getByteCount()));
+    onStreamFlush.accept(stream, writer);
     totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
   }
@@ -101,14 +98,12 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   @Override
   public void flushAll() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
-        LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
-        onStreamFlush.accept(entry.getKey(), entry.getValue());
-      }
-      close();
-      clear();
-    }, Map.of("bufferSizeInBytes", totalBufferSizeInBytes));
+    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
+      LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
+      onStreamFlush.accept(entry.getKey(), entry.getValue());
+    }
+    close();
+    clear();
 
     totalBufferSizeInBytes = 0;
   }

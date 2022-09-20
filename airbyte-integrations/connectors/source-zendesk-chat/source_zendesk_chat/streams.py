@@ -16,7 +16,6 @@ class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
     primary_key = "id"
 
-    primary_key = None
     data_field = None
 
     limit = 100
@@ -104,6 +103,7 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
+
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date, **kwargs):
@@ -185,6 +185,7 @@ class AgentTimelines(TimeIncrementalStream):
     Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
     """
 
+    primary_key = None
     cursor_field = "start_time"
     data_field = "agent_timeline"
     name = "agent_timeline"

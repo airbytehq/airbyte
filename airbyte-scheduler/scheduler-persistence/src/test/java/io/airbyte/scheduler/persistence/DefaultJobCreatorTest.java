@@ -50,7 +50,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultJobCreatorTest {
+class DefaultJobCreatorTest {
 
   private static final String STREAM1_NAME = "stream1";
   private static final String STREAM2_NAME = "stream2";

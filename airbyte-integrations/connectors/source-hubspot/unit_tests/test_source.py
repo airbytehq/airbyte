@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 def test_check_connection_invalid_config(config):
     config.pop("start_date")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
 
 
@@ -64,7 +64,7 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 26
 
 
 def test_check_credential_title_exception(config):
@@ -399,6 +399,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
     # Create test_stream instance with some state
     test_stream = Companies(**common_params)
+    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
@@ -406,11 +407,13 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    requests_mock.register_uri("POST", "/crm/v4/associations/company/contacts/batch/read", [{"status_code": 200, "json": {"results": []}}])
+
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
+    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
@@ -486,12 +489,13 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == 1641234595251
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
+    test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
-    # The stream should handle pagination correctly and output 600 records.
+    # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 250
-    assert test_stream.state["lastUpdated"] == 1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
 def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
@@ -515,10 +519,9 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     # Create test_stream instance with some state
     test_stream = Engagements(**common_params)
     test_stream.state = {"lastUpdated": 1641234595251}
-
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
-    assert test_stream.state["lastUpdated"] == +1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)

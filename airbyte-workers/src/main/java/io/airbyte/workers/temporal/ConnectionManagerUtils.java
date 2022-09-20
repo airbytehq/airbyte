@@ -22,11 +22,15 @@ import io.temporal.workflow.Functions.TemporalFunctionalInterfaceMarker;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import javax.inject.Singleton;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Encapsulates logic specific to retrieving, starting, and signaling the ConnectionManagerWorkflow.
  */
+@NoArgsConstructor
+@Singleton
 @Slf4j
 public class ConnectionManagerUtils {
 
@@ -44,7 +48,7 @@ public class ConnectionManagerUtils {
    * @return the healthy connection manager workflow that was signaled
    * @throws DeletedWorkflowException if the connection manager workflow was deleted
    */
-  static ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
+  public ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
                                                                       final UUID connectionId,
                                                                       final Function<ConnectionManagerWorkflow, Proc> signalMethod)
       throws DeletedWorkflowException {
@@ -66,7 +70,7 @@ public class ConnectionManagerUtils {
    * @return the healthy connection manager workflow that was signaled
    * @throws DeletedWorkflowException if the connection manager workflow was deleted
    */
-  static <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
+  public <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
                                                                           final UUID connectionId,
                                                                           final Function<ConnectionManagerWorkflow, Proc1<T>> signalMethod,
                                                                           final T signalArgument)
@@ -79,10 +83,10 @@ public class ConnectionManagerUtils {
   // Keeping this private and only exposing the above methods outside this class provides a strict
   // type enforcement for external calls, and means this method can assume consistent type
   // implementations for both cases.
-  private static <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
-                                                                                  final UUID connectionId,
-                                                                                  final Function<ConnectionManagerWorkflow, ? extends TemporalFunctionalInterfaceMarker> signalMethod,
-                                                                                  final Optional<T> signalArgument)
+  private <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
+                                                                           final UUID connectionId,
+                                                                           final Function<ConnectionManagerWorkflow, ? extends TemporalFunctionalInterfaceMarker> signalMethod,
+                                                                           final Optional<T> signalArgument)
       throws DeletedWorkflowException {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionManagerWorkflow(client, connectionId);
@@ -108,7 +112,7 @@ public class ConnectionManagerUtils {
       safeTerminateWorkflow(client, connectionId, "Terminating workflow in unreachable state before starting a new workflow for this connection");
 
       final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
-      final ConnectionUpdaterInput startWorkflowInput = buildStartWorkflowInput(connectionId);
+      final ConnectionUpdaterInput startWorkflowInput = TemporalWorkflowUtils.buildStartWorkflowInput(connectionId);
 
       final BatchRequest batchRequest = client.newSignalWithStartRequest();
       batchRequest.add(connectionManagerWorkflow::run, startWorkflowInput);
@@ -129,10 +133,10 @@ public class ConnectionManagerUtils {
     }
   }
 
-  static void safeTerminateWorkflow(final WorkflowClient client, final UUID connectionId, final String reason) {
-    log.info("Attempting to terminate existing workflow for connection {}.", connectionId);
+  void safeTerminateWorkflow(final WorkflowClient client, final String workflowId, final String reason) {
+    log.info("Attempting to terminate existing workflow for workflowId {}.", workflowId);
     try {
-      client.newUntypedWorkflowStub(getConnectionManagerName(connectionId)).terminate(reason);
+      client.newUntypedWorkflowStub(workflowId).terminate(reason);
     } catch (final Exception e) {
       log.warn(
           "Could not terminate temporal workflow due to the following error; "
@@ -141,9 +145,13 @@ public class ConnectionManagerUtils {
     }
   }
 
-  static ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
+  public void safeTerminateWorkflow(final WorkflowClient client, final UUID connectionId, final String reason) {
+    safeTerminateWorkflow(client, getConnectionManagerName(connectionId), reason);
+  }
+
+  public ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
-    final ConnectionUpdaterInput input = buildStartWorkflowInput(connectionId);
+    final ConnectionUpdaterInput input = TemporalWorkflowUtils.buildStartWorkflowInput(connectionId);
     WorkflowClient.start(connectionManagerWorkflow::run, input);
 
     return connectionManagerWorkflow;
@@ -157,7 +165,7 @@ public class ConnectionManagerUtils {
    * @throws DeletedWorkflowException if the workflow was deleted, according to the workflow state
    * @throws UnreachableWorkflowException if the workflow is in an unreachable state
    */
-  static ConnectionManagerWorkflow getConnectionManagerWorkflow(final WorkflowClient client, final UUID connectionId)
+  public ConnectionManagerWorkflow getConnectionManagerWorkflow(final WorkflowClient client, final UUID connectionId)
       throws DeletedWorkflowException, UnreachableWorkflowException {
 
     final ConnectionManagerWorkflow connectionManagerWorkflow;
@@ -193,7 +201,7 @@ public class ConnectionManagerUtils {
     return connectionManagerWorkflow;
   }
 
-  static boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
           getConnectionManagerName(connectionId));
@@ -203,7 +211,7 @@ public class ConnectionManagerUtils {
     }
   }
 
-  static WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
+  public WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
     final DescribeWorkflowExecutionRequest describeWorkflowExecutionRequest = DescribeWorkflowExecutionRequest.newBuilder()
         .setExecution(WorkflowExecution.newBuilder()
             .setWorkflowId(getConnectionManagerName(connectionId))
@@ -216,35 +224,22 @@ public class ConnectionManagerUtils {
     return describeWorkflowExecutionResponse.getWorkflowExecutionInfo().getStatus();
   }
 
-  static long getCurrentJobId(final WorkflowClient client, final UUID connectionId) {
+  public long getCurrentJobId(final WorkflowClient client, final UUID connectionId) {
     try {
-      final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionManagerWorkflow(client, connectionId);
       return connectionManagerWorkflow.getJobInformation().getJobId();
     } catch (final Exception e) {
       return ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
     }
   }
 
-  static ConnectionManagerWorkflow newConnectionManagerWorkflowStub(final WorkflowClient client, final UUID connectionId) {
+  public ConnectionManagerWorkflow newConnectionManagerWorkflowStub(final WorkflowClient client, final UUID connectionId) {
     return client.newWorkflowStub(ConnectionManagerWorkflow.class,
-        TemporalUtils.getWorkflowOptionsWithWorkflowId(TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId)));
+        TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId)));
   }
 
-  static String getConnectionManagerName(final UUID connectionId) {
+  public String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
-  }
-
-  public static ConnectionUpdaterInput buildStartWorkflowInput(final UUID connectionId) {
-    return ConnectionUpdaterInput.builder()
-        .connectionId(connectionId)
-        .jobId(null)
-        .attemptId(null)
-        .fromFailure(false)
-        .attemptNumber(1)
-        .workflowState(null)
-        .resetConnection(false)
-        .fromJobResetFailure(false)
-        .build();
   }
 
 }

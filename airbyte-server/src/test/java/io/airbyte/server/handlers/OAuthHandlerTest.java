@@ -34,6 +34,10 @@ class OAuthHandlerTest {
   private OAuthHandler handler;
   private TrackingClient trackingClient;
   private HttpClient httpClient;
+  private static final String CLIENT_ID = "123";
+  private static final String CLIENT_ID_KEY = "client_id";
+  private static final String CLIENT_SECRET_KEY = "client_secret";
+  private static final String CLIENT_SECRET = "hunter2";
 
   @BeforeEach
   public void init() {
@@ -47,8 +51,8 @@ class OAuthHandlerTest {
   void setSourceInstancewideOauthParams() throws JsonValidationException, IOException {
     final UUID sourceDefId = UUID.randomUUID();
     final Map<String, Object> params = new HashMap<>();
-    params.put("client_id", "123");
-    params.put("client_secret", "hunter2");
+    params.put(CLIENT_ID_KEY, CLIENT_ID);
+    params.put(CLIENT_SECRET_KEY, CLIENT_SECRET);
 
     final SetInstancewideSourceOauthParamsRequestBody actualRequest = new SetInstancewideSourceOauthParamsRequestBody()
         .sourceDefinitionId(sourceDefId)
@@ -66,8 +70,8 @@ class OAuthHandlerTest {
   void resetSourceInstancewideOauthParams() throws JsonValidationException, IOException {
     final UUID sourceDefId = UUID.randomUUID();
     final Map<String, Object> firstParams = new HashMap<>();
-    firstParams.put("client_id", "123");
-    firstParams.put("client_secret", "hunter2");
+    firstParams.put(CLIENT_ID_KEY, CLIENT_ID);
+    firstParams.put(CLIENT_SECRET_KEY, CLIENT_SECRET);
     final SetInstancewideSourceOauthParamsRequestBody firstRequest = new SetInstancewideSourceOauthParamsRequestBody()
         .sourceDefinitionId(sourceDefId)
         .params(firstParams);
@@ -78,8 +82,8 @@ class OAuthHandlerTest {
         .thenReturn(Optional.of(new SourceOAuthParameter().withOauthParameterId(oauthParameterId)));
 
     final Map<String, Object> secondParams = new HashMap<>();
-    secondParams.put("client_id", "456");
-    secondParams.put("client_secret", "hunter3");
+    secondParams.put(CLIENT_ID_KEY, "456");
+    secondParams.put(CLIENT_SECRET_KEY, "hunter3");
     final SetInstancewideSourceOauthParamsRequestBody secondRequest = new SetInstancewideSourceOauthParamsRequestBody()
         .sourceDefinitionId(sourceDefId)
         .params(secondParams);
@@ -99,8 +103,8 @@ class OAuthHandlerTest {
   void setDestinationInstancewideOauthParams() throws JsonValidationException, IOException {
     final UUID destinationDefId = UUID.randomUUID();
     final Map<String, Object> params = new HashMap<>();
-    params.put("client_id", "123");
-    params.put("client_secret", "hunter2");
+    params.put(CLIENT_ID_KEY, CLIENT_ID);
+    params.put(CLIENT_SECRET_KEY, CLIENT_SECRET);
 
     final SetInstancewideDestinationOauthParamsRequestBody actualRequest = new SetInstancewideDestinationOauthParamsRequestBody()
         .destinationDefinitionId(destinationDefId)
@@ -118,8 +122,8 @@ class OAuthHandlerTest {
   void resetDestinationInstancewideOauthParams() throws JsonValidationException, IOException {
     final UUID destinationDefId = UUID.randomUUID();
     final Map<String, Object> firstParams = new HashMap<>();
-    firstParams.put("client_id", "123");
-    firstParams.put("client_secret", "hunter2");
+    firstParams.put(CLIENT_ID_KEY, CLIENT_ID);
+    firstParams.put(CLIENT_SECRET_KEY, CLIENT_SECRET);
     final SetInstancewideDestinationOauthParamsRequestBody firstRequest = new SetInstancewideDestinationOauthParamsRequestBody()
         .destinationDefinitionId(destinationDefId)
         .params(firstParams);
@@ -130,8 +134,8 @@ class OAuthHandlerTest {
         .thenReturn(Optional.of(new DestinationOAuthParameter().withOauthParameterId(oauthParameterId)));
 
     final Map<String, Object> secondParams = new HashMap<>();
-    secondParams.put("client_id", "456");
-    secondParams.put("client_secret", "hunter3");
+    secondParams.put(CLIENT_ID_KEY, "456");
+    secondParams.put(CLIENT_SECRET_KEY, "hunter3");
     final SetInstancewideDestinationOauthParamsRequestBody secondRequest = new SetInstancewideDestinationOauthParamsRequestBody()
         .destinationDefinitionId(destinationDefId)
         .params(secondParams);

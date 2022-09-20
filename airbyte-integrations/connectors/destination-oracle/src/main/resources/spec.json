@@ -46,23 +46,28 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      },
       "schema": {
         "title": "Default Schema",
         "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
         "type": "string",
         "examples": ["airbyte"],
         "default": "airbyte",
-        "order": 5
+        "order": 6
       },
       "encryption": {
         "title": "Encryption",
         "type": "object",
         "description": "The encryption method which is used when communicating with the database.",
-        "order": 6,
+        "order": 7,
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["encryption_method"],
             "properties": {
@@ -76,7 +81,6 @@
           },
           {
             "title": "Native Network Encryption (NNE)",
-            "additionalProperties": false,
             "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
             "required": ["encryption_method"],
             "properties": {
@@ -97,7 +101,6 @@
           },
           {
             "title": "TLS Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {

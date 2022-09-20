@@ -42,6 +42,8 @@ tests:
 #      configured_catalog_path: "integration_tests/configured_catalog_fba_fulfillment_customer_shipment_replacement_data.json"
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog_browse_tree_data.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_restock_inventory.json"
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"

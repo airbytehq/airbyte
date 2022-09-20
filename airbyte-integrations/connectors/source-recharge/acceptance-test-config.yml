@@ -13,6 +13,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"
       timeout_seconds: 1200
+      empty_streams: ["collections", "discounts"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"

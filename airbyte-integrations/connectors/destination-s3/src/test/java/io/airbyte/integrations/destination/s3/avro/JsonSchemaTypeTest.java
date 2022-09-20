@@ -29,7 +29,7 @@ public class JsonSchemaTypeTest {
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
       return Stream.of(
           Arguments.of("number", "integer", JsonSchemaType.NUMBER_INT),
-          Arguments.of("number", "big_integer", JsonSchemaType.NUMBER_LONG),
+          Arguments.of("string", "big_integer", JsonSchemaType.NUMBER_BIGINT),
           Arguments.of("number", "float", JsonSchemaType.NUMBER_FLOAT),
           Arguments.of("number", null, JsonSchemaType.NUMBER),
           Arguments.of("string", null, JsonSchemaType.STRING),

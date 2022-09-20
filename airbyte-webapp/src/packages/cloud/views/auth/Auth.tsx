@@ -1,51 +1,49 @@
 import React, { Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import styled from "styled-components";
+import { useIntl } from "react-intl";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
-import useRouter from "hooks/useRouter";
+import { useExperiment } from "hooks/services/Experiment";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
+import styles from "./Auth.module.scss";
 import FormContent from "./components/FormContent";
-import News from "./components/News";
+import { PersonQuoteCover } from "./components/PersonQuoteCover";
 import { LoginPage } from "./LoginPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
 import { SignupPage } from "./SignupPage";
 
-const Content = styled.div`
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  background: ${({ theme }) => theme.whiteColor};
-`;
+const hasValidRightSideUrl = (url?: string): boolean => {
+  if (url) {
+    try {
+      const parsedUrl = new URL(url);
+      const isValid = parsedUrl.protocol === "https:" && parsedUrl.hostname.endsWith("airbyte.com");
+      if (!isValid) {
+        console.warn(`${parsedUrl} is not valid.`);
+      }
+      return isValid;
+    } catch (e) {
+      console.warn(e);
+    }
+  }
 
-const Part = styled.div`
-  flex: 1 0 0;
-  padding: 20px 36px 39px 46px;
-  height: 100%;
-`;
-
-const NewsPart = styled(Part)`
-  background: ${({ theme }) => theme.beigeColor};
-  padding: 36px 97px 39px 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-`;
+  return false;
+};
 
 const Auth: React.FC = () => {
-  const { pathname, location } = useRouter();
+  const { pathname } = useLocation();
+  const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
+  const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
+
   const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
-    <Content>
-      <Part>
+    <div className={styles.container}>
+      <div className={styles.leftSide}>
         <FormContent toLogin={toLogin}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
@@ -55,16 +53,25 @@ const Auth: React.FC = () => {
               <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${location.pathname}`}`} />}
+                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${pathname}`}`} />}
               />
             </Routes>
           </Suspense>
         </FormContent>
-      </Part>
-      <NewsPart>
-        <News />
-      </NewsPart>
-    </Content>
+      </div>
+      <div className={styles.rightSide}>
+        {hasValidRightSideUrl(rightSideUrl) ? (
+          <iframe
+            className={styles.rightSideFrame}
+            src={rightSideUrl}
+            scrolling="no"
+            title={formatMessage({ id: "login.rightSideFrameTitle" })}
+          />
+        ) : (
+          <PersonQuoteCover />
+        )}
+      </div>
+    </div>
   );
 };
 
